@@ -1,4 +1,4 @@
-# domino-library
+# Domino Library
 Reuse-Library of C++, include classes eg:
 
 1. ObjAnywhere ([手册](https://mp.weixin.qq.com/s?__biz=Mzk0NzIzNzY0OQ==&mid=2247508838&idx=1&sn=eb306cff62c21a1770b130b0db39bccb&chksm=c37b0518f40c8c0e752f9377bf909d7c592252cedd9aab1e357b1f1e873e0b862d4ebc8e1664&token=853457497&lang=zh_CN#rd))
