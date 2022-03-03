@@ -1,3 +1,5 @@
+![](image/domino.jpg)
+
 # Domino Library
 Reuse-Library of C++, include classes eg:
 
