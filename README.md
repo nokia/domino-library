@@ -1,7 +1,6 @@
-![](image/domino.jpg)
-
 [![Build Status](https://github.com/nokia/domino-library/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/nokia/domino-library/actions/workflows/c-cpp.yml)
 
+![](image/domino.jpg)
 # Domino Library
 Reuse-Library of C++, include classes eg:
 
