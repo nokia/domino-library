@@ -1,3 +1,8 @@
+/**
+ * Copyright 2006-2022 Nokia
+ * Licensed under the BSD 3 Clause license
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 // ***********************************************************************************************
 // (SMART log: ONLY log for error transaction; NO log for succ transaction)
 //
