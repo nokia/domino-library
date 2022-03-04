@@ -54,3 +54,4 @@ size_t MtQueue::size()
     return queue_.size();
 }
 }  // namespace
+
