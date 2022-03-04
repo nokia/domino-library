@@ -13,8 +13,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Install gtest manually
+      run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp *.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
     - name: make check
-      run: g++ -std=c++14 -fconcepts -I./src/queue -I../afum_trunk/UT/ src/queue/MtQueue.cpp ut/queue/MtQueueTest.cpp -lgtest -lgtest_main -lpthread
+      run: g++ -std=c++14 -fconcepts -I./src/queue src/queue/MtQueue.cpp ut/queue/MtQueueTest.cpp -lgtest -lgtest_main -lpthread
     - name: ut
       run: ./a.out
     - name: make distcheck
