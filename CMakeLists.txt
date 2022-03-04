@@ -2,7 +2,10 @@ cmake_minimum_required(VERSION 2.8)
 
 project(ut)
 
-include_directories(./src/*)
+file(GLOB INC_LIST
+  "./src/*"
+)
+include_directories(${INC_LIST})
 
 file(GLOB SRC_LIST
   "./*.cpp",
