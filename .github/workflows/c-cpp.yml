@@ -21,4 +21,4 @@ jobs:
       run: cmake CMakeLists.txt && make
 
     - name: ut
-      run: ./ut
+      run: ./ut.exe
