@@ -16,11 +16,11 @@ jobs:
       run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp *.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
     - uses: actions/checkout@v2
     - name: for gtest build
-      run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-Werror" ..
+      run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-Werror" -DGTEST_HAS_PTHREAD=0 ..
     - name: make gtest
       run: cd build && make
     - name: make ut
-      run: g++ -std=c++14 -fconcepts -I./src/queue src/queue/MtQueue.cpp ut/queue/MtQueueTest.cpp -lgtest -lgtest_main -lpthread
+      run: g++ -std=c++14 -fconcepts -I./src/queue src/queue/MtQueue.cpp ut/queue/MtQueueTest.cpp -lgtest -lgtest_main
     - name: ut
       run: ./a.out
     - name: make distcheck
