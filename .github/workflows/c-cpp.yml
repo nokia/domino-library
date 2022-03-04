@@ -13,11 +13,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: configure
-      run: ./configure
-    - name: make
-      run: make
     - name: make check
-      run: make check
+      run: g++ -std=c++14 -fconcepts -I./src/queue -I../afum_trunk/UT/ src/queue/MtQueue.cpp ut/queue/MtQueueTest.cpp -lgtest -lgtest_main -lpthread
+    - name: ut
+      run: ./a.out
     - name: make distcheck
       run: make distcheck
