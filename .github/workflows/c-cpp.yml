@@ -18,7 +18,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: make ut
-      run: g++ -std=c++14 -fconcepts -I./src/queue src/queue/MtQueue.cpp ut/queue/MtQueueTest.cpp -lgtest -lgtest_main -lpthread
+      run: CMakeLists.txt && make
 
     - name: ut
-      run: time ./a.out
+      run: ./ut
