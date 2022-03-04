@@ -18,7 +18,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: make ut
-      run: CMakeLists.txt && make
+      run: cmake CMakeLists.txt && make
 
     - name: ut
       run: ./ut
