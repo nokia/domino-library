@@ -12,9 +12,9 @@ file(GLOB SRC_LIST
   "./src/*/*.cpp"
   "./ut/*/*.cpp"
 )
-add_executable(ut ${SRC_LIST})
+add_executable(ut.exe ${SRC_LIST})
 
-target_link_libraries(ut
+target_link_libraries(ut.exe
   pthread
   gtest
   gtest_main
