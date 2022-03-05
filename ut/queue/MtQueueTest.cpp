@@ -34,7 +34,7 @@ TEST_F(MtQueueTest, noSet_getNull)
 }
 TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
 {
-    const int steps = '500'000;
+    const int steps = 0'500'000;
     int startNum_1 = 0;
     int startNum_2 = 0 + steps;
     auto thread_1 = async(std::launch::async, std::bind(&MtQueueTest::threadMain, this, startNum_1, steps));
