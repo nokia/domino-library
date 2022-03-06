@@ -11,7 +11,6 @@ include_directories(${INC_DIR_LIST})
 file(GLOB SRC_LIST
   "./src/*/*.cpp"
   "./ut/*/*.cpp"
-  "./ut/main.cpp"
 )
 add_executable(ut.exe ${SRC_LIST})
 
