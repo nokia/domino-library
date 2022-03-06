@@ -18,4 +18,5 @@ add_executable(ut.exe ${SRC_LIST})
 target_link_libraries(ut.exe
   pthread
   gtest
+  gmock
 )
