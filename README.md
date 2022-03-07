@@ -18,7 +18,7 @@ Reuse-Library of C++, include classes eg:
 
 4. SmartLog ([手册*](http://mp.weixin.qq.com/s?__biz=Mzk0NzIzNzY0OQ==&mid=2247508416&idx=1&sn=f74d7dda6dc0c3c06f169b31a5f702a0&chksm=c37b07bef40c8ea85a040f396a210dedebc3eab6eb2347b40ee0e1ef6d3522a313752853ee92&scene=21#wechat_redirect))
 
-    How to collect only error related logs? eg, only error ut case print:
+    How to collect only error related logs? eg, only print for failed ut case(s):
     ![](image/ut_smartlog.jpg)
 
 **(*) English manual is not ready yet.**
