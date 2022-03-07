@@ -24,6 +24,12 @@ Reuse-Library of C++, include classes eg:
 **(*) English manual is not ready yet.**
 
 
+# New Practices
+1. UT testcase is requirement. (Refer to ./ut/\*/\*.cpp)
+
+2. LEGO domino classes. (Refer to ./ut/obj_anywhere/UtInitObjAnywhere.hpp)
+
+
 # Contributing
 (not ready yet)
 
