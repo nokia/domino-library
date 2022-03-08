@@ -31,5 +31,5 @@ jobs:
 
     - uses: actions/upload-artifact@v3
       with:
-        name: cov
+        name: coverage-report
         path: ut/gcovr/*.html
