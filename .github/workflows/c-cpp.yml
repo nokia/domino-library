@@ -24,7 +24,7 @@ jobs:
       run: ./ut.exe
 
     - name: install gcovr
-      run: pip install gcovr
+      run: pip install gcovr==4.2
 
     - name: ut coverage
       run: gcovr --config=ut/gcovr/gcovr.cfg
