@@ -18,7 +18,10 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: make ut
-      run: cmake CMakeLists.txt && make
+      run: cmake -DENABLE_COVERAGE=ON -DCMAKE_CXX_COMPILER="g++" . && make
 
     - name: ut
       run: ./ut.exe
+
+    - name: ut coverage
+      run: gcovr --config=ut/gcovr/gcovr.cfg
