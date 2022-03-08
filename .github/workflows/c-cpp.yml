@@ -28,3 +28,8 @@ jobs:
 
     - name: ut coverage
       run: gcovr --config=ut/gcovr/gcovr.cfg
+
+    - uses: actions/download-artifact@v3
+    with:
+      name: cov-dir
+      run: ls -l ut/gcovr
