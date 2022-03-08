@@ -30,6 +30,6 @@ jobs:
       run: gcovr --config=ut/gcovr/gcovr.cfg
 
     - uses: actions/upload-artifact@v3
-    with:
-      name: cov
-      path: ut/gcovr/*.html
+      with:
+        name: cov
+        path: ut/gcovr/*.html
