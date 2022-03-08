@@ -32,4 +32,6 @@ jobs:
     - uses: actions/download-artifact@v3
     with:
       name: cov-dir
+
+    - name: ls
       run: ls -l ut/gcovr
