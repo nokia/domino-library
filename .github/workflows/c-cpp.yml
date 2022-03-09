@@ -16,6 +16,8 @@ jobs:
       run: sudo apt-get install libgmock-dev && cd /usr/src/googletest/googlemock/ && sudo mkdir build && sudo cmake .. && sudo make && sudo cp lib/*.a /usr/lib
 
     - uses: actions/checkout@v2
+    - name: login "actions"
+      uses: lhotari/action-upterm@v1
 
     - name: make ut
       run: cmake -DENABLE_COVERAGE=ON -DCMAKE_CXX_COMPILER="g++" . && make
