@@ -1,4 +1,5 @@
 [![Build Status](https://github.com/nokia/domino-library/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/nokia/domino-library/actions/workflows/c-cpp.yml)
+[![codecov](https://codecov.io/gh/nokia/domino-library/branch/main/graph/badge.svg?token=LGK8GD9GJD)](https://codecov.io/gh/nokia/domino-library)
 
 ![](image/domino.jpg)
 # Domino Library
