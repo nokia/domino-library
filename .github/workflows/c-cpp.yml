@@ -32,4 +32,11 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: coverage-report
-        path: ut/gcovr/cov.*
+        path: ut/gcovr/cov.*  # include *.html & *.xml
+
+    - uses: codecov/codecov-action@v2
+      with:
+        directory: ut/gcovr/     # optional
+        flags: ci/main           # optional
+        fail_ci_if_error: true   # optional (default = false)
+        verbose: true            # optional (default = false)
