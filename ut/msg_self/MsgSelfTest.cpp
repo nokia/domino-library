@@ -144,6 +144,6 @@ TEST_F(MsgSelfTests, invalidMsgSelf_callbackShallNotCrash)
     msgSelf_.reset();  // rm msgSelf
     EXPECT_FALSE(*valid);
 
-    loopbackFunc_();  // req: no crash
+    loopbackFunc_();   // req: no crash
 }
 }  // namespace
