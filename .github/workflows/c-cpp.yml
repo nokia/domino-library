@@ -27,7 +27,7 @@ jobs:
       run: pip install gcovr==5.0
 
     - name: ut coverage (ret=2 is fail-under-line, =4 is fail-under-branch)
-      run: gcovr --config=ut/gcovr/gcovr.cfg
+      run: gcovr --config=ut/gcovr/gcovr.cfg --exclude-lines-by-pattern '^.*\b(DBG|INF|WRN|ERR|HID)\b.*$'
 
     - uses: actions/upload-artifact@v3
       with:
