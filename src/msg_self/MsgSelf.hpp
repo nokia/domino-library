@@ -61,7 +61,7 @@ using LoopReqFUNC  = std::function<void(LoopBackFUNC)>;
 class MsgSelf
 {
 public:
-    explicit MsgSelf(LoopReqFUNC aFunc) : loopReq_(aFunc), log_("MsgSelf") {}
+    explicit MsgSelf(LoopReqFUNC aFunc);
     ~MsgSelf();
 
     void newMsg(const WeakMsgCB& aMsgCB, const EMsgPriority = EMsgPri_NORM);
