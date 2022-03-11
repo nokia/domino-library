@@ -126,6 +126,10 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_invalidHdlr_noCrash)
     if (this->msgSelf_->hasMsg()) this->loopbackFunc_() ;
     EXPECT_EQ(std::multiset<int>({4, 5, 6}), this->hdlrIDs_);  // req: re-add ok
 }
+TYPED_TEST_P(FreeMultiHdlrDominoTest, invalidEv_isRepeatFalse)
+{
+    EXPECT_FALSE(PARA_DOM->isRepeatHdlr(0));  // ev=0 is invalid ID
+}
 
 #define ID_STATE
 // ***********************************************************************************************
@@ -156,6 +160,7 @@ REGISTER_TYPED_TEST_SUITE_P(FreeMultiHdlrDominoTest
     , GOLD_afterCallback_notRmHdlr
     , BugFix_disorderAutoRm_ok
     , BugFix_invalidHdlr_noCrash
+    , invalidEv_isRepeatFalse
 );
 using AnyFreeMultiDom = Types<MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, FreeMultiHdlrDominoTest, AnyFreeMultiDom);
