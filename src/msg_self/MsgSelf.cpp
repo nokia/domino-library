@@ -45,7 +45,7 @@ bool MsgSelf::handleOneMsg()
 // ***********************************************************************************************
 void MsgSelf::loopBack(const std::shared_ptr<bool> aValidMsgSelf)
 {
-    if (*aValidMsgSelf)
+    if (*aValidMsgSelf)  // impossible aValidMsgSelf==nullptr till 022-Mar-11
     {
         // may be called after MsgSelf destructed, not use this at all
         HID("How many reference to this MsgSelf? " << aValidMsgSelf.use_count());

@@ -96,4 +96,5 @@ private:
 // 2021-04-05  CSZ       - coding req
 // 2021-11-29  CSZ       - lambda instead of bind; fix isValid ut
 // 2022-01-01  PJ & CSZ  - formal log & naming
+// 2022-03-10  CSZ       - inc code coverage rate
 // ***********************************************************************************************
