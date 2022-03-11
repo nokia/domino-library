@@ -72,9 +72,6 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Do
             // req: rm hdlr
             this->pureRmHdlrOK(aEv, hdlr);  // only *HdlrDomino owns shared hdlr, prove "this" available
 
-            // alert: mem-leak?
-            if (superHdlr.use_count() > 2)
-                INF("(FreeHdlrDomino)!!! nSuperHdlrRef=" << superHdlr.use_count());
             // req: rm superHdlr
             superHdlr.reset();
         };

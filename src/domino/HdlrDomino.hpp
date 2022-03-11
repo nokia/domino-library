@@ -108,11 +108,8 @@ bool HdlrDomino<aDominoType>::pureRmHdlrOK(const Domino::Event& aEv, const Share
     if (aHdlr && itHdlr->second != aHdlr)
         return false;
 
-    // alert: mem-leak?
-    if (itHdlr->second.use_count() > 2)
-        INF("(HdlrDomino)!!! nHdlrRef=" << itHdlr->second.use_count());
-
-    HID("(HdlrDomino) Succeed to remove hdlr of EvName=" << this->evName(aEv));
+    HID("(HdlrDomino) Succeed to remove hdlr of EvName=" << this->evName(aEv)
+        << ", nHdlrRef=" << itHdlr->second.use_count());
     hdlrs_.erase(itHdlr);
     return true;
 }

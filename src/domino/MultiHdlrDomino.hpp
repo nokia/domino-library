@@ -111,7 +111,7 @@ bool MultiHdlrDomino<aDominoType>::pureRmHdlrOK(const Domino::Event& aEv, const 
 
     // req: "ret true" means real rm
     auto&& itEv = multiHdlrs_.find(aEv);
-    if (itEv == multiHdlrs_.end())
+    if (itEv == multiHdlrs_.end())  // impossible till 022-Mar-11
         return false;
 
     for (auto&& itHdlr = itEv->second.begin(); itHdlr != itEv->second.end(); ++itHdlr)
@@ -119,15 +119,12 @@ bool MultiHdlrDomino<aDominoType>::pureRmHdlrOK(const Domino::Event& aEv, const 
         if (itHdlr->second != aHdlr)
             continue;
 
-        // alert: mem-leak (fail ut)
-        if (itHdlr->second.use_count() > 2)
-            INF("(MultiHdlrDomino)!!! nHdlrRef=" << itHdlr->second.use_count());
-
-        HID("(MultiHdlrDomino) Succeed to remove HdlrName=" << itHdlr->first << " of EvName=" << this->evName(aEv));
+        HID("(MultiHdlrDomino) Succeed to remove HdlrName=" << itHdlr->first << " of EvName=" << this->evName(aEv)
+            << ", nHdlrRef=" << itHdlr->second.use_count());
         itEv->second.erase(itHdlr);
         return true;
     }
-    return false;
+    return false;  // impossible till 022-Mar-11
 }
 
 // ***********************************************************************************************
