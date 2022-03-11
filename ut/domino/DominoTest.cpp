@@ -61,6 +61,10 @@ TYPED_TEST_P(DominoTest, noID_for_not_exist_EvName)
 {
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy(""));
 }
+TYPED_TEST_P(DominoTest, stateFalse_for_not_exist_EvName)
+{
+    EXPECT_FALSE(PARA_DOM->state(""));
+}
 TYPED_TEST_P(DominoTest, GOLD_setState_thenGetIt)
 {
     PARA_DOM->setState({{"", true}, {"e2", false}});  // init set multi
@@ -229,6 +233,7 @@ TYPED_TEST_P(DominoTest, invalidEvent_retEmpty)
 REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse
     , noID_for_not_exist_EvName
+    , stateFalse_for_not_exist_EvName
     , GOLD_setState_thenGetIt
     , GOLD_broadcast_trueState
     , immediate_broadcast
