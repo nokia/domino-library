@@ -128,7 +128,7 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_invalidHdlr_noCrash)
 }
 TYPED_TEST_P(FreeHdlrDominoTest, invalidEv_isRepeatFalse)
 {
-    EXPECT_FALSE(PARA_DOM->isRepeatHdlr(0));  // ev=0 is invalid ID
+    EXPECT_FALSE(PARA_DOM->isRepeatHdlr(Domino::D_EVENT_FAILED_RET));  // ev=0 is invalid ID
 }
 
 #define ID_STATE
