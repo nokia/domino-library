@@ -36,8 +36,8 @@ jobs:
       with:
         name: coverage-report
         path: |
-          valgrind.log
-          ut/gcovr/cov.*  # include *.html & *.xml
+          ./ut/gcovr/cov.*  # include *.html & *.xml
+          ./valgrind.log
 
     - uses: codecov/codecov-action@v2
       with:
