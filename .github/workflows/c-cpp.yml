@@ -12,11 +12,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: install gmock & gtest
-      run: sudo apt-get update && sudo apt-get install libgmock-dev && cd /usr/src/googletest/googlemock/ && sudo mkdir build && sudo cmake .. && sudo make && sudo cp lib/*.a /usr/lib
-
     - name: install valgrind
-      run: sudo apt-get install valgrind
+      run: sudo apt-get update && sudo apt-get install valgrind
+
+    - name: install gmock & gtest
+      run: sudo apt-get install libgmock-dev && cd /usr/src/googletest/googlemock/ && sudo mkdir build && sudo cmake .. && sudo make && sudo cp lib/*.a /usr/lib
 
     - uses: actions/checkout@v2
 
@@ -36,8 +36,8 @@ jobs:
       with:
         name: coverage-report
         path: |
-          ut/gcovr/cov.*  # include *.html & *.xml
           valgrind.log
+          ut/gcovr/cov.*  # include *.html & *.xml
 
     - uses: codecov/codecov-action@v2
       with:
