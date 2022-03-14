@@ -24,7 +24,7 @@ jobs:
       run: cmake -DENABLE_COVERAGE=ON -DCMAKE_CXX_COMPILER="g++" . && make -j
 
     - name: ut
-      run: SLICE=always-malloc G_DEBUG=gc-friendly valgrind -v --tool=memcheck --leak-check=full --num-callers=40 --log-file=ut/gcovr/valgrind.log ./ut.exe
+      run: SLICE=always-malloc G_DEBUG=gc-friendly valgrind -v --tool=memcheck --leak-check=full --num-callers=40 --log-file=ut/gcovr/cov.valgrind.log ./ut.exe
 
     - name: install gcovr
       run: pip install gcovr==5.0
@@ -37,7 +37,7 @@ jobs:
         name: coverage-report
         path: |
           ut/gcovr/cov.*  # include *.html & *.xml
-          ut/gcovr/valgrind.log
+          #ut/gcovr/valgrind.log
 
     - uses: codecov/codecov-action@v2
       with:
