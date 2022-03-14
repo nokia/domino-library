@@ -1,4 +1,4 @@
-name: UT + valgrind + gcovr + codecov
+name: UT + valgrind
 
 on:
   push:

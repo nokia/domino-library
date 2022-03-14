@@ -31,7 +31,11 @@ TYPED_TEST_P(DataDominoTest, GOLD_setShared_thenGetIt)
     EXPECT_EQ("ev0's data", *sharedString);   // req: get=set
 
     *sharedString = "ev0's updated data";
-    EXPECT_EQ("ev0's updated data", (getValue<TypeParam, std::string>(*PARA_DOM, "ev0")));  // req: get=update
+    EXPECT_EQ("ev0's updated data", (getValue<TypeParam, std::string>(*PARA_DOM, "ev0")));       // req: get=update
+
+    PARA_DOM->replaceShared("ev0", std::make_shared<std::string>("replace ev0's data"));
+    EXPECT_EQ("replace ev0's data", (getValue<TypeParam, std::string>(*PARA_DOM, "ev0")));       // req: get replaced
+    EXPECT_NE(sharedString, std::static_pointer_cast<std::string>(PARA_DOM->getShared("ev0")));  // req: replace != old
 }
 const std::string XPATH_BW =
     "/o-ran-delay-management:delay-management/bandwidth-scs-delay-state[bandwidth=50000][subcarrier-spacing=30]"
