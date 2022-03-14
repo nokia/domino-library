@@ -35,9 +35,7 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: coverage-report
-        path: |
-          ut/gcovr/cov.*  # include *.html & *.xml
-          #ut/gcovr/valgrind.log
+        path: ./ut/gcovr/cov.*
 
     - uses: codecov/codecov-action@v2
       with:
