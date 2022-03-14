@@ -73,7 +73,7 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Do
             this->pureRmHdlrOK(aEv, hdlr);  // only *HdlrDomino owns shared hdlr, prove "this" available
 
             // req: rm superHdlr
-            // superHdlr.reset();
+            superHdlr.reset();
         };
         aDominoType::triggerHdlr(superHdlr, aEv);
     }
