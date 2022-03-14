@@ -24,7 +24,7 @@ jobs:
       run: cmake -DENABLE_COVERAGE=ON -DCMAKE_CXX_COMPILER="g++" . && make -j
 
     - name: ut
-      run: SLICE=always-malloc G_DEBUG=gc-friendly valgrind -v --tool=memcheck --leak-check=full --num-callers=40 --log-file=ut/gcovr/cov.valgrind.log ./ut.exe && ls -l ut/gcovr/
+      run: SLICE=always-malloc G_DEBUG=gc-friendly valgrind -v --tool=memcheck --leak-check=full --num-callers=40 --log-file=ut/gcovr/cov.valgrind.log ./ut.exe
 
     - name: install gcovr
       run: pip install gcovr==5.0
