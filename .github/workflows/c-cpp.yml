@@ -24,7 +24,9 @@ jobs:
       run: cmake -DENABLE_COVERAGE=ON -DCMAKE_CXX_COMPILER="g++" . && make -j
 
     - name: ut
-      run: ./ut.exe --gtest_brief=1
+      run: |
+        ./ut.exe --help
+        ./ut.exe --gtest_brief=1
 #      run: SLICE=always-malloc G_DEBUG=gc-friendly valgrind -v --tool=memcheck --leak-check=full --num-callers=40 --log-file=ut/gcovr/cov.valgrind.log --error-exitcode=6 ./ut.exe --gtest_brief=1
 
     - name: install gcovr
