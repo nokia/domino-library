@@ -17,7 +17,7 @@ Reuse-Library of C++, include classes eg:
 
     How to avoid nested callback?
 
-4. SmartLog ([手册*](http://mp.weixin.qq.com/s?__biz=Mzk0NzIzNzY0OQ==&mid=2247508416&idx=1&sn=f74d7dda6dc0c3c06f169b31a5f702a0&chksm=c37b07bef40c8ea85a040f396a210dedebc3eab6eb2347b40ee0e1ef6d3522a313752853ee92&scene=21#wechat_redirect))
+4. SmartLog ([手册](http://mp.weixin.qq.com/s?__biz=Mzk0NzIzNzY0OQ==&mid=2247508416&idx=1&sn=f74d7dda6dc0c3c06f169b31a5f702a0&chksm=c37b07bef40c8ea85a040f396a210dedebc3eab6eb2347b40ee0e1ef6d3522a313752853ee92&scene=21#wechat_redirect) | [Manual](https://mp.weixin.qq.com/s?__biz=Mzk0NzIzNzY0OQ==&mid=2247510289&idx=1&sn=613a8b3312a39518b4fb686af422eb93&chksm=c37b0f6ff40c8679b04c842f07f262e12958bd4119a73785a0a76498262048b64d14a5aa4ef5&token=1805863409&lang=zh_CN#rd))
 
     How to collect only error related logs? eg, only print for failed ut case(s):
     ![](image/ut_smartlog.jpg)
