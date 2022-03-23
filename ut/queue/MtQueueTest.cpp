@@ -43,7 +43,7 @@ TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
     int whichThread = 0;
     int nToThread_1 = 0;
     int nToThread_2 = 0;
-    for (int i = 0; i < steps * 2;)
+    for (int i = 0; i < steps * 2; ++i)
     {
         auto value = std::static_pointer_cast<int>(mtQueue_.pop());
         if (not value) continue;
@@ -64,10 +64,9 @@ TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
         if (nToThread_1 > 0 && nToThread_2 > 0)
         {
             std::cerr << "switch to thread_1=" << nToThread_1 << ", switch to thread_2=" << nToThread_2
-                << ", nPop=" << i << std::endl;
+                << ", nPop_1=" << startNum_1-1 << ", nPop_2=" << startNum_2-1 << std::endl;
             break;
         }
-        ++i;
     }
 }
 
