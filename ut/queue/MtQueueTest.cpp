@@ -61,9 +61,9 @@ TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
             whichThread = 2;
         }
 
-        if (nToThread_1 > 1 && nToThread_2 > 1)
+        if (nToThread_1 > 0 && nToThread_2 > 0)
         {
-            std::cout << "switch to thread_1=" << nToThread_1 << ", switch to thread_2=" << nToThread_2
+            std::cerr << "switch to thread_1=" << nToThread_1 << ", switch to thread_2=" << nToThread_2
                 << ", nPop=" << i << std::endl;
             break;
         }
