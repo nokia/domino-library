@@ -34,7 +34,7 @@ TEST_F(MtQueueTest, noSet_getNull)
 }
 TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
 {
-    const int steps = 1'000'000;
+    const int steps = 0'010'000;
     int startNum_1 = 0;
     int startNum_2 = 0 + steps;
     auto thread_1 = async(std::launch::async, std::bind(&MtQueueTest::threadMain, this, startNum_1, steps));
@@ -43,31 +43,33 @@ TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
     int whichThread = 0;
     int nToThread_1 = 0;
     int nToThread_2 = 0;
-    for (int i = 0; i < steps * 2; ++i)
+    for (int i = 0; i < steps * 2;)
     {
         auto value = std::static_pointer_cast<int>(mtQueue_.pop());
         if (not value) continue;
 
         if (*value < steps)
         {
-            EXPECT_EQ(startNum_1++, *value);      // req: fifo under multi-thread
-            if (whichThread != 1) nToThread_1++;  // thread switch
+            EXPECT_EQ(startNum_1++, *value);       // req: fifo under multi-thread
+            if (whichThread != 1) nToThread_1++;   // thread switch
             whichThread = 1;
         }
         else
         {
-            EXPECT_EQ(startNum_2++, *value);      // req: fifo under multi-thread
-            if (whichThread != 2) nToThread_2++;  // thread switch
+            EXPECT_EQ(startNum_2++, *value);       // req: fifo under multi-thread
+            if (whichThread != 2) nToThread_2++;   // thread switch
             whichThread = 2;
         }
 
-        if (nToThread_1 > 0 && nToThread_2 > 0)
+        if (nToThread_1 > 10 && nToThread_2 > 10)  // switch enough, can stop earlier
         {
-            std::cerr << "switch to thread_1=" << nToThread_1 << ", switch to thread_2=" << nToThread_2
-                << ", nPop_1=" << startNum_1-1 << ", nPop_2=" << startNum_2-1 << std::endl;
             break;
         }
+
+        ++i;
     }
+    std::cerr << "switch to thread_1=" << nToThread_1 << ", switch to thread_2=" << nToThread_2
+        << ", nPop_1=" << startNum_1-1 << ", nPop_2=" << startNum_2-1 << std::endl;
 }
 
 #define FETCH
