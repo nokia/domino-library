@@ -13,8 +13,7 @@ jobs:
 
     steps:
     - name: install valgrind
-      run: sudo apt install valgrind
-#      run: sudo apt-get update && sudo apt-get install valgrind
+      run: sudo apt update && sudo apt install valgrind
 
     - name: install gmock & gtest
       run: sudo apt-get install libgmock-dev && cd /usr/src/googletest/googlemock/ && sudo mkdir build && sudo cmake .. && sudo make && sudo cp lib/*.a /usr/lib
