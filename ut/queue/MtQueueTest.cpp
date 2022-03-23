@@ -34,7 +34,7 @@ TEST_F(MtQueueTest, noSet_getNull)
 }
 TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
 {
-    const int steps = 0'020'000;
+    const int steps = 10000;
     int startNum_1 = 0;
     int startNum_2 = 0 + steps;
     auto thread_1 = async(std::launch::async, std::bind(&MtQueueTest::threadMain, this, startNum_1, steps));
@@ -47,6 +47,7 @@ TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
     {
         auto value = std::static_pointer_cast<int>(mtQueue_.pop());
         if (not value) continue;
+        ++i;
 
         if (*value < steps)
         {
@@ -65,11 +66,9 @@ TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
         {
             break;
         }
-
-        ++i;
     }
     std::cerr << "switch to thread_1=" << nToThread_1 << ", switch to thread_2=" << nToThread_2
-        << ", nPop_1=" << startNum_1-1 << ", nPop_2=" << startNum_2-1 << std::endl;
+        << ", nPop_1=" << startNum_1 << ", nPop_2=" << startNum_2 - steps << std::endl;
 }
 
 #define FETCH
