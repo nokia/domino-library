@@ -7,6 +7,7 @@
 #include "MtQueue.hpp"
 
 #include <future>
+#include <unistd.h>
 #include <gtest/gtest.h>
 
 using namespace testing;
@@ -20,6 +21,7 @@ struct MtQueueTest : public Test
         for (int i = 0; i < aSteps; i++)
         {
             mtQueue_.push(std::make_shared<int>(aStartNum + i));
+            if (i == 0) usleep(1u);  // also give chance to other thread
         }
     }
 
@@ -50,6 +52,7 @@ TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
         if (not value)
         {
             ++nEmptyQueue;
+            if (nEmptyQueue == 1) usleep(1u);      // also give chance to other thread
             continue;
         }
         ++i;
@@ -86,11 +89,17 @@ TEST_F(MtQueueTest, GOLD_fetchSpecified_multiThreadSafe)
     auto thread_1 = async(std::launch::async, std::bind(&MtQueueTest::threadMain, this, startNum_1, steps));
     auto thread_2 = async(std::launch::async, std::bind(&MtQueueTest::threadMain, this, startNum_2, steps));
 
+    int nEmptyQueue = 0;
     for (int i = 0; i < 2;)
     {
         auto value = std::static_pointer_cast<int>(mtQueue_.fetch(
             [](std::shared_ptr<void> aEle) { return *std::static_pointer_cast<int>(aEle) % steps == steps -1; }));
-        if (not value) continue;
+        if (not value)
+        {
+            ++nEmptyQueue;
+            if (nEmptyQueue == 1) usleep(1u);      // also give chance to other thread
+            continue;
+        }
         ++i;
 
         if (*value < steps)
@@ -107,6 +116,7 @@ TEST_F(MtQueueTest, GOLD_fetchSpecified_multiThreadSafe)
         }
     }
     EXPECT_EQ(size_t(steps * 2 - 2), mtQueue_.size());
+    std::cerr << "nEmptyQ=" << nEmptyQueue << std::endl;
 }
 TEST_F(MtQueueTest, GOLD_fetch_null)
 {
