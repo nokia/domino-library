@@ -7,7 +7,6 @@
 #include "MtQueue.hpp"
 
 #include <future>
-#include <unistd.h>
 #include <gtest/gtest.h>
 
 using namespace testing;
@@ -21,7 +20,6 @@ struct MtQueueTest : public Test
         for (int i = 0; i < aSteps; i++)
         {
             mtQueue_.push(std::make_shared<int>(aStartNum + i));
-            usleep(1u);
         }
     }
 
@@ -36,7 +34,7 @@ TEST_F(MtQueueTest, noSet_getNull)
 }
 TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
 {
-    const int steps = 100;
+    const int steps = 20000;
     int startNum_1 = 0;
     int startNum_2 = 0 + steps;
     auto thread_1 = async(std::launch::async, std::bind(&MtQueueTest::threadMain, this, startNum_1, steps));
