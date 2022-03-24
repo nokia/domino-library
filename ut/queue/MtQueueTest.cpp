@@ -43,10 +43,15 @@ TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
     int whichThread = 0;
     int nToThread_1 = 0;
     int nToThread_2 = 0;
+    int nEmptyQueue = 0;
     for (int i = 0; i < steps * 2;)
     {
         auto value = std::static_pointer_cast<int>(mtQueue_.pop());
-        if (not value) continue;
+        if (not value)
+        {
+            ++nEmptyQueue;
+            continue;
+        }
         ++i;
 
         if (*value < steps)
@@ -68,7 +73,7 @@ TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
         }
     }
     std::cerr << "switch to thread_1=" << nToThread_1 << ", switch to thread_2=" << nToThread_2
-        << ", nPop_1=" << startNum_1 << ", nPop_2=" << startNum_2 - steps << std::endl;
+        << ", nPop_1=" << startNum_1 << ", nPop_2=" << startNum_2 - steps << ", nEmptyQ=" << nEmptyQueue << std::endl;
 }
 
 #define FETCH
