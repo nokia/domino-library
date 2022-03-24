@@ -21,7 +21,7 @@ struct MtQueueTest : public Test
         for (int i = 0; i < aSteps; i++)
         {
             mtQueue_.push(std::make_shared<int>(aStartNum + i));
-            if (i == 0) usleep(1u);  // also give chance to other thread
+            if (i == 0 || i == aSteps/2) usleep(1u);  // also give chance to other thread
         }
     }
 
@@ -52,7 +52,7 @@ TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
         if (not value)
         {
             ++nEmptyQueue;
-            if (nEmptyQueue == 1) usleep(1u);      // also give chance to other thread
+            if (nEmptyQueue%2 == 0) usleep(1u);    // also give chance to other thread
             continue;
         }
         ++i;
@@ -97,7 +97,7 @@ TEST_F(MtQueueTest, GOLD_fetchSpecified_multiThreadSafe)
         if (not value)
         {
             ++nEmptyQueue;
-            if (nEmptyQueue == 1) usleep(1u);      // also give chance to other thread
+            if (nEmptyQueue%2 == 0) usleep(1u);    // also give chance to other thread
             continue;
         }
         ++i;
