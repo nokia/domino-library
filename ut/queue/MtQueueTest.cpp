@@ -7,6 +7,7 @@
 #include "MtQueue.hpp"
 
 #include <future>
+#include <unistd.h>
 #include <gtest/gtest.h>
 
 using namespace testing;
@@ -20,6 +21,7 @@ struct MtQueueTest : public Test
         for (int i = 0; i < aSteps; i++)
         {
             mtQueue_.push(std::make_shared<int>(aStartNum + i));
+            usleep(1u);
         }
     }
 
