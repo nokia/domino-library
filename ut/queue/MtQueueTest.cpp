@@ -7,7 +7,6 @@
 #include "MtQueue.hpp"
 
 #include <future>
-#include <unistd.h>
 #include <gtest/gtest.h>
 
 using namespace testing;
@@ -18,7 +17,6 @@ struct MtQueueTest : public Test
 {
     void threadMain(int aStartNum, int aSteps)
     {
-        usleep(1u);
         for (int i = 0; i < aSteps; i++)
         {
             mtQueue_.push(std::make_shared<int>(aStartNum + i));
@@ -82,7 +80,7 @@ TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
 // ***********************************************************************************************
 TEST_F(MtQueueTest, GOLD_fetchSpecified_multiThreadSafe)
 {
-    const int steps = 100;
+    const int steps = 10;
     int startNum_1 = 0;
     int startNum_2 = 0 + steps;
     auto thread_1 = async(std::launch::async, std::bind(&MtQueueTest::threadMain, this, startNum_1, steps));
@@ -93,6 +91,7 @@ TEST_F(MtQueueTest, GOLD_fetchSpecified_multiThreadSafe)
         auto value = std::static_pointer_cast<int>(mtQueue_.fetch(
             [](std::shared_ptr<void> aEle) { return *std::static_pointer_cast<int>(aEle) % steps == steps -1; }));
         if (not value) continue;
+        ++i;
 
         if (*value < steps)
         {
@@ -106,10 +105,7 @@ TEST_F(MtQueueTest, GOLD_fetchSpecified_multiThreadSafe)
             EXPECT_FALSE(mtQueue_.fetch(
                 [](std::shared_ptr<void> aEle) { return *std::static_pointer_cast<int>(aEle) == steps * 2 -1; }));  // req: rm
         }
-        ++i;
     }
-    thread_1.wait();
-    thread_2.wait();
     EXPECT_EQ(size_t(steps * 2 - 2), mtQueue_.size());
 }
 TEST_F(MtQueueTest, GOLD_fetch_null)
