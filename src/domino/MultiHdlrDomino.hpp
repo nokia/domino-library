@@ -111,8 +111,8 @@ bool MultiHdlrDomino<aDominoType>::pureRmHdlrOK(const Domino::Event& aEv, const 
 
     // req: "ret true" means real rm
     auto&& itEv = multiHdlrs_.find(aEv);
-    if (itEv == multiHdlrs_.end())  // impossible till 022-Mar-11
-        return false;
+    // impossible till 022-Mar-25
+    // if (itEv == multiHdlrs_.end()) return false;
 
     for (auto&& itHdlr = itEv->second.begin(); itHdlr != itEv->second.end(); ++itHdlr)
     {
@@ -124,7 +124,7 @@ bool MultiHdlrDomino<aDominoType>::pureRmHdlrOK(const Domino::Event& aEv, const 
         itEv->second.erase(itHdlr);
         return true;
     }
-    return false;  // impossible till 022-Mar-11
+    return false;  // impossible till 022-Mar-25
 }
 
 // ***********************************************************************************************

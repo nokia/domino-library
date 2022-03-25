@@ -59,14 +59,17 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, GOLD_afterCallback_autoRmHdlr)
     EXPECT_EQ(std::multiset<int>({1, 2, 3}), this->hdlrIDs_);           // req: no more cb since auto-rm
 
     // re-add hdlr
-    PARA_DOM->setHdlr("e1", this->h4_);
-    PARA_DOM->multiHdlrOnSameEv("e1", this->h5_, "h2_");
     PARA_DOM->multiHdlrByAliasEv("alias e1", this->h6_, "e1");
+    PARA_DOM->multiHdlrOnSameEv("e1", this->h5_, "h2_");
+    PARA_DOM->setHdlr("e1", this->h4_);                                 // reverse order to inc coverage
+
+    if (this->msgSelf_->hasMsg()) this->loopbackFunc_() ;
+    EXPECT_EQ(std::multiset<int>({1, 2, 3, 4, 5, 6}), this->hdlrIDs_);  // req: re-add ok
 
     PARA_DOM->setState({{"e1", false}});
     PARA_DOM->setState({{"e1", true}});
     if (this->msgSelf_->hasMsg()) this->loopbackFunc_() ;
-    EXPECT_EQ(std::multiset<int>({1, 2, 3, 4, 5, 6}), this->hdlrIDs_);  // req: re-add ok
+    EXPECT_EQ(std::multiset<int>({1, 2, 3, 4, 5, 6}), this->hdlrIDs_);  // req: no more cb since auto-rm
 }
 TYPED_TEST_P(FreeMultiHdlrDominoTest, GOLD_afterCallback_notRmHdlr)
 {
