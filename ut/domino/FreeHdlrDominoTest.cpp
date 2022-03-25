@@ -133,6 +133,30 @@ TYPED_TEST_P(FreeHdlrDominoTest, invalidEv_isRepeatFalse)
 {
     EXPECT_FALSE(PARA_DOM->isRepeatHdlr(Domino::D_EVENT_FAILED_RET));  // ev=0 is invalid ID
 }
+TYPED_TEST_P(FreeHdlrDominoTest, multiCallbackOnRoad_noCrash_noMultiCall)
+{
+    PARA_DOM->setHdlr("e1", this->h1_);
+    PARA_DOM->setState({{"e1", true}});                  // 1st on road
+
+    PARA_DOM->setState({{"e1", false}});
+    PARA_DOM->setState({{"e1", true}});                  // 2nd on road
+
+    if (this->msgSelf_->hasMsg()) this->loopbackFunc_();
+    EXPECT_EQ(std::multiset<int>({1}), this->hdlrIDs_);  // req: no more cb since auto-rm
+}
+TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_multiCallbackOnRoad_noCrash_noMultiCall)
+{
+    PARA_DOM->multiHdlrOnSameEv("e1", this->h2_, "h2_");
+    PARA_DOM->setState({{"e1", true}});  // 1st h2_ on road
+
+    PARA_DOM->setState({{"e1", false}});
+    PARA_DOM->setState({{"e1", true}});  // 2nd h2_ on road
+
+    PARA_DOM->setHdlr("e1", this->h1_);  // h1_ on road
+
+    if (this->msgSelf_->hasMsg()) this->loopbackFunc_();
+    EXPECT_EQ(std::multiset<int>({1, 2}), this->hdlrIDs_);           // req: no more cb since auto-rm
+}
 
 #define ID_STATE
 // ***********************************************************************************************
@@ -154,6 +178,7 @@ TYPED_TEST_P(FreeHdlrDominoTest, GOLD_nonConstInterface_shall_createUnExistEvent
 REGISTER_TYPED_TEST_SUITE_P(FreeHdlrDominoTest
     , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse
     , invalidEv_isRepeatFalse
+    , multiCallbackOnRoad_noCrash_noMultiCall
 );
 using AnyFreeDom = Types<MinFreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, FreeHdlrDominoTest, AnyFreeDom);
@@ -164,6 +189,7 @@ REGISTER_TYPED_TEST_SUITE_P(FreeMultiHdlrDominoTest
     , GOLD_afterCallback_notRmHdlr
     , BugFix_disorderAutoRm_ok
     , BugFix_invalidHdlr_noCrash
+    , BugFix_multiCallbackOnRoad_noCrash_noMultiCall
 );
 using AnyFreeMultiDom = Types<MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, FreeMultiHdlrDominoTest, AnyFreeMultiDom);

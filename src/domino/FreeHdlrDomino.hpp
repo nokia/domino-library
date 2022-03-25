@@ -66,11 +66,13 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Do
         {
             // req: call hdlr
             auto&& hdlr = weakHdlr.lock();
-            if (hdlr && *hdlr)
-                (*hdlr)();
+            if (hdlr)
+            {
+                if (*hdlr) (*hdlr)();
 
-            // req: rm hdlr
-            this->pureRmHdlrOK(aEv, hdlr);  // only *HdlrDomino owns shared hdlr, prove "this" available
+                // req: rm hdlr
+                this->pureRmHdlrOK(aEv, hdlr);  // only *HdlrDomino owns shared hdlr, prove "this" available
+            }
 
             // req: rm superHdlr
             superHdlr.reset();
