@@ -57,13 +57,16 @@ TYPED_TEST_SUITE_P(PriDominoTest);
 template<class aParaDom> using NofreePriDominoTest = PriDominoTest<aParaDom>;  // for no-free testcase
 TYPED_TEST_SUITE_P(NofreePriDominoTest);
 
+#define PRI
 // ***********************************************************************************************
 TYPED_TEST_P(PriDominoTest, setPriority_thenGetIt)
 {
     auto event = PARA_DOM->setPriority("event", EMsgPri_HIGH);
-    EXPECT_EQ(EMsgPri_HIGH, PARA_DOM->getPriority(event));
+    EXPECT_EQ(EMsgPri_HIGH, PARA_DOM->getPriority(event));  // get set
+
+    PARA_DOM->setPriority("event", EMsgPri_NORM);
+    EXPECT_EQ(EMsgPri_NORM, PARA_DOM->getPriority(event));  // get updated
 }
-// ***********************************************************************************************
 TYPED_TEST_P(PriDominoTest, defaultPriority)
 {
     auto event = PARA_DOM->newEvent("");
@@ -71,12 +74,8 @@ TYPED_TEST_P(PriDominoTest, defaultPriority)
 
     EXPECT_EQ(EMsgPri_NORM, PARA_DOM->getPriority(Domino::D_EVENT_FAILED_RET));  // req: invalid event
 }
-TYPED_TEST_P(PriDominoTest, overwritePriority)
-{
-    auto event = PARA_DOM->setPriority("event", EMsgPri_HIGH);
-    PARA_DOM->setPriority("event", EMsgPri_NORM);
-    EXPECT_EQ(EMsgPri_NORM, PARA_DOM->getPriority(event));
-}
+
+#define PRI_FIFO
 // ***********************************************************************************************
 TYPED_TEST_P(NofreePriDominoTest, GOLD_setPriority_thenPriorityFifoCallback)
 {
@@ -122,7 +121,6 @@ TYPED_TEST_P(PriDominoTest, GOLD_nonConstInterface_shall_createUnExistEvent_with
 REGISTER_TYPED_TEST_SUITE_P(PriDominoTest
     , setPriority_thenGetIt
     , defaultPriority
-    , overwritePriority
     , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse
 );
 using AnyPriDom = Types<MinPriDom, MaxNofreeDom, MaxDom>;
