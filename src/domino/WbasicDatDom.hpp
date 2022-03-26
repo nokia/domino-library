@@ -18,7 +18,7 @@ class WbasicDatDom : public aDominoType
 {
 public:
     bool isWrCtrl(const Domino::EvName&) const;
-    bool wrCtrlOk(const Domino::EvName&);
+    bool wrCtrlOk(const Domino::EvName&, const bool aNewState = true);
 
     std::shared_ptr<void> getShared(const Domino::EvName& aEvName) override;
     std::shared_ptr<void> wbasic_getShared(const Domino::EvName& aEvName);
@@ -84,7 +84,7 @@ void WbasicDatDom<aDominoType>::wbasic_replaceShared(const Domino::EvName& aEvNa
 
 // ***********************************************************************************************
 template<typename aDominoType>
-bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName)
+bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName, const bool aNewState)
 {
     const auto nShared = this->nShared(aEvName);
     if (nShared != 0)
@@ -96,8 +96,8 @@ bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName)
 
     const auto ev = this->newEvent(aEvName);
     if (ev >= wrCtrl_.size()) wrCtrl_.resize(ev + 1);
-    wrCtrl_[ev] = true;
-    HID("(WbasicDatDom) Succeed, EvName=" << aEvName);
+    wrCtrl_[ev] = aNewState;
+    HID("(WbasicDatDom) Succeed, EvName=" << aEvName << ", newState=" << aNewState);
     return true;
 }
 

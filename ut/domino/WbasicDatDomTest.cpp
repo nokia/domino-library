@@ -24,6 +24,7 @@ struct WbasicDatDomTest : public Test
 };
 TYPED_TEST_SUITE_P(WbasicDatDomTest);
 
+#define FLAG
 // ***********************************************************************************************
 TYPED_TEST_P(WbasicDatDomTest, GOLD_setFlag_thenGetIt)
 {
@@ -35,6 +36,9 @@ TYPED_TEST_P(WbasicDatDomTest, GOLD_setFlag_thenGetIt)
     PARA_DOM->wrCtrlOk("ev0");
     EXPECT_TRUE(PARA_DOM->isWrCtrl("ev0"));   // req: set true
 
+    PARA_DOM->wrCtrlOk("ev0", false);
+    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0"));  // req: set false
+
     PARA_DOM->wrCtrlOk("ev2");
     EXPECT_TRUE(PARA_DOM->isWrCtrl("ev2"));   // req: create & set true
 
@@ -42,6 +46,7 @@ TYPED_TEST_P(WbasicDatDomTest, GOLD_setFlag_thenGetIt)
     EXPECT_TRUE(PARA_DOM->isWrCtrl("ev2"));   // req: dup set true
 }
 
+#define SET_GET
 // ***********************************************************************************************
 TYPED_TEST_P(WbasicDatDomTest, GOLD_writeCtrlData_set_get)
 {
