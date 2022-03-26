@@ -43,9 +43,9 @@ TYPED_TEST_P(WbasicDatDomTest, GOLD_setFlag_thenGetIt)
 }
 
 // ***********************************************************************************************
-TYPED_TEST_P(WbasicDatDomTest, GOLD_write_ctrl)
+TYPED_TEST_P(WbasicDatDomTest, GOLD_writeCtrlData_set_get)
 {
-    PARA_DOM->wrCtrlOk("ev0");
+    PARA_DOM->wrCtrlOk("ev0");                         // write-ctrl data
     wbasic_setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 1);
     auto valGet = wbasic_getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
     EXPECT_EQ(1u, valGet);                             // req: get=set
@@ -61,7 +61,7 @@ TYPED_TEST_P(WbasicDatDomTest, GOLD_write_ctrl)
     valGet = getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
     EXPECT_NE(3u, valGet);                             // req: legacy get failed
 }
-TYPED_TEST_P(WbasicDatDomTest, GOLD_no_write_ctrl)
+TYPED_TEST_P(WbasicDatDomTest, GOLD_noWriteCtrl_set_get)
 {
     setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 1);
     auto valGet = getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
@@ -82,18 +82,18 @@ TYPED_TEST_P(WbasicDatDomTest, canNOT_setWriteCtrl_sinceOutCtrl)
 {
     setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 1);
     auto data = PARA_DOM->getShared("ev0");
-    EXPECT_FALSE(PARA_DOM->wrCtrlOk("ev0"));  // req: can't protect data since out-ctrl
-    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0"));  // req: can't protect data since out-ctrl
+    EXPECT_FALSE(PARA_DOM->wrCtrlOk("ev0"));  // req: failed to avoid out-ctrl
+    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0"));  // req: flag no change
 
     auto pData = data.get();
     data.reset();
     EXPECT_NE(nullptr, pData);
-    EXPECT_FALSE(PARA_DOM->wrCtrlOk("ev0"));  // req: can't protect data since still out-ctrl
-    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0"));  // req: can't protect data since still out-ctrl
+    EXPECT_FALSE(PARA_DOM->wrCtrlOk("ev0"));  // req: still failed to avoid out-ctrl
+    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0"));  // req: flag no change
 
     PARA_DOM->replaceShared("ev0", nullptr);
-    EXPECT_TRUE(PARA_DOM->wrCtrlOk("ev0"));   // req: can
-    EXPECT_TRUE(PARA_DOM->isWrCtrl("ev0"));   // req: can
+    EXPECT_TRUE(PARA_DOM->wrCtrlOk("ev0"));   // req: succ since no data
+    EXPECT_TRUE(PARA_DOM->isWrCtrl("ev0"));   // req: flag change
 }
 
 #define ID_STATE
@@ -135,8 +135,8 @@ TYPED_TEST_P(WbasicDatDomTest, GOLD_nonConstInterface_shall_createUnExistEvent_w
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(WbasicDatDomTest
     , GOLD_setFlag_thenGetIt
-    , GOLD_write_ctrl
-    , GOLD_no_write_ctrl
+    , GOLD_writeCtrlData_set_get
+    , GOLD_noWriteCtrl_set_get
     , canNOT_setWriteCtrl_sinceOutCtrl
     , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse
 );

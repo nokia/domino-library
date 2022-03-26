@@ -25,10 +25,10 @@ TYPED_TEST_SUITE_P(DataDominoTest);
 TYPED_TEST_P(DataDominoTest, GOLD_setShared_thenGetIt)
 {
     PARA_DOM->replaceShared("ev0", std::make_shared<std::string>("ev0's data"));
-    EXPECT_NE(0u, PARA_DOM->nShared("ev0"));  // req: after creation
+    EXPECT_NE(0u, PARA_DOM->nShared("ev0"));                                                     // req: after creation
 
     auto sharedString = std::static_pointer_cast<std::string>(PARA_DOM->getShared("ev0"));
-    EXPECT_EQ("ev0's data", *sharedString);   // req: get=set
+    EXPECT_EQ("ev0's data", *sharedString);                                                      // req: get=set
 
     *sharedString = "ev0's updated data";
     EXPECT_EQ("ev0's updated data", (getValue<TypeParam, std::string>(*PARA_DOM, "ev0")));       // req: get=update
@@ -127,6 +127,6 @@ REGISTER_TYPED_TEST_SUITE_P(DataDominoTest
     , GOLD_correct_data_destructor
     , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse
 );
-using AnyDatDom = Types<MinDatDom, MaxNofreeDom, MaxDom>;
+using AnyDatDom = Types<MinDatDom, MinWbasicDatDom, MaxNofreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, DataDominoTest, AnyDatDom);
 }  // namespace
