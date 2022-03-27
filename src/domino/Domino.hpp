@@ -208,4 +208,6 @@ public:  // no impact self but convient non-member-func eg getValue() for DataDo
 //                       - ref ret of getEvNameBy()
 // 2021-04-01  CSZ       - coding req
 // 2022-01-17  PJ & CSZ  - formal log & naming
+// 2022-03-26  CSZ       - ut's PARA_DOM include self class & ALL its base class(es)
+// 2022-03-27  CSZ       - if ut case can test base class, never specify derive
 // ***********************************************************************************************

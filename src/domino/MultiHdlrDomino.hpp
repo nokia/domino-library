@@ -147,4 +147,6 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName, co
 // 2020-12-29  CSZ       . clean ut cases
 // 2021-04-01  CSZ       - coding req
 // 2022-01-04  PJ & CSZ  - formal log & naming
+// 2022-03-26  CSZ       - ut's PARA_DOM include self class & ALL its base class(es)
+// 2022-03-27  CSZ       - if ut case can test base class, never specify derive
 // ***********************************************************************************************

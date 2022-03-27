@@ -64,8 +64,8 @@ TYPED_TEST_P(PriDominoTest, setPriority_thenGetIt)
     auto event = PARA_DOM->setPriority("event", EMsgPri_HIGH);
     EXPECT_EQ(EMsgPri_HIGH, PARA_DOM->getPriority(event));  // get set
 
-    PARA_DOM->setPriority("event", EMsgPri_NORM);
-    EXPECT_EQ(EMsgPri_NORM, PARA_DOM->getPriority(event));  // get updated
+    PARA_DOM->setPriority("event", EMsgPri_LOW);
+    EXPECT_EQ(EMsgPri_LOW, PARA_DOM->getPriority(event));   // get updated
 }
 TYPED_TEST_P(PriDominoTest, defaultPriority)
 {
@@ -77,7 +77,7 @@ TYPED_TEST_P(PriDominoTest, defaultPriority)
 
 #define PRI_FIFO
 // ***********************************************************************************************
-TYPED_TEST_P(NofreePriDominoTest, GOLD_setPriority_thenPriorityFifoCallback)
+TYPED_TEST_P(PriDominoTest, GOLD_setPriority_thenPriorityFifoCallback)
 {
     PARA_DOM->setState({{"e1", true}});
     PARA_DOM->setHdlr("e1", *(this->d1EventHdlr_));
@@ -98,7 +98,8 @@ TYPED_TEST_P(NofreePriDominoTest, GOLD_setPriority_thenPriorityFifoCallback)
     PARA_DOM->setState({{"e4", true}});
 
     if (this->msgSelf_->hasMsg()) this->loopbackFunc_();
-    EXPECT_EQ(std::queue<int>({5, 4, 2, 1, 3, 4}), this->hdlrIDs_);
+    if (this->hdlrIDs_.size() == 6) EXPECT_EQ(std::queue<int>({5, 4, 2, 1, 3, 4}), this->hdlrIDs_);
+    else EXPECT_EQ(std::queue<int>({5, 4, 2, 1, 3}), this->hdlrIDs_);  // auto-rm-hdlr dom
 }
 
 #define ID_STATE
@@ -122,14 +123,8 @@ REGISTER_TYPED_TEST_SUITE_P(PriDominoTest
     , setPriority_thenGetIt
     , defaultPriority
     , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse
+    , GOLD_setPriority_thenPriorityFifoCallback
 );
 using AnyPriDom = Types<MinPriDom, MaxNofreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, PriDominoTest, AnyPriDom);
-
-// ***********************************************************************************************
-REGISTER_TYPED_TEST_SUITE_P(NofreePriDominoTest
-    , GOLD_setPriority_thenPriorityFifoCallback
-);
-using AnyNofreePriDom = Types<MinPriDom, MaxNofreeDom>;
-INSTANTIATE_TYPED_TEST_SUITE_P(PARA, NofreePriDominoTest, AnyNofreePriDom);
 }  // namespace

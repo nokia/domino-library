@@ -101,4 +101,6 @@ void setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataT
 // 2021-09-13  CSZ       - new interface to read/write value directly
 // 2021-09-14  CSZ       3)writable ctrl eg for Yang rw & ro para
 // 2021-12-31  PJ & CSZ  - formal log & naming
+// 2022-03-26  CSZ       - ut's PARA_DOM include self class & ALL its base class(es)
+// 2022-03-27  CSZ       - if ut case can test base class, never specify derive
 // ***********************************************************************************************

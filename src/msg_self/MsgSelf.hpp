@@ -39,7 +39,7 @@
 namespace RLib
 {
 // ***********************************************************************************************
-enum EMsgPriority
+enum EMsgPriority : unsigned char
 {
     EMsgPri_MIN,
 
