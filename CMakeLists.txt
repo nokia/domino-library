@@ -14,6 +14,7 @@ file(GLOB SRC_LIST
 )
 add_executable(ut.exe ${SRC_LIST})
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 if(ENABLE_COVERAGE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")               # gcovr need
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")              # gcovr need
