@@ -34,7 +34,7 @@ Reuse-Library of C++, include classes eg:
 # How to use this library?
 Just copy the source code into your project. Please obey its license.
 
-# Contributing
+# Contribution
 (not ready yet)
 
 
