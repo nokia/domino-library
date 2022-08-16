@@ -36,7 +36,7 @@ jobs:
         name: coverage-report
         path: ./ut/gcovr/cov.*
 
-    - uses: codecov/codecov-action@v2
+    - uses: codecov/codecov-action@v3
       with:
         file: ut/gcovr/cov.xml   # optional
         flags: ci/main           # optional
