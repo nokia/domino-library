@@ -12,10 +12,10 @@ using namespace std;
 struct MyListener : public testing::EmptyTestEventListener
 {
     ~MyListener()
-     {
-         cout << __func__ << "/destructed; nLogged=" << nLogged
-             << ". [nLogged==2(smart log) or maxCase(force log) means StrCoutFSL works well!!!]" << endl;
-     };
+    {
+        cout << __func__ << "/destructed; nLogged=" << nLogged
+            << ". [nLogged==0(smart log) or maxCase(force log) means StrCoutFSL works well!!!]" << endl;
+    };
 
     void OnTestEnd(const testing::TestInfo& aInfo)
     {
