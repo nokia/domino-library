@@ -19,12 +19,10 @@ struct MyListener : public testing::EmptyTestEventListener
 
     void OnTestEnd(const testing::TestInfo& aInfo)
     {
-        const bool forceLog = false;
-        const bool needLog = forceLog || not aInfo.result()->Passed() || not RLib::CppLog::smartLog_.everythingOK();
+        const bool needLog = not aInfo.result()->Passed() || not RLib::CppLog::smartLog_.canDelLog();
         if(needLog)
         {
             RLib::CppLog::smartLog_.forceSave();
-            RLib::CppLog::smartLog_.clearSthWrong();
             cout << "!!!nLogged=" << ++nLogged << endl;
         }
         RLib::CppLog::smartLog_.forceDel();

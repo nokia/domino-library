@@ -12,7 +12,7 @@
 // . (tmp log can be fixed-len or dyn-len char[])
 // . (permanent log can be file or socket)
 //
-// CORE : everythingOk_ (soul of smart log)
+// CORE : needLog_ (soul of smart log)
 // ***********************************************************************************************
 #ifndef BASE_SMART_LOG_HPP_
 #define BASE_SMART_LOG_HPP_
@@ -23,9 +23,8 @@ namespace RLib
 class BaseSL  // SL = Smart Log
 {
 public:
-    bool everythingOK() const { return everythingOk_; }
-    void sthWrong() { everythingOk_ = false; }
-    void clearSthWrong() { everythingOk_ = true; }
+    bool canDelLog() const { return not needLog_; }
+    void needLog() { needLog_ = true; }
 
 //------------------------------------------------------------------------------------------------
 protected:    // derive use only
@@ -33,7 +32,7 @@ protected:    // derive use only
 
 //------------------------------------------------------------------------------------------------
 private:
-    bool everythingOk_ = true;
+    bool needLog_ = true;  // init=false is smartlog, =true is legacy(full log always)
 };
 }  // namespace
 #endif // #ifndef BASE_SMART_LOG_HPP_
@@ -49,9 +48,10 @@ private:
 // 2011-04-28  CSZ       - unify unformatted & formatted smartlog together
 // 2011-05-05  CSZ       - giveup unify different smart log together, use most direct way
 // 2015-06-01  CSZ       - derive R_StrCountFSL_T by std::stringstream, so endl works
-//                       - rename trigger() to sthWrong(), etc.
+//                       - rename trigger() to needLog(), etc.
 // 2015-06-04  CSZ       - derive R_StrFileFSL_T by std::stringstream
 //                       - fix file open issue (at 30_IDs\smart.log under codeblock)
 // 2020-10-26  CSZ       - StrCoutFSL for UT
 //                       - align Domino coding style
+// 2022-08-17  CSZ       - adjusted with CellLog
 // ***********************************************************************************************

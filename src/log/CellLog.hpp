@@ -5,7 +5,7 @@
  */
 // ***********************************************************************************************
 // - why/value:
-//   . provide smartlog & related functionality to any cell
+//   . provide smartlog & related functionality to any cell, cell-member & cell-participant
 // - req:
 //   . init smartlog in CellLog()
 //   . store in DatDom / ObjAnywhere so easily get without para shipping
@@ -21,10 +21,17 @@
 
 namespace RLib
 {
+using SmartLog = StrCoutFSL;
+
 class CellLog
 {
+public:
+    explicit CellLog(const std::string aCellLogName = "");
+
+    SmartLog& log() { return *smart_log_; }
+
 private:
-    std::shared_ptr<StrCoutFSL> smart_log_;
+    std::shared_ptr<SmartLog> smart_log_ = std::make_shared<SmartLog>();
 };
 }  // namespace
 #endif  // CELLLOG_HPP_

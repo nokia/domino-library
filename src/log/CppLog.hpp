@@ -27,6 +27,10 @@ namespace RLib
 #define WRN(content) { CppLog::smartLog_ << "[WRN/" << BUF(content); }
 #define ERR(content) { CppLog::smartLog_ << "[ERR/" << BUF(content); }
 #define HID(content) { CppLog::smartLog_ << "[HID/" << BUF(content); }
+
+#define SL_BUF(content) "] " << __func__ << "()" << __LINE__ << "#; " << content << std::endl
+#define SL_DBG(content) { log() << "[DBG/" << SL_BUF(content); }
+
 #else  // eg code coverage
 #define DBG(content) {}
 #define INF(content) {}
@@ -51,4 +55,5 @@ public:
 // 2020-08-11  CSZ       1)create
 // 2020-10-29  CSZ       2)base on SmartLog
 // 2021-02-13  CSZ       - empty to inc branch coverage (66%->75%)
+// 2022-08-17  CSZ       3)adjusted with CellLog
 // ***********************************************************************************************

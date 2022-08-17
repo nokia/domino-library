@@ -4,22 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-#include <gtest/gtest.h>
-
 #include "CellLog.hpp"
-#include "CppLog.hpp"
-
-using namespace testing;
 
 namespace RLib
 {
-struct CellLogTest : public Test, public CellLog
+CellLog::CellLog(const std::string aCellLogName)
+//    : 
 {
-};
-
-TEST_F(CellLogTest, req)
-{
-    try { SL_DBG("hello world"); }
-    catch(...) { FAIL() << "!!!exception"; }
 }
-}  // namespace
+}  // namespaces
