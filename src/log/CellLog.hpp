@@ -5,33 +5,46 @@
  */
 // ***********************************************************************************************
 // - why/value:
-//   . provide smartlog & related functionality to any cell, cell-member & cell-participant
+//   . a cell & its full-member & shared-member/participant shall log into 1 smartlog
 // - req:
-//   . init smartlog in CellLog()
-//   . store in DatDom / ObjAnywhere so easily get without para shipping
-//   . del smartlog in ~CellLog()
-//   . easily support DBG/etc macros to log
-//   . unify interface as CellLogRef
+//   . for cell: create smartlog & store globally with cell name
+//   . for member: find smartlog by cell name (so no para shipping)
+//   . clean logStore_: del smartlog from logStore_ when cell destructed
+//   . easily support DBG/etc macros
+//   . unify interface for DBG/etc macros
 // ***********************************************************************************************
 #ifndef CELLLOG_HPP_
 #define CELLLOG_HPP_
 
 #include <memory>
+#include <unordered_map>
+
 #include "StrCoutFSL.hpp"
 
 namespace RLib
 {
+using CellName = std::string;
 using SmartLog = StrCoutFSL;
+using LogStore = std::unordered_map<CellName, std::shared_ptr<SmartLog> >;
 
 class CellLog
 {
 public:
-    explicit CellLog(const std::string aCellLogName = "");
+    explicit CellLog(const CellName& aCellName = "");
+    ~CellLog() { if (isCell()) logStore_.erase(it_); }
 
-    SmartLog& log() { return *smart_log_; }
+    SmartLog& log() { return *(it_->second); }
+    SmartLog& operator()() { return log(); }
+    void needLog() { it_->second->needLog(); }
+
+    bool isCell() const { return isCell_; }
+    static size_t nCellLog() { return logStore_.size(); }
 
 private:
-    std::shared_ptr<SmartLog> smart_log_ = std::make_shared<SmartLog>();
+    LogStore::iterator it_;
+    bool isCell_;
+
+    static LogStore logStore_;
 };
 }  // namespace
 #endif  // CELLLOG_HPP_
