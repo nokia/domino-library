@@ -4,17 +4,18 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-#include "MtQueue.hpp"
-
 #include <future>
-#include <unistd.h>
 #include <gtest/gtest.h>
+#include <unistd.h>
+
+#include "CellLog.hpp"
+#include "MtQueue.hpp"
 
 using namespace testing;
 
 namespace RLib {
 // ***********************************************************************************************
-struct MtQueueTest : public Test
+struct MtQueueTest : public Test, public CellLog
 {
     void threadMain(int aStartNum, int aSteps)
     {
@@ -75,8 +76,8 @@ TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
             break;
         }
     }
-    std::cerr << "switch to thread_1=" << nToThread_1 << ", switch to thread_2=" << nToThread_2
-        << ", nPop_1=" << startNum_1 << ", nPop_2=" << startNum_2 - steps << ", nEmptyQ=" << nEmptyQueue << std::endl;
+    SL_INF("switch to thread_1=" << nToThread_1 << ", switch to thread_2=" << nToThread_2
+        << ", nPop_1=" << startNum_1 << ", nPop_2=" << startNum_2 - steps << ", nEmptyQ=" << nEmptyQueue)
 }
 
 #define FETCH
@@ -116,7 +117,7 @@ TEST_F(MtQueueTest, GOLD_fetchSpecified_multiThreadSafe)
         }
     }
     EXPECT_EQ(size_t(steps * 2 - 2), mtQueue_.size());
-    std::cerr << "nEmptyQ=" << nEmptyQueue << std::endl;
+    SL_INF("nEmptyQ=" << nEmptyQueue)
 }
 TEST_F(MtQueueTest, GOLD_fetch_null)
 {
