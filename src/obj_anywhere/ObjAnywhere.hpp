@@ -35,7 +35,7 @@
 namespace RLib
 {
 // ***********************************************************************************************
-class ObjAnywhere : public CellLog
+class ObjAnywhere
 {
 public:
     using ObjIndex = size_t;
