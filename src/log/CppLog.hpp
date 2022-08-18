@@ -28,9 +28,6 @@ namespace RLib
 #define ERR(content) { CppLog::smartLog_ << "[ERR/" << BUF(content); }
 #define HID(content) { CppLog::smartLog_ << "[HID/" << BUF(content); }
 
-#define SL_BUF(content) "] " << __func__ << "()" << __LINE__ << "#; " << content << std::endl
-#define SL_DBG(content) { log() << "[DBG/" << SL_BUF(content); }
-
 #else  // eg code coverage
 #define DBG(content) {}
 #define INF(content) {}

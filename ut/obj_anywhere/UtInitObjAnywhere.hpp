@@ -11,6 +11,7 @@
 
 #include <memory>  // shared_ptr
 
+#include "CellLog.hpp"
 #include "Domino.hpp"
 #include "DataDomino.hpp"
 #include "WbasicDatDom.hpp"
@@ -42,26 +43,26 @@ using MaxDom = WbasicDatDom<MultiHdlrDomino<DataDomino<FreeHdlrDomino<PriDomino<
 using MaxNofreeDom = PriDomino<MultiHdlrDomino<HdlrDomino<WbasicDatDom<DataDomino<Domino> > > > >;
 
 // ***********************************************************************************************
-struct UtInitObjAnywhere
+struct UtInitObjAnywhere : public CellLog
 {
     UtInitObjAnywhere()
     {
-        ObjAnywhere::init();
+        ObjAnywhere::init(*this);
 
-        ObjAnywhere::set<MsgSelf>(std::make_shared<MsgSelf>([](LoopBackFUNC aFunc){ aFunc(); }));
+        ObjAnywhere::set<MsgSelf>(std::make_shared<MsgSelf>([](LoopBackFUNC aFunc){ aFunc(); }), *this);
 
-        ObjAnywhere::set<Domino>(std::make_shared<Domino>());
-        ObjAnywhere::set<MinDatDom>(std::make_shared<MinDatDom>());
-        ObjAnywhere::set<MinWbasicDatDom>(std::make_shared<MinWbasicDatDom>());
-        ObjAnywhere::set<MinHdlrDom>(std::make_shared<MinHdlrDom>());
-        ObjAnywhere::set<MinMhdlrDom>(std::make_shared<MinMhdlrDom>());
-        ObjAnywhere::set<MinPriDom>(std::make_shared<MinPriDom>());
-        ObjAnywhere::set<MinFreeDom>(std::make_shared<MinFreeDom>());
+        ObjAnywhere::set<Domino>(std::make_shared<Domino>(), *this);
+        ObjAnywhere::set<MinDatDom>(std::make_shared<MinDatDom>(), *this);
+        ObjAnywhere::set<MinWbasicDatDom>(std::make_shared<MinWbasicDatDom>(), *this);
+        ObjAnywhere::set<MinHdlrDom>(std::make_shared<MinHdlrDom>(), *this);
+        ObjAnywhere::set<MinMhdlrDom>(std::make_shared<MinMhdlrDom>(), *this);
+        ObjAnywhere::set<MinPriDom>(std::make_shared<MinPriDom>(), *this);
+        ObjAnywhere::set<MinFreeDom>(std::make_shared<MinFreeDom>(), *this);
 
-        ObjAnywhere::set<MaxDom>(std::make_shared<MaxDom>());
-        ObjAnywhere::set<MaxNofreeDom>(std::make_shared<MaxNofreeDom>());
+        ObjAnywhere::set<MaxDom>(std::make_shared<MaxDom>(), *this);
+        ObjAnywhere::set<MaxNofreeDom>(std::make_shared<MaxNofreeDom>(), *this);
     }
-    ~UtInitObjAnywhere() { ObjAnywhere::deinit(); }
+    ~UtInitObjAnywhere() { ObjAnywhere::deinit(*this); }
 };
 }  // namespace
 #endif  // SWM_UT_INIT_SVC_CLOUD_HPP_

@@ -7,7 +7,6 @@
 #include <gtest/gtest.h>
 
 #include "CellLog.hpp"
-#include "CppLog.hpp"
 
 using namespace testing;
 
@@ -47,7 +46,7 @@ TEST(CellLogTest, GOLD_cell__member_participant)
         cellParticipant(cell);                  // req: cell can call func & log into same smartlog
         cellParticipant(member);                // req: cell member can call func & log into same smartlog
 
-        member.needLog();                       // req: shall output log to screen
+        member().needLog();                     // req: shall output log to screen
     }
     EXPECT_EQ(0, CellLog::nCellLog());          // req: del log when no user
 }

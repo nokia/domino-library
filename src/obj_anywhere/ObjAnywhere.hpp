@@ -30,25 +30,25 @@
 #include <memory>    // for shared_ptr
 #include <typeinfo>  // typeid()
 
-#include "CppLog.hpp"
+#include "CellLog.hpp"
 
 namespace RLib
 {
 // ***********************************************************************************************
-class ObjAnywhere
+class ObjAnywhere : public CellLog
 {
 public:
-    using ObjIndex   = size_t;
+    using ObjIndex = size_t;
     using ObjStore = std::unordered_map<ObjIndex, std::shared_ptr<void> >;
 
-    static void init();                                    // init objStore_
-    static void deinit();                                  // rm objStore_
+    static void init(CellLog& log);                        // init objStore_
+    static void deinit(CellLog& log);                      // rm objStore_
     static bool isInit() { return objStore_ != nullptr; }  // init objStore_?
 
     // -------------------------------------------------------------------------------------------
     // - save aObjType into objStore_
     // -------------------------------------------------------------------------------------------
-    template<typename aObjType> static void set(std::shared_ptr<aObjType> aSharedObj);
+    template<typename aObjType> static void set(std::shared_ptr<aObjType> aSharedObj, CellLog& log);
 
     // -------------------------------------------------------------------------------------------
     // - get a "Obj" from objStore_
@@ -59,7 +59,6 @@ public:
 private:
     // -------------------------------------------------------------------------------------------
     static std::shared_ptr<ObjStore> objStore_;
-    static CppLog log_;  // static because objStore_ exceeds SmartLogs lifespan
 };
 
 // ***********************************************************************************************
@@ -71,17 +70,17 @@ std::shared_ptr<aObjType> ObjAnywhere::get()
     auto&& found = (*objStore_).find(typeid(aObjType).hash_code());
     if (found != (*objStore_).end()) return std::static_pointer_cast<aObjType>(found->second);
 
-    INF("!!! Failed, unavailable obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
+    //SL_INF("!!! Failed, unavailable obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
     return std::shared_ptr<aObjType>();
 }
 
 // ***********************************************************************************************
 template<typename aObjType>
-void ObjAnywhere::set(std::shared_ptr<aObjType> aSharedObj)
+void ObjAnywhere::set(std::shared_ptr<aObjType> aSharedObj, CellLog& log)
 {
     if (not isInit())
     {
-        WRN("!!! Failed, ObjAnywhere is not initialized yet.");
+        SL_WRN("!!! Failed, ObjAnywhere is not initialized yet.");
         return;
     }
 
@@ -89,15 +88,15 @@ void ObjAnywhere::set(std::shared_ptr<aObjType> aSharedObj)
     if (not aSharedObj)
     {
         objStore_->erase(objIndex);  // natural expectation
-        INF("Removed obj=" << typeid(aObjType).name() << " from ObjAnywhere.");
+        SL_INF("Removed obj=" << typeid(aObjType).name() << " from ObjAnywhere.");
         return;
     }
 
     auto&& found = (*objStore_).find(objIndex);
     if (found == (*objStore_).end())
-        INF("Set obj=" << typeid(aObjType).name() << " into ObjAnywhere.")
+        SL_INF("Set obj=" << typeid(aObjType).name() << " into ObjAnywhere.")
     else
-        INF("!!!Replace obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
+        SL_INF("!!!Replace obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
     (*objStore_)[objIndex] = aSharedObj;
 }
 }  // namespace

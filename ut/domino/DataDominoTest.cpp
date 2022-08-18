@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 
+#include "CellLog.hpp"
 #include "UtInitObjAnywhere.hpp"
 
 using namespace testing;
@@ -17,7 +18,7 @@ namespace RLib
 {
 // ***********************************************************************************************
 template<class aParaDom>
-struct DataDominoTest : public Test
+struct DataDominoTest : public Test, public CellLog
 {
     UtInitObjAnywhere utInit_;
     std::set<Domino::Event> uniqueEVs_;
@@ -79,7 +80,7 @@ TYPED_TEST_P(DataDominoTest, GOLD_desruct_data)
     EXPECT_EQ(0, weak.use_count());  // req: old is rm
 
     weak = PARA_DOM->getShared("ev0");
-    ObjAnywhere::deinit();           // req: rm all
+    ObjAnywhere::deinit(*this);      // req: rm all
     EXPECT_EQ(0, weak.use_count());
 }
 TYPED_TEST_P(DataDominoTest, GOLD_correct_data_destructor)

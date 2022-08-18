@@ -35,7 +35,6 @@ public:
 
     SmartLog& log() { return *(it_->second); }
     SmartLog& operator()() { return log(); }
-    void needLog() { it_->second->needLog(); }
 
     bool isCell() const { return isCell_; }
     static size_t nCellLog() { return logStore_.size(); }
@@ -46,6 +45,21 @@ private:
 
     static LogStore logStore_;
 };
+
+#if 1  // log_ instead of this->log_ so support static log_
+#define SL_BUF(content) "] " << __func__ << "()" << __LINE__ << "#; " << content << std::endl
+#define SL_DBG(content) { log() << "[DBG/" << SL_BUF(content); }
+#define SL_INF(content) { log() << "[INF/" << SL_BUF(content); }
+#define SL_WRN(content) { log() << "[WRN/" << SL_BUF(content); }
+#define SL_ERR(content) { log() << "[ERR/" << SL_BUF(content); }
+#define SL_HID(content) { log() << "[HID/" << SL_BUF(content); }
+#else  // eg code coverage
+#define SL_DBG(content) {}
+#define SL_INF(content) {}
+#define SL_WRN(content) {}
+#define SL_ERR(content) {}
+#define SL_HID(content) {}
+#endif
 }  // namespace
 #endif  // CELLLOG_HPP_
 // ***********************************************************************************************
