@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    - cron: '57 0 * * 4'  # 8:57am(BJ) every Thu
+    - cron: '51-54 2 * * 4'  # 10:51-54am(BJ) every Thu
 
 jobs:
   build:
