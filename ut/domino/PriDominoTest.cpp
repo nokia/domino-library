@@ -37,6 +37,8 @@ struct PriDominoTest : public Test, public CellLog
         };
     }
 
+    GTEST_LOG_FAIL
+
     // -------------------------------------------------------------------------------------------
     UtInitObjAnywhere utInit_;
     std::shared_ptr<MsgSelf> msgSelf_ = std::make_shared<MsgSelf>(

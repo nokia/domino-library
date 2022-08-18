@@ -26,6 +26,8 @@ struct MtQueueTest : public Test, public CellLog
         }
     }
 
+    GTEST_LOG_FAIL
+
     MtQueue mtQueue_;
 };
 

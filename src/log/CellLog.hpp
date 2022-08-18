@@ -63,10 +63,15 @@ private:
 #define ERR(content) {}
 #define HID(content) {}
 #endif
+
+#define GTEST_LOG_FAIL void TearDown() { if (Test::HasFailure()) { log().needLog(); } }
 }  // namespace
 #endif  // CELLLOG_HPP_
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
-// 2022-08-16  CSZ       1)create
+// 2020-08-11  CSZ       1)create as CppLog
+// 2020-10-29  CSZ       2)base on SmartLog
+// 2021-02-13  CSZ       - empty to inc branch coverage (66%->75%)
+// 2022-08-16  CSZ       4)replaced by CellLog
 // ***********************************************************************************************

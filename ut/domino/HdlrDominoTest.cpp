@@ -28,6 +28,8 @@ struct HdlrDominoTest : public Test, public CellLog
     MOCK_METHOD0(hdlr1, void());
     MOCK_METHOD0(hdlr2, void());
 
+    GTEST_LOG_FAIL
+
     // -------------------------------------------------------------------------------------------
     UtInitObjAnywhere utInit_;
     LoopBackFUNC loopbackFunc_;

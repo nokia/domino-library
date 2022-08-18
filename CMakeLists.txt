@@ -27,5 +27,6 @@ endif()
 target_link_libraries(ut.exe
   pthread
   gtest
+  gtest_main
   gmock
 )
