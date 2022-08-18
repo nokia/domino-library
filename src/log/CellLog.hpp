@@ -27,14 +27,17 @@ using CellName = std::string;
 using SmartLog = StrCoutFSL;
 using LogStore = std::unordered_map<CellName, std::shared_ptr<SmartLog> >;
 
+const char CELL_NAME_DEFAULT[] = "";
+
 class CellLog
 {
 public:
-    explicit CellLog(const CellName& aCellName = "");
+    explicit CellLog(const CellName& aCellName = CELL_NAME_DEFAULT);
     ~CellLog() { if (isCell()) logStore_.erase(it_); }
 
     SmartLog& log() { return *(it_->second); }
     SmartLog& operator()() { return log(); }
+    const CellName& cellName() const { return it_->first; }
 
     bool isCell() const { return isCell_; }
     static size_t nCellLog() { return logStore_.size(); }

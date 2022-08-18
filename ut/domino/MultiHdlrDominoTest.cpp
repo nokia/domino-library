@@ -208,7 +208,8 @@ TYPED_TEST_P(MultiHdlrDominoTest, rmLegacyHdlr_byNoHdlrName)
 TYPED_TEST_P(NofreeMultiHdlrDominoTest, rmHdlrOnRoad)
 {
     // not auto-cb but manually
-    auto msgSelf = std::make_shared<MsgSelf>([this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; });
+    auto msgSelf = std::make_shared<MsgSelf>(
+        [this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; }, CELL_NAME_DEFAULT);
     PARA_DOM->setMsgSelf(msgSelf);
 
     PARA_DOM->setHdlr("event", this->hdlr0_);

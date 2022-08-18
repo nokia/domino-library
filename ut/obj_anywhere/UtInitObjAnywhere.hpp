@@ -49,7 +49,8 @@ struct UtInitObjAnywhere : public CellLog
     {
         ObjAnywhere::init(*this);
 
-        ObjAnywhere::set<MsgSelf>(std::make_shared<MsgSelf>([](LoopBackFUNC aFunc){ aFunc(); }), *this);
+        ObjAnywhere::set<MsgSelf>(std::make_shared<MsgSelf>(
+            [](LoopBackFUNC aFunc){ aFunc(); }, cellName()), *this);
 
         ObjAnywhere::set<Domino>(std::make_shared<Domino>(), *this);
         ObjAnywhere::set<MinDatDom>(std::make_shared<MinDatDom>(), *this);

@@ -118,4 +118,5 @@ void ObjAnywhere::set(std::shared_ptr<aObjType> aSharedObj, CellLog& log)
 // 2021-04-05  CSZ       - coding req
 // 2021-04-30  ZQ        6)ZhangQiang told me shared_ptr<void> can del Obj correctly
 // 2022-01-01  PJ & CSZ  - formal log & naming
+// 2022-08-18  CSZ       - replace CppLog by CellLog
 // ***********************************************************************************************

@@ -22,7 +22,8 @@ struct FreeHdlrDominoTest : public Test
 
     // -------------------------------------------------------------------------------------------
     UtInitObjAnywhere utInit_;
-    std::shared_ptr<MsgSelf> msgSelf_ = std::make_shared<MsgSelf>([this](LoopBackFUNC aFunc){ loopbackFunc_ = aFunc; });
+    std::shared_ptr<MsgSelf> msgSelf_ = std::make_shared<MsgSelf>(
+        [this](LoopBackFUNC aFunc){ loopbackFunc_ = aFunc; }, CELL_NAME_DEFAULT);
     LoopBackFUNC loopbackFunc_;
 
     MsgCB h1_ = [this](){ hdlrIDs_.insert(1); };

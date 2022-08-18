@@ -88,7 +88,8 @@ TYPED_TEST_P(NofreeHdlrDominoTest, GOLD_trigger_callback_reTrigger_reCallback)
 TYPED_TEST_P(NofreeHdlrDominoTest, GOLD_trigger_reTrigger_callback_reCallback)
 {
     // not auto-cb but manually
-    auto msgSelf = std::make_shared<MsgSelf>([this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; });
+    auto msgSelf = std::make_shared<MsgSelf>(
+        [this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; }, CELL_NAME_DEFAULT);
     PARA_DOM->setMsgSelf(msgSelf);          // req: change MsgSelf
 
     PARA_DOM->setHdlr("event", this->hdlr0_);
@@ -281,7 +282,8 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlr_fail)
 TYPED_TEST_P(HdlrDominoTest, rmHdlrOnRoad_noCallback)
 {
     // not auto-cb but manually
-    auto msgSelf = std::make_shared<MsgSelf>([this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; });
+    auto msgSelf = std::make_shared<MsgSelf>(
+        [this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; }, CELL_NAME_DEFAULT);
     PARA_DOM->setMsgSelf(msgSelf);
 
     PARA_DOM->multiHdlrByAliasEv("e0", this->hdlr0_, "e");
@@ -297,7 +299,8 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlrOnRoad_noCallback)
 TYPED_TEST_P(NofreeHdlrDominoTest, rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigger)
 {
     // not auto-cb but manually
-    auto msgSelf = std::make_shared<MsgSelf>([this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; });
+    auto msgSelf = std::make_shared<MsgSelf>(
+        [this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; }, CELL_NAME_DEFAULT);
     PARA_DOM->setMsgSelf(msgSelf);
 
     PARA_DOM->setHdlr("event", this->hdlr0_);

@@ -31,7 +31,7 @@
 #include <memory>  // shared_ptr<>
 #include <queue>
 
-#include "CppLog.hpp"
+#include "CellLog.hpp"
 #include "ObjAnywhere.hpp"
 
 #define MSG_SELF (ObjAnywhere::get<MsgSelf>())
@@ -58,10 +58,10 @@ using LoopBackFUNC = std::function<void()>;
 using LoopReqFUNC  = std::function<void(LoopBackFUNC)>;
 
 // ***********************************************************************************************
-class MsgSelf
+class MsgSelf : public CellLog
 {
 public:
-    explicit MsgSelf(LoopReqFUNC aFunc);
+    MsgSelf(LoopReqFUNC aFunc, const CellName&);
     ~MsgSelf();
 
     void newMsg(const WeakMsgCB& aMsgCB, const EMsgPriority = EMsgPri_NORM);
@@ -81,7 +81,6 @@ private:
     std::shared_ptr<bool> isValid_ = std::make_shared<bool>(true);  // MsgSelf is still valid?
     LoopReqFUNC loopReq_;
     size_t nMsg_ = 0;
-    CppLog log_;
 };
 }  // namespace
 #endif  // MSG_SELF_HPP_
@@ -97,4 +96,5 @@ private:
 // 2021-11-29  CSZ       - lambda instead of bind; fix isValid ut
 // 2022-01-01  PJ & CSZ  - formal log & naming
 // 2022-03-10  CSZ       - inc code coverage rate
-// ***********************************************************************************************
+// 2022-08-18  CSZ       - replace CppLog by CellLog
+// ***********************************************************************************************// ***********************************************************************************************

@@ -39,7 +39,8 @@ struct PriDominoTest : public Test
 
     // -------------------------------------------------------------------------------------------
     UtInitObjAnywhere utInit_;
-    std::shared_ptr<MsgSelf> msgSelf_ = std::make_shared<MsgSelf>([this](LoopBackFUNC aFunc){ loopbackFunc_ = aFunc; });
+    std::shared_ptr<MsgSelf> msgSelf_ = std::make_shared<MsgSelf>(
+        [this](LoopBackFUNC aFunc){ loopbackFunc_ = aFunc; }, CELL_NAME_DEFAULT);
     LoopBackFUNC loopbackFunc_;
 
     SharedMsgCB d1EventHdlr_ = std::make_shared<MsgCB>();
