@@ -50,18 +50,18 @@ private:
 };
 
 #if 1  // log_ instead of this->log_ so support static log_
-#define SL_BUF(content) "] " << __func__ << "()" << __LINE__ << "#; " << content << std::endl
-#define SL_DBG(content) { log() << "[DBG/" << SL_BUF(content); }
-#define SL_INF(content) { log() << "[INF/" << SL_BUF(content); }
-#define SL_WRN(content) { log() << "[WRN/" << SL_BUF(content); }
-#define SL_ERR(content) { log() << "[ERR/" << SL_BUF(content); }
-#define SL_HID(content) { log() << "[HID/" << SL_BUF(content); }
+#define BUF(content) "] " << __func__ << "()" << __LINE__ << "#; " << content << std::endl
+#define DBG(content) { log() << "[DBG/" << BUF(content); }
+#define INF(content) { log() << "[INF/" << BUF(content); }
+#define WRN(content) { log() << "[WRN/" << BUF(content); }
+#define ERR(content) { log() << "[ERR/" << BUF(content); }
+#define HID(content) { log() << "[HID/" << BUF(content); }
 #else  // eg code coverage
-#define SL_DBG(content) {}
-#define SL_INF(content) {}
-#define SL_WRN(content) {}
-#define SL_ERR(content) {}
-#define SL_HID(content) {}
+#define DBG(content) {}
+#define INF(content) {}
+#define WRN(content) {}
+#define ERR(content) {}
+#define HID(content) {}
 #endif
 }  // namespace
 #endif  // CELLLOG_HPP_

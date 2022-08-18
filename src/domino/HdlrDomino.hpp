@@ -31,7 +31,7 @@ template<class aDominoType>
 class HdlrDomino : public aDominoType
 {
 public:
-    HdlrDomino() { msgSelf_ = MSG_SELF; }  // default
+    explicit HdlrDomino(const CellName& aCellName) : aDominoType(aCellName) { msgSelf_ = MSG_SELF; }  // default
     void setMsgSelf(std::shared_ptr<MsgSelf>& aMsgSelf) { msgSelf_ = aMsgSelf; }  // can replace default
 
     Domino::Event setHdlr(const Domino::EvName&, const MsgCB&);
@@ -62,7 +62,7 @@ private:
     std::unordered_map<Domino::Event, SharedMsgCB> hdlrs_;
     std::shared_ptr<MsgSelf> msgSelf_;
 public:
-    using aDominoType::log_;
+    using aDominoType::log;
 };
 
 // ***********************************************************************************************
@@ -153,4 +153,5 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
 // 2022-01-04  PJ & CSZ  - formal log & naming
 // 2022-03-26  CSZ       - ut's PARA_DOM include self class & ALL its base class(es)
 // 2022-03-27  CSZ       - if ut case can test base class, never specify derive
+// 2022-08-18  CSZ       - replace CppLog by CellLog
 // ***********************************************************************************************

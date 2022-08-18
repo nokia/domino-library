@@ -12,17 +12,17 @@ void ObjAnywhere::deinit(CellLog& log)
 {
     if (!objStore_) return;
 
-    SL_INF("Succeed. ObjAnywhere giveup nSvc=" << objStore_->size());
+    INF("Succeed. ObjAnywhere giveup nSvc=" << objStore_->size());
     objStore_.reset();
 }
 
 // ***********************************************************************************************
 void ObjAnywhere::init(CellLog& log)
 {
-    if (objStore_) SL_WRN("!!! Refuse dup init.")
+    if (objStore_) WRN("!!! Refuse dup init.")
     else
     {
-        SL_INF("Succeed.");
+        INF("Succeed.");
         objStore_ = std::make_shared<ObjStore>();
     }
 }

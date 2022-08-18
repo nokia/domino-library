@@ -17,6 +17,8 @@ template<typename aDominoType>
 class WbasicDatDom : public aDominoType
 {
 public:
+    explicit WbasicDatDom(const CellName& aCellName) : aDominoType(aCellName) {}
+
     bool isWrCtrl(const Domino::EvName&) const;
     bool wrCtrlOk(const Domino::EvName&, const bool aNewState = true);
 
@@ -34,7 +36,7 @@ private:
     std::vector<bool> wrCtrl_;
 
 public:
-    using aDominoType::log_;
+    using aDominoType::log;
 };
 
 // ***********************************************************************************************
@@ -111,7 +113,7 @@ aDataType wbasic_getValue(aDataDominoType& aDom, const Domino::EvName& aEvName)
     auto&& data = std::static_pointer_cast<aDataType>(aDom.wbasic_getShared(aEvName));
     if (data.use_count() > 0) return *data;
 
-    auto&& log_ = aDom.log_;
+    CellLog& log = aDom;
     WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " not found, return undefined obj!!!");
     return aDataType();
 }
@@ -141,4 +143,5 @@ void wbasic_setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const
 // 2022-01-02  PJ & CSZ  - formal log & naming
 // 2022-03-26  CSZ       - ut's PARA_DOM include self class & ALL its base class(es)
 // 2022-03-27  CSZ       - if ut case can test base class, never specify derive
+// 2022-08-18  CSZ       - replace CppLog by CellLog
 // ***********************************************************************************************

@@ -18,7 +18,7 @@ MsgSelf::MsgSelf(LoopReqFUNC aFunc, const CellName& aCellName)
 MsgSelf::~MsgSelf()
 {
     *isValid_ = false;
-    if (nMsg_) SL_DBG("Succeed, & discard nMsg=" << nMsg_);
+    if (nMsg_) DBG("Succeed, & discard nMsg=" << nMsg_);
 }
 
 // ***********************************************************************************************
@@ -33,7 +33,7 @@ bool MsgSelf::handleOneMsg()
         if (hdlr && *hdlr) (*hdlr)();
         oneQueue.pop();
         --nMsg_;
-        SL_HID("after call, nHdlrRef=" << hdlr.use_count());
+        HID("after call, nHdlrRef=" << hdlr.use_count());
 
         if (!isLowPri(EMsgPriority(priority))) return true;
         if (hasMsg()) loopReq_([this, isValid = isValid_]() mutable { loopBack(isValid); });
@@ -48,7 +48,7 @@ void MsgSelf::loopBack(const std::shared_ptr<bool> aValidMsgSelf)
     if (*aValidMsgSelf)  // impossible aValidMsgSelf==nullptr till 022-Mar-11
     {
         // may be called after MsgSelf destructed, not use this at all
-        SL_HID("How many reference to this MsgSelf? " << aValidMsgSelf.use_count());
+        HID("How many reference to this MsgSelf? " << aValidMsgSelf.use_count());
 
         if (not hasMsg()) return;
         while (handleOneMsg()) {}  // handleOneMsg() may create new high priority msg(s)

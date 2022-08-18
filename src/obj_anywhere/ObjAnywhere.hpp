@@ -54,7 +54,7 @@ public:
     // - get a "Obj" from objStore_
     // - template operator[] not easier in usage
     // -------------------------------------------------------------------------------------------
-    template<typename aObjType> static std::shared_ptr<aObjType> get();
+    template<typename aObjType> static std::shared_ptr<aObjType> get(CellLog& log);
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -63,14 +63,14 @@ private:
 
 // ***********************************************************************************************
 template<typename aObjType>
-std::shared_ptr<aObjType> ObjAnywhere::get()
+std::shared_ptr<aObjType> ObjAnywhere::get(CellLog& log)
 {
     if (not isInit()) return std::shared_ptr<aObjType>();
 
     auto&& found = (*objStore_).find(typeid(aObjType).hash_code());
     if (found != (*objStore_).end()) return std::static_pointer_cast<aObjType>(found->second);
 
-    //SL_INF("!!! Failed, unavailable obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
+    INF("!!! Failed, unavailable obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
     return std::shared_ptr<aObjType>();
 }
 
@@ -80,7 +80,7 @@ void ObjAnywhere::set(std::shared_ptr<aObjType> aSharedObj, CellLog& log)
 {
     if (not isInit())
     {
-        SL_WRN("!!! Failed, ObjAnywhere is not initialized yet.");
+        WRN("!!! Failed, ObjAnywhere is not initialized yet.");
         return;
     }
 
@@ -88,15 +88,15 @@ void ObjAnywhere::set(std::shared_ptr<aObjType> aSharedObj, CellLog& log)
     if (not aSharedObj)
     {
         objStore_->erase(objIndex);  // natural expectation
-        SL_INF("Removed obj=" << typeid(aObjType).name() << " from ObjAnywhere.");
+        INF("Removed obj=" << typeid(aObjType).name() << " from ObjAnywhere.");
         return;
     }
 
     auto&& found = (*objStore_).find(objIndex);
     if (found == (*objStore_).end())
-        SL_INF("Set obj=" << typeid(aObjType).name() << " into ObjAnywhere.")
+        INF("Set obj=" << typeid(aObjType).name() << " into ObjAnywhere.")
     else
-        SL_INF("!!!Replace obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
+        INF("!!!Replace obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
     (*objStore_)[objIndex] = aSharedObj;
 }
 }  // namespace

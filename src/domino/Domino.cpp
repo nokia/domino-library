@@ -7,7 +7,6 @@
 
 namespace RLib
 {
-size_t Domino::dmnID_ = 0;
 const Domino::EvName Domino::invalidEvName("Invalid Ev/EvName");
 
 // ***********************************************************************************************

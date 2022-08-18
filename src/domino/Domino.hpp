@@ -40,12 +40,12 @@
 #include <unordered_map>
 #include <vector>
 
-#include "CppLog.hpp"
+#include "CellLog.hpp"
 
 namespace RLib
 {
 // ***********************************************************************************************
-class Domino
+class Domino : public CellLog
 {
 public:
     using Event      = size_t;  // smaller size can save mem; larger size can support more events
@@ -66,7 +66,7 @@ public:
     // - state:  tile's up/down state, mandatory, default=false
     // - prev:   prev tile(s)        , optional
     // -------------------------------------------------------------------------------------------
-    Domino() : log_("Dmn-" + std::to_string(dmnID_++)) {}
+    explicit Domino(const CellName& aCellName) : CellLog(aCellName) {}
     virtual ~Domino() = default;
 
     Event newEvent(const EvName&);
@@ -99,11 +99,7 @@ private:
     std::vector<EvName> evNames_;                  // [event]=evName for easy debug
     bool sthChanged_ = false;                      // for debug
 
-    static size_t dmnID_;
     static const EvName invalidEvName;
-
-public:  // no impact self but convient non-member-func eg getValue() for DataDomino
-    CppLog log_;
 };
 
 }  // namespace
@@ -210,4 +206,5 @@ public:  // no impact self but convient non-member-func eg getValue() for DataDo
 // 2022-01-17  PJ & CSZ  - formal log & naming
 // 2022-03-26  CSZ       - ut's PARA_DOM include self class & ALL its base class(es)
 // 2022-03-27  CSZ       - if ut case can test base class, never specify derive
+// 2022-08-18  CSZ       - replace CppLog by CellLog
 // ***********************************************************************************************

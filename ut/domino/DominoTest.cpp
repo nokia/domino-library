@@ -16,7 +16,7 @@ namespace RLib
 {
 // ***********************************************************************************************
 template<class aParaDom>
-struct DominoTest : public Test
+struct DominoTest : public Test, public CellLog
 {
     UtInitObjAnywhere utInit_;
     std::set<Domino::Event> uniqueEVs_;

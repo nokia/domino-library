@@ -16,7 +16,7 @@ namespace RLib
 {
 // ***********************************************************************************************
 template<class aParaDom>
-struct HdlrDominoTest : public Test
+struct HdlrDominoTest : public Test, public CellLog
 {
     HdlrDominoTest()
         : hdlr0_([this](){ this->hdlr0(); })
@@ -89,7 +89,7 @@ TYPED_TEST_P(NofreeHdlrDominoTest, GOLD_trigger_reTrigger_callback_reCallback)
 {
     // not auto-cb but manually
     auto msgSelf = std::make_shared<MsgSelf>(
-        [this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; }, CELL_NAME_DEFAULT);
+        [this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; }, this->cellName());
     PARA_DOM->setMsgSelf(msgSelf);          // req: change MsgSelf
 
     PARA_DOM->setHdlr("event", this->hdlr0_);
@@ -283,7 +283,7 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlrOnRoad_noCallback)
 {
     // not auto-cb but manually
     auto msgSelf = std::make_shared<MsgSelf>(
-        [this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; }, CELL_NAME_DEFAULT);
+        [this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; }, this->cellName());
     PARA_DOM->setMsgSelf(msgSelf);
 
     PARA_DOM->multiHdlrByAliasEv("e0", this->hdlr0_, "e");
@@ -300,7 +300,7 @@ TYPED_TEST_P(NofreeHdlrDominoTest, rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigg
 {
     // not auto-cb but manually
     auto msgSelf = std::make_shared<MsgSelf>(
-        [this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; }, CELL_NAME_DEFAULT);
+        [this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; }, this->cellName());
     PARA_DOM->setMsgSelf(msgSelf);
 
     PARA_DOM->setHdlr("event", this->hdlr0_);

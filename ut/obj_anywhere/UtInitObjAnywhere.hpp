@@ -24,9 +24,9 @@
 
 // ***********************************************************************************************
 // UT req: combined domino shall pass all UT
-#define DOMINO      (ObjAnywhere::get<MaxDom>())
-#define NO_FREE_DOM (ObjAnywhere::get<MaxNofreeDom>())
-#define PARA_DOM    (ObjAnywhere::get<TypeParam>())
+#define DOMINO      (ObjAnywhere::get<MaxDom>(*this))
+#define NO_FREE_DOM (ObjAnywhere::get<MaxNofreeDom>(*this))
+#define PARA_DOM    (ObjAnywhere::get<TypeParam>(*this))
 
 namespace RLib
 {
@@ -52,16 +52,16 @@ struct UtInitObjAnywhere : public CellLog
         ObjAnywhere::set<MsgSelf>(std::make_shared<MsgSelf>(
             [](LoopBackFUNC aFunc){ aFunc(); }, cellName()), *this);
 
-        ObjAnywhere::set<Domino>(std::make_shared<Domino>(), *this);
-        ObjAnywhere::set<MinDatDom>(std::make_shared<MinDatDom>(), *this);
-        ObjAnywhere::set<MinWbasicDatDom>(std::make_shared<MinWbasicDatDom>(), *this);
-        ObjAnywhere::set<MinHdlrDom>(std::make_shared<MinHdlrDom>(), *this);
-        ObjAnywhere::set<MinMhdlrDom>(std::make_shared<MinMhdlrDom>(), *this);
-        ObjAnywhere::set<MinPriDom>(std::make_shared<MinPriDom>(), *this);
-        ObjAnywhere::set<MinFreeDom>(std::make_shared<MinFreeDom>(), *this);
+        ObjAnywhere::set<Domino>(std::make_shared<Domino>(cellName()), *this);
+        ObjAnywhere::set<MinDatDom>(std::make_shared<MinDatDom>(cellName()), *this);
+        ObjAnywhere::set<MinWbasicDatDom>(std::make_shared<MinWbasicDatDom>(cellName()), *this);
+        ObjAnywhere::set<MinHdlrDom>(std::make_shared<MinHdlrDom>(cellName()), *this);
+        ObjAnywhere::set<MinMhdlrDom>(std::make_shared<MinMhdlrDom>(cellName()), *this);
+        ObjAnywhere::set<MinPriDom>(std::make_shared<MinPriDom>(cellName()), *this);
+        ObjAnywhere::set<MinFreeDom>(std::make_shared<MinFreeDom>(cellName()), *this);
 
-        ObjAnywhere::set<MaxDom>(std::make_shared<MaxDom>(), *this);
-        ObjAnywhere::set<MaxNofreeDom>(std::make_shared<MaxNofreeDom>(), *this);
+        ObjAnywhere::set<MaxDom>(std::make_shared<MaxDom>(cellName()), *this);
+        ObjAnywhere::set<MaxNofreeDom>(std::make_shared<MaxNofreeDom>(cellName()), *this);
     }
     ~UtInitObjAnywhere() { ObjAnywhere::deinit(*this); }
 };

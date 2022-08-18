@@ -34,7 +34,7 @@
 #include "CellLog.hpp"
 #include "ObjAnywhere.hpp"
 
-#define MSG_SELF (ObjAnywhere::get<MsgSelf>())
+#define MSG_SELF (ObjAnywhere::get<MsgSelf>(*this))
 
 namespace RLib
 {

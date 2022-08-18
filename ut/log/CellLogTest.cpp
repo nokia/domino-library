@@ -15,20 +15,20 @@ namespace RLib
 // ***********************************************************************************************
 struct Cell : public CellLog
 {
-    Cell() : CellLog("Cell") { SL_DBG("hello world, I'm a cell"); }               // req: can log
-    ~Cell() { SL_DBG("bye world, I'm a cell"); }                                  // req: can log
+    Cell() : CellLog("Cell") { DBG("hello world, I'm a cell"); }               // req: can log
+    ~Cell() { DBG("bye world, I'm a cell"); }                                  // req: can log
 };
 
 struct CellMember : public CellLog
 {
-    CellMember() : CellLog("Cell") { SL_DBG("hello world, I'm a cell member"); }  // req: can log
-    ~CellMember() { SL_DBG("bye world, I'm a cell member"); }                     // req: can log
+    CellMember() : CellLog("Cell") { DBG("hello world, I'm a cell member"); }  // req: can log
+    ~CellMember() { DBG("bye world, I'm a cell member"); }                     // req: can log
 };
 
 void cellParticipant(CellLog& log)
 {
     static size_t nCalled = 0;
-    SL_DBG("hello world, I'm a cell's participant, nCalled=" << ++nCalled);       // req: can log, same API
+    DBG("hello world, I'm a cell's participant, nCalled=" << ++nCalled);       // req: can log, same API
 }
 
 // ***********************************************************************************************

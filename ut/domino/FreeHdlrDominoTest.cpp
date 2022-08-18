@@ -16,14 +16,14 @@ namespace RLib
 {
 // ***********************************************************************************************
 template<class aParaDom>
-struct FreeHdlrDominoTest : public Test
+struct FreeHdlrDominoTest : public Test, public CellLog
 {
-    FreeHdlrDominoTest() { ObjAnywhere::get<aParaDom>()->setMsgSelf(msgSelf_); }
+    FreeHdlrDominoTest() { ObjAnywhere::get<aParaDom>(*this)->setMsgSelf(msgSelf_); }
 
     // -------------------------------------------------------------------------------------------
     UtInitObjAnywhere utInit_;
     std::shared_ptr<MsgSelf> msgSelf_ = std::make_shared<MsgSelf>(
-        [this](LoopBackFUNC aFunc){ loopbackFunc_ = aFunc; }, CELL_NAME_DEFAULT);
+        [this](LoopBackFUNC aFunc){ loopbackFunc_ = aFunc; }, cellName());
     LoopBackFUNC loopbackFunc_;
 
     MsgCB h1_ = [this](){ hdlrIDs_.insert(1); };

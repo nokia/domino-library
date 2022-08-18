@@ -30,6 +30,8 @@ public:
     using HdlrName  = std::string;
     using MultiHdlr = std::map<HdlrName, SharedMsgCB>;
 
+    explicit MultiHdlrDomino(const CellName& aCellName) : aDominoType(aCellName) {}
+
     // -------------------------------------------------------------------------------------------
     // - add multi-hdlr on 1 event
     // . cons: can NOT FreeHdlrDomino::flagRepeatedHdlr() for each hdlr
@@ -48,7 +50,7 @@ private:
     // -------------------------------------------------------------------------------------------
     std::unordered_map<Domino::Event, MultiHdlr> multiHdlrs_;
 public:
-    using aDominoType::log_;
+    using aDominoType::log;
 };
 
 // ***********************************************************************************************
@@ -149,4 +151,5 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName, co
 // 2022-01-04  PJ & CSZ  - formal log & naming
 // 2022-03-26  CSZ       - ut's PARA_DOM include self class & ALL its base class(es)
 // 2022-03-27  CSZ       - if ut case can test base class, never specify derive
+// 2022-08-18  CSZ       - replace CppLog by CellLog
 // ***********************************************************************************************

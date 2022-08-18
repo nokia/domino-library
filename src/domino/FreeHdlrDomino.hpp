@@ -24,6 +24,8 @@ template<class aDominoType>
 class FreeHdlrDomino : public aDominoType
 {
 public:
+    explicit FreeHdlrDomino(const CellName& aCellName) : aDominoType(aCellName) {}
+
     Domino::Event flagRepeatedHdlr(const Domino::EvName&);
     bool isRepeatHdlr(const Domino::Event) const;
 
@@ -33,7 +35,7 @@ protected:
 private:
     std::vector<bool> isRepeatHdlr_;  // bitmap & dyn expand, [event]=t/f
 public:
-    using aDominoType::log_;
+    using aDominoType::log;
 };
 
 // ***********************************************************************************************
@@ -91,4 +93,5 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Do
 // 2021-04-01  CSZ       - coding req
 // 2022-03-26  CSZ       - ut's PARA_DOM include self class & ALL its base class(es)
 // 2022-03-27  CSZ       - if ut case can test base class, never specify derive
+// 2022-08-18  CSZ       - replace CppLog by CellLog
 // ***********************************************************************************************

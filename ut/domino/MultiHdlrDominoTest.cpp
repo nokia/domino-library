@@ -17,7 +17,7 @@ namespace RLib
 {
 // ***********************************************************************************************
 template<class aParaDom>
-struct MultiHdlrDominoTest : public Test
+struct MultiHdlrDominoTest : public Test, public CellLog
 {
     MultiHdlrDominoTest()
         : hdlr0_([this](){ this->hdlr0(); })
@@ -209,7 +209,7 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, rmHdlrOnRoad)
 {
     // not auto-cb but manually
     auto msgSelf = std::make_shared<MsgSelf>(
-        [this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; }, CELL_NAME_DEFAULT);
+        [this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; }, this->cellName());
     PARA_DOM->setMsgSelf(msgSelf);
 
     PARA_DOM->setHdlr("event", this->hdlr0_);

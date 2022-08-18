@@ -17,11 +17,11 @@ namespace RLib
 {
 // ***********************************************************************************************
 template<class aParaDom>
-struct PriDominoTest : public Test
+struct PriDominoTest : public Test, public CellLog
 {
     PriDominoTest()
     {
-        ObjAnywhere::get<aParaDom>()->setMsgSelf(msgSelf_);
+        ObjAnywhere::get<aParaDom>(*this)->setMsgSelf(msgSelf_);
 
         *d1EventHdlr_ = [&](){ hdlrIDs_.push(1); };
         *d2EventHdlr_ = [&](){ hdlrIDs_.push(2); };
@@ -31,16 +31,16 @@ struct PriDominoTest : public Test
         {
             hdlrIDs_.push(5);
 
-            ObjAnywhere::get<aParaDom>()->setState({{"e2", true}});
-            ObjAnywhere::get<aParaDom>()->setPriority("e2", EMsgPri_HIGH);
-            ObjAnywhere::get<aParaDom>()->setHdlr("e2", *(this->d2EventHdlr_));  // raise when d5() is exe
+            ObjAnywhere::get<aParaDom>(*this)->setState({{"e2", true}});
+            ObjAnywhere::get<aParaDom>(*this)->setPriority("e2", EMsgPri_HIGH);
+            ObjAnywhere::get<aParaDom>(*this)->setHdlr("e2", *(this->d2EventHdlr_));  // raise when d5() is exe
         };
     }
 
     // -------------------------------------------------------------------------------------------
     UtInitObjAnywhere utInit_;
     std::shared_ptr<MsgSelf> msgSelf_ = std::make_shared<MsgSelf>(
-        [this](LoopBackFUNC aFunc){ loopbackFunc_ = aFunc; }, CELL_NAME_DEFAULT);
+        [this](LoopBackFUNC aFunc){ loopbackFunc_ = aFunc; }, cellName());
     LoopBackFUNC loopbackFunc_;
 
     SharedMsgCB d1EventHdlr_ = std::make_shared<MsgCB>();

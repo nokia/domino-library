@@ -28,7 +28,7 @@ struct MsgSelfTests : public Test, public CellLog
 
     // -------------------------------------------------------------------------------------------
     std::shared_ptr<MsgSelf> msgSelf_ = std::make_shared<MsgSelf>(
-        [this](LoopBackFUNC aFunc){ loopbackFunc_ = aFunc; }, CELL_NAME_DEFAULT);
+        [this](LoopBackFUNC aFunc){ loopbackFunc_ = aFunc; }, cellName());
     LoopBackFUNC loopbackFunc_;
 
     SharedMsgCB nullMsgHdlr_ = std::make_shared<MsgCB>();
