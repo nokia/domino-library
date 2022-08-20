@@ -8,6 +8,14 @@
 
 namespace RLib
 {
+// ***********************************************************************************************
+SmartLog& log()
+{
+    static SmartLog log;
+    return log;
+}
+
+// ***********************************************************************************************
 CellLog::CellLog(const CellName& aCellName)
     : it_(logStore_.find(aCellName))
     , isCell_(it_ == logStore_.end())

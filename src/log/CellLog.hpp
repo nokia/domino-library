@@ -7,6 +7,7 @@
 // - why/value:
 //   . a cell & its full-member & shared-member/participant shall log into 1 smartlog
 // - req:
+//   * no CellLog, all user code shall work well & as simple as legacy
 //   . for cell: create smartlog & store globally with cell name
 //   . for member: find smartlog by cell name (so no para shipping)
 //   . clean logStore_: del smartlog from logStore_ when cell destructed
@@ -23,8 +24,30 @@
 
 namespace RLib
 {
-using CellName = std::string;
 using SmartLog = StrCoutFSL;
+
+// ***********************************************************************************************
+#if 1  // log_ instead of this->log_ so support static log_
+#define BUF(content) "] " << __func__ << "()" << __LINE__ << "#; " << content << std::endl
+#define DBG(content) { log() << "[DBG/" << BUF(content); }
+#define INF(content) { log() << "[INF/" << BUF(content); }
+#define WRN(content) { log() << "[WRN/" << BUF(content); }
+#define ERR(content) { log() << "[ERR/" << BUF(content); }
+#define HID(content) { log() << "[HID/" << BUF(content); }
+#else  // eg code coverage
+#define DBG(content) {}
+#define INF(content) {}
+#define WRN(content) {}
+#define ERR(content) {}
+#define HID(content) {}
+#endif
+
+SmartLog& log();
+
+#define GTEST_LOG_FAIL void TearDown() { if (Test::HasFailure()) { log().needLog(); } }
+
+// ***********************************************************************************************
+using CellName = std::string;
 using LogStore = std::unordered_map<CellName, std::shared_ptr<SmartLog> >;
 
 const char CELL_NAME_DEFAULT[] = "";
@@ -48,23 +71,6 @@ private:
 
     static LogStore logStore_;
 };
-
-#if 1  // log_ instead of this->log_ so support static log_
-#define BUF(content) "] " << __func__ << "()" << __LINE__ << "#; " << content << std::endl
-#define DBG(content) { log() << "[DBG/" << BUF(content); }
-#define INF(content) { log() << "[INF/" << BUF(content); }
-#define WRN(content) { log() << "[WRN/" << BUF(content); }
-#define ERR(content) { log() << "[ERR/" << BUF(content); }
-#define HID(content) { log() << "[HID/" << BUF(content); }
-#else  // eg code coverage
-#define DBG(content) {}
-#define INF(content) {}
-#define WRN(content) {}
-#define ERR(content) {}
-#define HID(content) {}
-#endif
-
-#define GTEST_LOG_FAIL void TearDown() { if (Test::HasFailure()) { log().needLog(); } }
 }  // namespace
 #endif  // CELLLOG_HPP_
 // ***********************************************************************************************
