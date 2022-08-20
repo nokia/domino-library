@@ -27,5 +27,6 @@ CellLog::CellLog(const CellName& aCellName)
     }
 }
 
+// ***********************************************************************************************
 LogStore CellLog::logStore_;
 }  // namespaces
