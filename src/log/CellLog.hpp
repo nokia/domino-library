@@ -28,12 +28,12 @@ using SmartLog = StrCoutFSL;
 
 // ***********************************************************************************************
 #if 1  // log_ instead of this->log_ so support static log_
-#define BUF(content) "] " << __func__ << "()" << __LINE__ << "#; " << content << std::endl
-#define DBG(content) { log() << "[DBG/" << BUF(content); }
-#define INF(content) { log() << "[INF/" << BUF(content); }
-#define WRN(content) { log() << "[WRN/" << BUF(content); }
-#define ERR(content) { log() << "[ERR/" << BUF(content); }
-#define HID(content) { log() << "[HID/" << BUF(content); }
+#define BUF(content) __func__ << "()" << __LINE__ << "# " << content << std::endl
+#define DBG(content) { log() << "DBG] " << BUF(content); }
+#define INF(content) { log() << "INF] " << BUF(content); }
+#define WRN(content) { log() << "WRN] " << BUF(content); }
+#define ERR(content) { log() << "ERR] " << BUF(content); }
+#define HID(content) { log() << "HID] " << BUF(content); }
 #else  // eg code coverage
 #define DBG(content) {}
 #define INF(content) {}
@@ -44,25 +44,26 @@ using SmartLog = StrCoutFSL;
 
 SmartLog& log();
 
-#define GTEST_LOG_FAIL void TearDown() { if (Test::HasFailure()) { log().needLog(); } }
+#define GTEST_LOG_FAIL void TearDown() { if (Test::HasFailure()) { needLog(); } }
 
 // ***********************************************************************************************
 using CellName = std::string;
 using LogStore = std::unordered_map<CellName, std::shared_ptr<SmartLog> >;
 
-const char CELL_NAME_DEFAULT[] = "";
+const char CELL_NAME_DEFAULT[] = "DEFAULT";
 
 class CellLog
 {
 public:
     explicit CellLog(const CellName& aCellName = CELL_NAME_DEFAULT);
     ~CellLog() { if (isCell()) logStore_.erase(it_); }
-
-    SmartLog& log() { return *(it_->second); }
-    SmartLog& operator()() { return log(); }
-    const CellName& cellName() const { return it_->first; }
-
     bool isCell() const { return isCell_; }
+
+    std::stringstream& log();
+    std::stringstream& operator()() { return log(); }
+    const CellName& cellName() const { return it_->first; }
+    void needLog() { it_->second->needLog(); }
+
     static size_t nCellLog() { return logStore_.size(); }
 
 private:

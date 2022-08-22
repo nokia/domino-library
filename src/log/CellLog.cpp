@@ -28,5 +28,13 @@ CellLog::CellLog(const CellName& aCellName)
 }
 
 // ***********************************************************************************************
+std::stringstream& CellLog::log()
+{
+    auto&& smartLog = *(it_->second);
+    smartLog << '[' << it_->first << '/';
+    return smartLog;
+}
+
+// ***********************************************************************************************
 LogStore CellLog::logStore_;
 }  // namespaces
