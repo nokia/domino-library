@@ -20,7 +20,9 @@ template<class aParaDom>
 struct MultiHdlrDominoTest : public Test, public CellLog
 {
     MultiHdlrDominoTest()
-        : hdlr0_([this](){ this->hdlr0(); })
+        : CellLog(UnitTest::GetInstance()->current_test_info()->name())
+        , utInit_(cellName())
+        , hdlr0_([this](){ this->hdlr0(); })
         , hdlr1_([this](){ this->hdlr1(); })
         , hdlr2_([this](){ this->hdlr2(); })
     {}

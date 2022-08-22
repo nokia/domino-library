@@ -19,6 +19,10 @@ namespace RLib
 template<class aParaDom>
 struct WbasicDatDomTest : public Test, public CellLog
 {
+    WbasicDatDomTest()
+        : CellLog(UnitTest::GetInstance()->current_test_info()->name())
+        , utInit_(cellName())
+    {}
     ~WbasicDatDomTest() { GTEST_LOG_FAIL }
 
     UtInitObjAnywhere utInit_;

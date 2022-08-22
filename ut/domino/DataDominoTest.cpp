@@ -20,6 +20,10 @@ namespace RLib
 template<class aParaDom>
 struct DataDominoTest : public Test, public CellLog
 {
+    DataDominoTest()
+        : CellLog(UnitTest::GetInstance()->current_test_info()->name())
+        , utInit_(cellName())
+    {}
     ~DataDominoTest() { GTEST_LOG_FAIL }
 
     UtInitObjAnywhere utInit_;

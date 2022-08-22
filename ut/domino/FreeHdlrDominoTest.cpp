@@ -18,7 +18,12 @@ namespace RLib
 template<class aParaDom>
 struct FreeHdlrDominoTest : public Test, public CellLog
 {
-    FreeHdlrDominoTest() { ObjAnywhere::get<aParaDom>(*this)->setMsgSelf(msgSelf_); }
+    FreeHdlrDominoTest()
+        : CellLog(UnitTest::GetInstance()->current_test_info()->name())
+        , utInit_(cellName())
+    {
+        ObjAnywhere::get<aParaDom>(*this)->setMsgSelf(msgSelf_);
+    }
     ~FreeHdlrDominoTest() { GTEST_LOG_FAIL }
 
     // -------------------------------------------------------------------------------------------

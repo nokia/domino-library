@@ -20,6 +20,8 @@ template<class aParaDom>
 struct PriDominoTest : public Test, public CellLog
 {
     PriDominoTest()
+        : CellLog(UnitTest::GetInstance()->current_test_info()->name())
+        , utInit_(cellName())
     {
         ObjAnywhere::get<aParaDom>(*this)->setMsgSelf(msgSelf_);
 

@@ -18,6 +18,10 @@ namespace RLib
 template<class aParaDom>
 struct DominoTest : public Test, public CellLog
 {
+    DominoTest()
+        : CellLog(UnitTest::GetInstance()->current_test_info()->name())
+        , utInit_(cellName())
+    {}
     ~DominoTest() { GTEST_LOG_FAIL }
 
     UtInitObjAnywhere utInit_;
