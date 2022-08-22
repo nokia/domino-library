@@ -11,8 +11,9 @@
 //   . for cell: create smartlog & store globally with cell name
 //   . for member: find smartlog by cell name (so no para shipping)
 //   . clean logStore_: del smartlog from logStore_ when cell destructed
-//   . easily support DBG/etc macros
-//   . unify interface for DBG/etc macros
+//   * easily support DBG/etc macros
+//   * unify interface for DBG/etc macros
+//   . cell name as log prefix
 // ***********************************************************************************************
 #ifndef CELLLOG_HPP_
 #define CELLLOG_HPP_
