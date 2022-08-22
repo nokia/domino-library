@@ -35,7 +35,7 @@ private:
     // -------------------------------------------------------------------------------------------
     std::unordered_map<Domino::Event, EMsgPriority> priorities_;    // [event]=priority
 public:
-    using aDominoType::log;
+    using aDominoType::ssLog;
 };
 
 // ***********************************************************************************************

@@ -9,13 +9,6 @@
 namespace RLib
 {
 // ***********************************************************************************************
-SmartLog& log()
-{
-    static SmartLog log;
-    return log;
-}
-
-// ***********************************************************************************************
 CellLog::CellLog(const CellName& aCellName)
     : it_(logStore_.find(aCellName))
     , isCell_(it_ == logStore_.end())
@@ -24,11 +17,12 @@ CellLog::CellLog(const CellName& aCellName)
     {
         logStore_[aCellName] = std::make_shared<SmartLog>();
         it_ = logStore_.find(aCellName);
+        DBG("created new log=" << aCellName);
     }
 }
 
 // ***********************************************************************************************
-std::stringstream& CellLog::log()
+std::stringstream& CellLog::ssLog()
 {
     auto&& smartLog = *(it_->second);
     smartLog << '[' << it_->first << '/';
@@ -36,5 +30,13 @@ std::stringstream& CellLog::log()
 }
 
 // ***********************************************************************************************
+CellLog& CellLog::defaultCellLog()
+{
+    static CellLog staticLog(CELL_NAME_DEFAULT);
+    return staticLog;
+}
+
+// ***********************************************************************************************
 LogStore CellLog::logStore_;
+
 }  // namespaces

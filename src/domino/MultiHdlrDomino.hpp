@@ -50,7 +50,7 @@ private:
     // -------------------------------------------------------------------------------------------
     std::unordered_map<Domino::Event, MultiHdlr> multiHdlrs_;
 public:
-    using aDominoType::log;
+    using aDominoType::ssLog;
 };
 
 // ***********************************************************************************************

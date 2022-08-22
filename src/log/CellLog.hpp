@@ -7,13 +7,16 @@
 // - why/value:
 //   . a cell & its full-member & shared-member/participant shall log into 1 smartlog
 // - req:
-//   * no CellLog, all user code shall work well & as simple as legacy
 //   . for cell: create smartlog & store globally with cell name
 //   . for member: find smartlog by cell name (so no para shipping)
 //   . clean logStore_: del smartlog from logStore_ when cell destructed
 //   * easily support DBG/etc macros
 //   * unify interface for DBG/etc macros
 //   . cell name as log prefix
+//   * no CellLog, all user code shall work well & as simple as legacy
+//     . class based on CellLog: default using CellLog(CELL_NAME_DEFAULT)
+//     . func with CellLog para: default using CellLog::defaultCellLog()
+//     . class & func w/o CellLog: 
 // ***********************************************************************************************
 #ifndef CELLLOG_HPP_
 #define CELLLOG_HPP_
@@ -30,11 +33,11 @@ using SmartLog = StrCoutFSL;
 // ***********************************************************************************************
 #if 1  // log_ instead of this->log_ so support static log_
 #define BUF(content) __func__ << "()" << __LINE__ << "# " << content << std::endl
-#define DBG(content) { log() << "DBG] " << BUF(content); }
-#define INF(content) { log() << "INF] " << BUF(content); }
-#define WRN(content) { log() << "WRN] " << BUF(content); }
-#define ERR(content) { log() << "ERR] " << BUF(content); }
-#define HID(content) { log() << "HID] " << BUF(content); }
+#define DBG(content) { ssLog() << "DBG] " << BUF(content); }
+#define INF(content) { ssLog() << "INF] " << BUF(content); }
+#define WRN(content) { ssLog() << "WRN] " << BUF(content); }
+#define ERR(content) { ssLog() << "ERR] " << BUF(content); }
+#define HID(content) { ssLog() << "HID] " << BUF(content); }
 #else  // eg code coverage
 #define DBG(content) {}
 #define INF(content) {}
@@ -42,8 +45,6 @@ using SmartLog = StrCoutFSL;
 #define ERR(content) {}
 #define HID(content) {}
 #endif
-
-SmartLog& log();
 
 #define GTEST_LOG_FAIL { if (Test::HasFailure()) needLog(); }
 
@@ -60,19 +61,25 @@ public:
     ~CellLog() { if (isCell()) logStore_.erase(it_); }
     bool isCell() const { return isCell_; }
 
-    std::stringstream& log();
-    std::stringstream& operator()() { return log(); }
+    std::stringstream& ssLog();
+    std::stringstream& operator()() { return ssLog(); }
     const CellName& cellName() const { return it_->first; }
     void needLog() { it_->second->needLog(); }
 
     static size_t nCellLog() { return logStore_.size(); }
+    static CellLog& defaultCellLog();
 
 private:
+    // -------------------------------------------------------------------------------------------
     LogStore::iterator it_;
     bool isCell_;
 
     static LogStore logStore_;
 };
+
+// ***********************************************************************************************
+inline std::stringstream& ssLog() { return CellLog::defaultCellLog().ssLog(); }
+
 }  // namespace
 #endif  // CELLLOG_HPP_
 // ***********************************************************************************************

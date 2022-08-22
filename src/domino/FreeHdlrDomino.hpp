@@ -35,7 +35,7 @@ protected:
 private:
     std::vector<bool> isRepeatHdlr_;  // bitmap & dyn expand, [event]=t/f
 public:
-    using aDominoType::log;
+    using aDominoType::ssLog;
 };
 
 // ***********************************************************************************************

@@ -36,7 +36,7 @@ private:
     std::vector<bool> wrCtrl_;
 
 public:
-    using aDominoType::log;
+    using aDominoType::ssLog;
 };
 
 // ***********************************************************************************************
@@ -113,7 +113,7 @@ aDataType wbasic_getValue(aDataDominoType& aDom, const Domino::EvName& aEvName)
     auto&& data = std::static_pointer_cast<aDataType>(aDom.wbasic_getShared(aEvName));
     if (data.use_count() > 0) return *data;
 
-    CellLog& log = aDom;
+    CellLog& ssLog = aDom;
     WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " not found, return undefined obj!!!");
     return aDataType();
 }

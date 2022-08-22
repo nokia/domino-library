@@ -44,7 +44,7 @@ private:
     // -------------------------------------------------------------------------------------------
     std::unordered_map<Domino::Event, std::shared_ptr<void> > dataStore_;  // [event]=shared_ptr<"DataType">
 public:
-    using aDominoType::log;
+    using aDominoType::ssLog;
 };
 
 // ***********************************************************************************************
@@ -81,7 +81,7 @@ aDataType getValue(aDataDominoType& aDom, const Domino::EvName& aEvName)
     auto&& data = std::static_pointer_cast<aDataType>(aDom.getShared(aEvName));
     if (data.use_count() > 0) return *data;
 
-    CellLog& log = aDom;
+    CellLog& ssLog = aDom;
     WRN("(DataDomino) Failed!!! EvName=" << aEvName << " not found, return undefined obj!!!");
     return aDataType();
 }
