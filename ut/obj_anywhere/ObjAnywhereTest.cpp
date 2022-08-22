@@ -18,6 +18,7 @@ namespace RLib
 // ***********************************************************************************************
 struct ObjAnywhereTest : public Test, public CellLog
 {
+    ObjAnywhereTest() : CellLog(UnitTest::GetInstance()->current_test_info()->name()) {}
     ~ObjAnywhereTest() { GTEST_LOG_FAIL }
 };
 
@@ -27,7 +28,7 @@ TEST_F(ObjAnywhereTest, GOLD_setThenGetIt)
 {
     ObjAnywhere::init(*this);
     auto p1 = std::make_shared<int>(1234);
-    ObjAnywhere::set<int>(p1, *this);        // req: normal set
+    ObjAnywhere::set<int>(p1, *this);             // req: normal set
     EXPECT_EQ(p1, ObjAnywhere::get<int>(*this));  // req: get p1 itself
     ObjAnywhere::deinit(*this);
 }
@@ -37,7 +38,7 @@ TEST_F(ObjAnywhereTest, get_replacement)
     auto p1 = std::make_shared<int>(1);
     ObjAnywhere::set<int>(p1, *this);
     auto p2 = std::make_shared<int>(2);
-    ObjAnywhere::set<int>(p2, *this);        // req: replace set
+    ObjAnywhere::set<int>(p2, *this);             // req: replace set
     EXPECT_EQ(p2, ObjAnywhere::get<int>(*this));  // req: get p2 itself
     ObjAnywhere::deinit(*this);
 }
@@ -84,7 +85,7 @@ TEST_F(ObjAnywhereTest, destructBySetNull)
     ObjAnywhere::init(*this);
     ObjAnywhere::set<TestObj>(std::make_shared<TestObj>(isDestructed), *this);
     ObjAnywhere::set<TestObj>(std::shared_ptr<TestObj>(), *this);  // set null
-    EXPECT_FALSE(ObjAnywhere::get<TestObj>(*this));                     // req: destruct TestObj
+    EXPECT_FALSE(ObjAnywhere::get<TestObj>(*this));                // req: destruct TestObj
     EXPECT_TRUE(isDestructed);                                     // req: destruct correctly
     ObjAnywhere::deinit(*this);
 }
