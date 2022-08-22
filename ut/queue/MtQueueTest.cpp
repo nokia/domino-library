@@ -17,6 +17,7 @@ namespace RLib {
 // ***********************************************************************************************
 struct MtQueueTest : public Test, public CellLog
 {
+    MtQueueTest() : CellLog(UnitTest::GetInstance()->current_test_info()->name()) {}
     ~MtQueueTest() { GTEST_LOG_FAIL }
 
     void threadMain(int aStartNum, int aSteps)
