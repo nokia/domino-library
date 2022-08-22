@@ -24,12 +24,11 @@ struct MultiHdlrDominoTest : public Test, public CellLog
         , hdlr1_([this](){ this->hdlr1(); })
         , hdlr2_([this](){ this->hdlr2(); })
     {}
+    ~MultiHdlrDominoTest() { GTEST_LOG_FAIL }
 
     MOCK_METHOD0(hdlr0, void());
     MOCK_METHOD0(hdlr1, void());
     MOCK_METHOD0(hdlr2, void());
-
-    GTEST_LOG_FAIL
 
     // -------------------------------------------------------------------------------------------
     UtInitObjAnywhere utInit_;

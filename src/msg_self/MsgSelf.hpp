@@ -61,7 +61,7 @@ using LoopReqFUNC  = std::function<void(LoopBackFUNC)>;
 class MsgSelf : public CellLog
 {
 public:
-    MsgSelf(LoopReqFUNC aFunc, const CellName&);
+    MsgSelf(LoopReqFUNC aFunc, const CellName& = CELL_NAME_DEFAULT);
     ~MsgSelf();
 
     void newMsg(const WeakMsgCB& aMsgCB, const EMsgPriority = EMsgPri_NORM);

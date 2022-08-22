@@ -45,7 +45,7 @@ using SmartLog = StrCoutFSL;
 
 SmartLog& log();
 
-#define GTEST_LOG_FAIL void TearDown() { if (Test::HasFailure()) { needLog(); } }
+#define GTEST_LOG_FAIL { if (Test::HasFailure()) needLog(); }
 
 // ***********************************************************************************************
 using CellName = std::string;

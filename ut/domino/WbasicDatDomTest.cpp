@@ -19,7 +19,7 @@ namespace RLib
 template<class aParaDom>
 struct WbasicDatDomTest : public Test, public CellLog
 {
-    GTEST_LOG_FAIL
+    ~WbasicDatDomTest() { GTEST_LOG_FAIL }
 
     UtInitObjAnywhere utInit_;
     std::set<Domino::Event> uniqueEVs_;

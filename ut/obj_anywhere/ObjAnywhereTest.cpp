@@ -18,7 +18,7 @@ namespace RLib
 // ***********************************************************************************************
 struct ObjAnywhereTest : public Test, public CellLog
 {
-    GTEST_LOG_FAIL
+    ~ObjAnywhereTest() { GTEST_LOG_FAIL }
 };
 
 #define GET_SET

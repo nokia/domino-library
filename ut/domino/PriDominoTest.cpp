@@ -36,8 +36,7 @@ struct PriDominoTest : public Test, public CellLog
             ObjAnywhere::get<aParaDom>(*this)->setHdlr("e2", *(this->d2EventHdlr_));  // raise when d5() is exe
         };
     }
-
-    GTEST_LOG_FAIL
+    ~PriDominoTest() { GTEST_LOG_FAIL }
 
     // -------------------------------------------------------------------------------------------
     UtInitObjAnywhere utInit_;

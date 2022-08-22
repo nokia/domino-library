@@ -25,8 +25,7 @@ struct MsgSelfTests : public Test, public CellLog
         *d4MsgHdlr_ = [this](){ hdlrIDs_.push(4); };
         *d5MsgHdlr_ = [this](){ hdlrIDs_.push(5); msgSelf_->newMsg(d2MsgHdlr_, EMsgPri_HIGH); };
     }
-
-    GTEST_LOG_FAIL
+    ~MsgSelfTests() { GTEST_LOG_FAIL }
 
     // -------------------------------------------------------------------------------------------
     std::shared_ptr<MsgSelf> msgSelf_ = std::make_shared<MsgSelf>(

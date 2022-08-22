@@ -19,8 +19,7 @@ template<class aParaDom>
 struct FreeHdlrDominoTest : public Test, public CellLog
 {
     FreeHdlrDominoTest() { ObjAnywhere::get<aParaDom>(*this)->setMsgSelf(msgSelf_); }
-
-    GTEST_LOG_FAIL
+    ~FreeHdlrDominoTest() { GTEST_LOG_FAIL }
 
     // -------------------------------------------------------------------------------------------
     UtInitObjAnywhere utInit_;

@@ -18,7 +18,7 @@ namespace RLib
 template<class aParaDom>
 struct DominoTest : public Test, public CellLog
 {
-    GTEST_LOG_FAIL
+    ~DominoTest() { GTEST_LOG_FAIL }
 
     UtInitObjAnywhere utInit_;
     std::set<Domino::Event> uniqueEVs_;

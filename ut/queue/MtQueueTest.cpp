@@ -17,6 +17,8 @@ namespace RLib {
 // ***********************************************************************************************
 struct MtQueueTest : public Test, public CellLog
 {
+    ~MtQueueTest() { GTEST_LOG_FAIL }
+
     void threadMain(int aStartNum, int aSteps)
     {
         for (int i = 0; i < aSteps; i++)
@@ -25,8 +27,6 @@ struct MtQueueTest : public Test, public CellLog
             if (i == 0 || i == aSteps/2) usleep(1u);  // give chance to other threads, at least 2
         }
     }
-
-    GTEST_LOG_FAIL
 
     MtQueue mtQueue_;
 };
