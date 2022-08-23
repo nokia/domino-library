@@ -13,6 +13,9 @@
 //   * easily support DBG/etc macros
 //   * unify interface for DBG/etc macros
 //   . cell name as log prefix
+//   . low couple:
+//     . del cell, cell-member still can log
+//     . same for cell-participant
 //   * no CellLog, all user code shall work well & as simple as legacy
 //     . class based on CellLog: default using CellLog(CELL_NAME_DEFAULT)
 //     . func with CellLog para: default using CellLog::defaultCellLog()
@@ -58,21 +61,21 @@ class CellLog
 {
 public:
     explicit CellLog(const CellName& aCellName = CELL_NAME_DEFAULT);
-    ~CellLog() { if (isCell()) logStore_.erase(it_); }
-    bool isCell() const { return isCell_; }
+    ~CellLog() { if (smartLog_.use_count() == 2) logStore_.erase(cellName_); }
 
     std::stringstream& ssLog();
     std::stringstream& operator()() { return ssLog(); }
-    const CellName& cellName() const { return it_->first; }
-    void needLog() { it_->second->needLog(); }
+    const CellName& cellName() const { return cellName_; }
+    void needLog() { smartLog_->needLog(); }
 
-    static size_t nCellLog() { return logStore_.size(); }
+    static auto nCellLog() { return logStore_.size(); }
+    static size_t logLen(const CellName& aCellName);
     static CellLog& defaultCellLog();
 
 private:
     // -------------------------------------------------------------------------------------------
-    LogStore::iterator it_;
-    bool isCell_;
+    std::shared_ptr<SmartLog> smartLog_;
+    const CellName            cellName_;
 
     static LogStore logStore_;
 };

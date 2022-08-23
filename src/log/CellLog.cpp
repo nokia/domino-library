@@ -9,24 +9,20 @@
 namespace RLib
 {
 // ***********************************************************************************************
-CellLog::CellLog(const CellName& aCellName)
-    : it_(logStore_.find(aCellName))
-    , isCell_(it_ == logStore_.end())
+CellLog::CellLog(const CellName& aCellName) : cellName_(aCellName)
 {
-    if (isCell_)
+    auto&& it = logStore_.find(aCellName);
+    if (it == logStore_.end())
     {
-        logStore_[aCellName] = std::make_shared<SmartLog>();
-        it_ = logStore_.find(aCellName);
-        DBG("created new log=" << aCellName);
+        smartLog_ = std::make_shared<SmartLog>();
+        logStore_[aCellName] = smartLog_;
+        DBG("creatd new log, name=" << aCellName);
     }
-}
-
-// ***********************************************************************************************
-std::stringstream& CellLog::ssLog()
-{
-    auto&& smartLog = *(it_->second);
-    smartLog << '[' << it_->first << '/';
-    return smartLog;
+    else
+    {
+        smartLog_ = it->second;
+        DBG("reused existing log, name=" << aCellName);
+    }
 }
 
 // ***********************************************************************************************
@@ -34,6 +30,20 @@ CellLog& CellLog::defaultCellLog()
 {
     static CellLog staticLog(CELL_NAME_DEFAULT);
     return staticLog;
+}
+
+// ***********************************************************************************************
+size_t CellLog::logLen(const CellName& aCellName)
+{
+    auto&& it = logStore_.find(aCellName);
+    return it == logStore_.end() ? 0 : it->second->str().size();
+}
+
+// ***********************************************************************************************
+std::stringstream& CellLog::ssLog()
+{
+    *smartLog_ << '[' << cellName_ << '/';
+    return *smartLog_;
 }
 
 // ***********************************************************************************************
