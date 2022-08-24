@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-// - why/constitution:
+// - CONSTITUTION:
 //   * Cell-concept can use SmartLog
 //   . a cell & its full-member & shared-member/participant shall log into 1 smartlog
 //   . convenient all cells/members/participants to use SmartLog
-// - req:
+// - REQ:
 //   . for cell: create smartlog & store globally with cell name
 //   . for member: find smartlog by cell name (so no para shipping)
 //   . clean logStore_: del smartlog from logStore_ when no user
@@ -23,6 +23,8 @@
 //     . class based on CellLog: default using CellLog(CELL_NAME_DEFAULT)
 //     . func with CellLog para: default using CellLog::defaultCellLog()
 //     . class & func w/o CellLog: using global oneLog()
+// - CORE:
+//   . smartLog_
 // - note:
 //   . why oneLog() as func than var: more flexible, eg can print prefix in oneLog()
 //   . why CellLog& to participant func:
@@ -81,7 +83,7 @@ public:
 
     static size_t logLen(const CellName& aCellName);
     static void needLog() { for (auto&& it : logStore_) it.second->needLog(); }
-    static auto nCellLog() { return logStore_.size(); }
+    static auto nLog() { return logStore_.size(); }
     static CellLog& defaultCellLog();
 
 private:

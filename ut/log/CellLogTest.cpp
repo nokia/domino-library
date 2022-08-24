@@ -56,7 +56,7 @@ TEST(CellLogTest, GOLD_cell_member_participant)
 
         CellLog::needLog();                     // req: shall output log to screen
     }
-    EXPECT_EQ(0, CellLog::nCellLog());          // req: del log when no user
+    EXPECT_EQ(0, CellLog::nLog());              // req: del log when no user
 }
 
 // ***********************************************************************************************
@@ -77,7 +77,7 @@ TEST(CellLogTest, low_couple_cell_and_member)
 
     if (Test::HasFailure()) CellLog::needLog();
     member.reset();
-    EXPECT_EQ(0, CellLog::nCellLog());          // req: del log when no user
+    EXPECT_EQ(0, CellLog::nLog());              // req: del log when no user
 }
 TEST(CellLogTest, low_couple_between_copies)
 {
@@ -96,7 +96,7 @@ TEST(CellLogTest, low_couple_between_copies)
 
     if (Test::HasFailure()) CellLog::needLog();
     copy.reset();
-    EXPECT_EQ(0, CellLog::nCellLog());          // req: del log when no user
+    EXPECT_EQ(0, CellLog::nLog());              // req: del log when no user
 }
 TEST(CellLogTest, low_couple_callbackFunc)
 {
@@ -116,7 +116,7 @@ TEST(CellLogTest, low_couple_callbackFunc)
 
         if (Test::HasFailure()) CellLog::needLog();
     }
-    EXPECT_EQ(0, CellLog::nCellLog());          // req: del log when no user
+    EXPECT_EQ(0, CellLog::nLog());              // req: del log when no user
 }
 
 // ***********************************************************************************************
@@ -144,7 +144,7 @@ TEST(CellLogTest, no_explicit_CellLog_like_legacy)
     }
     if (Test::HasFailure()) CellLog::needLog();
     CellLog::defaultCellLog_.reset();   // dump log in time
-    EXPECT_EQ(0, CellLog::nCellLog());  // req: del log when no user
+    EXPECT_EQ(0, CellLog::nLog());      // req: del log when no user
 }
 
 }  // namespace
