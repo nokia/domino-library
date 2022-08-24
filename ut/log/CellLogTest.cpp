@@ -36,6 +36,7 @@ void cellParticipant(CellLog& ssLog = CellLog::defaultCellLog())
 TEST(CellLogTest, GOLD_cell_member_participant)
 {
     const char CELL_NAME[] = "GOLD_cell_member_participant";
+    EXPECT_EQ(0, CellLog::logLen(CELL_NAME));
     {
         Cell cell(CELL_NAME);
         const auto len_1 = CellLog::logLen(CELL_NAME);
