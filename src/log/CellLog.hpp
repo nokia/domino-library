@@ -16,7 +16,7 @@
 //   . low couple:
 //     . del cell, cell-member still can log
 //     . del CellLog, copied one still can log (CellLog can't be assigned since const member)
-//     . same for cell-participant
+//     . callback func can independ logging/no crash
 //   * no CellLog, all user code shall work well & as simple as legacy
 //     . class based on CellLog: default using CellLog(CELL_NAME_DEFAULT)
 //     . func with CellLog para: default using CellLog::defaultCellLog()
@@ -50,7 +50,7 @@ using SmartLog = StrCoutFSL;
 #define HID(content) {}
 #endif
 
-#define GTEST_LOG_FAIL { if (Test::HasFailure()) needLog(); }
+#define GTEST_LOG_FAIL { if (Test::HasFailure()) CellLog::needLog(); }
 
 // ***********************************************************************************************
 using CellName = std::string;
@@ -67,10 +67,10 @@ public:
     std::stringstream& ssLog();
     std::stringstream& operator()() { return ssLog(); }
     const CellName& cellName() const { return cellName_; }
-    void needLog() { smartLog_->needLog(); }
 
-    static auto nCellLog() { return logStore_.size(); }
     static size_t logLen(const CellName& aCellName);
+    static void needLog() { for (auto&& it : logStore_) it.second->needLog(); }
+    static auto nCellLog() { return logStore_.size(); }
     static CellLog& defaultCellLog();
 
 private:

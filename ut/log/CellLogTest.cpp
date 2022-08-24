@@ -16,8 +16,8 @@ namespace RLib
 struct Cell : public CellLog
 {
     // req: can log
-    Cell(const CellName aCellName = CELL_NAME_DEFAULT) : CellLog(aCellName) { DBG("hello world, I'm a cell"); }
-    ~Cell() { DBG("bye world, I'm a cell"); }
+    Cell(const CellName aCellName = CELL_NAME_DEFAULT) : CellLog(aCellName) { DBG("hello world, I'm a cell, this=" << this); }
+    ~Cell() { DBG("bye world, I'm a cell, this=" << this); }
 };
 
 struct CellMember : public CellLog
@@ -53,7 +53,7 @@ TEST(CellLogTest, GOLD_cell_member_participant)
         const auto len_4 = CellLog::logLen(CELL_NAME);
         EXPECT_GT(len_4, len_3);                // req: can log more in same log
 
-        member.needLog();                       // req: shall output log to screen
+        CellLog::needLog();                     // req: shall output log to screen
     }
     EXPECT_EQ(0, CellLog::nCellLog());          // req: del log when no user
 }
@@ -74,7 +74,7 @@ TEST(CellLogTest, low_couple_cell_and_member)
     const auto len_3 = CellLog::logLen(CELL_NAME);
     EXPECT_GT(len_3, len_2);                    // req: Cell-destructed shall not crash/impact CellMember's logging
 
-    member->needLog();
+    if (Test::HasFailure()) CellLog::needLog();
     member.reset();
     EXPECT_EQ(0, CellLog::nCellLog());          // req: del log when no user
 }
@@ -93,8 +93,28 @@ TEST(CellLogTest, low_couple_between_copies)
     const auto len_3 = CellLog::logLen(CELL_NAME);
     EXPECT_GT(len_3, len_2);                    // req: Cell-destructed shall not crash/impact copy's logging
 
-    copy->needLog();
+    if (Test::HasFailure()) CellLog::needLog();
     copy.reset();
+    EXPECT_EQ(0, CellLog::nCellLog());          // req: del log when no user
+}
+TEST(CellLogTest, low_couple_callbackFunc)
+{
+    const char CELL_NAME[] = "low_couple_callbackFunc";
+    auto cell = std::make_shared<Cell>((CELL_NAME));
+    const auto len_1 = CellLog::logLen(CELL_NAME);
+    EXPECT_GT(len_1, 0);                        // req: can log
+    {
+        std::function<void()> cb = [ssLog = *cell]() mutable { INF("hello world, I'm a callback func"); };
+        const auto len_2 = CellLog::logLen(CELL_NAME);
+        EXPECT_GE(len_2, len_1);                // req: log still there (more log since no move-construct of Cell)
+
+        cell.reset();
+        cb();
+        const auto len_3 = CellLog::logLen(CELL_NAME);
+        EXPECT_GT(len_3, len_2);                // req: can log
+
+        if (Test::HasFailure()) CellLog::needLog();
+    }
     EXPECT_EQ(0, CellLog::nCellLog());          // req: del log when no user
 }
 
@@ -118,11 +138,10 @@ TEST(CellLogTest, no_explicit_CellLog_like_legacy)
         CellMember member;              // req: no explicit CellLog
         cellParticipant();              // req: no explicit CellLog
 
-        member.needLog();               // req: shall output log to screen
-
         NonCell nonCell;                // req: class not based on CellLog
         nonCellFunc();                  // req: func w/o CellLog para
     }
+    if (Test::HasFailure()) CellLog::needLog();
     CellLog::defaultCellLog_.reset();   // dump log in time
     EXPECT_EQ(0, CellLog::nCellLog());  // req: del log when no user
 }

@@ -32,7 +32,7 @@ protected:    // derive use only
 
 //------------------------------------------------------------------------------------------------
 private:
-    bool needLog_ = true;  // init=false is smartlog, =true is legacy(full log always)
+    bool needLog_ = false;  // init=false is smartlog, =true is legacy(full log always)
 };
 }  // namespace
 #endif // #ifndef BASE_SMART_LOG_HPP_
