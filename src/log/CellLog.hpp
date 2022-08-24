@@ -29,6 +29,9 @@
 //     . unify cell/member/participant: own its CellLog
 //     . fast to pass reference from cell/member to participant
 //     . can create new member within participant
+//   . why name as oneLog:
+//     . vs ssLog: oneLog can represent SmartLog or CellLog
+//     . vs log: too common, possible comflict with user definition
 // ***********************************************************************************************
 #ifndef CELLLOG_HPP_
 #define CELLLOG_HPP_
