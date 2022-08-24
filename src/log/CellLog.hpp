@@ -15,6 +15,7 @@
 //   . cell name as log prefix
 //   . low couple:
 //     . del cell, cell-member still can log
+//     . del CellLog, copied one still can log (CellLog can't be assigned since const member)
 //     . same for cell-participant
 //   * no CellLog, all user code shall work well & as simple as legacy
 //     . class based on CellLog: default using CellLog(CELL_NAME_DEFAULT)
@@ -78,6 +79,8 @@ private:
     const CellName            cellName_;
 
     static LogStore logStore_;
+public:
+    static std::shared_ptr<CellLog> defaultCellLog_;
 };
 
 // ***********************************************************************************************

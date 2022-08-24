@@ -28,8 +28,8 @@ CellLog::CellLog(const CellName& aCellName) : cellName_(aCellName)
 // ***********************************************************************************************
 CellLog& CellLog::defaultCellLog()
 {
-    static CellLog staticLog(CELL_NAME_DEFAULT);
-    return staticLog;
+    if (not defaultCellLog_) defaultCellLog_ = std::make_shared<CellLog>(CELL_NAME_DEFAULT);
+    return *defaultCellLog_;
 }
 
 // ***********************************************************************************************
@@ -48,5 +48,6 @@ std::stringstream& CellLog::ssLog()
 
 // ***********************************************************************************************
 LogStore CellLog::logStore_;
+std::shared_ptr<CellLog> CellLog::defaultCellLog_;
 
 }  // namespaces

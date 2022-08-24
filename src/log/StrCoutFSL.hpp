@@ -26,8 +26,8 @@ namespace RLib
 {
 // ***********************************************************************************************
 class StrCoutFSL               // FSL = Formatted Smart Log
-   : public BaseSL
-   , public std::stringstream  // for operator<<()
+    : public BaseSL
+    , public std::stringstream  // for operator<<()
 {
 public :
     ~StrCoutFSL();

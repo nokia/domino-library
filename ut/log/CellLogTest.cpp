@@ -74,7 +74,27 @@ TEST(CellLogTest, low_couple_cell_and_member)
     const auto len_3 = CellLog::logLen(CELL_NAME);
     EXPECT_GT(len_3, len_2);                    // req: Cell-destructed shall not crash/impact CellMember's logging
 
+    member->needLog();
     member.reset();
+    EXPECT_EQ(0, CellLog::nCellLog());          // req: del log when no user
+}
+TEST(CellLogTest, low_couple_between_copies)
+{
+    const char CELL_NAME[] = "low_couple_between_copies";
+    auto cell = std::make_shared<Cell>((CELL_NAME));
+    const auto len_1 = CellLog::logLen(CELL_NAME);
+    EXPECT_GT(len_1, 0);                        // req: can log
+
+    auto copy = std::make_shared<Cell>(*cell);
+    const auto len_2 = CellLog::logLen(CELL_NAME);
+    EXPECT_EQ(len_2, len_1);                    // req: log still there
+
+    cell.reset();
+    const auto len_3 = CellLog::logLen(CELL_NAME);
+    EXPECT_GT(len_3, len_2);                    // req: Cell-destructed shall not crash/impact copy's logging
+
+    copy->needLog();
+    copy.reset();
     EXPECT_EQ(0, CellLog::nCellLog());          // req: del log when no user
 }
 
@@ -103,7 +123,8 @@ TEST(CellLogTest, no_explicit_CellLog_like_legacy)
         NonCell nonCell;                // req: class not based on CellLog
         nonCellFunc();                  // req: func w/o CellLog para
     }
-    //EXPECT_EQ(0, CellLog::nCellLog());  // req: del log when no user
+    CellLog::defaultCellLog_.reset();   // dump log in time
+    EXPECT_EQ(0, CellLog::nCellLog());  // req: del log when no user
 }
 
 }  // namespace
