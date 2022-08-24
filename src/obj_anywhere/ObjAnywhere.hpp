@@ -41,21 +41,21 @@ public:
     using ObjIndex = size_t;
     using ObjStore = std::unordered_map<ObjIndex, std::shared_ptr<void> >;
 
-    static void init(CellLog& ssLog = CellLog::defaultCellLog());    // init objStore_
-    static void deinit(CellLog& ssLog = CellLog::defaultCellLog());  // rm objStore_
-    static bool isInit() { return objStore_ != nullptr; }            // init objStore_?
+    static void init(CellLog& oneLog = CellLog::defaultCellLog());    // init objStore_
+    static void deinit(CellLog& oneLog = CellLog::defaultCellLog());  // rm objStore_
+    static bool isInit() { return objStore_ != nullptr; }             // init objStore_?
 
     // -------------------------------------------------------------------------------------------
     // - save aObjType into objStore_
     // -------------------------------------------------------------------------------------------
     template<typename aObjType>
-    static void set(std::shared_ptr<aObjType> aSharedObj, CellLog& ssLog = CellLog::defaultCellLog());
+    static void set(std::shared_ptr<aObjType> aSharedObj, CellLog& oneLog = CellLog::defaultCellLog());
 
     // -------------------------------------------------------------------------------------------
     // - get a "Obj" from objStore_
     // - template operator[] not easier in usage
     // -------------------------------------------------------------------------------------------
-    template<typename aObjType> static std::shared_ptr<aObjType> get(CellLog& ssLog = CellLog::defaultCellLog());
+    template<typename aObjType> static std::shared_ptr<aObjType> get(CellLog& oneLog = CellLog::defaultCellLog());
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ private:
 
 // ***********************************************************************************************
 template<typename aObjType>
-std::shared_ptr<aObjType> ObjAnywhere::get(CellLog& ssLog)
+std::shared_ptr<aObjType> ObjAnywhere::get(CellLog& oneLog)
 {
     if (not isInit()) return std::shared_ptr<aObjType>();
 
@@ -77,7 +77,7 @@ std::shared_ptr<aObjType> ObjAnywhere::get(CellLog& ssLog)
 
 // ***********************************************************************************************
 template<typename aObjType>
-void ObjAnywhere::set(std::shared_ptr<aObjType> aSharedObj, CellLog& ssLog)
+void ObjAnywhere::set(std::shared_ptr<aObjType> aSharedObj, CellLog& oneLog)
 {
     if (not isInit())
     {

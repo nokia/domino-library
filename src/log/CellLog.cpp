@@ -40,7 +40,7 @@ size_t CellLog::logLen(const CellName& aCellName)
 }
 
 // ***********************************************************************************************
-std::stringstream& CellLog::ssLog()
+SmartLog& CellLog::oneLog()
 {
     *smartLog_ << '[' << cellName_ << '/';
     return *smartLog_;

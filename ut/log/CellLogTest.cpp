@@ -27,7 +27,7 @@ struct CellMember : public CellLog
     ~CellMember() { DBG("bye world, I'm a cell member"); }
 };
 
-void cellParticipant(CellLog& ssLog = CellLog::defaultCellLog())
+void cellParticipant(CellLog& oneLog = CellLog::defaultCellLog())
 {
     DBG("hello world, I'm a cell's participant");  // req: can log, same API
 }
@@ -105,7 +105,7 @@ TEST(CellLogTest, low_couple_callbackFunc)
     const auto len_1 = CellLog::logLen(CELL_NAME);
     EXPECT_GT(len_1, 0);                        // req: can log
     {
-        std::function<void()> cb = [ssLog = *cell]() mutable { INF("hello world, I'm a callback func"); };
+        std::function<void()> cb = [oneLog = *cell]() mutable { INF("hello world, I'm a callback func"); };
         const auto len_2 = CellLog::logLen(CELL_NAME);
         EXPECT_GE(len_2, len_1);                // req: log still there (more log since no move-construct of Cell)
 

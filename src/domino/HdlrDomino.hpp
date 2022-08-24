@@ -62,7 +62,7 @@ private:
     std::unordered_map<Domino::Event, SharedMsgCB> hdlrs_;
     std::shared_ptr<MsgSelf> msgSelf_;
 public:
-    using aDominoType::ssLog;
+    using aDominoType::oneLog;
 };
 
 // ***********************************************************************************************
