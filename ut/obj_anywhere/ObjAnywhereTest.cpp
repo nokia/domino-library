@@ -118,7 +118,6 @@ TEST_F(ObjAnywhereTest, ignore_dup_init)
     ObjAnywhere::init(*this);  // req: ignore dup init
     EXPECT_EQ(pChar, ObjAnywhere::get<char>(*this));
     ObjAnywhere::deinit(*this);
-EXPECT_TRUE(false);
 }
 TEST_F(ObjAnywhereTest, default_is_deinit)
 {
