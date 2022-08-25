@@ -143,7 +143,7 @@ TEST(CellLogTest, no_explicit_CellLog_like_legacy)
         nonCellFunc();                  // req: func w/o UniLog para
     }
     if (Test::HasFailure()) UniLog::needLog();
-    UniLog::defaultCellLog_.reset();   // dump log in time
+    UniLog::defaultUniLog_.reset();   // dump log in time
     EXPECT_EQ(0, UniLog::nLog());      // req: del log when no user
 }
 

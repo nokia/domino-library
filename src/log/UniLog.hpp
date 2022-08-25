@@ -87,11 +87,11 @@ public:
 private:
     // -------------------------------------------------------------------------------------------
     std::shared_ptr<SmartLog> smartLog_;
-    const UniLogName            uniLogName_;
+    const UniLogName          uniLogName_;
 
     static LogStore logStore_;
 public:
-    static std::shared_ptr<UniLog> defaultCellLog_;
+    static std::shared_ptr<UniLog> defaultUniLog_;
 };
 
 inline SmartLog& oneLog() { return UniLog::defaultUniLog().oneLog(); }

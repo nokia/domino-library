@@ -28,8 +28,8 @@ UniLog::UniLog(const UniLogName& aUniLogName) : uniLogName_(aUniLogName)
 // ***********************************************************************************************
 UniLog& UniLog::defaultUniLog()
 {
-    if (not defaultCellLog_) defaultCellLog_ = std::make_shared<UniLog>(ULN_DEFAULT);
-    return *defaultCellLog_;
+    if (not defaultUniLog_) defaultUniLog_ = std::make_shared<UniLog>(ULN_DEFAULT);
+    return *defaultUniLog_;
 }
 
 // ***********************************************************************************************
@@ -48,6 +48,6 @@ SmartLog& UniLog::oneLog()
 
 // ***********************************************************************************************
 LogStore UniLog::logStore_;
-std::shared_ptr<UniLog> UniLog::defaultCellLog_;
+std::shared_ptr<UniLog> UniLog::defaultUniLog_;
 
 }  // namespaces
