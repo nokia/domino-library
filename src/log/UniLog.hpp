@@ -73,11 +73,11 @@ class UniLog
 {
 public:
     explicit UniLog(const UniLogName& aUniLogName = ULN_DEFAULT);
-    ~UniLog() { if (smartLog_.use_count() == 2) logStore_.erase(cellName_); }
+    ~UniLog() { if (smartLog_.use_count() == 2) logStore_.erase(uniLogName_); }
 
     SmartLog& oneLog();
     SmartLog& operator()() { return oneLog(); }
-    const UniLogName& cellName() const { return cellName_; }
+    const UniLogName& uniLogName() const { return uniLogName_; }
 
     static size_t logLen(const UniLogName& aUniLogName);
     static void needLog() { for (auto&& it : logStore_) it.second->needLog(); }
@@ -87,7 +87,7 @@ public:
 private:
     // -------------------------------------------------------------------------------------------
     std::shared_ptr<SmartLog> smartLog_;
-    const UniLogName            cellName_;
+    const UniLogName            uniLogName_;
 
     static LogStore logStore_;
 public:

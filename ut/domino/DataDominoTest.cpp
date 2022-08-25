@@ -22,7 +22,7 @@ struct DataDominoTest : public Test, public UniLog
 {
     DataDominoTest()
         : UniLog(UnitTest::GetInstance()->current_test_info()->name())
-        , utInit_(cellName())
+        , utInit_(uniLogName())
     {}
     ~DataDominoTest() { GTEST_LOG_FAIL }
 

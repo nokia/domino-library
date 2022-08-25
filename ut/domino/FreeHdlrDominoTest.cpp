@@ -20,7 +20,7 @@ struct FreeHdlrDominoTest : public Test, public UniLog
 {
     FreeHdlrDominoTest()
         : UniLog(UnitTest::GetInstance()->current_test_info()->name())
-        , utInit_(cellName())
+        , utInit_(uniLogName())
     {
         ObjAnywhere::get<aParaDom>(*this)->setMsgSelf(msgSelf_);
     }
@@ -29,7 +29,7 @@ struct FreeHdlrDominoTest : public Test, public UniLog
     // -------------------------------------------------------------------------------------------
     UtInitObjAnywhere utInit_;
     std::shared_ptr<MsgSelf> msgSelf_ = std::make_shared<MsgSelf>(
-        [this](LoopBackFUNC aFunc){ loopbackFunc_ = aFunc; }, cellName());
+        [this](LoopBackFUNC aFunc){ loopbackFunc_ = aFunc; }, uniLogName());
     LoopBackFUNC loopbackFunc_;
 
     MsgCB h1_ = [this](){ hdlrIDs_.insert(1); };

@@ -50,18 +50,18 @@ struct UtInitObjAnywhere : public UniLog
         ObjAnywhere::init(*this);
 
         ObjAnywhere::set<MsgSelf>(std::make_shared<MsgSelf>(
-            [](LoopBackFUNC aFunc){ aFunc(); }, cellName()), *this);
+            [](LoopBackFUNC aFunc){ aFunc(); }, uniLogName()), *this);
 
-        ObjAnywhere::set<Domino>(std::make_shared<Domino>(cellName()), *this);
-        ObjAnywhere::set<MinDatDom>(std::make_shared<MinDatDom>(cellName()), *this);
-        ObjAnywhere::set<MinWbasicDatDom>(std::make_shared<MinWbasicDatDom>(cellName()), *this);
-        ObjAnywhere::set<MinHdlrDom>(std::make_shared<MinHdlrDom>(cellName()), *this);
-        ObjAnywhere::set<MinMhdlrDom>(std::make_shared<MinMhdlrDom>(cellName()), *this);
-        ObjAnywhere::set<MinPriDom>(std::make_shared<MinPriDom>(cellName()), *this);
-        ObjAnywhere::set<MinFreeDom>(std::make_shared<MinFreeDom>(cellName()), *this);
+        ObjAnywhere::set<Domino>(std::make_shared<Domino>(uniLogName()), *this);
+        ObjAnywhere::set<MinDatDom>(std::make_shared<MinDatDom>(uniLogName()), *this);
+        ObjAnywhere::set<MinWbasicDatDom>(std::make_shared<MinWbasicDatDom>(uniLogName()), *this);
+        ObjAnywhere::set<MinHdlrDom>(std::make_shared<MinHdlrDom>(uniLogName()), *this);
+        ObjAnywhere::set<MinMhdlrDom>(std::make_shared<MinMhdlrDom>(uniLogName()), *this);
+        ObjAnywhere::set<MinPriDom>(std::make_shared<MinPriDom>(uniLogName()), *this);
+        ObjAnywhere::set<MinFreeDom>(std::make_shared<MinFreeDom>(uniLogName()), *this);
 
-        ObjAnywhere::set<MaxDom>(std::make_shared<MaxDom>(cellName()), *this);
-        ObjAnywhere::set<MaxNofreeDom>(std::make_shared<MaxNofreeDom>(cellName()), *this);
+        ObjAnywhere::set<MaxDom>(std::make_shared<MaxDom>(uniLogName()), *this);
+        ObjAnywhere::set<MaxNofreeDom>(std::make_shared<MaxNofreeDom>(uniLogName()), *this);
     }
     ~UtInitObjAnywhere() { ObjAnywhere::deinit(*this); }
 };

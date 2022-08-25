@@ -21,7 +21,7 @@ struct PriDominoTest : public Test, public UniLog
 {
     PriDominoTest()
         : UniLog(UnitTest::GetInstance()->current_test_info()->name())
-        , utInit_(cellName())
+        , utInit_(uniLogName())
     {
         ObjAnywhere::get<aParaDom>(*this)->setMsgSelf(msgSelf_);
 
@@ -43,7 +43,7 @@ struct PriDominoTest : public Test, public UniLog
     // -------------------------------------------------------------------------------------------
     UtInitObjAnywhere utInit_;
     std::shared_ptr<MsgSelf> msgSelf_ = std::make_shared<MsgSelf>(
-        [this](LoopBackFUNC aFunc){ loopbackFunc_ = aFunc; }, cellName());
+        [this](LoopBackFUNC aFunc){ loopbackFunc_ = aFunc; }, uniLogName());
     LoopBackFUNC loopbackFunc_;
 
     SharedMsgCB d1EventHdlr_ = std::make_shared<MsgCB>();

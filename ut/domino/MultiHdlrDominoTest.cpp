@@ -21,7 +21,7 @@ struct MultiHdlrDominoTest : public Test, public UniLog
 {
     MultiHdlrDominoTest()
         : UniLog(UnitTest::GetInstance()->current_test_info()->name())
-        , utInit_(cellName())
+        , utInit_(uniLogName())
         , hdlr0_([this](){ this->hdlr0(); })
         , hdlr1_([this](){ this->hdlr1(); })
         , hdlr2_([this](){ this->hdlr2(); })
@@ -212,7 +212,7 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, rmHdlrOnRoad)
 {
     // not auto-cb but manually
     auto msgSelf = std::make_shared<MsgSelf>(
-        [this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; }, this->cellName());
+        [this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; }, this->uniLogName());
     PARA_DOM->setMsgSelf(msgSelf);
 
     PARA_DOM->setHdlr("event", this->hdlr0_);

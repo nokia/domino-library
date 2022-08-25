@@ -9,7 +9,7 @@
 namespace RLib
 {
 // ***********************************************************************************************
-UniLog::UniLog(const UniLogName& aUniLogName) : cellName_(aUniLogName)
+UniLog::UniLog(const UniLogName& aUniLogName) : uniLogName_(aUniLogName)
 {
     auto&& it = logStore_.find(aUniLogName);
     if (it == logStore_.end())
@@ -42,7 +42,7 @@ size_t UniLog::logLen(const UniLogName& aUniLogName)
 // ***********************************************************************************************
 SmartLog& UniLog::oneLog()
 {
-    *smartLog_ << '[' << cellName_ << '/';
+    *smartLog_ << '[' << uniLogName_ << '/';
     return *smartLog_;
 }
 

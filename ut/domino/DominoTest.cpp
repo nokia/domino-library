@@ -20,7 +20,7 @@ struct DominoTest : public Test, public UniLog
 {
     DominoTest()
         : UniLog(UnitTest::GetInstance()->current_test_info()->name())
-        , utInit_(cellName())
+        , utInit_(uniLogName())
     {}
     ~DominoTest() { GTEST_LOG_FAIL }
 

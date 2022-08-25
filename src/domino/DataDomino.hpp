@@ -81,7 +81,7 @@ aDataType getValue(aDataDominoType& aDom, const Domino::EvName& aEvName)
     auto&& data = std::static_pointer_cast<aDataType>(aDom.getShared(aEvName));
     if (data.use_count() > 0) return *data;
 
-    UniLog& oneLog = aDom;
+    auto&& oneLog = aDom;
     WRN("(DataDomino) Failed!!! EvName=" << aEvName << " not found, return undefined obj!!!");
     return aDataType();
 }

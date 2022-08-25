@@ -21,7 +21,7 @@ struct WbasicDatDomTest : public Test, public UniLog
 {
     WbasicDatDomTest()
         : UniLog(UnitTest::GetInstance()->current_test_info()->name())
-        , utInit_(cellName())
+        , utInit_(uniLogName())
     {}
     ~WbasicDatDomTest() { GTEST_LOG_FAIL }
 
