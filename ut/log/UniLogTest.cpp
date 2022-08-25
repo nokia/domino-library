@@ -27,7 +27,7 @@ struct CellMember : public UniLog
     ~CellMember() { DBG("bye world, I'm a cell member"); }
 };
 
-void cellParticipant(UniLog& oneLog = UniLog::defaultCellLog())
+void cellParticipant(UniLog& oneLog = UniLog::defaultUniLog())
 {
     DBG("hello world, I'm a cell's participant");  // req: can log, same API
 }

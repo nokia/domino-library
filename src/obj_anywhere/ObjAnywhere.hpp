@@ -41,21 +41,21 @@ public:
     using ObjIndex = size_t;
     using ObjStore = std::unordered_map<ObjIndex, std::shared_ptr<void> >;
 
-    static void init(UniLog& oneLog = UniLog::defaultCellLog());    // init objStore_
-    static void deinit(UniLog& oneLog = UniLog::defaultCellLog());  // rm objStore_
+    static void init(UniLog& oneLog = UniLog::defaultUniLog());    // init objStore_
+    static void deinit(UniLog& oneLog = UniLog::defaultUniLog());  // rm objStore_
     static bool isInit() { return objStore_ != nullptr; }           // init objStore_?
 
     // -------------------------------------------------------------------------------------------
     // - save aObjType into objStore_
     // -------------------------------------------------------------------------------------------
     template<typename aObjType>
-    static void set(std::shared_ptr<aObjType> aSharedObj, UniLog& oneLog = UniLog::defaultCellLog());
+    static void set(std::shared_ptr<aObjType> aSharedObj, UniLog& oneLog = UniLog::defaultUniLog());
 
     // -------------------------------------------------------------------------------------------
     // - get a "Obj" from objStore_
     // - template operator[] not easier in usage
     // -------------------------------------------------------------------------------------------
-    template<typename aObjType> static std::shared_ptr<aObjType> get(UniLog& oneLog = UniLog::defaultCellLog());
+    template<typename aObjType> static std::shared_ptr<aObjType> get(UniLog& oneLog = UniLog::defaultUniLog());
 
 private:
     // -------------------------------------------------------------------------------------------

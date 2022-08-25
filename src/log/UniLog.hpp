@@ -18,7 +18,7 @@
 //     . callback func can independ logging/no crash
 //   * support default / global UniLog as if legacy
 //     . class based on UniLog: default using UniLog(ULN_DEFAULT)
-//     . func with UniLog para: default using UniLog::defaultCellLog()
+//     . func with UniLog para: default using UniLog::defaultUniLog()
 //     . class & func w/o UniLog: using global oneLog()
 // - CORE:
 //   . real log eg cout, smartLog_
@@ -82,7 +82,7 @@ public:
     static size_t logLen(const UniLogName& aUniLogName);
     static void needLog() { for (auto&& it : logStore_) it.second->needLog(); }
     static auto nLog() { return logStore_.size(); }
-    static UniLog& defaultCellLog();
+    static UniLog& defaultUniLog();
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -94,7 +94,7 @@ public:
     static std::shared_ptr<UniLog> defaultCellLog_;
 };
 
-inline SmartLog& oneLog() { return UniLog::defaultCellLog().oneLog(); }
+inline SmartLog& oneLog() { return UniLog::defaultUniLog().oneLog(); }
 
 // ***********************************************************************************************
 #else  // base on cout

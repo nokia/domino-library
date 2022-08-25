@@ -26,7 +26,7 @@ UniLog::UniLog(const UniLogName& aUniLogName) : uniLogName_(aUniLogName)
 }
 
 // ***********************************************************************************************
-UniLog& UniLog::defaultCellLog()
+UniLog& UniLog::defaultUniLog()
 {
     if (not defaultCellLog_) defaultCellLog_ = std::make_shared<UniLog>(ULN_DEFAULT);
     return *defaultCellLog_;
