@@ -30,7 +30,7 @@ public:
     using HdlrName  = std::string;
     using MultiHdlr = std::map<HdlrName, SharedMsgCB>;
 
-    explicit MultiHdlrDomino(const UniLogName& aCellName) : aDominoType(aCellName) {}
+    explicit MultiHdlrDomino(const UniLogName& aUniLogName) : aDominoType(aUniLogName) {}
 
     // -------------------------------------------------------------------------------------------
     // - add multi-hdlr on 1 event

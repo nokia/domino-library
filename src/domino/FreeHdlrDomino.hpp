@@ -24,7 +24,7 @@ template<class aDominoType>
 class FreeHdlrDomino : public aDominoType
 {
 public:
-    explicit FreeHdlrDomino(const UniLogName& aCellName) : aDominoType(aCellName) {}
+    explicit FreeHdlrDomino(const UniLogName& aUniLogName) : aDominoType(aUniLogName) {}
 
     Domino::Event flagRepeatedHdlr(const Domino::EvName&);
     bool isRepeatHdlr(const Domino::Event) const;

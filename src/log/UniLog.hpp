@@ -5,32 +5,29 @@
  */
 // ***********************************************************************************************
 // - CONSTITUTION:
-//   * Cell-concept can use SmartLog
-//   . a cell & its full-member & shared-member/participant shall log into 1 smartlog
-//   . convenient all cells/members/participants to use SmartLog
+//   * impact no usr code when switch log eg cout, LoggingSystem, SmartLog/cell-log
 // - REQ:
-//   . for cell: create smartlog & store globally with cell name
-//   . for member: find smartlog by cell name (so no para shipping)
+//   * uni-interface (DBG/...) for all users (eg DomLib, swm, rfsw)
+//     * easily support DBG/etc macros
+//     * uni-interface for DBG/etc macros
 //   . clean logStore_: del smartlog from logStore_ when no user
-//   * easily support DBG/etc macros
-//   * unify interface for DBG/etc macros
-//   . readable: cell name as log prefix
+//   . readable: log name as log prefix
 //   . low couple:
-//     . del cell, cell-member still can log
-//     . del UniLog, copied one still can log (UniLog can't be assigned since const member)
+//     . 2 obj sharing 1 log, del 1 obj, another obj still can log
+//     . del 1 UniLog, copied one still can log (UniLog can't be assigned since const member)
 //     . callback func can independ logging/no crash
-//   * if no UniLog, all user code shall work well & as simple as legacy
+//   * support default / global UniLog as if legacy
 //     . class based on UniLog: default using UniLog(ULN_DEFAULT)
 //     . func with UniLog para: default using UniLog::defaultCellLog()
 //     . class & func w/o UniLog: using global oneLog()
 // - CORE:
-//   . smartLog_
+//   . real log eg cout, smartLog_
 // - note:
 //   . why oneLog() as func than var: more flexible, eg can print prefix in oneLog()
-//   . why UniLog& to participant func:
-//     . unify cell/member/participant: own its UniLog
+//   . why UniLog& to func:
+//     . unify usr class & func: own its UniLog
 //     . fast to pass reference from cell/member to participant
-//     . can create new member within participant
+//     . can create new member within func
 //   . why name as oneLog:
 //     . vs ssLog: oneLog can represent SmartLog or UniLog
 //     . vs log: too common, possible comflict with user definition
@@ -45,10 +42,8 @@
 
 namespace RLib
 {
-using SmartLog = StrCoutFSL;
-
 // ***********************************************************************************************
-#if 1  // log_ instead of this->log_ so support static log_
+#if 1
 #define BUF(content) __func__ << "()" << __LINE__ << "# " << content << std::endl
 #define DBG(content) { oneLog() << "DBG] " << BUF(content); }
 #define INF(content) { oneLog() << "INF] " << BUF(content); }
@@ -63,10 +58,13 @@ using SmartLog = StrCoutFSL;
 #define HID(content) {}
 #endif
 
+using UniLogName = std::string;
+
 #define GTEST_LOG_FAIL { if (Test::HasFailure()) UniLog::needLog(); }
 
 // ***********************************************************************************************
-using UniLogName = std::string;
+#if 1  // base on SmartLog
+using SmartLog   = StrCoutFSL;
 using LogStore   = std::unordered_map<UniLogName, std::shared_ptr<SmartLog> >;
 
 const char ULN_DEFAULT[] = "DEFAULT";
@@ -74,14 +72,14 @@ const char ULN_DEFAULT[] = "DEFAULT";
 class UniLog
 {
 public:
-    explicit UniLog(const UniLogName& aCellName = ULN_DEFAULT);
+    explicit UniLog(const UniLogName& aUniLogName = ULN_DEFAULT);
     ~UniLog() { if (smartLog_.use_count() == 2) logStore_.erase(cellName_); }
 
     SmartLog& oneLog();
     SmartLog& operator()() { return oneLog(); }
     const UniLogName& cellName() const { return cellName_; }
 
-    static size_t logLen(const UniLogName& aCellName);
+    static size_t logLen(const UniLogName& aUniLogName);
     static void needLog() { for (auto&& it : logStore_) it.second->needLog(); }
     static auto nLog() { return logStore_.size(); }
     static UniLog& defaultCellLog();
@@ -96,8 +94,11 @@ public:
     static std::shared_ptr<UniLog> defaultCellLog_;
 };
 
-// ***********************************************************************************************
 inline SmartLog& oneLog() { return UniLog::defaultCellLog().oneLog(); }
+
+// ***********************************************************************************************
+#else  // base on cout
+#endif
 
 }  // namespace
 #endif  // UNI_LOG_HPP_

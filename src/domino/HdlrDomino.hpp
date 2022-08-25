@@ -31,7 +31,7 @@ template<class aDominoType>
 class HdlrDomino : public aDominoType
 {
 public:
-    explicit HdlrDomino(const UniLogName& aCellName) : aDominoType(aCellName) { msgSelf_ = MSG_SELF; }  // default
+    explicit HdlrDomino(const UniLogName& aUniLogName) : aDominoType(aUniLogName) { msgSelf_ = MSG_SELF; }  // default
     void setMsgSelf(std::shared_ptr<MsgSelf>& aMsgSelf) { msgSelf_ = aMsgSelf; }  // can replace default
 
     Domino::Event setHdlr(const Domino::EvName&, const MsgCB&);

@@ -24,7 +24,7 @@ class DataDomino : public aDominoType
     // -------------------------------------------------------------------------------------------
 
 public:
-    explicit DataDomino(const UniLogName& aCellName) : aDominoType(aCellName) {}
+    explicit DataDomino(const UniLogName& aUniLogName) : aDominoType(aUniLogName) {}
 
     // -------------------------------------------------------------------------------------------
     // - for read/write data

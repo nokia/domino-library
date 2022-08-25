@@ -22,7 +22,7 @@ template<class aDominoType>
 class PriDomino : public aDominoType
 {
 public:
-    explicit PriDomino(const UniLogName& aCellName) : aDominoType(aCellName) {}
+    explicit PriDomino(const UniLogName& aUniLogName) : aDominoType(aUniLogName) {}
 
     // -------------------------------------------------------------------------------------------
     // Extend Tile record:

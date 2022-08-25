@@ -45,7 +45,7 @@ using MaxNofreeDom = PriDomino<MultiHdlrDomino<HdlrDomino<WbasicDatDom<DataDomin
 // ***********************************************************************************************
 struct UtInitObjAnywhere : public UniLog
 {
-    UtInitObjAnywhere(const UniLogName& aCellName = ULN_DEFAULT) : UniLog(aCellName)
+    UtInitObjAnywhere(const UniLogName& aUniLogName = ULN_DEFAULT) : UniLog(aUniLogName)
     {
         ObjAnywhere::init(*this);
 

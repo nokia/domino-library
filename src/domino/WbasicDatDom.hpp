@@ -17,7 +17,7 @@ template<typename aDominoType>
 class WbasicDatDom : public aDominoType
 {
 public:
-    explicit WbasicDatDom(const UniLogName& aCellName) : aDominoType(aCellName) {}
+    explicit WbasicDatDom(const UniLogName& aUniLogName) : aDominoType(aUniLogName) {}
 
     bool isWrCtrl(const Domino::EvName&) const;
     bool wrCtrlOk(const Domino::EvName&, const bool aNewState = true);

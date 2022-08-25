@@ -16,14 +16,14 @@ namespace RLib
 struct Cell : public UniLog
 {
     // req: can log
-    Cell(const UniLogName aCellName = ULN_DEFAULT) : UniLog(aCellName) { DBG("hello world, I'm a cell, this=" << this); }
+    Cell(const UniLogName aUniLogName = ULN_DEFAULT) : UniLog(aUniLogName) { DBG("hello world, I'm a cell, this=" << this); }
     ~Cell() { DBG("bye world, I'm a cell, this=" << this); }
 };
 
 struct CellMember : public UniLog
 {
     // req: can log
-    CellMember(UniLogName aCellName = ULN_DEFAULT) : UniLog(aCellName) { DBG("hello world, I'm a cell member"); }
+    CellMember(UniLogName aUniLogName = ULN_DEFAULT) : UniLog(aUniLogName) { DBG("hello world, I'm a cell member"); }
     ~CellMember() { DBG("bye world, I'm a cell member"); }
 };
 

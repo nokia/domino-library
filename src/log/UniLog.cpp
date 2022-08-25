@@ -9,19 +9,19 @@
 namespace RLib
 {
 // ***********************************************************************************************
-UniLog::UniLog(const UniLogName& aCellName) : cellName_(aCellName)
+UniLog::UniLog(const UniLogName& aUniLogName) : cellName_(aUniLogName)
 {
-    auto&& it = logStore_.find(aCellName);
+    auto&& it = logStore_.find(aUniLogName);
     if (it == logStore_.end())
     {
         smartLog_ = std::make_shared<SmartLog>();
-        logStore_[aCellName] = smartLog_;
-        DBG("creatd new log, name=" << aCellName);
+        logStore_[aUniLogName] = smartLog_;
+        DBG("creatd new log, name=" << aUniLogName);
     }
     else
     {
         smartLog_ = it->second;
-        DBG("reused existing log, name=" << aCellName);
+        DBG("reused existing log, name=" << aUniLogName);
     }
 }
 
@@ -33,9 +33,9 @@ UniLog& UniLog::defaultCellLog()
 }
 
 // ***********************************************************************************************
-size_t UniLog::logLen(const UniLogName& aCellName)
+size_t UniLog::logLen(const UniLogName& aUniLogName)
 {
-    auto&& it = logStore_.find(aCellName);
+    auto&& it = logStore_.find(aUniLogName);
     return it == logStore_.end() ? 0 : it->second->str().size();
 }
 
