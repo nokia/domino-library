@@ -25,7 +25,7 @@
 namespace RLib
 {
 // ***********************************************************************************************
-class StrCoutFSL               // FSL = Formatted Smart Log
+class StrCoutFSL                // FSL = Formatted Smart Log
     : public BaseSL
     , public std::stringstream  // for operator<<()
 {
@@ -50,7 +50,7 @@ StrCoutFSL::~StrCoutFSL()
 inline
 void StrCoutFSL::forceSave()
 {
-    if(rdbuf()->in_avail())  // otherwise cout << rdbuf() will abnormal cout
+    if(rdbuf()->in_avail())                 // otherwise cout << rdbuf() will abnormal cout
     {
         std::cout << rdbuf() << std::endl;  // internet says rdbuf() is faster than str()
     }
