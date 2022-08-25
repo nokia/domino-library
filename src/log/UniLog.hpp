@@ -17,26 +17,26 @@
 //   . readable: cell name as log prefix
 //   . low couple:
 //     . del cell, cell-member still can log
-//     . del CellLog, copied one still can log (CellLog can't be assigned since const member)
+//     . del UniLog, copied one still can log (UniLog can't be assigned since const member)
 //     . callback func can independ logging/no crash
-//   * if no CellLog, all user code shall work well & as simple as legacy
-//     . class based on CellLog: default using CellLog(CELL_NAME_DEFAULT)
-//     . func with CellLog para: default using CellLog::defaultCellLog()
-//     . class & func w/o CellLog: using global oneLog()
+//   * if no UniLog, all user code shall work well & as simple as legacy
+//     . class based on UniLog: default using UniLog(ULN_DEFAULT)
+//     . func with UniLog para: default using UniLog::defaultCellLog()
+//     . class & func w/o UniLog: using global oneLog()
 // - CORE:
 //   . smartLog_
 // - note:
 //   . why oneLog() as func than var: more flexible, eg can print prefix in oneLog()
-//   . why CellLog& to participant func:
-//     . unify cell/member/participant: own its CellLog
+//   . why UniLog& to participant func:
+//     . unify cell/member/participant: own its UniLog
 //     . fast to pass reference from cell/member to participant
 //     . can create new member within participant
 //   . why name as oneLog:
-//     . vs ssLog: oneLog can represent SmartLog or CellLog
+//     . vs ssLog: oneLog can represent SmartLog or UniLog
 //     . vs log: too common, possible comflict with user definition
 // ***********************************************************************************************
-#ifndef CELLLOG_HPP_
-#define CELLLOG_HPP_
+#ifndef UNI_LOG_HPP_
+#define UNI_LOG_HPP_
 
 #include <memory>
 #include <unordered_map>
@@ -63,49 +63,49 @@ using SmartLog = StrCoutFSL;
 #define HID(content) {}
 #endif
 
-#define GTEST_LOG_FAIL { if (Test::HasFailure()) CellLog::needLog(); }
+#define GTEST_LOG_FAIL { if (Test::HasFailure()) UniLog::needLog(); }
 
 // ***********************************************************************************************
-using CellName = std::string;
-using LogStore = std::unordered_map<CellName, std::shared_ptr<SmartLog> >;
+using UniLogName = std::string;
+using LogStore   = std::unordered_map<UniLogName, std::shared_ptr<SmartLog> >;
 
-const char CELL_NAME_DEFAULT[] = "DEFAULT";
+const char ULN_DEFAULT[] = "DEFAULT";
 
-class CellLog
+class UniLog
 {
 public:
-    explicit CellLog(const CellName& aCellName = CELL_NAME_DEFAULT);
-    ~CellLog() { if (smartLog_.use_count() == 2) logStore_.erase(cellName_); }
+    explicit UniLog(const UniLogName& aCellName = ULN_DEFAULT);
+    ~UniLog() { if (smartLog_.use_count() == 2) logStore_.erase(cellName_); }
 
     SmartLog& oneLog();
     SmartLog& operator()() { return oneLog(); }
-    const CellName& cellName() const { return cellName_; }
+    const UniLogName& cellName() const { return cellName_; }
 
-    static size_t logLen(const CellName& aCellName);
+    static size_t logLen(const UniLogName& aCellName);
     static void needLog() { for (auto&& it : logStore_) it.second->needLog(); }
     static auto nLog() { return logStore_.size(); }
-    static CellLog& defaultCellLog();
+    static UniLog& defaultCellLog();
 
 private:
     // -------------------------------------------------------------------------------------------
     std::shared_ptr<SmartLog> smartLog_;
-    const CellName            cellName_;
+    const UniLogName            cellName_;
 
     static LogStore logStore_;
 public:
-    static std::shared_ptr<CellLog> defaultCellLog_;
+    static std::shared_ptr<UniLog> defaultCellLog_;
 };
 
 // ***********************************************************************************************
-inline SmartLog& oneLog() { return CellLog::defaultCellLog().oneLog(); }
+inline SmartLog& oneLog() { return UniLog::defaultCellLog().oneLog(); }
 
 }  // namespace
-#endif  // CELLLOG_HPP_
+#endif  // UNI_LOG_HPP_
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2020-08-11  CSZ       1)create as CppLog
 // 2020-10-29  CSZ       2)base on SmartLog
 // 2021-02-13  CSZ       - empty to inc branch coverage (66%->75%)
-// 2022-08-16  CSZ       4)replaced by CellLog
+// 2022-08-16  CSZ       4)replaced by UniLog
 // ***********************************************************************************************

@@ -31,7 +31,7 @@
 #include <memory>  // shared_ptr<>
 #include <queue>
 
-#include "CellLog.hpp"
+#include "UniLog.hpp"
 #include "ObjAnywhere.hpp"
 
 #define MSG_SELF (ObjAnywhere::get<MsgSelf>(*this))
@@ -58,10 +58,10 @@ using LoopBackFUNC = std::function<void()>;
 using LoopReqFUNC  = std::function<void(LoopBackFUNC)>;
 
 // ***********************************************************************************************
-class MsgSelf : public CellLog
+class MsgSelf : public UniLog
 {
 public:
-    MsgSelf(LoopReqFUNC aFunc, const CellName& = CELL_NAME_DEFAULT);
+    MsgSelf(LoopReqFUNC aFunc, const UniLogName& = ULN_DEFAULT);
     ~MsgSelf();
 
     void newMsg(const WeakMsgCB& aMsgCB, const EMsgPriority = EMsgPri_NORM);
@@ -96,5 +96,5 @@ private:
 // 2021-11-29  CSZ       - lambda instead of bind; fix isValid ut
 // 2022-01-01  PJ & CSZ  - formal log & naming
 // 2022-03-10  CSZ       - inc code coverage rate
-// 2022-08-18  CSZ       - replace CppLog by CellLog
+// 2022-08-18  CSZ       - replace CppLog by UniLog
 // ***********************************************************************************************// ***********************************************************************************************

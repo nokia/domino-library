@@ -8,7 +8,7 @@ namespace RLib
 std::shared_ptr<ObjAnywhere::ObjStore> ObjAnywhere::objStore_;
 
 // ***********************************************************************************************
-void ObjAnywhere::deinit(CellLog& oneLog)
+void ObjAnywhere::deinit(UniLog& oneLog)
 {
     if (!objStore_) return;
 
@@ -17,7 +17,7 @@ void ObjAnywhere::deinit(CellLog& oneLog)
 }
 
 // ***********************************************************************************************
-void ObjAnywhere::init(CellLog& oneLog)
+void ObjAnywhere::init(UniLog& oneLog)
 {
     if (objStore_) WRN("!!! Refuse dup init.")
     else

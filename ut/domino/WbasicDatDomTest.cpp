@@ -17,10 +17,10 @@ namespace RLib
 {
 // ***********************************************************************************************
 template<class aParaDom>
-struct WbasicDatDomTest : public Test, public CellLog
+struct WbasicDatDomTest : public Test, public UniLog
 {
     WbasicDatDomTest()
-        : CellLog(UnitTest::GetInstance()->current_test_info()->name())
+        : UniLog(UnitTest::GetInstance()->current_test_info()->name())
         , utInit_(cellName())
     {}
     ~WbasicDatDomTest() { GTEST_LOG_FAIL }

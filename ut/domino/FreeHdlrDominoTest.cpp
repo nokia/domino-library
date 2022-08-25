@@ -16,10 +16,10 @@ namespace RLib
 {
 // ***********************************************************************************************
 template<class aParaDom>
-struct FreeHdlrDominoTest : public Test, public CellLog
+struct FreeHdlrDominoTest : public Test, public UniLog
 {
     FreeHdlrDominoTest()
-        : CellLog(UnitTest::GetInstance()->current_test_info()->name())
+        : UniLog(UnitTest::GetInstance()->current_test_info()->name())
         , utInit_(cellName())
     {
         ObjAnywhere::get<aParaDom>(*this)->setMsgSelf(msgSelf_);

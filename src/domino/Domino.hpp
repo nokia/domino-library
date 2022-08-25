@@ -40,12 +40,12 @@
 #include <unordered_map>
 #include <vector>
 
-#include "CellLog.hpp"
+#include "UniLog.hpp"
 
 namespace RLib
 {
 // ***********************************************************************************************
-class Domino : public CellLog
+class Domino : public UniLog
 {
 public:
     using Event      = size_t;  // smaller size can save mem; larger size can support more events
@@ -66,7 +66,7 @@ public:
     // - state:  tile's up/down state, mandatory, default=false
     // - prev:   prev tile(s)        , optional
     // -------------------------------------------------------------------------------------------
-    explicit Domino(const CellName& aCellName) : CellLog(aCellName) {}
+    explicit Domino(const UniLogName& aCellName) : UniLog(aCellName) {}
     virtual ~Domino() = default;
 
     Event newEvent(const EvName&);
@@ -206,5 +206,5 @@ private:
 // 2022-01-17  PJ & CSZ  - formal log & naming
 // 2022-03-26  CSZ       - ut's PARA_DOM include self class & ALL its base class(es)
 // 2022-03-27  CSZ       - if ut case can test base class, never specify derive
-// 2022-08-18  CSZ       - replace CppLog by CellLog
+// 2022-08-18  CSZ       - replace CppLog by UniLog
 // ***********************************************************************************************

@@ -9,8 +9,8 @@
 namespace RLib
 {
 // ***********************************************************************************************
-MsgSelf::MsgSelf(LoopReqFUNC aFunc, const CellName& aCellName)
-    : CellLog(aCellName)
+MsgSelf::MsgSelf(LoopReqFUNC aFunc, const UniLogName& aCellName)
+    : UniLog(aCellName)
     , loopReq_(aFunc)
 {}
 

@@ -9,7 +9,7 @@
 #include <set>
 #include <string>
 
-#include "CellLog.hpp"
+#include "UniLog.hpp"
 #include "UtInitObjAnywhere.hpp"
 
 using namespace testing;
@@ -18,10 +18,10 @@ namespace RLib
 {
 // ***********************************************************************************************
 template<class aParaDom>
-struct DataDominoTest : public Test, public CellLog
+struct DataDominoTest : public Test, public UniLog
 {
     DataDominoTest()
-        : CellLog(UnitTest::GetInstance()->current_test_info()->name())
+        : UniLog(UnitTest::GetInstance()->current_test_info()->name())
         , utInit_(cellName())
     {}
     ~DataDominoTest() { GTEST_LOG_FAIL }

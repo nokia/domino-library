@@ -6,28 +6,28 @@
 // ***********************************************************************************************
 #include <gtest/gtest.h>
 
-#include "CellLog.hpp"
+#include "UniLog.hpp"
 
 using namespace testing;
 
 namespace RLib
 {
 // ***********************************************************************************************
-struct Cell : public CellLog
+struct Cell : public UniLog
 {
     // req: can log
-    Cell(const CellName aCellName = CELL_NAME_DEFAULT) : CellLog(aCellName) { DBG("hello world, I'm a cell, this=" << this); }
+    Cell(const UniLogName aCellName = ULN_DEFAULT) : UniLog(aCellName) { DBG("hello world, I'm a cell, this=" << this); }
     ~Cell() { DBG("bye world, I'm a cell, this=" << this); }
 };
 
-struct CellMember : public CellLog
+struct CellMember : public UniLog
 {
     // req: can log
-    CellMember(CellName aCellName = CELL_NAME_DEFAULT) : CellLog(aCellName) { DBG("hello world, I'm a cell member"); }
+    CellMember(UniLogName aCellName = ULN_DEFAULT) : UniLog(aCellName) { DBG("hello world, I'm a cell member"); }
     ~CellMember() { DBG("bye world, I'm a cell member"); }
 };
 
-void cellParticipant(CellLog& oneLog = CellLog::defaultCellLog())
+void cellParticipant(UniLog& oneLog = UniLog::defaultCellLog())
 {
     DBG("hello world, I'm a cell's participant");  // req: can log, same API
 }
@@ -36,27 +36,27 @@ void cellParticipant(CellLog& oneLog = CellLog::defaultCellLog())
 TEST(CellLogTest, GOLD_cell_member_participant)
 {
     const char CELL_NAME[] = "GOLD_cell_member_participant";
-    EXPECT_EQ(0, CellLog::logLen(CELL_NAME));
+    EXPECT_EQ(0, UniLog::logLen(CELL_NAME));
     {
         Cell cell(CELL_NAME);
-        const auto len_1 = CellLog::logLen(CELL_NAME);
+        const auto len_1 = UniLog::logLen(CELL_NAME);
         EXPECT_GT(len_1, 0);                    // req: can log
 
         CellMember member(CELL_NAME);
-        const auto len_2 = CellLog::logLen(CELL_NAME);
+        const auto len_2 = UniLog::logLen(CELL_NAME);
         EXPECT_GT(len_2, len_1);                // req: can log more in same log
 
         cellParticipant(cell);                  // req: cell can call func & log into same smartlog
-        const auto len_3 = CellLog::logLen(CELL_NAME);
+        const auto len_3 = UniLog::logLen(CELL_NAME);
         EXPECT_GT(len_3, len_2);                // req: can log more in same log
 
         cellParticipant(member);                // req: cell member can call func & log into same smartlog
-        const auto len_4 = CellLog::logLen(CELL_NAME);
+        const auto len_4 = UniLog::logLen(CELL_NAME);
         EXPECT_GT(len_4, len_3);                // req: can log more in same log
 
-        CellLog::needLog();                     // req: shall output log to screen
+        UniLog::needLog();                     // req: shall output log to screen
     }
-    EXPECT_EQ(0, CellLog::nLog());              // req: del log when no user
+    EXPECT_EQ(0, UniLog::nLog());              // req: del log when no user
 }
 
 // ***********************************************************************************************
@@ -64,59 +64,59 @@ TEST(CellLogTest, low_couple_cell_and_member)
 {
     const char CELL_NAME[] = "low_couple_cell_and_member";
     auto cell = std::make_shared<Cell>((CELL_NAME));
-    const auto len_1 = CellLog::logLen(CELL_NAME);
+    const auto len_1 = UniLog::logLen(CELL_NAME);
     EXPECT_GT(len_1, 0);                        // req: can log
 
     auto member = std::make_shared<CellMember>(CELL_NAME);
-    const auto len_2 = CellLog::logLen(CELL_NAME);
+    const auto len_2 = UniLog::logLen(CELL_NAME);
     EXPECT_GT(len_2, len_1);                    // req: can log
 
     cell.reset();
-    const auto len_3 = CellLog::logLen(CELL_NAME);
+    const auto len_3 = UniLog::logLen(CELL_NAME);
     EXPECT_GT(len_3, len_2);                    // req: Cell-destructed shall not crash/impact CellMember's logging
 
-    if (Test::HasFailure()) CellLog::needLog();
+    if (Test::HasFailure()) UniLog::needLog();
     member.reset();
-    EXPECT_EQ(0, CellLog::nLog());              // req: del log when no user
+    EXPECT_EQ(0, UniLog::nLog());              // req: del log when no user
 }
 TEST(CellLogTest, low_couple_between_copies)
 {
     const char CELL_NAME[] = "low_couple_between_copies";
     auto cell = std::make_shared<Cell>((CELL_NAME));
-    const auto len_1 = CellLog::logLen(CELL_NAME);
+    const auto len_1 = UniLog::logLen(CELL_NAME);
     EXPECT_GT(len_1, 0);                        // req: can log
 
     auto copy = std::make_shared<Cell>(*cell);
-    const auto len_2 = CellLog::logLen(CELL_NAME);
+    const auto len_2 = UniLog::logLen(CELL_NAME);
     EXPECT_EQ(len_2, len_1);                    // req: log still there
 
     cell.reset();
-    const auto len_3 = CellLog::logLen(CELL_NAME);
+    const auto len_3 = UniLog::logLen(CELL_NAME);
     EXPECT_GT(len_3, len_2);                    // req: Cell-destructed shall not crash/impact copy's logging
 
-    if (Test::HasFailure()) CellLog::needLog();
+    if (Test::HasFailure()) UniLog::needLog();
     copy.reset();
-    EXPECT_EQ(0, CellLog::nLog());              // req: del log when no user
+    EXPECT_EQ(0, UniLog::nLog());              // req: del log when no user
 }
 TEST(CellLogTest, low_couple_callbackFunc)
 {
     const char CELL_NAME[] = "low_couple_callbackFunc";
     auto cell = std::make_shared<Cell>((CELL_NAME));
-    const auto len_1 = CellLog::logLen(CELL_NAME);
+    const auto len_1 = UniLog::logLen(CELL_NAME);
     EXPECT_GT(len_1, 0);                        // req: can log
     {
         std::function<void()> cb = [oneLog = *cell]() mutable { INF("hello world, I'm a callback func"); };
-        const auto len_2 = CellLog::logLen(CELL_NAME);
+        const auto len_2 = UniLog::logLen(CELL_NAME);
         EXPECT_GE(len_2, len_1);                // req: log still there (more log since no move-construct of Cell)
 
         cell.reset();
         cb();
-        const auto len_3 = CellLog::logLen(CELL_NAME);
+        const auto len_3 = UniLog::logLen(CELL_NAME);
         EXPECT_GT(len_3, len_2);                // req: can log
 
-        if (Test::HasFailure()) CellLog::needLog();
+        if (Test::HasFailure()) UniLog::needLog();
     }
-    EXPECT_EQ(0, CellLog::nLog());              // req: del log when no user
+    EXPECT_EQ(0, UniLog::nLog());              // req: del log when no user
 }
 
 // ***********************************************************************************************
@@ -135,16 +135,16 @@ void nonCellFunc()
 TEST(CellLogTest, no_explicit_CellLog_like_legacy)
 {
     {
-        Cell cell;                      // req: no explicit CellLog
-        CellMember member;              // req: no explicit CellLog
-        cellParticipant();              // req: no explicit CellLog
+        Cell cell;                      // req: no explicit UniLog
+        CellMember member;              // req: no explicit UniLog
+        cellParticipant();              // req: no explicit UniLog
 
-        NonCell nonCell;                // req: class not based on CellLog
-        nonCellFunc();                  // req: func w/o CellLog para
+        NonCell nonCell;                // req: class not based on UniLog
+        nonCellFunc();                  // req: func w/o UniLog para
     }
-    if (Test::HasFailure()) CellLog::needLog();
-    CellLog::defaultCellLog_.reset();   // dump log in time
-    EXPECT_EQ(0, CellLog::nLog());      // req: del log when no user
+    if (Test::HasFailure()) UniLog::needLog();
+    UniLog::defaultCellLog_.reset();   // dump log in time
+    EXPECT_EQ(0, UniLog::nLog());      // req: del log when no user
 }
 
 }  // namespace

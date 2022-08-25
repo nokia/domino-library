@@ -53,5 +53,5 @@ private:
 //                       - fix file open issue (at 30_IDs\smart.log under codeblock)
 // 2020-10-26  CSZ       - StrCoutFSL for UT
 //                       - align Domino coding style
-// 2022-08-17  CSZ       - adjusted with CellLog
+// 2022-08-17  CSZ       - adjusted with UniLog
 // ***********************************************************************************************

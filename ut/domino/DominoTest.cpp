@@ -16,10 +16,10 @@ namespace RLib
 {
 // ***********************************************************************************************
 template<class aParaDom>
-struct DominoTest : public Test, public CellLog
+struct DominoTest : public Test, public UniLog
 {
     DominoTest()
-        : CellLog(UnitTest::GetInstance()->current_test_info()->name())
+        : UniLog(UnitTest::GetInstance()->current_test_info()->name())
         , utInit_(cellName())
     {}
     ~DominoTest() { GTEST_LOG_FAIL }

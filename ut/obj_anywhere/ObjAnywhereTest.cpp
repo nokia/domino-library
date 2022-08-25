@@ -7,7 +7,7 @@
 #include <gtest/gtest.h>
 #include <memory>  // for shared_ptr
 
-#include "CellLog.hpp"
+#include "UniLog.hpp"
 #include "MsgSelf.hpp"
 #include "ObjAnywhere.hpp"
 
@@ -16,9 +16,9 @@ using namespace testing;
 namespace RLib
 {
 // ***********************************************************************************************
-struct ObjAnywhereTest : public Test, public CellLog
+struct ObjAnywhereTest : public Test, public UniLog
 {
-    ObjAnywhereTest() : CellLog(UnitTest::GetInstance()->current_test_info()->name()) {}
+    ObjAnywhereTest() : UniLog(UnitTest::GetInstance()->current_test_info()->name()) {}
     ~ObjAnywhereTest() { GTEST_LOG_FAIL }
 };
 

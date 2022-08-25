@@ -8,16 +8,16 @@
 #include <gtest/gtest.h>
 #include <unistd.h>
 
-#include "CellLog.hpp"
+#include "UniLog.hpp"
 #include "MtQueue.hpp"
 
 using namespace testing;
 
 namespace RLib {
 // ***********************************************************************************************
-struct MtQueueTest : public Test, public CellLog
+struct MtQueueTest : public Test, public UniLog
 {
-    MtQueueTest() : CellLog(UnitTest::GetInstance()->current_test_info()->name()) {}
+    MtQueueTest() : UniLog(UnitTest::GetInstance()->current_test_info()->name()) {}
     ~MtQueueTest() { GTEST_LOG_FAIL }
 
     void threadMain(int aStartNum, int aSteps)

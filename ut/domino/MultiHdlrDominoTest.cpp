@@ -17,10 +17,10 @@ namespace RLib
 {
 // ***********************************************************************************************
 template<class aParaDom>
-struct MultiHdlrDominoTest : public Test, public CellLog
+struct MultiHdlrDominoTest : public Test, public UniLog
 {
     MultiHdlrDominoTest()
-        : CellLog(UnitTest::GetInstance()->current_test_info()->name())
+        : UniLog(UnitTest::GetInstance()->current_test_info()->name())
         , utInit_(cellName())
         , hdlr0_([this](){ this->hdlr0(); })
         , hdlr1_([this](){ this->hdlr1(); })

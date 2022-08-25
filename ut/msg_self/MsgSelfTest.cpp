@@ -15,9 +15,9 @@ using namespace testing;
 namespace RLib
 {
 // ***********************************************************************************************
-struct MsgSelfTests : public Test, public CellLog
+struct MsgSelfTests : public Test, public UniLog
 {
-    MsgSelfTests() : CellLog(UnitTest::GetInstance()->current_test_info()->name())
+    MsgSelfTests() : UniLog(UnitTest::GetInstance()->current_test_info()->name())
     {
         *d1MsgHdlr_ = [this](){ hdlrIDs_.push(1); };
         *d2MsgHdlr_ = [this](){ hdlrIDs_.push(2); };

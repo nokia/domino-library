@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-#include "CellLog.hpp"
+#include "UniLog.hpp"
 
 namespace RLib
 {
 // ***********************************************************************************************
-CellLog::CellLog(const CellName& aCellName) : cellName_(aCellName)
+UniLog::UniLog(const UniLogName& aCellName) : cellName_(aCellName)
 {
     auto&& it = logStore_.find(aCellName);
     if (it == logStore_.end())
@@ -26,28 +26,28 @@ CellLog::CellLog(const CellName& aCellName) : cellName_(aCellName)
 }
 
 // ***********************************************************************************************
-CellLog& CellLog::defaultCellLog()
+UniLog& UniLog::defaultCellLog()
 {
-    if (not defaultCellLog_) defaultCellLog_ = std::make_shared<CellLog>(CELL_NAME_DEFAULT);
+    if (not defaultCellLog_) defaultCellLog_ = std::make_shared<UniLog>(ULN_DEFAULT);
     return *defaultCellLog_;
 }
 
 // ***********************************************************************************************
-size_t CellLog::logLen(const CellName& aCellName)
+size_t UniLog::logLen(const UniLogName& aCellName)
 {
     auto&& it = logStore_.find(aCellName);
     return it == logStore_.end() ? 0 : it->second->str().size();
 }
 
 // ***********************************************************************************************
-SmartLog& CellLog::oneLog()
+SmartLog& UniLog::oneLog()
 {
     *smartLog_ << '[' << cellName_ << '/';
     return *smartLog_;
 }
 
 // ***********************************************************************************************
-LogStore CellLog::logStore_;
-std::shared_ptr<CellLog> CellLog::defaultCellLog_;
+LogStore UniLog::logStore_;
+std::shared_ptr<UniLog> UniLog::defaultCellLog_;
 
 }  // namespaces

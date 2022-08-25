@@ -11,7 +11,7 @@
 
 #include <memory>  // shared_ptr
 
-#include "CellLog.hpp"
+#include "UniLog.hpp"
 #include "Domino.hpp"
 #include "DataDomino.hpp"
 #include "WbasicDatDom.hpp"
@@ -43,9 +43,9 @@ using MaxDom = WbasicDatDom<MultiHdlrDomino<DataDomino<FreeHdlrDomino<PriDomino<
 using MaxNofreeDom = PriDomino<MultiHdlrDomino<HdlrDomino<WbasicDatDom<DataDomino<Domino> > > > >;
 
 // ***********************************************************************************************
-struct UtInitObjAnywhere : public CellLog
+struct UtInitObjAnywhere : public UniLog
 {
-    UtInitObjAnywhere(const CellName& aCellName = CELL_NAME_DEFAULT) : CellLog(aCellName)
+    UtInitObjAnywhere(const UniLogName& aCellName = ULN_DEFAULT) : UniLog(aCellName)
     {
         ObjAnywhere::init(*this);
 

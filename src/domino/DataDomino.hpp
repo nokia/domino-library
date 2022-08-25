@@ -24,7 +24,7 @@ class DataDomino : public aDominoType
     // -------------------------------------------------------------------------------------------
 
 public:
-    explicit DataDomino(const CellName& aCellName) : aDominoType(aCellName) {}
+    explicit DataDomino(const UniLogName& aCellName) : aDominoType(aCellName) {}
 
     // -------------------------------------------------------------------------------------------
     // - for read/write data
@@ -81,7 +81,7 @@ aDataType getValue(aDataDominoType& aDom, const Domino::EvName& aEvName)
     auto&& data = std::static_pointer_cast<aDataType>(aDom.getShared(aEvName));
     if (data.use_count() > 0) return *data;
 
-    CellLog& oneLog = aDom;
+    UniLog& oneLog = aDom;
     WRN("(DataDomino) Failed!!! EvName=" << aEvName << " not found, return undefined obj!!!");
     return aDataType();
 }
@@ -105,5 +105,5 @@ void setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataT
 // 2021-12-31  PJ & CSZ  - formal log & naming
 // 2022-03-26  CSZ       - ut's PARA_DOM include self class & ALL its base class(es)
 // 2022-03-27  CSZ       - if ut case can test base class, never specify derive
-// 2022-08-18  CSZ       - replace CppLog by CellLog
+// 2022-08-18  CSZ       - replace CppLog by UniLog
 // ***********************************************************************************************
