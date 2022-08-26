@@ -33,8 +33,10 @@ void cellParticipant(UniLog& oneLog = UniLog::defaultUniLog())
 }
 
 // ***********************************************************************************************
-TEST(CellLogTest, GOLD_cell_member_participant)
+TEST(UniLogTest, GOLD_cell_member_participant)
 {
+    const auto nLogBegin = UniLog::nLog();
+
     const char CELL_NAME[] = "GOLD_cell_member_participant";
     EXPECT_EQ(0, UniLog::logLen(CELL_NAME));
     {
@@ -54,14 +56,16 @@ TEST(CellLogTest, GOLD_cell_member_participant)
         const auto len_4 = UniLog::logLen(CELL_NAME);
         EXPECT_GT(len_4, len_3);                // req: can log more in same log
 
-        UniLog::needLog();                     // req: shall output log to screen
+        UniLog::needLog();                      // req: shall output log to screen
     }
-    EXPECT_EQ(0, UniLog::nLog());              // req: del log when no user
+    EXPECT_EQ(nLogBegin, UniLog::nLog());       // req: del log when no user
 }
 
 // ***********************************************************************************************
-TEST(CellLogTest, low_couple_cell_and_member)
+TEST(UniLogTest, low_couple_cell_and_member)
 {
+    const auto nLogBegin = UniLog::nLog();
+
     const char CELL_NAME[] = "low_couple_cell_and_member";
     auto cell = std::make_shared<Cell>((CELL_NAME));
     const auto len_1 = UniLog::logLen(CELL_NAME);
@@ -77,10 +81,12 @@ TEST(CellLogTest, low_couple_cell_and_member)
 
     if (Test::HasFailure()) UniLog::needLog();
     member.reset();
-    EXPECT_EQ(0, UniLog::nLog());              // req: del log when no user
+    EXPECT_EQ(nLogBegin, UniLog::nLog());       // req: del log when no user
 }
-TEST(CellLogTest, low_couple_between_copies)
+TEST(UniLogTest, low_couple_between_copies)
 {
+    const auto nLogBegin = UniLog::nLog();
+
     const char CELL_NAME[] = "low_couple_between_copies";
     auto cell = std::make_shared<Cell>((CELL_NAME));
     const auto len_1 = UniLog::logLen(CELL_NAME);
@@ -96,10 +102,12 @@ TEST(CellLogTest, low_couple_between_copies)
 
     if (Test::HasFailure()) UniLog::needLog();
     copy.reset();
-    EXPECT_EQ(0, UniLog::nLog());              // req: del log when no user
+    EXPECT_EQ(nLogBegin, UniLog::nLog());       // req: del log when no user
 }
-TEST(CellLogTest, low_couple_callbackFunc)
+TEST(UniLogTest, low_couple_callbackFunc)
 {
+    const auto nLogBegin = UniLog::nLog();
+
     const char CELL_NAME[] = "low_couple_callbackFunc";
     auto cell = std::make_shared<Cell>((CELL_NAME));
     const auto len_1 = UniLog::logLen(CELL_NAME);
@@ -116,7 +124,7 @@ TEST(CellLogTest, low_couple_callbackFunc)
 
         if (Test::HasFailure()) UniLog::needLog();
     }
-    EXPECT_EQ(0, UniLog::nLog());              // req: del log when no user
+    EXPECT_EQ(nLogBegin, UniLog::nLog());       // req: del log when no user
 }
 
 // ***********************************************************************************************
@@ -132,19 +140,20 @@ void nonCellFunc()
 }
 
 // ***********************************************************************************************
-TEST(CellLogTest, no_explicit_CellLog_like_legacy)
+TEST(UniLogTest, no_explicit_CellLog_like_legacy)
 {
+    const auto nLogBegin = UniLog::nLog();
     {
-        Cell cell;                      // req: no explicit UniLog
-        CellMember member;              // req: no explicit UniLog
-        cellParticipant();              // req: no explicit UniLog
+        Cell cell;                        // req: no explicit UniLog
+        CellMember member;                // req: no explicit UniLog
+        cellParticipant();                // req: no explicit UniLog
 
-        NonCell nonCell;                // req: class not based on UniLog
-        nonCellFunc();                  // req: func w/o UniLog para
+        NonCell nonCell;                  // req: class not based on UniLog
+        nonCellFunc();                    // req: func w/o UniLog para
     }
     if (Test::HasFailure()) UniLog::needLog();
     UniLog::defaultUniLog_.reset();   // dump log in time
-    EXPECT_EQ(0, UniLog::nLog());      // req: del log when no user
+    EXPECT_EQ(nLogBegin, UniLog::nLog());  // req: del log when no user
 }
 
 }  // namespace

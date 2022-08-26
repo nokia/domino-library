@@ -35,13 +35,8 @@
 #ifndef UNI_LOG_HPP_
 #define UNI_LOG_HPP_
 
-#include <memory>
-#include <unordered_map>
+#include <string>
 
-#include "StrCoutFSL.hpp"
-
-namespace RLib
-{
 // ***********************************************************************************************
 #if 1
 #define BUF(content) __func__ << "()" << __LINE__ << "# " << content << std::endl
@@ -58,49 +53,32 @@ namespace RLib
 #define HID(content) {}
 #endif
 
-using UniLogName = std::string;
-
 #define GTEST_LOG_FAIL { if (Test::HasFailure()) UniLog::needLog(); }
 
-// ***********************************************************************************************
-#if 1  // base on SmartLog
-using SmartLog   = StrCoutFSL;
-using LogStore   = std::unordered_map<UniLogName, std::shared_ptr<SmartLog> >;
-
-const char ULN_DEFAULT[] = "DEFAULT";
-
-class UniLog
+namespace RLib
 {
-public:
-    explicit UniLog(const UniLogName& aUniLogName = ULN_DEFAULT);
-    ~UniLog() { if (smartLog_.use_count() == 2) logStore_.erase(uniLogName_); }
-
-    SmartLog& oneLog();
-    SmartLog& operator()() { return oneLog(); }
-    const UniLogName& uniLogName() const { return uniLogName_; }
-
-    static size_t logLen(const UniLogName& aUniLogName);
-    static void needLog() { for (auto&& it : logStore_) it.second->needLog(); }
-    static auto nLog() { return logStore_.size(); }
-    static UniLog& defaultUniLog();
-
-private:
-    // -------------------------------------------------------------------------------------------
-    std::shared_ptr<SmartLog> smartLog_;
-    const UniLogName          uniLogName_;
-
-    static LogStore logStore_;
-public:
-    static std::shared_ptr<UniLog> defaultUniLog_;
-};
-
-inline SmartLog& oneLog() { return UniLog::defaultUniLog().oneLog(); }
+using UniLogName = std::string;
+const char ULN_DEFAULT[] = "DEFAULT";
+}
 
 // ***********************************************************************************************
-#else  // base on cout
+#if 1  // base on smartlog
+#include "UniSmartLog.hpp"
+namespace RLib
+{
+using UniLog = UniSmartLog;
+inline SmartLog& oneLog() { return UniLog::defaultUniLog().oneLog(); }
+}
+// ***********************************************************************************************
+#else  // base on cout (LoggingSystem is similar)
+#include "UniCoutLog.hpp"
+namespace RLib
+{
+using UniLog = UniCoutLog;
+inline std::ostream& oneLog() { return UniLog::defaultUniLog().oneLog(); }
+}
 #endif
 
-}  // namespace
 #endif  // UNI_LOG_HPP_
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
@@ -109,4 +87,5 @@ inline SmartLog& oneLog() { return UniLog::defaultUniLog().oneLog(); }
 // 2020-10-29  CSZ       2)base on SmartLog
 // 2021-02-13  CSZ       - empty to inc branch coverage (66%->75%)
 // 2022-08-16  CSZ       4)replaced by UniLog
+// 2022-08-25  CSZ       - support both SmartLog & cout
 // ***********************************************************************************************

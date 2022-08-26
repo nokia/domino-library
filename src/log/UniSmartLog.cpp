@@ -5,11 +5,12 @@
  */
 // ***********************************************************************************************
 #include "UniLog.hpp"
+#include "UniSmartLog.hpp"
 
 namespace RLib
 {
 // ***********************************************************************************************
-UniLog::UniLog(const UniLogName& aUniLogName) : uniLogName_(aUniLogName)
+UniSmartLog::UniSmartLog(const UniLogName& aUniLogName) : uniLogName_(aUniLogName)
 {
     auto&& it = logStore_.find(aUniLogName);
     if (it == logStore_.end())
@@ -26,28 +27,28 @@ UniLog::UniLog(const UniLogName& aUniLogName) : uniLogName_(aUniLogName)
 }
 
 // ***********************************************************************************************
-UniLog& UniLog::defaultUniLog()
+UniSmartLog& UniSmartLog::defaultUniLog()
 {
-    if (not defaultUniLog_) defaultUniLog_ = std::make_shared<UniLog>(ULN_DEFAULT);
+    if (not defaultUniLog_) defaultUniLog_ = std::make_shared<UniSmartLog>(ULN_DEFAULT);
     return *defaultUniLog_;
 }
 
 // ***********************************************************************************************
-size_t UniLog::logLen(const UniLogName& aUniLogName)
+size_t UniSmartLog::logLen(const UniLogName& aUniLogName)
 {
     auto&& it = logStore_.find(aUniLogName);
     return it == logStore_.end() ? 0 : it->second->str().size();
 }
 
 // ***********************************************************************************************
-SmartLog& UniLog::oneLog()
+SmartLog& UniSmartLog::oneLog()
 {
     *smartLog_ << '[' << uniLogName_ << '/';
     return *smartLog_;
 }
 
 // ***********************************************************************************************
-LogStore UniLog::logStore_;
-std::shared_ptr<UniLog> UniLog::defaultUniLog_;
+LogStore UniSmartLog::logStore_;
+std::shared_ptr<UniSmartLog> UniSmartLog::defaultUniLog_;
 
 }  // namespaces
