@@ -5,7 +5,9 @@
  */
 // ***********************************************************************************************
 // - CONSTITUTION:
-//   * implement UniLog based on cout
+//   . implement UniLog based on cout
+//   * so failed case log can perfectly integrate with gtest output - easy debug
+//     (SmartLog always gtest outputs then case log)
 // - CORE:
 //   . cout
 // ***********************************************************************************************
