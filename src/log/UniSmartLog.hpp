@@ -7,8 +7,31 @@
 // - CONSTITUTION:
 //   . implement UniLog based on SmartLog
 //   * so can log only failed UT case(s) - no log for all succ case(s)
+// - REQ:
+//   * uni-interface (DBG/...) for all users (eg DomLib, swm, rfsw)
+//     * easily support DBG/etc macros
+//     * uni-interface for DBG/etc macros
+//   . clean logStore_: del smartlog from logStore_ when no user
+//   . readable: log name as log prefix
+//   . low couple:
+//     . 2 obj sharing 1 log, del 1 obj, another obj still can log
+//     . del 1 UniLog, copied one still can log (UniLog can't be assigned since const member)
+//     . callback func can independ logging/no crash
+//   * support default / global UniLog as if legacy
+//     . class based on UniLog: default using UniLog(ULN_DEFAULT)
+//     . func with UniLog para: default using UniLog::defaultUniLog()
+//     . class & func w/o UniLog: using global oneLog()
 // - CORE:
 //   . smartLog_
+// - note:
+//   . why oneLog() as func than var: more flexible, eg can print prefix in oneLog()
+//   . why UniLog& to func:
+//     . unify usr class & func: own its UniLog
+//     . fast to pass reference from cell/member to participant
+//     . can create new member within func
+//   . why name as oneLog:
+//     . vs ssLog: oneLog can represent SmartLog or UniLog
+//     . vs log: too common, possible comflict with user definition
 // ***********************************************************************************************
 #ifndef UNI_SMART_LOG_HPP_
 #define UNI_SMART_LOG_HPP_
