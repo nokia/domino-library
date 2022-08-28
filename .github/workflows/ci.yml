@@ -34,11 +34,13 @@ jobs:
       run: gcovr --config=ut/gcovr/gcovr.cfg --exclude-lines-by-pattern '^(\s)*\b(DBG|INF|WRN|ERR|HID)\b\(.*$' -s && ls -l ut/gcovr/
 
     - uses: actions/upload-artifact@v3
+      if: always()
       with:
         name: coverage-report
         path: ./ut/gcovr/cov.*
 
     - uses: codecov/codecov-action@v3
+      if: always()
       with:
         file: ut/gcovr/cov.xml   # optional
         flags: ci_main           # optional
