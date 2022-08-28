@@ -42,7 +42,7 @@ const char ULN_DEFAULT[] = "DEFAULT";
 }
 
 // ***********************************************************************************************
-#if 0  // base on smartlog
+#if 1  // base on smartlog
 #include "UniSmartLog.hpp"
 namespace RLib
 {
