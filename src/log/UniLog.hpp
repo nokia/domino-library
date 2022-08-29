@@ -7,10 +7,15 @@
 // - CONSTITUTION:
 //   * log is always needed
 //   * impact no usr code when switch log among eg cout, LoggingSystem, SmartLog/cell-log
+// - Usage:
+//   * class A : public UniLog         // typical/inherit
+//   . class B { UniLog oneLog; ... }  // alt/member, member name must be "oneLog"
+//   . func_c(..., UniLog& oneLog)     // alt/ref, ref name must be "oneLog"
+//   . func_d(..., UniLog  conLog)     // alt/copy, copy name must be "oneLog"
 // - VALUE:
-//   . unified DBG/etc interface to all usrs
-//   . min oneLog() interface to DBG/etc for all scenarios: inner class & func, default global log
-//   . UniLogName to avoid para travel
+//   * unified logging interface: DBG/INF/WRN/ERR/HID
+//   . min oneLog() to DBG/etc in all scenarios: inner class & func, default global log
+//   . UniLogName to avoid para/UniLog travel (from creator, to mid ..., to end-usr)
 // ***********************************************************************************************
 #ifndef UNI_LOG_HPP_
 #define UNI_LOG_HPP_
