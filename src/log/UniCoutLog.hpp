@@ -17,6 +17,7 @@
 #include <memory>
 #include <iostream>
 
+#include "UniBaseLog.hpp"
 namespace RLib
 {
 // ***********************************************************************************************
@@ -40,6 +41,12 @@ private:
 public:
     static std::shared_ptr<UniCoutLog> defaultUniLog_;
 };
+
+// ***********************************************************************************************
+inline std::ostream& oneLog() { return UniCoutLog::defaultUniLog().oneLog(); }
+
+// ***********************************************************************************************
+using UniLog = UniCoutLog;
 
 }  // namespace
 #endif  // UNI_COUT_LOG_HPP_

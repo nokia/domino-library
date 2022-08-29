@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-#include "UniLog.hpp"
 #include "UniCoutLog.hpp"
 
 namespace RLib
