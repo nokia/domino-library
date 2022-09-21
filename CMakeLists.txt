@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8...3.23)
 
-project(ut)
+set(UT ut)
+project(${UT} CXX)
 
 file(GLOB INC_DIR_LIST
   "./src/*"
@@ -12,7 +13,7 @@ file(GLOB SRC_LIST
   "./src/*/*.cpp"
   "./ut/*/*.cpp"
 )
-add_executable(ut.exe ${SRC_LIST})
+add_executable(${UT} ${SRC_LIST})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 if(ENABLE_COVERAGE)
@@ -24,9 +25,11 @@ if(ENABLE_COVERAGE)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")  # gcovr need
 endif()
 
-target_link_libraries(ut.exe
+target_link_libraries(${UT} PRIVATE
   pthread
   gtest
   gtest_main
   gmock
 )
+
+add_custom_target(run_ut COMMAND ./${UT} --gtest_brief=1 DEPENDS ${UT})
