@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8...3.23)
 
-set(UT ut)
+set(UT ut_exe)
 project(${UT} CXX)
 
 file(GLOB INC_DIR_LIST
