@@ -9,7 +9,7 @@ file(GLOB INC_DIR_LIST
 )
 include_directories(${INC_DIR_LIST})
 
-file(GLOB SRC_LIST
+file(GLOB SRC_LIST  # new file has to "cmake .." again
   "./src/*/*.cpp"
   "./ut/*/*.cpp"
 )
@@ -32,4 +32,5 @@ target_link_libraries(${UT} PRIVATE
   gmock
 )
 
-add_custom_target(run_ut COMMAND ./${UT} --gtest_brief=1 DEPENDS ${UT})
+set(RUN_UT run-${UT})
+add_custom_target(${RUN_UT} COMMAND ./${UT} --gtest_brief=1 DEPENDS ${UT})  # make run-ut_exe
