@@ -5,15 +5,53 @@
  */
 // ***********************************************************************************************
 #include <gtest/gtest.h>
+#include <memory>
 
-//#include "DomDoor.hpp"
+#include "DomDoor.hpp"
+#include "UtInitObjAnywhere.hpp"
 
 using namespace testing;
 
 namespace RLib
 {
 // ***********************************************************************************************
-TEST(DomDoorTest, GOLD_1st)
+template<class aParaDom>
+struct DomDoorTest : public Test, public UniLog
 {
+    // -------------------------------------------------------------------------------------------
+    DomDoor domDoor_;
+
+    UtInitObjAnywhere utInit_;
+    std::shared_ptr<Domino> anotherDom_ = std::make_shared<Domino>(uniLogName());
+};
+TYPED_TEST_SUITE_P(DomDoorTest);
+
+// ***********************************************************************************************
+// EvName tree:      A (PARA_DOM)
+//                  / \
+//                 B   C (anotherDom_)
+//                    /
+//                   D
+TYPED_TEST_P(DomDoorTest, GOLD_most_match)
+{
+    this->domDoor_.subTree("/A",   PARA_DOM);           // req: can support any type domino
+    this->domDoor_.subTree("/A/C", this->anotherDom_);  // simplify (shall also be any type domino)
+    EXPECT_NE(PARA_DOM, this->anotherDom_);
+
+    EXPECT_EQ(PARA_DOM,          this->domDoor_.template subTree<TypeParam>("/A"));
+    EXPECT_EQ(PARA_DOM,          this->domDoor_.template subTree<TypeParam>("/A/B"));
+    EXPECT_EQ(this->anotherDom_, this->domDoor_.template subTree<TypeParam>("/A/C"));
+    EXPECT_EQ(this->anotherDom_, this->domDoor_.template subTree<TypeParam>("/A/C/D"));
+
+    EXPECT_FALSE(this->domDoor_.template subTree<TypeParam>("/E"));
+    EXPECT_FALSE(this->domDoor_.template subTree<TypeParam>("/"));
+    EXPECT_FALSE(this->domDoor_.template subTree<TypeParam>(""));
 }
+
+// ***********************************************************************************************
+REGISTER_TYPED_TEST_SUITE_P(DomDoorTest
+    , GOLD_most_match
+);
+using AnyDatDom = Types<Domino, MinDatDom, MinWbasicDatDom, MinHdlrDom, MinMhdlrDom, MinPriDom, MinFreeDom, MaxNofreeDom, MaxDom>;
+INSTANTIATE_TYPED_TEST_SUITE_P(PARA, DomDoorTest, AnyDatDom);
 }  // namespace
