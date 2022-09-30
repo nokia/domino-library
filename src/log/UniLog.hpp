@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-// - CONSTITUTION:
-//   * log is always needed
-//   * no usr code change when switch log among eg cout, LoggingSystem, SmartLog/cell-log
+// - ISSUE:
+//   . log is always needed
+//   * no usr code change when switch log among cout, LoggingSystem, SmartLog/cell-log, etc
 // - Usage:
 //   * class A : public UniLog         // typical/inherit
 //   . class B { UniLog oneLog; ... }  // alt/member, member name must be "oneLog"

@@ -1,5 +1,7 @@
 /**
- * Copyright 2020 Nokia. All rights reserved.
+ * Copyright 2020 Nokia
+ * Licensed under the BSD 3 Clause license
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
 // - what:
@@ -32,7 +34,7 @@ class HdlrDomino : public aDominoType
 {
 public:
     explicit HdlrDomino(const UniLogName& aUniLogName) : aDominoType(aUniLogName) { msgSelf_ = MSG_SELF; }  // default
-    void setMsgSelf(std::shared_ptr<MsgSelf>& aMsgSelf) { msgSelf_ = aMsgSelf; }  // can replace default
+    void setMsgSelf(shared_ptr<MsgSelf>& aMsgSelf) { msgSelf_ = aMsgSelf; }  // can replace default
 
     Domino::Event setHdlr(const Domino::EvName&, const MsgCB&);
     bool rmOneHdlrOK(const Domino::EvName& aEvName);
@@ -59,8 +61,8 @@ protected:
 
 private:
     // -------------------------------------------------------------------------------------------
-    std::unordered_map<Domino::Event, SharedMsgCB> hdlrs_;
-    std::shared_ptr<MsgSelf> msgSelf_;
+    unordered_map<Domino::Event, SharedMsgCB> hdlrs_;
+    shared_ptr<MsgSelf> msgSelf_;
 public:
     using aDominoType::oneLog;
 };
@@ -131,7 +133,7 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
         WRN("(HdlrDomino) Failed!!! Not support overwrite hdlr for " << aEvName << ". Use MultiHdlrDomino instead.");
         return Domino::D_EVENT_FAILED_RET;
     }
-    auto&& hdlr = std::make_shared<MsgCB>(aHdlr);
+    auto&& hdlr = make_shared<MsgCB>(aHdlr);
     hdlrs_[event] = hdlr;
     HID("(HdlrDomino) Succeed for EvName=" << aEvName);
 

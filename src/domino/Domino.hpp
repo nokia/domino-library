@@ -1,9 +1,12 @@
 /**
- * Copyright 2017 Nokia. All rights reserved.
+ * Copyright 2017 Nokia
+ * Licensed under the BSD 3 Clause license
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-// - what:
+// - ISSUE:
 //   . like eNB upgrade, many clues, many tasks, how to align the mass to best performance & tidy?
+// - how:
 //   . treat each clue as an event, like a domino tile
 //   . treat each task as a hdlr (callback func)
 //   . each hdlr relies on limited event(s), each event may also rely on some ohter event(s)

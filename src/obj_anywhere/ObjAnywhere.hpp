@@ -1,11 +1,11 @@
 /**
- * Copyright 2018-2022 Nokia
+ * Copyright 2018 Nokia
  * Licensed under the BSD 3 Clause license
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-// - constitution:
-//   * like cout: SHARE Obj in ObjAnywhere w/o shipping Obj/ObjAnywhere all the way
+// - ISSUE:
+//   . how easily share obj within a process? like cout sharing
 // - how:
 //   . eg ObjAnywhere::set<Obj>(): register/store Obj
 //   . eg ObjAnywhere::get<Obj>(): get Obj

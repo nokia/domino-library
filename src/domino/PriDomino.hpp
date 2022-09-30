@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2022 Nokia
+ * Copyright 2018 Nokia
  * Licensed under the BSD 3 Clause license
  * SPDX-License-Identifier: BSD-3-Clause
  */

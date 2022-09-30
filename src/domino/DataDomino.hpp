@@ -1,9 +1,11 @@
 /**
- * Copyright 2020 Nokia. All rights reserved.
+ * Copyright 2020 Nokia
+ * Licensed under the BSD 3 Clause license
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-// - what:  Domino to store any type of data (no read/write protect)
-// - VALUE: eg C&M translator store any type data from RU/BBU/HLAPI, like IM [MUST-HAVE!]
+// - ISSUE: eg C&M translator store any type data from RU/BBU/HLAPI, like IM [MUST-HAVE!]
+// - Req:   Domino to store any type of data
 // - core:  dataStore_
 // - scope: provide min interface (& extend by non-member func)
 // ***********************************************************************************************
