@@ -8,25 +8,23 @@
 
 namespace RLib
 {
-
 // ***********************************************************************************************
 UniCoutLog& UniCoutLog::defaultUniLog()
 {
-    if (not defaultUniLog_) defaultUniLog_ = std::make_shared<UniCoutLog>();
+    if (not defaultUniLog_) defaultUniLog_ = make_shared<UniCoutLog>();
     return *defaultUniLog_;
 }
 
 // ***********************************************************************************************
-std::ostream& UniCoutLog::oneLog()
+ostream& UniCoutLog::oneLog()
 {
-    std::cout << '[' << uniLogName_ << '/';
+    cout << '[' << uniLogName_ << '/';
     ++nLogLine_;
-    return std::cout;
+    return cout;
 }
 
 // ***********************************************************************************************
 size_t UniCoutLog::nLogLine_ = 0;
-std::shared_ptr<UniCoutLog> UniCoutLog::defaultUniLog_;
+shared_ptr<UniCoutLog> UniCoutLog::defaultUniLog_;
 
 }  // namespaces
-

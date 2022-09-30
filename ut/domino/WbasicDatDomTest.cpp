@@ -26,7 +26,7 @@ struct WbasicDatDomTest : public Test, public UniLog
     ~WbasicDatDomTest() { GTEST_LOG_FAIL }
 
     UtInitObjAnywhere utInit_;
-    std::set<Domino::Event> uniqueEVs_;
+    set<Domino::Event> uniqueEVs_;
 };
 TYPED_TEST_SUITE_P(WbasicDatDomTest);
 

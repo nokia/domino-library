@@ -5,7 +5,7 @@
 
 namespace RLib
 {
-std::shared_ptr<ObjAnywhere::ObjStore> ObjAnywhere::objStore_;
+shared_ptr<ObjAnywhere::ObjStore> ObjAnywhere::objStore_;
 
 // ***********************************************************************************************
 void ObjAnywhere::deinit(UniLog& oneLog)
@@ -23,7 +23,7 @@ void ObjAnywhere::init(UniLog& oneLog)
     else
     {
         INF("Succeed.");
-        objStore_ = std::make_shared<ObjStore>();
+        objStore_ = make_shared<ObjStore>();
     }
 }
 }  // namespace

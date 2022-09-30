@@ -43,7 +43,7 @@ bool MsgSelf::handleOneMsg()
 }
 
 // ***********************************************************************************************
-void MsgSelf::loopBack(const std::shared_ptr<bool> aValidMsgSelf)
+void MsgSelf::loopBack(const shared_ptr<bool> aValidMsgSelf)
 {
     if (*aValidMsgSelf)  // impossible aValidMsgSelf==nullptr till 022-Mar-11
     {

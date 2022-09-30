@@ -27,27 +27,27 @@ struct DataDominoTest : public Test, public UniLog
     ~DataDominoTest() { GTEST_LOG_FAIL }
 
     UtInitObjAnywhere utInit_;
-    std::set<Domino::Event> uniqueEVs_;
+    set<Domino::Event> uniqueEVs_;
 };
 TYPED_TEST_SUITE_P(DataDominoTest);
 
 // ***********************************************************************************************
 TYPED_TEST_P(DataDominoTest, GOLD_setShared_thenGetIt)
 {
-    PARA_DOM->replaceShared("ev0", std::make_shared<std::string>("ev0's data"));
-    EXPECT_NE(0u, PARA_DOM->nShared("ev0"));                                                     // req: after creation
+    PARA_DOM->replaceShared("ev0", make_shared<string>("ev0's data"));
+    EXPECT_NE(0u, PARA_DOM->nShared("ev0"));                                           // req: after creation
 
-    auto sharedString = std::static_pointer_cast<std::string>(PARA_DOM->getShared("ev0"));
-    EXPECT_EQ("ev0's data", *sharedString);                                                      // req: get=set
+    auto sharedString = static_pointer_cast<string>(PARA_DOM->getShared("ev0"));
+    EXPECT_EQ("ev0's data", *sharedString);                                            // req: get=set
 
     *sharedString = "ev0's updated data";
-    EXPECT_EQ("ev0's updated data", (getValue<TypeParam, std::string>(*PARA_DOM, "ev0")));       // req: get=update
+    EXPECT_EQ("ev0's updated data", (getValue<TypeParam, string>(*PARA_DOM, "ev0")));  // req: get=update
 
-    PARA_DOM->replaceShared("ev0", std::make_shared<std::string>("replace ev0's data"));
-    EXPECT_EQ("replace ev0's data", (getValue<TypeParam, std::string>(*PARA_DOM, "ev0")));       // req: get replaced
-    EXPECT_NE(sharedString, std::static_pointer_cast<std::string>(PARA_DOM->getShared("ev0")));  // req: replace != old
+    PARA_DOM->replaceShared("ev0", make_shared<string>("replace ev0's data"));
+    EXPECT_EQ("replace ev0's data", (getValue<TypeParam, string>(*PARA_DOM, "ev0")));  // req: get replaced
+    EXPECT_NE(sharedString, static_pointer_cast<string>(PARA_DOM->getShared("ev0")));  // req: replace != old
 }
-const std::string XPATH_BW =
+const string XPATH_BW =
     "/o-ran-delay-management:delay-management/bandwidth-scs-delay-state[bandwidth=50000][subcarrier-spacing=30]"
     "/bandwidth";
 TYPED_TEST_P(DataDominoTest, GOLD_setValue_thenGetIt)
@@ -70,7 +70,7 @@ TYPED_TEST_P(DataDominoTest, get_noData)
     getValue<TypeParam, int>(*PARA_DOM, "not exist event");
     EXPECT_EQ(0u, PARA_DOM->nShared("not exist event"));
 
-    PARA_DOM->replaceShared("not exist event", std::shared_ptr<size_t>());
+    PARA_DOM->replaceShared("not exist event", shared_ptr<size_t>());
     EXPECT_EQ(0u, PARA_DOM->nShared("not exist event"));                     // req: setValue empty data
     EXPECT_EQ(0u, ((const TypeParam)*PARA_DOM).nShared("not exist event"));  // req: const domino
 }
@@ -78,11 +78,11 @@ TYPED_TEST_P(DataDominoTest, get_noData)
 // ***********************************************************************************************
 TYPED_TEST_P(DataDominoTest, GOLD_desruct_data)
 {
-    PARA_DOM->replaceShared("ev0", std::make_shared<char>('A'));
-    std::weak_ptr<void> weak = PARA_DOM->getShared("ev0");
+    PARA_DOM->replaceShared("ev0", make_shared<char>('A'));
+    weak_ptr<void> weak = PARA_DOM->getShared("ev0");
     EXPECT_NE(0, weak.use_count());
 
-    PARA_DOM->replaceShared("ev0", std::make_shared<char>('B'));
+    PARA_DOM->replaceShared("ev0", make_shared<char>('B'));
     EXPECT_EQ(0, weak.use_count());  // req: old is rm
 
     weak = PARA_DOM->getShared("ev0");
@@ -99,9 +99,9 @@ TYPED_TEST_P(DataDominoTest, GOLD_correct_data_destructor)
     };
     bool isDestructed;
 
-    PARA_DOM->replaceShared("ev", std::make_shared<TestData>(isDestructed));
+    PARA_DOM->replaceShared("ev", make_shared<TestData>(isDestructed));
     EXPECT_FALSE(isDestructed);
-    PARA_DOM->replaceShared("ev", std::shared_ptr<TestData>());
+    PARA_DOM->replaceShared("ev", shared_ptr<TestData>());
     EXPECT_TRUE(isDestructed);
 }
 

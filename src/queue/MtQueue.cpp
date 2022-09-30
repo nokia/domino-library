@@ -8,11 +8,11 @@
 
 namespace RLib {
 // ***********************************************************************************************
-std::shared_ptr<void> MtQueue::pop()
+shared_ptr<void> MtQueue::pop()
 {
-    std::lock_guard<std::mutex> guard(mutex_);
+    lock_guard<mutex> guard(mutex_);
 
-    if (queue_.size() == 0) return std::shared_ptr<void>();
+    if (queue_.size() == 0) return shared_ptr<void>();
 
     auto ele = queue_.front();
     queue_.pop_front();
@@ -20,9 +20,9 @@ std::shared_ptr<void> MtQueue::pop()
 }
 
 // ***********************************************************************************************
-std::shared_ptr<void> MtQueue::fetch(std::function<bool(std::shared_ptr<void>)> aMatcher)
+shared_ptr<void> MtQueue::fetch(function<bool(shared_ptr<void>)> aMatcher)
 {
-    std::lock_guard<std::mutex> guard(mutex_);
+    lock_guard<mutex> guard(mutex_);
 
     for (auto&& it = queue_.begin(); it != queue_.end();)
     {
@@ -41,16 +41,16 @@ std::shared_ptr<void> MtQueue::fetch(std::function<bool(std::shared_ptr<void>)> 
 }
 
 // ***********************************************************************************************
-void MtQueue::push(std::shared_ptr<void> aEle)
+void MtQueue::push(shared_ptr<void> aEle)
 {
-    std::lock_guard<std::mutex> guard(mutex_);
+    lock_guard<mutex> guard(mutex_);
     queue_.push_back(aEle);
 }
 
 // ***********************************************************************************************
 size_t MtQueue::size()
 {
-    std::lock_guard<std::mutex> guard(mutex_);
+    lock_guard<mutex> guard(mutex_);
     return queue_.size();
 }
 }  // namespace

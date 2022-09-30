@@ -5,8 +5,8 @@
  */
 // ***********************************************************************************************
 // CONSTITUTION : 1 solution of smart log,
-// - tmp log is std::stringstream (dyn buf)
-// - permanent log is std::cout (screen)
+// - tmp log is stringstream (dyn buf)
+// - permanent log is cout (screen)
 // . shortcoming: multiple smart logs will mix output on screen
 // - formatted log (FSL = Formatted Smart Log)
 // . slower than unformatted smart log, but more readable
@@ -18,22 +18,24 @@
 #define STREAM2COUT_FORMATTED_SMART_LOG_HPP_
 
 #include <iostream>
-#include <sstream>  //std::stringstream
+#include <sstream>  //stringstream
 
 #include "BaseSL.hpp"
+
+using namespace std;
 
 namespace RLib
 {
 // ***********************************************************************************************
-class StrCoutFSL                // FSL = Formatted Smart Log
+class StrCoutFSL           // FSL = Formatted Smart Log
     : public BaseSL
-    , public std::stringstream  // for operator<<()
+    , public stringstream  // for operator<<()
 {
 public :
     ~StrCoutFSL();
 
     // for gtest/etc that failure maybe after testcase destruction
-    void forceDel() { std::stringstream().swap(*this); }
+    void forceDel() { stringstream().swap(*this); }
     void forceSave();
 };
 
@@ -50,9 +52,9 @@ StrCoutFSL::~StrCoutFSL()
 inline
 void StrCoutFSL::forceSave()
 {
-    if(rdbuf()->in_avail())                 // otherwise cout << rdbuf() will abnormal cout
+    if(rdbuf()->in_avail())       // otherwise cout << rdbuf() will abnormal cout
     {
-        std::cout << rdbuf() << std::endl;  // internet says rdbuf() is faster than str()
+        cout << rdbuf() << endl;  // internet says rdbuf() is faster than str()
     }
 }
 }  // namespace

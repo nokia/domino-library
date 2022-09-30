@@ -12,9 +12,11 @@
 
 #include <string>
 
+using namespace std;
+
 // ***********************************************************************************************
 #if 1  // normal
-#define BUF(content) __func__ << "()" << __LINE__ << "# " << content << std::endl
+#define BUF(content) __func__ << "()" << __LINE__ << "# " << content << endl
 #define DBG(content) { oneLog() << "DBG] " << BUF(content); }
 #define INF(content) { oneLog() << "INF] " << BUF(content); }
 #define WRN(content) { oneLog() << "WRN] " << BUF(content); }
@@ -34,7 +36,7 @@
 // ***********************************************************************************************
 namespace RLib
 {
-using UniLogName = std::string;
+using UniLogName = string;
 const char ULN_DEFAULT[] = "DEFAULT";
 }  // namespace
 

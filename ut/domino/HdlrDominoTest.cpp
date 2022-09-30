@@ -38,7 +38,7 @@ struct HdlrDominoTest : public Test, public UniLog
     MsgCB hdlr1_;
     MsgCB hdlr2_;
 
-    std::set<Domino::Event> uniqueEVs_;
+    set<Domino::Event> uniqueEVs_;
 };
 TYPED_TEST_SUITE_P(HdlrDominoTest);
 
@@ -91,7 +91,7 @@ TYPED_TEST_P(NofreeHdlrDominoTest, GOLD_trigger_callback_reTrigger_reCallback)
 TYPED_TEST_P(NofreeHdlrDominoTest, GOLD_trigger_reTrigger_callback_reCallback)
 {
     // not auto-cb but manually
-    auto msgSelf = std::make_shared<MsgSelf>(
+    auto msgSelf = make_shared<MsgSelf>(
         [this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; }, this->uniLogName());
     PARA_DOM->setMsgSelf(msgSelf);          // req: change MsgSelf
 
@@ -285,7 +285,7 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlr_fail)
 TYPED_TEST_P(HdlrDominoTest, rmHdlrOnRoad_noCallback)
 {
     // not auto-cb but manually
-    auto msgSelf = std::make_shared<MsgSelf>(
+    auto msgSelf = make_shared<MsgSelf>(
         [this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; }, this->uniLogName());
     PARA_DOM->setMsgSelf(msgSelf);
 
@@ -302,7 +302,7 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlrOnRoad_noCallback)
 TYPED_TEST_P(NofreeHdlrDominoTest, rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigger)
 {
     // not auto-cb but manually
-    auto msgSelf = std::make_shared<MsgSelf>(
+    auto msgSelf = make_shared<MsgSelf>(
         [this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; }, this->uniLogName());
     PARA_DOM->setMsgSelf(msgSelf);
 

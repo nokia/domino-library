@@ -28,18 +28,18 @@ struct MsgSelfTests : public Test, public UniLog
     ~MsgSelfTests() { GTEST_LOG_FAIL }
 
     // -------------------------------------------------------------------------------------------
-    std::shared_ptr<MsgSelf> msgSelf_ = std::make_shared<MsgSelf>(
+    shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(
         [this](LoopBackFUNC aFunc){ loopbackFunc_ = aFunc; }, uniLogName());
     LoopBackFUNC loopbackFunc_;
 
-    SharedMsgCB nullMsgHdlr_ = std::make_shared<MsgCB>();
-    SharedMsgCB d1MsgHdlr_ = std::make_shared<MsgCB>();
-    SharedMsgCB d2MsgHdlr_ = std::make_shared<MsgCB>();
-    SharedMsgCB d3MsgHdlr_ = std::make_shared<MsgCB>();
-    SharedMsgCB d4MsgHdlr_ = std::make_shared<MsgCB>();
-    SharedMsgCB d5MsgHdlr_ = std::make_shared<MsgCB>();
+    SharedMsgCB nullMsgHdlr_ = make_shared<MsgCB>();
+    SharedMsgCB d1MsgHdlr_ = make_shared<MsgCB>();
+    SharedMsgCB d2MsgHdlr_ = make_shared<MsgCB>();
+    SharedMsgCB d3MsgHdlr_ = make_shared<MsgCB>();
+    SharedMsgCB d4MsgHdlr_ = make_shared<MsgCB>();
+    SharedMsgCB d5MsgHdlr_ = make_shared<MsgCB>();
 
-    std::queue<int> hdlrIDs_;
+    queue<int> hdlrIDs_;
 };
 
 #define SEND_MSG
@@ -54,7 +54,7 @@ TEST_F(MsgSelfTests, GOLD_sendMsg)
     EXPECT_TRUE(msgSelf_->hasMsg());
 
     loopbackFunc_();
-    EXPECT_EQ(std::queue<int>({1}), hdlrIDs_);  // req: callback
+    EXPECT_EQ(queue<int>({1}), hdlrIDs_);  // req: callback
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM));
     EXPECT_FALSE(msgSelf_->hasMsg());
 }
@@ -66,7 +66,7 @@ TEST_F(MsgSelfTests, dupSendMsg)
     EXPECT_TRUE(msgSelf_->hasMsg());
 
     loopbackFunc_();
-    EXPECT_EQ(std::queue<int>({1, 1}), hdlrIDs_);  // req: callback
+    EXPECT_EQ(queue<int>({1, 1}), hdlrIDs_);  // req: callback
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM));
     EXPECT_FALSE(msgSelf_->hasMsg());
 }
@@ -112,7 +112,7 @@ TEST_F(MsgSelfTests, GOLD_highPriority_first)
     msgSelf_->newMsg(d2MsgHdlr_, EMsgPri_HIGH);
     loopbackFunc_();
 
-    EXPECT_EQ(std::queue<int>({2, 1}), hdlrIDs_);
+    EXPECT_EQ(queue<int>({2, 1}), hdlrIDs_);
 }
 TEST_F(MsgSelfTests, GOLD_samePriority_fifo)
 {
@@ -122,7 +122,7 @@ TEST_F(MsgSelfTests, GOLD_samePriority_fifo)
     msgSelf_->newMsg(d4MsgHdlr_, EMsgPri_HIGH);
     loopbackFunc_();
 
-    EXPECT_EQ(std::queue<int>({2, 4, 1, 3}), hdlrIDs_);
+    EXPECT_EQ(queue<int>({2, 4, 1, 3}), hdlrIDs_);
 }
 TEST_F(MsgSelfTests, newHighPri_first)
 {
@@ -132,7 +132,7 @@ TEST_F(MsgSelfTests, newHighPri_first)
     msgSelf_->newMsg(d4MsgHdlr_, EMsgPri_HIGH);
     loopbackFunc_();
 
-    EXPECT_EQ(std::queue<int>({5, 4, 2, 1, 3}), hdlrIDs_);
+    EXPECT_EQ(queue<int>({5, 4, 2, 1, 3}), hdlrIDs_);
 }
 
 #define INVALID_MSGSELF

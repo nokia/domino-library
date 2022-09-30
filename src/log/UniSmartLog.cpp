@@ -14,7 +14,7 @@ UniSmartLog::UniSmartLog(const UniLogName& aUniLogName) : uniLogName_(aUniLogNam
     auto&& it = logStore_.find(aUniLogName);
     if (it == logStore_.end())
     {
-        smartLog_ = std::make_shared<SmartLog>();
+        smartLog_ = make_shared<SmartLog>();
         logStore_[aUniLogName] = smartLog_;
         DBG("creatd new log, name=" << aUniLogName);
     }
@@ -28,7 +28,7 @@ UniSmartLog::UniSmartLog(const UniLogName& aUniLogName) : uniLogName_(aUniLogNam
 // ***********************************************************************************************
 UniSmartLog& UniSmartLog::defaultUniLog()
 {
-    if (not defaultUniLog_) defaultUniLog_ = std::make_shared<UniSmartLog>(ULN_DEFAULT);
+    if (not defaultUniLog_) defaultUniLog_ = make_shared<UniSmartLog>(ULN_DEFAULT);
     return *defaultUniLog_;
 }
 
@@ -48,6 +48,6 @@ SmartLog& UniSmartLog::oneLog()
 
 // ***********************************************************************************************
 LogStore UniSmartLog::logStore_;
-std::shared_ptr<UniSmartLog> UniSmartLog::defaultUniLog_;
+shared_ptr<UniSmartLog> UniSmartLog::defaultUniLog_;
 
 }  // namespaces

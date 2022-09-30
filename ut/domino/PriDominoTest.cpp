@@ -42,18 +42,18 @@ struct PriDominoTest : public Test, public UniLog
 
     // -------------------------------------------------------------------------------------------
     UtInitObjAnywhere utInit_;
-    std::shared_ptr<MsgSelf> msgSelf_ = std::make_shared<MsgSelf>(
+    shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(
         [this](LoopBackFUNC aFunc){ loopbackFunc_ = aFunc; }, uniLogName());
     LoopBackFUNC loopbackFunc_;
 
-    SharedMsgCB d1EventHdlr_ = std::make_shared<MsgCB>();
-    SharedMsgCB d2EventHdlr_ = std::make_shared<MsgCB>();
-    SharedMsgCB d3EventHdlr_ = std::make_shared<MsgCB>();
-    SharedMsgCB d4EventHdlr_ = std::make_shared<MsgCB>();
-    SharedMsgCB d5EventHdlr_ = std::make_shared<MsgCB>();
+    SharedMsgCB d1EventHdlr_ = make_shared<MsgCB>();
+    SharedMsgCB d2EventHdlr_ = make_shared<MsgCB>();
+    SharedMsgCB d3EventHdlr_ = make_shared<MsgCB>();
+    SharedMsgCB d4EventHdlr_ = make_shared<MsgCB>();
+    SharedMsgCB d5EventHdlr_ = make_shared<MsgCB>();
 
-    std::queue<int> hdlrIDs_;
-    std::set<Domino::Event> uniqueEVs_;
+    queue<int> hdlrIDs_;
+    set<Domino::Event> uniqueEVs_;
 };
 TYPED_TEST_SUITE_P(PriDominoTest);
 
@@ -102,8 +102,8 @@ TYPED_TEST_P(PriDominoTest, GOLD_setPriority_thenPriorityFifoCallback)
     PARA_DOM->setState({{"e4", true}});
 
     if (this->msgSelf_->hasMsg()) this->loopbackFunc_();
-    if (this->hdlrIDs_.size() == 6) EXPECT_EQ(std::queue<int>({5, 4, 2, 1, 3, 4}), this->hdlrIDs_);
-    else EXPECT_EQ(std::queue<int>({5, 4, 2, 1, 3}), this->hdlrIDs_);  // auto-rm-hdlr dom
+    if (this->hdlrIDs_.size() == 6) EXPECT_EQ(queue<int>({5, 4, 2, 1, 3, 4}), this->hdlrIDs_);
+    else EXPECT_EQ(queue<int>({5, 4, 2, 1, 3}), this->hdlrIDs_);  // auto-rm-hdlr dom
 }
 
 #define ID_STATE

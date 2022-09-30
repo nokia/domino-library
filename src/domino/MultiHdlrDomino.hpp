@@ -27,8 +27,8 @@ template<class aDominoType>
 class MultiHdlrDomino : public aDominoType
 {
 public:
-    using HdlrName  = std::string;
-    using MultiHdlr = std::map<HdlrName, SharedMsgCB>;
+    using HdlrName  = string;
+    using MultiHdlr = map<HdlrName, SharedMsgCB>;
 
     explicit MultiHdlrDomino(const UniLogName& aUniLogName) : aDominoType(aUniLogName) {}
 
@@ -48,7 +48,7 @@ protected:
 
 private:
     // -------------------------------------------------------------------------------------------
-    std::unordered_map<Domino::Event, MultiHdlr> multiHdlrs_;
+    unordered_map<Domino::Event, MultiHdlr> multiHdlrs_;
 public:
     using aDominoType::oneLog;
 };
@@ -64,7 +64,7 @@ void MultiHdlrDomino<aDominoType>::effect(const Domino::Event aEv)
         return;
     for (auto&& itHdlr = itEv->second.begin(); itHdlr != itEv->second.end();)
     {
-        auto&& itNext = std::next(itHdlr);
+        auto&& itNext = next(itHdlr);
         DBG("(MultiHdlrDomino) Succeed to trigger 1 hdlr=" << itHdlr->first << " of EvName=" << this->evName(aEv));
         this->triggerHdlr(itHdlr->second, aEv);  // may rm itHdlr in FreeHdlrDomino
         itHdlr = itNext;
@@ -76,7 +76,7 @@ template<class aDominoType>
 Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvName& aEvName,
     const MsgCB& aHdlr, const HdlrName& aHdlrName)
 {
-    auto&& hdlr = std::make_shared<MsgCB>(aHdlr);
+    auto&& hdlr = make_shared<MsgCB>(aHdlr);
 
     auto&& event = this->newEvent(aEvName);
     auto&& itEv = multiHdlrs_.find(event);

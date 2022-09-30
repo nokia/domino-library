@@ -60,11 +60,11 @@ TEST(UniLogTest, low_couple_objects)
     const auto nLogBegin = UniLog::nLog();
 
     const char LOG_NAME[] = "low_couple_objects";
-    auto classUsr = std::make_shared<ClassUsr>((LOG_NAME));
+    auto classUsr = make_shared<ClassUsr>((LOG_NAME));
     const auto len_1 = UniLog::logLen(LOG_NAME);
     EXPECT_GT(len_1, 0);                   // req: can log
 
-    auto classUsr_2 = std::make_shared<ClassUsr>(LOG_NAME);
+    auto classUsr_2 = make_shared<ClassUsr>(LOG_NAME);
     const auto len_2 = UniLog::logLen(LOG_NAME);
     EXPECT_GT(len_2, len_1);               // req: can log
 
@@ -81,11 +81,11 @@ TEST(UniLogTest, low_couple_between_copies)
     const auto nLogBegin = UniLog::nLog();
 
     const char LOG_NAME[] = "low_couple_between_copies";
-    auto classUsr = std::make_shared<ClassUsr>((LOG_NAME));
+    auto classUsr = make_shared<ClassUsr>((LOG_NAME));
     const auto len_1 = UniLog::logLen(LOG_NAME);
     EXPECT_GT(len_1, 0);                   // req: can log
 
-    auto copy = std::make_shared<ClassUsr>(*classUsr);
+    auto copy = make_shared<ClassUsr>(*classUsr);
     const auto len_2 = UniLog::logLen(LOG_NAME);
     EXPECT_EQ(len_2, len_1);               // req: log still there
 
@@ -102,11 +102,11 @@ TEST(UniLogTest, low_couple_callbackFunc)
     const auto nLogBegin = UniLog::nLog();
 
     const char LOG_NAME[] = "low_couple_callbackFunc";
-    auto classUsr = std::make_shared<ClassUsr>((LOG_NAME));
+    auto classUsr = make_shared<ClassUsr>((LOG_NAME));
     const auto len_1 = UniLog::logLen(LOG_NAME);
     EXPECT_GT(len_1, 0);                   // req: can log
     {
-        std::function<void()> cb = [oneLog = *classUsr]() mutable { INF("hello world, I'm a callback func"); };
+        function<void()> cb = [oneLog = *classUsr]() mutable { INF("hello world, I'm a callback func"); };
         const auto len_2 = UniLog::logLen(LOG_NAME);
         EXPECT_GE(len_2, len_1);           // req: log still there (more log since no move-construct of ClassUsr)
 

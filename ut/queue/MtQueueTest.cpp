@@ -24,7 +24,7 @@ struct MtQueueTest : public Test, public UniLog
     {
         for (int i = 0; i < aSteps; i++)
         {
-            mtQueue_.push(std::make_shared<int>(aStartNum + i));
+            mtQueue_.push(make_shared<int>(aStartNum + i));
             if (i == 0 || i == aSteps/2) usleep(1u);  // give chance to other threads, at least 2
         }
     }
@@ -43,8 +43,8 @@ TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
     const int steps = 10000;
     int startNum_1 = 0;
     int startNum_2 = 0 + steps;
-    auto thread_1 = async(std::launch::async, std::bind(&MtQueueTest::threadMain, this, startNum_1, steps));
-    auto thread_2 = async(std::launch::async, std::bind(&MtQueueTest::threadMain, this, startNum_2, steps));
+    auto thread_1 = async(launch::async, bind(&MtQueueTest::threadMain, this, startNum_1, steps));
+    auto thread_2 = async(launch::async, bind(&MtQueueTest::threadMain, this, startNum_2, steps));
 
     int whichThread = 0;
     int nToThread_1 = 0;
@@ -52,7 +52,7 @@ TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
     int nEmptyQueue = 0;
     for (int i = 0; i < steps * 2;)
     {
-        auto value = std::static_pointer_cast<int>(mtQueue_.pop());
+        auto value = static_pointer_cast<int>(mtQueue_.pop());
         if (not value)
         {
             ++nEmptyQueue;
@@ -90,14 +90,14 @@ TEST_F(MtQueueTest, GOLD_fetchSpecified_multiThreadSafe)
     const int steps = 10;
     int startNum_1 = 0;
     int startNum_2 = 0 + steps;
-    auto thread_1 = async(std::launch::async, std::bind(&MtQueueTest::threadMain, this, startNum_1, steps));
-    auto thread_2 = async(std::launch::async, std::bind(&MtQueueTest::threadMain, this, startNum_2, steps));
+    auto thread_1 = async(launch::async, bind(&MtQueueTest::threadMain, this, startNum_1, steps));
+    auto thread_2 = async(launch::async, bind(&MtQueueTest::threadMain, this, startNum_2, steps));
 
     int nEmptyQueue = 0;
     for (int i = 0; i < 2;)
     {
-        auto value = std::static_pointer_cast<int>(mtQueue_.fetch(
-            [](std::shared_ptr<void> aEle) { return *std::static_pointer_cast<int>(aEle) % steps == steps -1; }));
+        auto value = static_pointer_cast<int>(mtQueue_.fetch(
+            [](shared_ptr<void> aEle) { return *static_pointer_cast<int>(aEle) % steps == steps -1; }));
         if (not value)
         {
             ++nEmptyQueue;
@@ -110,13 +110,13 @@ TEST_F(MtQueueTest, GOLD_fetchSpecified_multiThreadSafe)
         {
             EXPECT_EQ(steps -1, *value);       // req: fetch under multi-thread
             EXPECT_FALSE(mtQueue_.fetch(
-                [](std::shared_ptr<void> aEle) { return *std::static_pointer_cast<int>(aEle) == steps -1; }));      // req: rm
+                [](shared_ptr<void> aEle) { return *static_pointer_cast<int>(aEle) == steps -1; }));      // req: rm
         }
         else
         {
             EXPECT_EQ(steps * 2 - 1, *value);  // req: fetch under multi-thread
             EXPECT_FALSE(mtQueue_.fetch(
-                [](std::shared_ptr<void> aEle) { return *std::static_pointer_cast<int>(aEle) == steps * 2 -1; }));  // req: rm
+                [](shared_ptr<void> aEle) { return *static_pointer_cast<int>(aEle) == steps * 2 -1; }));  // req: rm
         }
     }
     EXPECT_EQ(size_t(steps * 2 - 2), mtQueue_.size());
@@ -124,7 +124,7 @@ TEST_F(MtQueueTest, GOLD_fetchSpecified_multiThreadSafe)
 }
 TEST_F(MtQueueTest, GOLD_fetch_null)
 {
-    EXPECT_FALSE(mtQueue_.fetch([](std::shared_ptr<void>) { return true; }));
+    EXPECT_FALSE(mtQueue_.fetch([](shared_ptr<void>) { return true; }));
 }
 
 #define DESTRUCT
@@ -140,7 +140,7 @@ TEST_F(MtQueueTest, GOLD_destructCorrectly)
     bool isDestructed;
     {
         MtQueue mtQ;
-        mtQ.push(std::make_shared<TestObj>(isDestructed));
+        mtQ.push(make_shared<TestObj>(isDestructed));
         EXPECT_FALSE(isDestructed);
     }
     EXPECT_TRUE(isDestructed);       // req: destruct correctly

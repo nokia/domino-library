@@ -18,6 +18,9 @@
 #include <iostream>
 
 #include "UniBaseLog.hpp"
+
+using namespace std;
+
 namespace RLib
 {
 // ***********************************************************************************************
@@ -25,8 +28,8 @@ class UniCoutLog
 {
 public:
     explicit UniCoutLog(const UniLogName& aUniLogName = ULN_DEFAULT) : uniLogName_(aUniLogName) {}
-    std::ostream& oneLog();
-    std::ostream& operator()() { return oneLog(); }
+    ostream& oneLog();
+    ostream& operator()() { return oneLog(); }
     const UniLogName& uniLogName() const { return uniLogName_; }
 
     static size_t logLen(const UniLogName&) { return nLogLine_; }
@@ -39,11 +42,11 @@ private:
     const UniLogName uniLogName_;
     static size_t nLogLine_;
 public:
-    static std::shared_ptr<UniCoutLog> defaultUniLog_;
+    static shared_ptr<UniCoutLog> defaultUniLog_;
 };
 
 // ***********************************************************************************************
-inline std::ostream& oneLog() { return UniCoutLog::defaultUniLog().oneLog(); }
+inline ostream& oneLog() { return UniCoutLog::defaultUniLog().oneLog(); }
 
 // ***********************************************************************************************
 using UniLog = UniCoutLog;

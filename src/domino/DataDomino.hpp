@@ -12,6 +12,8 @@
 #include <unordered_map>
 #include <memory>  // make_shared
 
+using namespace std;
+
 namespace RLib
 {
 // ***********************************************************************************************
@@ -31,29 +33,29 @@ public:
     // - if aEvName/data invalid, return null
     // - not template<aDataType> so can virtual for WrDatDom
     // . & let DataDomino has little idea of read-write ctrl, simpler
-    virtual std::shared_ptr<void> getShared(const Domino::EvName& aEvName);
+    virtual shared_ptr<void> getShared(const Domino::EvName& aEvName);
 
     size_t nShared(const Domino::EvName&) const;
 
     // -------------------------------------------------------------------------------------------
     // - replace old data by new=aSharedData if old != new
     // - for aDataType w/o default constructor!!!
-    virtual void replaceShared(const Domino::EvName& aEvName, std::shared_ptr<void> aSharedData);
+    virtual void replaceShared(const Domino::EvName& aEvName, shared_ptr<void> aSharedData);
 
 private:
     // -------------------------------------------------------------------------------------------
-    std::unordered_map<Domino::Event, std::shared_ptr<void> > dataStore_;  // [event]=shared_ptr<"DataType">
+    unordered_map<Domino::Event, shared_ptr<void> > dataStore_;  // [event]=shared_ptr<"DataType">
 public:
     using aDominoType::oneLog;
 };
 
 // ***********************************************************************************************
 template<typename aDominoType>
-std::shared_ptr<void> DataDomino<aDominoType>::getShared(const Domino::EvName& aEvName)
+shared_ptr<void> DataDomino<aDominoType>::getShared(const Domino::EvName& aEvName)
 {
     const auto ev = this->newEvent(aEvName);
     auto&& data = dataStore_[ev];
-    return (data.use_count() > 0) ? data : std::shared_ptr<void>();
+    return (data.use_count() > 0) ? data : shared_ptr<void>();
 }
 
 // ***********************************************************************************************
@@ -66,7 +68,7 @@ size_t DataDomino<aDominoType>::nShared(const Domino::EvName& aEvName) const
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void DataDomino<aDominoType>::replaceShared(const Domino::EvName& aEvName, std::shared_ptr<void> aSharedData)
+void DataDomino<aDominoType>::replaceShared(const Domino::EvName& aEvName, shared_ptr<void> aSharedData)
 {
     dataStore_[this->newEvent(aEvName)] = aSharedData;
 }
@@ -78,7 +80,7 @@ void DataDomino<aDominoType>::replaceShared(const Domino::EvName& aEvName, std::
 template<typename aDataDominoType, typename aDataType>
 aDataType getValue(aDataDominoType& aDom, const Domino::EvName& aEvName)
 {
-    auto&& data = std::static_pointer_cast<aDataType>(aDom.getShared(aEvName));
+    auto&& data = static_pointer_cast<aDataType>(aDom.getShared(aEvName));
     if (data.use_count() > 0) return *data;
 
     auto&& oneLog = aDom;
@@ -90,7 +92,7 @@ aDataType getValue(aDataDominoType& aDom, const Domino::EvName& aEvName)
 template<typename aDataDominoType, typename aDataType>
 void setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData)
 {
-    auto&& data = std::make_shared<aDataType>(aData);
+    auto&& data = make_shared<aDataType>(aData);
     aDom.replaceShared(aEvName, data);
 }
 }  // namespace

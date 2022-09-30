@@ -47,9 +47,9 @@ private:
 //                       - giveup unify unformatted & formatted smartlog, too difficult
 // 2011-04-28  CSZ       - unify unformatted & formatted smartlog together
 // 2011-05-05  CSZ       - giveup unify different smart log together, use most direct way
-// 2015-06-01  CSZ       - derive R_StrCountFSL_T by std::stringstream, so endl works
+// 2015-06-01  CSZ       - derive R_StrCountFSL_T by stringstream, so endl works
 //                       - rename trigger() to needLog(), etc.
-// 2015-06-04  CSZ       - derive R_StrFileFSL_T by std::stringstream
+// 2015-06-04  CSZ       - derive R_StrFileFSL_T by stringstream
 //                       - fix file open issue (at 30_IDs\smart.log under codeblock)
 // 2020-10-26  CSZ       - StrCoutFSL for UT
 //                       - align Domino coding style

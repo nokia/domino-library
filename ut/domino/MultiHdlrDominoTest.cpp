@@ -39,7 +39,7 @@ struct MultiHdlrDominoTest : public Test, public UniLog
     MsgCB hdlr1_;
     MsgCB hdlr2_;
 
-    std::set<Domino::Event> uniqueEVs_;
+    set<Domino::Event> uniqueEVs_;
 };
 TYPED_TEST_SUITE_P(MultiHdlrDominoTest);
 
@@ -211,7 +211,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, rmLegacyHdlr_byNoHdlrName)
 TYPED_TEST_P(NofreeMultiHdlrDominoTest, rmHdlrOnRoad)
 {
     // not auto-cb but manually
-    auto msgSelf = std::make_shared<MsgSelf>(
+    auto msgSelf = make_shared<MsgSelf>(
         [this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; }, this->uniLogName());
     PARA_DOM->setMsgSelf(msgSelf);
 

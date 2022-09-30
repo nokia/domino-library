@@ -49,9 +49,9 @@ class Domino : public UniLog
 {
 public:
     using Event      = size_t;  // smaller size can save mem; larger size can support more events
-    using Events     = std::set<Event>;
-    using EvName     = std::string;
-    using SimuEvents = std::map<EvName, bool>;  // not unordered-map since most traversal
+    using Events     = set<Event>;
+    using EvName     = string;
+    using SimuEvents = map<EvName, bool>;  // not unordered-map since most traversal
 
     enum
     {
@@ -91,12 +91,12 @@ private:
     void pureSetState(const Event, const bool aNewState);
 
     // -------------------------------------------------------------------------------------------
-    std::vector<bool> states_;                     // bitmap & dyn expand, [event]=t/f
+    vector<bool> states_;                     // bitmap & dyn expand, [event]=t/f
 
-    std::map<Event, Events> prev_[N_EVENT_STATE];  // not unordered-map since most traversal
-    std::map<Event, Events> next_[N_EVENT_STATE];  // not unordered-map since most traversal
-    std::unordered_map<EvName, Event> events_;     // [evName]=event
-    std::vector<EvName> evNames_;                  // [event]=evName for easy debug
+    map<Event, Events> prev_[N_EVENT_STATE];  // not unordered-map since most traversal
+    map<Event, Events> next_[N_EVENT_STATE];  // not unordered-map since most traversal
+    unordered_map<EvName, Event> events_;     // [evName]=event
+    vector<EvName> evNames_;                  // [event]=evName for easy debug
     bool sthChanged_ = false;                      // for debug
 
     static const EvName invalidEvName;

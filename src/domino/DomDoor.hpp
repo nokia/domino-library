@@ -4,13 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
+// - ISSUE:
+//   . INTEGRATE many dominos in a cloud (cross-process) to 1 DomDoor (in 1 process)
+//   . HIDE details of how to communicate among dominos
+//   . REUSE EvName as searching key
 // - Usage:
 //   . get most matchable domino by EvName
 //   . store different dominos in 1 (EvName) tree, each domino covers 1 branch (no overlap)
-// - CONSTITUTION / VALUE:
-//   * diff processes may use SyncDom to work together, hide impl details (eg SyncDom) to user
-//   . most matchable algorithm
-//   . EvName as matching key, no extra new info
 // - note:
 //   . DomDoor is not a domino (so need not domino APIs), but a door
 // ***********************************************************************************************
@@ -36,7 +36,7 @@ public:
 
 private:
     // -------------------------------------------------------------------------------------------
-    std::map<Domino::EvName, std::shared_ptr<void> > domStore_;  // [EvName]=shared_ptr<aDominoType>
+    map<Domino::EvName, shared_ptr<void> > domStore_;  // [EvName]=shared_ptr<aDominoType>
 };
 
 // ***********************************************************************************************

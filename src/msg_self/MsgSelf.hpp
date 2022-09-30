@@ -36,6 +36,8 @@
 
 #define MSG_SELF (ObjAnywhere::get<MsgSelf>(*this))
 
+using namespace std;
+
 namespace RLib
 {
 // ***********************************************************************************************
@@ -50,12 +52,12 @@ enum EMsgPriority : unsigned char
     EMsgPri_MAX
 };
 
-using MsgCB        = std::function<void()>;
-using WeakMsgCB    = std::weak_ptr<MsgCB>;
-using SharedMsgCB  = std::shared_ptr<MsgCB>;
+using MsgCB        = function<void()>;
+using WeakMsgCB    = weak_ptr<MsgCB>;
+using SharedMsgCB  = shared_ptr<MsgCB>;
 
-using LoopBackFUNC = std::function<void()>;
-using LoopReqFUNC  = std::function<void(LoopBackFUNC)>;
+using LoopBackFUNC = function<void()>;
+using LoopReqFUNC  = function<void(LoopBackFUNC)>;
 
 // ***********************************************************************************************
 class MsgSelf : public UniLog
@@ -65,7 +67,7 @@ public:
     ~MsgSelf();
 
     void newMsg(const WeakMsgCB& aMsgCB, const EMsgPriority = EMsgPri_NORM);
-    const std::shared_ptr<bool> getValid() const { return isValid_; }
+    const shared_ptr<bool> getValid() const { return isValid_; }
 
     bool hasMsg() const { return nMsg_; }
     static bool isLowPri(const EMsgPriority aPri) { return aPri < EMsgPri_NORM; }
@@ -73,12 +75,12 @@ public:
 
 private:
     bool handleOneMsg();
-    void loopBack(const std::shared_ptr<bool> aValidMsgSelf = std::make_shared<bool>(true));
+    void loopBack(const shared_ptr<bool> aValidMsgSelf = make_shared<bool>(true));
 
     // -------------------------------------------------------------------------------------------
-    std::queue<WeakMsgCB> msgQueues_[EMsgPri_MAX];
+    queue<WeakMsgCB> msgQueues_[EMsgPri_MAX];
 
-    std::shared_ptr<bool> isValid_ = std::make_shared<bool>(true);  // MsgSelf is still valid?
+    shared_ptr<bool> isValid_ = make_shared<bool>(true);  // MsgSelf is still valid?
     LoopReqFUNC loopReq_;
     size_t nMsg_ = 0;
 };

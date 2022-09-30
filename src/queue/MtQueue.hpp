@@ -22,21 +22,23 @@
 #include <memory>
 #include <mutex>
 
+using namespace std;
+
 namespace RLib {
 // ***********************************************************************************************
 class MtQueue
 {
 public:
-    void push(std::shared_ptr<void> aEle);
-    std::shared_ptr<void> pop();
-    std::shared_ptr<void> fetch(std::function<bool(std::shared_ptr<void>)>);
+    void push(shared_ptr<void> aEle);
+    shared_ptr<void> pop();
+    shared_ptr<void> fetch(function<bool(shared_ptr<void>)>);
 
     size_t size();
 
 private:
-    std::list<std::shared_ptr<void> > queue_;
+    list<shared_ptr<void> > queue_;
 
-    std::mutex mutex_;
+    mutex mutex_;
 };
 }  // namespace
 // ***********************************************************************************************

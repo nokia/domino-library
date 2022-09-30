@@ -32,6 +32,8 @@
 
 #include "UniLog.hpp"
 
+using namespace std;
+
 namespace RLib
 {
 // ***********************************************************************************************
@@ -39,45 +41,45 @@ class ObjAnywhere
 {
 public:
     using ObjIndex = size_t;
-    using ObjStore = std::unordered_map<ObjIndex, std::shared_ptr<void> >;
+    using ObjStore = unordered_map<ObjIndex, shared_ptr<void> >;
 
     static void init(UniLog& oneLog = UniLog::defaultUniLog());    // init objStore_
     static void deinit(UniLog& oneLog = UniLog::defaultUniLog());  // rm objStore_
-    static bool isInit() { return objStore_ != nullptr; }           // init objStore_?
+    static bool isInit() { return objStore_ != nullptr; }          // init objStore_?
 
     // -------------------------------------------------------------------------------------------
     // - save aObjType into objStore_
     // -------------------------------------------------------------------------------------------
     template<typename aObjType>
-    static void set(std::shared_ptr<aObjType> aSharedObj, UniLog& oneLog = UniLog::defaultUniLog());
+    static void set(shared_ptr<aObjType> aSharedObj, UniLog& oneLog = UniLog::defaultUniLog());
 
     // -------------------------------------------------------------------------------------------
     // - get a "Obj" from objStore_
     // - template operator[] not easier in usage
     // -------------------------------------------------------------------------------------------
-    template<typename aObjType> static std::shared_ptr<aObjType> get(UniLog& oneLog = UniLog::defaultUniLog());
+    template<typename aObjType> static shared_ptr<aObjType> get(UniLog& oneLog = UniLog::defaultUniLog());
 
 private:
     // -------------------------------------------------------------------------------------------
-    static std::shared_ptr<ObjStore> objStore_;
+    static shared_ptr<ObjStore> objStore_;
 };
 
 // ***********************************************************************************************
 template<typename aObjType>
-std::shared_ptr<aObjType> ObjAnywhere::get(UniLog& oneLog)
+shared_ptr<aObjType> ObjAnywhere::get(UniLog& oneLog)
 {
-    if (not isInit()) return std::shared_ptr<aObjType>();
+    if (not isInit()) return shared_ptr<aObjType>();
 
     auto&& found = (*objStore_).find(typeid(aObjType).hash_code());
-    if (found != (*objStore_).end()) return std::static_pointer_cast<aObjType>(found->second);
+    if (found != (*objStore_).end()) return static_pointer_cast<aObjType>(found->second);
 
     INF("!!! Failed, unavailable obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
-    return std::shared_ptr<aObjType>();
+    return shared_ptr<aObjType>();
 }
 
 // ***********************************************************************************************
 template<typename aObjType>
-void ObjAnywhere::set(std::shared_ptr<aObjType> aSharedObj, UniLog& oneLog)
+void ObjAnywhere::set(shared_ptr<aObjType> aSharedObj, UniLog& oneLog)
 {
     if (not isInit())
     {
