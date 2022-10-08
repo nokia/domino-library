@@ -3,19 +3,22 @@ cmake_minimum_required(VERSION 2.8...3.23)
 set(UT ut_exe)
 project(${UT} CXX)
 
-file(GLOB INC_DIR_LIST
-  "./src/*"
-  "./ut/*"
-)
-include_directories(${INC_DIR_LIST})
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 file(GLOB SRC_LIST  # new file has to "cmake .." again
-  "./src/*/*.cpp"
-  "./ut/*/*.cpp"
+  "src/*/*.cpp"
+  "ut/*/*.cpp"
 )
 add_executable(${UT} ${SRC_LIST})
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+file(GLOB INC_DIR_LIST
+  "src/*"
+  "ut/*"
+)
+target_include_directories(${UT} PRIVATE ${INC_DIR_LIST})
+
 if(ENABLE_COVERAGE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")               # gcovr need
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")              # gcovr need
