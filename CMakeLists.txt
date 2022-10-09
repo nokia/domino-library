@@ -3,10 +3,6 @@ cmake_minimum_required(VERSION 2.8...3.23)
 set(UT ut_exe)
 project(${UT} CXX)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
 file(GLOB SRC_LIST  # new file has to "cmake .." again
   "src/*/*.cpp"
   "ut/*/*.cpp"
@@ -19,6 +15,17 @@ file(GLOB INC_DIR_LIST
 )
 target_include_directories(${UT} PRIVATE ${INC_DIR_LIST})
 
+target_link_libraries(${UT} PRIVATE
+  gtest
+  gtest_main
+  gmock
+  pthread
+)
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 if(ENABLE_COVERAGE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")               # gcovr need
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")              # gcovr need
@@ -27,13 +34,6 @@ if(ENABLE_COVERAGE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")  # inc branch coverage
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")  # gcovr need
 endif()
-
-target_link_libraries(${UT} PRIVATE
-  pthread
-  gtest
-  gtest_main
-  gmock
-)
 
 set(RUN_UT run-${UT})
 add_custom_target(${RUN_UT} COMMAND ./${UT} --gtest_brief=1 DEPENDS ${UT})  # make run-ut_exe
