@@ -28,7 +28,7 @@ jobs:
       run: SLICE=always-malloc G_DEBUG=gc-friendly valgrind -v --tool=memcheck --leak-check=full --num-callers=40 --log-file=ut/gcovr/cov.valgrind.log --error-exitcode=6 ./ut_exe
 
     - name: install gcovr
-      run: pip install gcovr
+      run: pip install gcovr==5.0
 
     - name: ut coverage (ret=2 is fail-under-line, =4 is fail-under-branch)
       run: gcovr --config=ut/gcovr/gcovr.cfg --exclude-lines-by-pattern '^(\s)*\b(DBG|INF|WRN|ERR|HID)\b\(.*$' -s && ls -l ut/gcovr/
@@ -42,7 +42,7 @@ jobs:
     - uses: codecov/codecov-action@v3
       if: always()
       with:
-        file: ut/gcovr/cov.json  # optional
+        file: ut/gcovr/cov.xml   # optional
         flags: ci_main           # optional
         fail_ci_if_error: true   # optional (default = false)
         verbose: true            # optional (default = false)
