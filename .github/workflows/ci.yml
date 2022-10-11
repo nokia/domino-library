@@ -17,7 +17,9 @@ jobs:
       run: sudo apt update && sudo apt install valgrind
 
     - name: install gmock & gtest
-      run: git clone https://github.com/google/googletest.git --depth 1 && cd googletest && mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=/usr && sudo make install -j
+      run: >-
+        git clone https://github.com/google/googletest.git --depth 1  # 1)always gtest latest 2)--depth 1 is to min download
+        && cd googletest && mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=/usr && sudo make install -j
 
     - uses: actions/checkout@v2
 
