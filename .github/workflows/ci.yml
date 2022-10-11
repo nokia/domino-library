@@ -42,7 +42,7 @@ jobs:
     - uses: codecov/codecov-action@v3
       if: always()
       with:
-        file: ut/gcovr/cov.xml   # optional
+        file: ut/gcovr/cov.json  # optional
         flags: ci_main           # optional
         fail_ci_if_error: true   # optional (default = false)
         verbose: true            # optional (default = false)
