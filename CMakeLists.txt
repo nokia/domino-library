@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8...3.23)
+cmake_minimum_required(VERSION 3.14)
 
 set(UT ut_exe)
 project(${UT} CXX)
@@ -15,6 +15,14 @@ file(GLOB INC_DIR_LIST
 )
 target_include_directories(${UT} PRIVATE ${INC_DIR_LIST})
 
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG latest
+  FIND_PACKAGE_ARGS NAMES GTest
+)
+FetchContent_MakeAvailable(googletest)
 target_link_libraries(${UT} PRIVATE
   gtest
   gtest_main
