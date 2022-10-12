@@ -36,7 +36,7 @@ TYPED_TEST_P(DomDoorTest, GOLD_most_match)
 {
     this->domDoor_.subTree("/A",   PARA_DOM);           // req: can support any type domino
     this->domDoor_.subTree("/A/C", this->anotherDom_);  // simplify (shall also be any type domino)
-    EXPECT_NE(PARA_DOM, this->anotherDom_);
+    ASSERT_NE(PARA_DOM, this->anotherDom_);
 
     EXPECT_EQ(PARA_DOM,          this->domDoor_.template subTree<TypeParam>("/A"));      // req: exact match
     EXPECT_EQ(PARA_DOM,          this->domDoor_.template subTree<TypeParam>("/A/B"));    // req: most match
