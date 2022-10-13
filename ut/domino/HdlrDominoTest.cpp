@@ -27,9 +27,9 @@ struct HdlrDominoTest : public Test, public UniLog
     {}
     ~HdlrDominoTest() { GTEST_LOG_FAIL }
 
-    MOCK_METHOD0(hdlr0, void());
-    MOCK_METHOD0(hdlr1, void());
-    MOCK_METHOD0(hdlr2, void());
+    MOCK_METHOD(void, hdlr0, ());
+    MOCK_METHOD(void, hdlr1, ());
+    MOCK_METHOD(void, hdlr2, ());
 
     // -------------------------------------------------------------------------------------------
     UtInitObjAnywhere utInit_;
@@ -54,7 +54,7 @@ TYPED_TEST_P(HdlrDominoTest, GOLD_addHdlr_ok)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);
 
-    EXPECT_CALL(*this, hdlr0()).Times(1);      // req: added & called
+    EXPECT_CALL(*this, hdlr0());               // req: added & called
     PARA_DOM->setState({{"event", true}});
 }
 TYPED_TEST_P(HdlrDominoTest, dupAdd_nok)
@@ -62,7 +62,7 @@ TYPED_TEST_P(HdlrDominoTest, dupAdd_nok)
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->setHdlr("event", this->hdlr1_);  // repeat
 
-    EXPECT_CALL(*this, hdlr0()).Times(1);
+    EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1()).Times(0);      // req: fail repeat
     PARA_DOM->setState({{"event", true}});
 }
@@ -71,21 +71,21 @@ TYPED_TEST_P(HdlrDominoTest, dupAdd_nok)
 // ***********************************************************************************************
 TYPED_TEST_P(HdlrDominoTest, immediateCallback_ok)
 {
-    EXPECT_CALL(*this, hdlr0()).Times(1);
+    EXPECT_CALL(*this, hdlr0());
     PARA_DOM->setState({{"event", true}});
     PARA_DOM->setHdlr("event", this->hdlr0_);  // req: immediate call
 }
 TYPED_TEST_P(NofreeHdlrDominoTest, GOLD_trigger_callback_reTrigger_reCallback)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);
-    EXPECT_CALL(*this, hdlr0()).Times(1);
+    EXPECT_CALL(*this, hdlr0());
     PARA_DOM->setState({{"event", true}});     // 1st cb
 
     EXPECT_CALL(*this, hdlr1()).Times(0);      // req: T->T no call (only F->T will call)
     PARA_DOM->setState({{"event", true}});
 
     PARA_DOM->setState({{"event", false}});
-    EXPECT_CALL(*this, hdlr0()).Times(1);
+    EXPECT_CALL(*this, hdlr0());
     PARA_DOM->setState({{"event", true}});     // req: repeat cb
 }
 TYPED_TEST_P(NofreeHdlrDominoTest, GOLD_trigger_reTrigger_callback_reCallback)
@@ -115,19 +115,19 @@ TYPED_TEST_P(HdlrDominoTest, GOLD_hdlrInChain_callbackOk)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->setPrev("event", {{"prev", true}});
-    EXPECT_CALL(*this, hdlr0()).Times(1);           // req: call in chain
+    EXPECT_CALL(*this, hdlr0());           // req: call in chain
     PARA_DOM->setState({{"prev", true}});
 }
 TYPED_TEST_P(HdlrDominoTest, hdlrInChain_immediateCallback)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->setState({{"prev", true}});
-    EXPECT_CALL(*this, hdlr0()).Times(1);           // req: immediate call
+    EXPECT_CALL(*this, hdlr0());           // req: immediate call
     PARA_DOM->setPrev("event", {{"prev", true}});
 }
 TYPED_TEST_P(HdlrDominoTest, hdlrInChain_dupSatisfy_callbackOnce)
 {
-    EXPECT_CALL(*this, hdlr0()).Times(1);           // req: call once
+    EXPECT_CALL(*this, hdlr0());                    // req: call once
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->setState({{"event", true}});          // 1st satisfy
 
@@ -147,7 +147,7 @@ TYPED_TEST_P(HdlrDominoTest, hdlrInChain_callAllHdlrs)
 TYPED_TEST_P(HdlrDominoTest, GOLD_hdlrInChain_simultaneousPrevStates_rightCallback)
 {
     EXPECT_CALL(*this, hdlr0()).Times(0);
-    EXPECT_CALL(*this, hdlr1()).Times(1);
+    EXPECT_CALL(*this, hdlr1());
 
     PARA_DOM->setHdlr("event1", this->hdlr0_);
     PARA_DOM->setPrev("event1", {{"prev1", true}});
@@ -165,7 +165,7 @@ TYPED_TEST_P(HdlrDominoTest, hdlrInChain_wrongOrderPrev_wrongCallback)
     PARA_DOM->setHdlr("event with simu prev setting", this->hdlr0_);
     PARA_DOM->setPrev("event with simu prev setting", {{"prev1", true}, {"prev2", false}});  // simu prev
 
-    EXPECT_CALL(*this, hdlr0()).Times(1);                                                    // wrong callback
+    EXPECT_CALL(*this, hdlr0());                                                             // wrong callback
     PARA_DOM->setHdlr("event with wrong prev setting", this->hdlr0_);
     PARA_DOM->setPrev("event with wrong prev setting", {{"prev2", false}});                  // wrong order
     PARA_DOM->setPrev("event with wrong prev setting", {{"prev1", true}});
@@ -180,7 +180,7 @@ TYPED_TEST_P(HdlrDominoTest, multiHdlr_onOneEvent_nok)
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->setHdlr("event", this->hdlr1_);  // req: refuse
 
-    EXPECT_CALL(*this, hdlr0()).Times(1);
+    EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1()).Times(0);
     PARA_DOM->setState({{"event", true}});
 }
@@ -190,9 +190,9 @@ TYPED_TEST_P(HdlrDominoTest, GOLD_multiHdlr_onDiffEvent_ok)
     PARA_DOM->multiHdlrByAliasEv("alias event", this->hdlr1_, "event");  // req: accept on alias ev
     PARA_DOM->multiHdlrByAliasEv("alias-2", this->hdlr2_, "event");      // req: accept on diff alias
 
-    EXPECT_CALL(*this, hdlr0()).Times(1);
-    EXPECT_CALL(*this, hdlr1()).Times(1);
-    EXPECT_CALL(*this, hdlr2()).Times(1);
+    EXPECT_CALL(*this, hdlr0());
+    EXPECT_CALL(*this, hdlr1());
+    EXPECT_CALL(*this, hdlr2());
     PARA_DOM->setState({{"event", true}});
 }
 TYPED_TEST_P(HdlrDominoTest, multiHdlr_onOneAliasEvent_nok)
@@ -201,8 +201,8 @@ TYPED_TEST_P(HdlrDominoTest, multiHdlr_onOneAliasEvent_nok)
     PARA_DOM->multiHdlrByAliasEv("alias event", this->hdlr1_, "event");
     PARA_DOM->multiHdlrByAliasEv("alias event", this->hdlr2_, "event");  // req: refuse
 
-    EXPECT_CALL(*this, hdlr0()).Times(1);
-    EXPECT_CALL(*this, hdlr1()).Times(1);
+    EXPECT_CALL(*this, hdlr0());
+    EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2()).Times(0);
     PARA_DOM->setState({{"event", true}});
 }
@@ -212,9 +212,9 @@ TYPED_TEST_P(NofreeHdlrDominoTest, multiHdlr_hubTrigger)
     PARA_DOM->multiHdlrByAliasEv("e1", this->hdlr1_, "e");
     PARA_DOM->multiHdlrByAliasEv("e2", this->hdlr2_, "e");
 
-    EXPECT_CALL(*this, hdlr0()).Times(1);
-    EXPECT_CALL(*this, hdlr1()).Times(1);
-    EXPECT_CALL(*this, hdlr2()).Times(1);
+    EXPECT_CALL(*this, hdlr0());
+    EXPECT_CALL(*this, hdlr1());
+    EXPECT_CALL(*this, hdlr2());
     PARA_DOM->setState({{"e", true}});      // T->(T,T,T)
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
@@ -229,7 +229,7 @@ TYPED_TEST_P(NofreeHdlrDominoTest, multiHdlr_hubTrigger)
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1()).Times(0);
-    EXPECT_CALL(*this, hdlr2()).Times(1);
+    EXPECT_CALL(*this, hdlr2());
     PARA_DOM->setState({{"e", true}});      // T->(T,T,T)
 }
 TYPED_TEST_P(NofreeHdlrDominoTest, multiHdlr_chainTrigger)
@@ -238,9 +238,9 @@ TYPED_TEST_P(NofreeHdlrDominoTest, multiHdlr_chainTrigger)
     PARA_DOM->multiHdlrByAliasEv("e1", this->hdlr1_, "e0");
     PARA_DOM->multiHdlrByAliasEv("e2", this->hdlr2_, "e1");
 
-    EXPECT_CALL(*this, hdlr0()).Times(1);
-    EXPECT_CALL(*this, hdlr1()).Times(1);
-    EXPECT_CALL(*this, hdlr2()).Times(1);
+    EXPECT_CALL(*this, hdlr0());
+    EXPECT_CALL(*this, hdlr1());
+    EXPECT_CALL(*this, hdlr2());
     PARA_DOM->setState({{"e0", true}});     // T->T->T
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
@@ -253,9 +253,9 @@ TYPED_TEST_P(NofreeHdlrDominoTest, multiHdlr_chainTrigger)
     EXPECT_CALL(*this, hdlr2()).Times(0);
     PARA_DOM->setState({{"e0", false}});    // F->T->F
 
-    EXPECT_CALL(*this, hdlr0()).Times(1);
+    EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1()).Times(0);
-    EXPECT_CALL(*this, hdlr2()).Times(1);   // req: trigger cross e1
+    EXPECT_CALL(*this, hdlr2());            // req: trigger cross e1
     PARA_DOM->setState({{"e0", true}});     // T->T->T
 }
 
@@ -296,7 +296,7 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlrOnRoad_noCallback)
     EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("e0"));  // req: rm hdlr on-road
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
-    EXPECT_CALL(*this, hdlr1()).Times(1);
+    EXPECT_CALL(*this, hdlr1());
     this->loopbackFunc_();                     // manual trigger on road cb
 }
 TYPED_TEST_P(NofreeHdlrDominoTest, rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigger)
@@ -324,7 +324,7 @@ TYPED_TEST_P(NofreeHdlrDominoTest, rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigg
 
     PARA_DOM->setState({{"event", true}});
     EXPECT_TRUE(msgSelf->hasMsg());
-    EXPECT_CALL(*this, hdlr0()).Times(1);         // req: new cb
+    EXPECT_CALL(*this, hdlr0());                  // req: new cb
     this->loopbackFunc_();
 }
 

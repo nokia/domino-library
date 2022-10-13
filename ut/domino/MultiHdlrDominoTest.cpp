@@ -28,9 +28,9 @@ struct MultiHdlrDominoTest : public Test, public UniLog
     {}
     ~MultiHdlrDominoTest() { GTEST_LOG_FAIL }
 
-    MOCK_METHOD0(hdlr0, void());
-    MOCK_METHOD0(hdlr1, void());
-    MOCK_METHOD0(hdlr2, void());
+    MOCK_METHOD(void, hdlr0, ());
+    MOCK_METHOD(void, hdlr1, ());
+    MOCK_METHOD(void, hdlr2, ());
 
     // -------------------------------------------------------------------------------------------
     UtInitObjAnywhere utInit_;
@@ -57,23 +57,23 @@ TYPED_TEST_P(MultiHdlrDominoTest, GOLD_multiAddHdlr_ok)
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr1_, "this->hdlr1_");
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr2_, "this->hdlr2_");
 
-    EXPECT_CALL(*this, hdlr0()).Times(1);  // req: legacy
-    EXPECT_CALL(*this, hdlr1()).Times(1);  // req: multi-hdlr
-    EXPECT_CALL(*this, hdlr2()).Times(1);  // req: multi-hdlr
+    EXPECT_CALL(*this, hdlr0());  // req: legacy
+    EXPECT_CALL(*this, hdlr1());  // req: multi-hdlr
+    EXPECT_CALL(*this, hdlr2());  // req: multi-hdlr
     PARA_DOM->setState({{"event", true}});
 }
 TYPED_TEST_P(MultiHdlrDominoTest, aloneAddHdlr_ok)
 {
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr1_, "this->hdlr1_");  // req: alone add & call
 
-    EXPECT_CALL(*this, hdlr1()).Times(1);
+    EXPECT_CALL(*this, hdlr1());
     PARA_DOM->setState({{"event", true}});
 }
 TYPED_TEST_P(MultiHdlrDominoTest, multiAddHdlr_bySameHdlrName_nok)
 {
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr1_, "this->hdlr1_");
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr2_, "this->hdlr1_");  // req: same HdlrName -> fail
-    EXPECT_CALL(*this, hdlr1()).Times(1);
+    EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2()).Times(0);
     PARA_DOM->setState({{"event", true}});
 }
@@ -82,7 +82,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, multiAddHdlr_bySameHdlrName_nok)
 // ***********************************************************************************************
 TYPED_TEST_P(MultiHdlrDominoTest, immediateCallback_ok)
 {
-    EXPECT_CALL(*this, hdlr1()).Times(1);
+    EXPECT_CALL(*this, hdlr1());
     PARA_DOM->setState({{"event", true}});
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr1_, "this->hdlr1_");  // req: immediate call
 }
@@ -91,13 +91,13 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, repeatCallback_ok)
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr1_, "this->hdlr1_");
 
-    EXPECT_CALL(*this, hdlr0()).Times(1);
-    EXPECT_CALL(*this, hdlr1()).Times(1);
+    EXPECT_CALL(*this, hdlr0());
+    EXPECT_CALL(*this, hdlr1());
     PARA_DOM->setState({{"event", true}});  // req: samultaneous call
 
     PARA_DOM->setState({{"event", false}});
-    EXPECT_CALL(*this, hdlr0()).Times(1);
-    EXPECT_CALL(*this, hdlr1()).Times(1);
+    EXPECT_CALL(*this, hdlr0());
+    EXPECT_CALL(*this, hdlr1());
     PARA_DOM->setState({{"event", true}});  // req: repeat call
 }
 
@@ -112,9 +112,9 @@ TYPED_TEST_P(MultiHdlrDominoTest, chain_callbackAllHdlr)
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr2_, "this->hdlr2_");
     PARA_DOM->setPrev("event", {{"prev", true}});
 
-    EXPECT_CALL(*this, hdlr0()).Times(1);
-    EXPECT_CALL(*this, hdlr1()).Times(1);
-    EXPECT_CALL(*this, hdlr2()).Times(1);
+    EXPECT_CALL(*this, hdlr0());
+    EXPECT_CALL(*this, hdlr1());
+    EXPECT_CALL(*this, hdlr2());
     PARA_DOM->setState({{"prev", true}});
 }
 TYPED_TEST_P(MultiHdlrDominoTest, newChain_immediateCallbackAll)
@@ -124,16 +124,16 @@ TYPED_TEST_P(MultiHdlrDominoTest, newChain_immediateCallbackAll)
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr2_, "this->hdlr2_");
     PARA_DOM->setState({{"prev", true}});
 
-    EXPECT_CALL(*this, hdlr0()).Times(1);
-    EXPECT_CALL(*this, hdlr1()).Times(1);
-    EXPECT_CALL(*this, hdlr2()).Times(1);
+    EXPECT_CALL(*this, hdlr0());
+    EXPECT_CALL(*this, hdlr1());
+    EXPECT_CALL(*this, hdlr2());
     PARA_DOM->setPrev("event", {{"prev", true}});  // new chain
 }
 TYPED_TEST_P(MultiHdlrDominoTest, newChain_dupSatisfy_callbackOnce)
 {
-    EXPECT_CALL(*this, hdlr0()).Times(1);
-    EXPECT_CALL(*this, hdlr1()).Times(1);
-    EXPECT_CALL(*this, hdlr2()).Times(1);
+    EXPECT_CALL(*this, hdlr0());
+    EXPECT_CALL(*this, hdlr1());
+    EXPECT_CALL(*this, hdlr2());
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr1_, "this->hdlr1_");
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr2_, "this->hdlr2_");
@@ -188,7 +188,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, rmHdlr_byHdlrName)
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr1_, "this->hdlr1_");
     EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event", "this->hdlr1_"));        // req: rm MultiHdlrDomino
 
-    EXPECT_CALL(*this, hdlr0()).Times(1);
+    EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1()).Times(0);
     PARA_DOM->setState({{"event", true}});
 
@@ -202,7 +202,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, rmLegacyHdlr_byNoHdlrName)
     EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event"));  // req: rm HdlrDomino that has no hdlr name
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
-    EXPECT_CALL(*this, hdlr1()).Times(1);
+    EXPECT_CALL(*this, hdlr1());
     PARA_DOM->setState({{"event", true}});
 }
 // ***********************************************************************************************
@@ -224,7 +224,7 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, rmHdlrOnRoad)
     EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event", "this->hdlr2_"));  // req: invalidate MultiDom
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
-    EXPECT_CALL(*this, hdlr1()).Times(1);
+    EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2()).Times(0);
     if (msgSelf->hasMsg()) this->loopbackFunc_();                 // manual trigger on road cb
 
@@ -232,7 +232,7 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, rmHdlrOnRoad)
     PARA_DOM->setState({{"event", true}});                        // retrigger
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
-    EXPECT_CALL(*this, hdlr1()).Times(1);
+    EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2()).Times(0);
     if (msgSelf->hasMsg()) this->loopbackFunc_();                 // manual trigger on road cb
 }
