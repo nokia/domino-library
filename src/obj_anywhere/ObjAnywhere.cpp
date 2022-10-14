@@ -1,5 +1,7 @@
 /**
  * Copyright 2018 Nokia. All rights reserved.
+ * Licensed under the BSD 3 Clause license
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 #include "ObjAnywhere.hpp"
 
