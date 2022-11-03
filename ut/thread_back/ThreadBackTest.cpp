@@ -65,7 +65,7 @@ struct ThreadBackTest : public Test, public UniLog
 //                            |
 TEST_F(ThreadBackTest, GOLD_backFn_in_mainThread)
 {
-    const size_t MAX_THREAD = 2000;
+    const size_t MAX_THREAD = 200;
     const auto idMainThread = this_thread::get_id();
     HID("main thread=" << idMainThread << ": start creating nThread=" << MAX_THREAD);
     queue<shared_future<void> > fut;
