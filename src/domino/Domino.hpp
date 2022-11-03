@@ -72,37 +72,35 @@ public:
     explicit Domino(const UniLogName& aUniLogName) : UniLog(aUniLogName) {}
     virtual ~Domino() = default;
 
-    Event newEvent(const EvName&);
-    Event getEventBy(const EvName&) const;
+    Event    newEvent(const EvName&);
+    Event    getEventBy(const EvName&) const;
 
-    bool   state(const EvName& aEvName) const { return state(getEventBy(aEvName)); }
-    void   setState(const SimuEvents&);
-    Event  setPrev(const EvName&, const SimuEvents& aSimuPrevEvents);
-    EvName whyFalse(const EvName&) const;
+    bool     state(const EvName& aEvName) const { return state(getEventBy(aEvName)); }
+    void     setState(const SimuEvents&);
+    Event    setPrev(const EvName&, const SimuEvents& aSimuPrevEvents);
+    EvName   whyFalse(const EvName&) const;
 
     // -------------------------------------------------------------------------------------------
     // misc:
-    size_t nEvent() const { return states_.size(); }
-
+    size_t        nEvent() const { return states_.size(); }
 protected:
     const EvName& evName(const Event aEv) const { return evNames_[aEv]; }  // aEv must valid
-    bool state(const Event aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
-    virtual void effect(const Event) {}
-
+    bool          state(const Event aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
+    virtual void  effect(const Event) {}
 private:
-    void deduceState(const Event);
-    void pureSetState(const Event, const bool aNewState);
+    void          deduceState(const Event);
+    void          pureSetState(const Event, const bool aNewState);
 
     // -------------------------------------------------------------------------------------------
-    vector<bool> states_;                     // bitmap & dyn expand, [event]=t/f
+    vector<bool>                 states_;               // bitmap & dyn expand, [event]=t/f
 
-    map<Event, Events> prev_[N_EVENT_STATE];  // not unordered-map since most traversal
-    map<Event, Events> next_[N_EVENT_STATE];  // not unordered-map since most traversal
-    unordered_map<EvName, Event> events_;     // [evName]=event
-    vector<EvName> evNames_;                  // [event]=evName for easy debug
-    bool sthChanged_ = false;                      // for debug
+    map<Event, Events>           prev_[N_EVENT_STATE];  // not unordered-map since most traversal
+    map<Event, Events>           next_[N_EVENT_STATE];  // not unordered-map since most traversal
+    unordered_map<EvName, Event> events_;               // [evName]=event
+    vector<EvName>               evNames_;              // [event]=evName for easy debug
+    bool                         sthChanged_ = false;   // for debug
 
-    static const EvName invalidEvName;
+    static const EvName          invalidEvName;
 };
 
 }  // namespace

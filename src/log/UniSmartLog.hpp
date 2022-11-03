@@ -9,6 +9,7 @@
 //   * so can log only failed UT case(s) - no log for all succ case(s)
 // - CORE:
 //   . smartLog_
+// - MT safe: false
 // ***********************************************************************************************
 #ifndef UNI_SMART_LOG_HPP_
 #define UNI_SMART_LOG_HPP_
