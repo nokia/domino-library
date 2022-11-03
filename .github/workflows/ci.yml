@@ -19,7 +19,7 @@ jobs:
     - name: install gmock & gtest  # 1)always gtest latest 2)--depth 1 is to min download
       run: git clone https://github.com/google/googletest.git --depth 1 && cd googletest && mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=/usr && sudo make install -j
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: make ut
       run: cmake -DENABLE_COVERAGE=ON -DCMAKE_CXX_COMPILER="g++" . && make -j
