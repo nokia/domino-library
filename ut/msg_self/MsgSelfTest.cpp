@@ -69,6 +69,7 @@ TEST_F(MsgSelfTests, dupSendMsg)
 }
 TEST_F(MsgSelfTests, sendInvalidMsg_noCrash)
 {
+    msgSelf_->newMsg(MsgCB());
     msgSelf_->newMsg(WeakMsgCB());
     msgSelf_->newMsg(nullMsgHdlr_);
     loopbackFunc_();

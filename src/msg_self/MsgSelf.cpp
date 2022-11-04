@@ -29,11 +29,10 @@ bool MsgSelf::handleOneMsg()
         auto&& oneQueue = msgQueues_[priority];
         if (oneQueue.empty()) continue;
 
-        auto&& hdlr = oneQueue.front().lock();
-        if (hdlr && *hdlr) (*hdlr)();
+        auto&& cb = oneQueue.front();
+        if (cb) cb();
         oneQueue.pop();
         --nMsg_;
-        HID("after call, nHdlrRef=" << hdlr.use_count());
 
         if (!isLowPri(EMsgPriority(priority))) return true;
         if (hasMsg()) loopReq_([this, isValid = isValid_]() mutable { loopBack(isValid); });
@@ -58,22 +57,23 @@ void MsgSelf::loopBack(const shared_ptr<bool> aValidMsgSelf)
 // ***********************************************************************************************
 void MsgSelf::newMsg(const WeakMsgCB& aWeakMsgCB, const EMsgPriority aPriority)
 {
-    msgQueues_[aPriority].push(aWeakMsgCB);
-    ++nMsg_;
-    if (nMsg_ > 1) return;
-
-    loopReq_([this, isValid = isValid_]() mutable { loopBack(isValid); });
+    newMsg(
+        [aWeakMsgCB]()
+        {
+            auto cb = aWeakMsgCB.lock();
+            if (cb && *cb) (*cb)();
+        },
+        aPriority
+    );
 }
 
 // ***********************************************************************************************
 void MsgSelf::newMsg(const MsgCB& aMsgCB, const EMsgPriority aPriority)
 {
-    auto superCB = make_shared<MsgCB>();
-    *superCB = [aMsgCB, superCB]() mutable
-    {
-        aMsgCB();
-        superCB.reset();
-    };
-    newMsg(superCB, aPriority);
+    msgQueues_[aPriority].push(aMsgCB);
+    ++nMsg_;
+    if (nMsg_ > 1) return;
+
+    loopReq_([this, isValid = isValid_]() mutable { loopBack(isValid); });
 }
 }  // namespace

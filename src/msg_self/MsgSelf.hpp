@@ -79,7 +79,7 @@ private:
     void loopBack(const shared_ptr<bool> aValidMsgSelf = make_shared<bool>(true));
 
     // -------------------------------------------------------------------------------------------
-    queue<WeakMsgCB> msgQueues_[EMsgPri_MAX];
+    queue<MsgCB> msgQueues_[EMsgPri_MAX];
 
     shared_ptr<bool> isValid_ = make_shared<bool>(true);  // MsgSelf is still valid?
     LoopReqFUNC loopReq_;
