@@ -66,9 +66,10 @@ public:
     MsgSelf(LoopReqFUNC, const UniLogName& = ULN_DEFAULT);
     ~MsgSelf();
 
-    void newMsg(const WeakMsgCB&, const EMsgPriority = EMsgPri_NORM);
-    const shared_ptr<bool> getValid() const { return isValid_; }
+    void newMsg(const WeakMsgCB&, const EMsgPriority = EMsgPri_NORM);  // can withdraw CB
+    void newMsg(const MsgCB&,     const EMsgPriority = EMsgPri_NORM);  // can't withdraw CB but easier usage
 
+    const shared_ptr<bool> getValid() const { return isValid_; }
     bool hasMsg() const { return nMsg_; }
     static bool isLowPri(const EMsgPriority aPri) { return aPri < EMsgPri_NORM; }
     size_t nMsg(const EMsgPriority aPriority) const { return msgQueues_[aPriority].size(); }

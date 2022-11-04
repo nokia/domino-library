@@ -121,8 +121,7 @@ TEST_F(ThreadBackTest, canWithMsgSelf)
             // ThreadBackFn
             [idxThread, &nFinishedThread, this, &order, &msgSelf](bool aRet)
             {
-                auto cb = make_shared<MsgCB>([&order, idxThread](){ order.push(idxThread); });
-                msgSelf.newMsg(cb, (EMsgPriority)idxThread);
+                msgSelf.newMsg([&order, idxThread](){ order.push(idxThread); }, (EMsgPriority)idxThread);
                 ++nFinishedThread;
             },
             *this
@@ -137,8 +136,7 @@ TEST_F(ThreadBackTest, canWithMsgSelf)
     } while (nFinishedThread < EMsgPri_MAX);
 
     loopbackFunc();
-    //EXPECT_EQ(queue<size_t>({3,2,1}), order);
-    while (not order.empty()) { HID(order.front()); order.pop(); }
+    EXPECT_EQ(queue<size_t>({2,1,0}), order);
 }
 
 }  // namespace

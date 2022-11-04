@@ -64,4 +64,16 @@ void MsgSelf::newMsg(const WeakMsgCB& aWeakMsgCB, const EMsgPriority aPriority)
 
     loopReq_([this, isValid = isValid_]() mutable { loopBack(isValid); });
 }
+
+// ***********************************************************************************************
+void MsgSelf::newMsg(const MsgCB& aMsgCB, const EMsgPriority aPriority)
+{
+    auto superCB = make_shared<MsgCB>();
+    *superCB = [aMsgCB, superCB]() mutable
+    {
+        aMsgCB();
+        superCB.reset();
+    };
+    newMsg(superCB, aPriority);
+}
 }  // namespace
