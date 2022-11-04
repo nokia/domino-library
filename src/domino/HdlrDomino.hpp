@@ -53,7 +53,14 @@ protected:
     void effect(const Domino::Event) override;
     virtual void triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event aEv)
     {
-        msgSelf_->newMsg(aHdlr, getPriority(aEv));
+        msgSelf_->newMsg(
+            [weakMsgCB = WeakMsgCB(aHdlr)]() mutable  // WeakMsgCB is to support rm hdlr
+            {
+                auto cb = weakMsgCB.lock();
+                if (cb && *cb) (*cb)();
+            },
+            getPriority(aEv)
+        );
     }
     virtual bool pureRmHdlrOK(const Domino::Event&, const SharedMsgCB& aHdlr = SharedMsgCB());
 

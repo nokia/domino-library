@@ -55,19 +55,6 @@ void MsgSelf::loopBack(const shared_ptr<bool> aValidMsgSelf)
 }
 
 // ***********************************************************************************************
-void MsgSelf::newMsg(const WeakMsgCB& aWeakMsgCB, const EMsgPriority aPriority)
-{
-    newMsg(
-        [aWeakMsgCB]()
-        {
-            auto cb = aWeakMsgCB.lock();
-            if (cb && *cb) (*cb)();
-        },
-        aPriority
-    );
-}
-
-// ***********************************************************************************************
 void MsgSelf::newMsg(const MsgCB& aMsgCB, const EMsgPriority aPriority)
 {
     msgQueues_[aPriority].push(aMsgCB);

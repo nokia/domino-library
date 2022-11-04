@@ -65,14 +65,13 @@ class MsgSelf : public UniLog
 public:
     MsgSelf(LoopReqFUNC, const UniLogName& = ULN_DEFAULT);
     ~MsgSelf();
-
-    void newMsg(const WeakMsgCB&, const EMsgPriority = EMsgPri_NORM);  // can withdraw CB
-    void newMsg(const MsgCB&,     const EMsgPriority = EMsgPri_NORM);  // can't withdraw CB but easier usage
-
     const shared_ptr<bool> getValid() const { return isValid_; }
-    bool hasMsg() const { return nMsg_; }
-    static bool isLowPri(const EMsgPriority aPri) { return aPri < EMsgPri_NORM; }
+
+    void   newMsg(const MsgCB&, const EMsgPriority = EMsgPri_NORM);  // can't withdraw CB but easier usage
+    bool   hasMsg() const { return nMsg_; }
     size_t nMsg(const EMsgPriority aPriority) const { return msgQueues_[aPriority].size(); }
+
+    static bool isLowPri(const EMsgPriority aPri) { return aPri < EMsgPri_NORM; }
 
 private:
     bool handleOneMsg();
@@ -82,8 +81,8 @@ private:
     queue<MsgCB> msgQueues_[EMsgPri_MAX];
 
     shared_ptr<bool> isValid_ = make_shared<bool>(true);  // MsgSelf is still valid?
-    LoopReqFUNC loopReq_;
-    size_t nMsg_ = 0;
+    LoopReqFUNC      loopReq_;
+    size_t           nMsg_ = 0;
 };
 }  // namespace
 #endif  // MSG_SELF_HPP_
@@ -100,4 +99,7 @@ private:
 // 2022-01-01  PJ & CSZ  - formal log & naming
 // 2022-03-10  CSZ       - inc code coverage rate
 // 2022-08-18  CSZ       - replace CppLog by UniLog
+// 2022-11-04  CSZ       4)simplify newMsg(WeakMsgCB -> MsgCB)
+//                         . easier to user
+//                         . support both MsgCB & WeakMsgCB(by lambda)
 // ***********************************************************************************************// ***********************************************************************************************
