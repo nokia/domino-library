@@ -133,7 +133,7 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
         WRN("(HdlrDomino) Failed!!! Not support overwrite hdlr for " << aEvName << ". Use MultiHdlrDomino instead.");
         return Domino::D_EVENT_FAILED_RET;
     }
-    auto&& hdlr = make_shared<MsgCB>(aHdlr);
+    auto hdlr = make_shared<MsgCB>(aHdlr);
     hdlrs_[event] = hdlr;
     HID("(HdlrDomino) Succeed for EvName=" << aEvName);
 

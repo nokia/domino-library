@@ -33,18 +33,18 @@ struct PriDominoTest : public Test, public UniLog
         [this](LoopBackFUNC aFunc){ loopbackFunc_ = aFunc; }, uniLogName());
     LoopBackFUNC loopbackFunc_;
 
-    SharedMsgCB d1EventHdlr_ = make_shared<MsgCB>([&](){ hdlrIDs_.push(1); });
-    SharedMsgCB d2EventHdlr_ = make_shared<MsgCB>([&](){ hdlrIDs_.push(2); });
-    SharedMsgCB d3EventHdlr_ = make_shared<MsgCB>([&](){ hdlrIDs_.push(3); });
-    SharedMsgCB d4EventHdlr_ = make_shared<MsgCB>([&](){ hdlrIDs_.push(4); });
-    SharedMsgCB d5EventHdlr_ = make_shared<MsgCB>([&]()
+    MsgCB d1EventHdlr_ = [&](){ hdlrIDs_.push(1); };
+    MsgCB d2EventHdlr_ = [&](){ hdlrIDs_.push(2); };
+    MsgCB d3EventHdlr_ = [&](){ hdlrIDs_.push(3); };
+    MsgCB d4EventHdlr_ = [&](){ hdlrIDs_.push(4); };
+    MsgCB d5EventHdlr_ = [&]()
     {
         hdlrIDs_.push(5);
 
         ObjAnywhere::get<aParaDom>(*this)->setState({{"e2", true}});
         ObjAnywhere::get<aParaDom>(*this)->setPriority("e2", EMsgPri_HIGH);
-        ObjAnywhere::get<aParaDom>(*this)->setHdlr("e2", *(this->d2EventHdlr_));  // raise when d5() is exe
-    });
+        ObjAnywhere::get<aParaDom>(*this)->setHdlr("e2", d2EventHdlr_);  // raise when d5() is exe
+    };
 
     queue<int> hdlrIDs_;
     set<Domino::Event> uniqueEVs_;
@@ -78,18 +78,18 @@ TYPED_TEST_P(PriDominoTest, defaultPriority)
 TYPED_TEST_P(PriDominoTest, GOLD_setPriority_thenPriorityFifoCallback)
 {
     PARA_DOM->setState({{"e1", true}});
-    PARA_DOM->setHdlr("e1", *(this->d1EventHdlr_));
+    PARA_DOM->setHdlr("e1", this->d1EventHdlr_);
 
     PARA_DOM->setState({{"e5", true}});
     PARA_DOM->setPriority("e5", EMsgPri_HIGH);       // req: higher firstly, & derived callback
-    PARA_DOM->setHdlr("e5", *(this->d5EventHdlr_));
+    PARA_DOM->setHdlr("e5", this->d5EventHdlr_);
 
     PARA_DOM->setState({{"e3", true}});
-    PARA_DOM->setHdlr("e3", *(this->d3EventHdlr_));  // req: fifo same priority
+    PARA_DOM->setHdlr("e3", this->d3EventHdlr_);  // req: fifo same priority
 
     PARA_DOM->setState({{"e4", true}});
     PARA_DOM->setPriority("e4", EMsgPri_HIGH);
-    PARA_DOM->setHdlr("e4", *(this->d4EventHdlr_));
+    PARA_DOM->setHdlr("e4", this->d4EventHdlr_);
 
     PARA_DOM->setPriority("e4", EMsgPri_NORM);       // req: new pri effective immediately, but no impact on road
     PARA_DOM->setState({{"e4", false}});

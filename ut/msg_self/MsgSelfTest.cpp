@@ -26,15 +26,15 @@ struct MsgSelfTests : public Test, public UniLog
     LoopBackFUNC loopbackFunc_;
 
     SharedMsgCB nullMsgHdlr_ = make_shared<MsgCB>();
-    SharedMsgCB d1MsgHdlr_   = make_shared<MsgCB>([&](){ hdlrIDs_.push(1); });
-    SharedMsgCB d2MsgHdlr_   = make_shared<MsgCB>([&](){ hdlrIDs_.push(2); });
-    SharedMsgCB d3MsgHdlr_   = make_shared<MsgCB>([&](){ hdlrIDs_.push(3); });
-    SharedMsgCB d4MsgHdlr_   = make_shared<MsgCB>([&](){ hdlrIDs_.push(4); });
-    SharedMsgCB d5MsgHdlr_   = make_shared<MsgCB>([&]()
+    MsgCB d1MsgHdlr_ = [&](){ hdlrIDs_.push(1); };
+    MsgCB d2MsgHdlr_ = [&](){ hdlrIDs_.push(2); };
+    MsgCB d3MsgHdlr_ = [&](){ hdlrIDs_.push(3); };
+    MsgCB d4MsgHdlr_ = [&](){ hdlrIDs_.push(4); };
+    MsgCB d5MsgHdlr_ = [&]()
     {
         hdlrIDs_.push(5);
         msgSelf_->newMsg(d2MsgHdlr_, EMsgPri_HIGH);
-    });
+    };
 
     queue<int> hdlrIDs_;
 };
@@ -145,4 +145,9 @@ TEST_F(MsgSelfTests, invalidMsgSelf_callbackShallNotCrash)
 
     loopbackFunc_();   // req: no crash
 }
+
+// ***********************************************************************************************
+#define WEAK_MSG      // newMsg(MsgCB...) will call newMsg(WeakMsgCB...)
+#define WITHDRAW_MSG  // covered by domino's rmHdlr test
+
 }  // namespace
