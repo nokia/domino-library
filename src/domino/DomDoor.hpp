@@ -32,7 +32,7 @@ public:
     void subTree(const Domino::EvName& aSubRoot, shared_ptr<void> aDom) { domStore_[aSubRoot] = aDom; }
 
     template<typename aDominoType>
-    shared_ptr<aDominoType> subTree(const Domino::EvName& aEvName) const;
+    shared_ptr<aDominoType> subTree(const Domino::EvName&) const;
 
 private:
     // -------------------------------------------------------------------------------------------

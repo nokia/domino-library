@@ -24,11 +24,11 @@ public:
     bool isWrCtrl(const Domino::EvName&) const;
     bool wrCtrlOk(const Domino::EvName&, const bool aNewState = true);
 
-    shared_ptr<void> getShared(const Domino::EvName& aEvName) override;
-    shared_ptr<void> wbasic_getShared(const Domino::EvName& aEvName);
+    shared_ptr<void> getShared(const Domino::EvName&) override;
+    shared_ptr<void> wbasic_getShared(const Domino::EvName&);
 
-    void replaceShared(const Domino::EvName& aEvName, shared_ptr<void> aSharedData) override;
-    void wbasic_replaceShared(const Domino::EvName& aEvName, shared_ptr<void> aSharedData);
+    void replaceShared(const Domino::EvName&, shared_ptr<void> aSharedData) override;
+    void wbasic_replaceShared(const Domino::EvName&, shared_ptr<void> aSharedData);
 
 private:
     // forbid ouside usage

@@ -65,7 +65,7 @@ struct ThreadBackTest : public Test, public UniLog
 //                            |
 TEST_F(ThreadBackTest, GOLD_backFn_in_mainThread)
 {
-    const size_t MAX_THREAD = 200;
+    const size_t MAX_THREAD = 100;
     const auto idMainThread = this_thread::get_id();
     HID("main thread=" << idMainThread << ": start creating nThread=" << MAX_THREAD);
     queue<shared_future<void> > fut;
@@ -104,6 +104,41 @@ TEST_F(ThreadBackTest, GOLD_backFn_in_mainThread)
 // ***********************************************************************************************
 TEST_F(ThreadBackTest, canWithMsgSelf)
 {
+    LoopBackFUNC loopbackFunc;
+    MsgSelf msgSelf([&loopbackFunc](LoopBackFUNC aFunc){ loopbackFunc = aFunc; }, uniLogName());
+
+    queue<shared_future<void> > fut;
+    queue<size_t> order;
+    size_t nFinishedThread = 0;
+    for (size_t idxThread = EMsgPri_MIN; idxThread < EMsgPri_MAX; idxThread++)
+    {
+        fut.push(ThreadBack::newThread(
+            // ThreadEntryFn
+            []() -> bool
+            {
+                return false;
+            },
+            // ThreadBackFn
+            [idxThread, &nFinishedThread, this, &order, &msgSelf](bool aRet)
+            {
+                auto cb = make_shared<MsgCB>([&order, idxThread](){ order.push(idxThread); });
+                msgSelf.newMsg(cb, (EMsgPriority)idxThread);
+                ++nFinishedThread;
+            },
+            *this
+        ));
+    }
+
+    do
+    {
+        utMainRouser_->idle.test_and_set()
+            ? this_thread::yield()
+            : ThreadBack::runAllBackFn(*this);
+    } while (nFinishedThread < EMsgPri_MAX);
+
+    loopbackFunc();
+    //EXPECT_EQ(queue<size_t>({3,2,1}), order);
+    while (not order.empty()) { HID(order.front()); order.pop(); }
 }
 
 }  // namespace

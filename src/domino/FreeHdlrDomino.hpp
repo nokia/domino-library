@@ -32,7 +32,7 @@ public:
     bool isRepeatHdlr(const Domino::Event) const;
 
 protected:
-    void triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event aEv) override;
+    void triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event) override;
     using aDominoType::effect;
 private:
     vector<bool> isRepeatHdlr_;  // bitmap & dyn expand, [event]=t/f
@@ -64,9 +64,8 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Do
     if (isRepeatHdlr(aEv)) aDominoType::triggerHdlr(aHdlr, aEv);
     else
     {
-        WeakMsgCB weakHdlr = aHdlr;
         auto&& superHdlr = make_shared<MsgCB>();
-        *superHdlr = [weakHdlr, this, aEv, superHdlr]() mutable
+        *superHdlr = [weakHdlr = WeakMsgCB(aHdlr), this, aEv, superHdlr]() mutable
         {
             // req: call hdlr
             auto&& hdlr = weakHdlr.lock();

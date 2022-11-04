@@ -32,14 +32,14 @@ using LogStore = unordered_map<UniLogName, shared_ptr<SmartLog> >;
 class UniSmartLog
 {
 public:
-    explicit UniSmartLog(const UniLogName& aUniLogName = ULN_DEFAULT);
+    explicit UniSmartLog(const UniLogName& = ULN_DEFAULT);
     ~UniSmartLog() { if (smartLog_.use_count() == 2) logStore_.erase(uniLogName_); }
 
     SmartLog& oneLog();
     SmartLog& operator()() { return oneLog(); }
     const UniLogName& uniLogName() const { return uniLogName_; }
 
-    static size_t logLen(const UniLogName& aUniLogName);
+    static size_t logLen(const UniLogName&);
     static void needLog() { for (auto&& it : logStore_) it.second->needLog(); }
     static auto nLog() { return logStore_.size(); }
     static UniSmartLog& defaultUniLog();

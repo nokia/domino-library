@@ -36,8 +36,8 @@ public:
     explicit HdlrDomino(const UniLogName& aUniLogName) : aDominoType(aUniLogName) { msgSelf_ = MSG_SELF; }  // default
     void setMsgSelf(shared_ptr<MsgSelf>& aMsgSelf) { msgSelf_ = aMsgSelf; }  // can replace default
 
-    Domino::Event setHdlr(const Domino::EvName&, const MsgCB&);
-    bool rmOneHdlrOK(const Domino::EvName& aEvName);
+    Domino::Event setHdlr(const Domino::EvName&, const MsgCB& aHdlr);
+    bool rmOneHdlrOK(const Domino::EvName&);
 
     // -------------------------------------------------------------------------------------------
     // - add a new ev=aAliasEN to store aHdlr (aAliasEN's true prev is aHostEN)
@@ -55,7 +55,7 @@ protected:
     {
         msgSelf_->newMsg(aHdlr, getPriority(aEv));
     }
-    virtual bool pureRmHdlrOK(const Domino::Event& aEv, const SharedMsgCB& aHdlr = SharedMsgCB());
+    virtual bool pureRmHdlrOK(const Domino::Event&, const SharedMsgCB& aHdlr = SharedMsgCB());
 
     size_t nHdlrRef(const Domino::Event) const;
 

@@ -37,14 +37,14 @@ public:
     // . cons: can NOT FreeHdlrDomino::flagRepeatedHdlr() for each hdlr
     // . pros: 1 state, always sync
     // -------------------------------------------------------------------------------------------
-    Domino::Event multiHdlrOnSameEv(const Domino::EvName& aEvName, const MsgCB& aHdlr, const HdlrName& aHdlrName);
+    Domino::Event multiHdlrOnSameEv(const Domino::EvName&, const MsgCB& aHdlr, const HdlrName&);
 
     using aDominoType::rmOneHdlrOK;
-    bool rmOneHdlrOK(const Domino::EvName& aEvName, const HdlrName& aHdlrName);
+    bool rmOneHdlrOK(const Domino::EvName&, const HdlrName&);
 
 protected:
     void effect(const Domino::Event) override;  // key/min change other Dominos
-    bool pureRmHdlrOK(const Domino::Event& aEv, const SharedMsgCB& aHdlr) override;
+    bool pureRmHdlrOK(const Domino::Event&, const SharedMsgCB& aHdlr) override;
 
 private:
     // -------------------------------------------------------------------------------------------

@@ -24,19 +24,6 @@ struct PriDominoTest : public Test, public UniLog
         , utInit_(uniLogName())
     {
         ObjAnywhere::get<aParaDom>(*this)->setMsgSelf(msgSelf_);
-
-        *d1EventHdlr_ = [&](){ hdlrIDs_.push(1); };
-        *d2EventHdlr_ = [&](){ hdlrIDs_.push(2); };
-        *d3EventHdlr_ = [&](){ hdlrIDs_.push(3); };
-        *d4EventHdlr_ = [&](){ hdlrIDs_.push(4); };
-        *d5EventHdlr_ = [&]()
-        {
-            hdlrIDs_.push(5);
-
-            ObjAnywhere::get<aParaDom>(*this)->setState({{"e2", true}});
-            ObjAnywhere::get<aParaDom>(*this)->setPriority("e2", EMsgPri_HIGH);
-            ObjAnywhere::get<aParaDom>(*this)->setHdlr("e2", *(this->d2EventHdlr_));  // raise when d5() is exe
-        };
     }
     ~PriDominoTest() { GTEST_LOG_FAIL }
 
@@ -46,11 +33,18 @@ struct PriDominoTest : public Test, public UniLog
         [this](LoopBackFUNC aFunc){ loopbackFunc_ = aFunc; }, uniLogName());
     LoopBackFUNC loopbackFunc_;
 
-    SharedMsgCB d1EventHdlr_ = make_shared<MsgCB>();
-    SharedMsgCB d2EventHdlr_ = make_shared<MsgCB>();
-    SharedMsgCB d3EventHdlr_ = make_shared<MsgCB>();
-    SharedMsgCB d4EventHdlr_ = make_shared<MsgCB>();
-    SharedMsgCB d5EventHdlr_ = make_shared<MsgCB>();
+    SharedMsgCB d1EventHdlr_ = make_shared<MsgCB>([&](){ hdlrIDs_.push(1); });
+    SharedMsgCB d2EventHdlr_ = make_shared<MsgCB>([&](){ hdlrIDs_.push(2); });
+    SharedMsgCB d3EventHdlr_ = make_shared<MsgCB>([&](){ hdlrIDs_.push(3); });
+    SharedMsgCB d4EventHdlr_ = make_shared<MsgCB>([&](){ hdlrIDs_.push(4); });
+    SharedMsgCB d5EventHdlr_ = make_shared<MsgCB>([&]()
+    {
+        hdlrIDs_.push(5);
+
+        ObjAnywhere::get<aParaDom>(*this)->setState({{"e2", true}});
+        ObjAnywhere::get<aParaDom>(*this)->setPriority("e2", EMsgPri_HIGH);
+        ObjAnywhere::get<aParaDom>(*this)->setHdlr("e2", *(this->d2EventHdlr_));  // raise when d5() is exe
+    });
 
     queue<int> hdlrIDs_;
     set<Domino::Event> uniqueEVs_;

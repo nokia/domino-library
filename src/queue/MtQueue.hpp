@@ -31,7 +31,7 @@ class MtQueue
 public:
     void push(shared_ptr<void> aEle);
     shared_ptr<void> pop();
-    shared_ptr<void> fetch(function<bool(shared_ptr<void>)>);
+    shared_ptr<void> fetch(function<bool(shared_ptr<void>)> aMatcher);
 
     size_t size();
 
@@ -44,6 +44,6 @@ private:
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
-// 2022-02-18  CSZ       - create  
+// 2022-02-18  CSZ       - create
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // ***********************************************************************************************

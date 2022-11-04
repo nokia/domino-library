@@ -17,14 +17,7 @@ namespace RLib
 // ***********************************************************************************************
 struct MsgSelfTests : public Test, public UniLog
 {
-    MsgSelfTests() : UniLog(UnitTest::GetInstance()->current_test_info()->name())
-    {
-        *d1MsgHdlr_ = [this](){ hdlrIDs_.push(1); };
-        *d2MsgHdlr_ = [this](){ hdlrIDs_.push(2); };
-        *d3MsgHdlr_ = [this](){ hdlrIDs_.push(3); };
-        *d4MsgHdlr_ = [this](){ hdlrIDs_.push(4); };
-        *d5MsgHdlr_ = [this](){ hdlrIDs_.push(5); msgSelf_->newMsg(d2MsgHdlr_, EMsgPri_HIGH); };
-    }
+    MsgSelfTests() : UniLog(UnitTest::GetInstance()->current_test_info()->name()) {}
     ~MsgSelfTests() { GTEST_LOG_FAIL }
 
     // -------------------------------------------------------------------------------------------
@@ -33,11 +26,15 @@ struct MsgSelfTests : public Test, public UniLog
     LoopBackFUNC loopbackFunc_;
 
     SharedMsgCB nullMsgHdlr_ = make_shared<MsgCB>();
-    SharedMsgCB d1MsgHdlr_ = make_shared<MsgCB>();
-    SharedMsgCB d2MsgHdlr_ = make_shared<MsgCB>();
-    SharedMsgCB d3MsgHdlr_ = make_shared<MsgCB>();
-    SharedMsgCB d4MsgHdlr_ = make_shared<MsgCB>();
-    SharedMsgCB d5MsgHdlr_ = make_shared<MsgCB>();
+    SharedMsgCB d1MsgHdlr_   = make_shared<MsgCB>([&](){ hdlrIDs_.push(1); });
+    SharedMsgCB d2MsgHdlr_   = make_shared<MsgCB>([&](){ hdlrIDs_.push(2); });
+    SharedMsgCB d3MsgHdlr_   = make_shared<MsgCB>([&](){ hdlrIDs_.push(3); });
+    SharedMsgCB d4MsgHdlr_   = make_shared<MsgCB>([&](){ hdlrIDs_.push(4); });
+    SharedMsgCB d5MsgHdlr_   = make_shared<MsgCB>([&]()
+    {
+        hdlrIDs_.push(5);
+        msgSelf_->newMsg(d2MsgHdlr_, EMsgPri_HIGH);
+    });
 
     queue<int> hdlrIDs_;
 };

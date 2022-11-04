@@ -35,14 +35,14 @@ public:
     // - if aEvName/data invalid, return null
     // - not template<aDataType> so can virtual for WrDatDom
     // . & let DataDomino has little idea of read-write ctrl, simpler
-    virtual shared_ptr<void> getShared(const Domino::EvName& aEvName);
+    virtual shared_ptr<void> getShared(const Domino::EvName&);
 
     size_t nShared(const Domino::EvName&) const;
 
     // -------------------------------------------------------------------------------------------
     // - replace old data by new=aSharedData if old != new
     // - for aDataType w/o default constructor!!!
-    virtual void replaceShared(const Domino::EvName& aEvName, shared_ptr<void> aSharedData);
+    virtual void replaceShared(const Domino::EvName&, shared_ptr<void> aSharedData);
 
 private:
     // -------------------------------------------------------------------------------------------

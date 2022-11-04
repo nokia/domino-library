@@ -43,21 +43,21 @@ public:
     using ObjIndex = size_t;
     using ObjStore = unordered_map<ObjIndex, shared_ptr<void> >;
 
-    static void init(UniLog& oneLog = UniLog::defaultUniLog());    // init objStore_
-    static void deinit(UniLog& oneLog = UniLog::defaultUniLog());  // rm objStore_
-    static bool isInit() { return objStore_ != nullptr; }          // init objStore_?
+    static void init(UniLog& = UniLog::defaultUniLog());    // init objStore_
+    static void deinit(UniLog& = UniLog::defaultUniLog());  // rm objStore_
+    static bool isInit() { return objStore_ != nullptr; }   // init objStore_?
 
     // -------------------------------------------------------------------------------------------
     // - save aObjType into objStore_
     // -------------------------------------------------------------------------------------------
     template<typename aObjType>
-    static void set(shared_ptr<aObjType> aSharedObj, UniLog& oneLog = UniLog::defaultUniLog());
+    static void set(shared_ptr<aObjType> aSharedObj, UniLog& = UniLog::defaultUniLog());
 
     // -------------------------------------------------------------------------------------------
     // - get a "Obj" from objStore_
     // - template operator[] not easier in usage
     // -------------------------------------------------------------------------------------------
-    template<typename aObjType> static shared_ptr<aObjType> get(UniLog& oneLog = UniLog::defaultUniLog());
+    template<typename aObjType> static shared_ptr<aObjType> get(UniLog& = UniLog::defaultUniLog());
 
 private:
     // -------------------------------------------------------------------------------------------

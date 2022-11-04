@@ -63,10 +63,10 @@ using LoopReqFUNC  = function<void(LoopBackFUNC)>;
 class MsgSelf : public UniLog
 {
 public:
-    MsgSelf(LoopReqFUNC aFunc, const UniLogName& = ULN_DEFAULT);
+    MsgSelf(LoopReqFUNC, const UniLogName& = ULN_DEFAULT);
     ~MsgSelf();
 
-    void newMsg(const WeakMsgCB& aMsgCB, const EMsgPriority = EMsgPri_NORM);
+    void newMsg(const WeakMsgCB&, const EMsgPriority = EMsgPri_NORM);
     const shared_ptr<bool> getValid() const { return isValid_; }
 
     bool hasMsg() const { return nMsg_; }
