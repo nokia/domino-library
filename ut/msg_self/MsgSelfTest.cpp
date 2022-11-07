@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include <memory>  // for shared_ptr
 #include <queue>
-#include <gtest/gtest.h>
 
 #include "MsgSelf.hpp"
 
@@ -15,15 +16,16 @@ using namespace testing;
 namespace RLib
 {
 // ***********************************************************************************************
-struct MsgSelfTests : public Test, public UniLog
+struct MsgSelfTest : public Test, public UniLog
 {
-    MsgSelfTests() : UniLog(UnitTest::GetInstance()->current_test_info()->name()) {}
-    ~MsgSelfTests() { GTEST_LOG_FAIL }
+    MsgSelfTest() : UniLog(UnitTest::GetInstance()->current_test_info()->name()) {}
+    ~MsgSelfTest() { GTEST_LOG_FAIL }
+
+    MOCK_METHOD(void, toMain, (FromMainFN));  // simulate toMain() which may send msg to self
 
     // -------------------------------------------------------------------------------------------
-    shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(
-        [this](LoopBackFUNC aFunc){ loopbackFunc_ = aFunc; }, uniLogName());
-    LoopBackFUNC loopbackFunc_;
+    shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(bind(&MsgSelfTest::toMain, this, placeholders::_1), uniLogName());
+    FromMainFN fromMainFN_;
 
     MsgCB d1MsgHdlr_ = [&](){ hdlrIDs_.push(1); };
     MsgCB d2MsgHdlr_ = [&](){ hdlrIDs_.push(2); };
@@ -34,45 +36,53 @@ struct MsgSelfTests : public Test, public UniLog
         hdlrIDs_.push(5);
         msgSelf_->newMsg(d2MsgHdlr_, EMsgPri_HIGH);
     };
+    MOCK_METHOD(void, d6MsgHdlr, ());
 
     queue<int> hdlrIDs_;
 };
 
 #define SEND_MSG
 // ***********************************************************************************************
-TEST_F(MsgSelfTests, GOLD_sendMsg)
+TEST_F(MsgSelfTest, GOLD_sendMsg)
 {
-    EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM));
+    EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM));  // req: init states
     EXPECT_FALSE(msgSelf_->hasMsg());
 
-    msgSelf_->newMsg(d1MsgHdlr_);               // req: send msg
+    EXPECT_CALL(*this, toMain(_)).WillOnce(SaveArg<0>(&fromMainFN_));  // req: newMsg->toMain that eg send msg to self
+    msgSelf_->newMsg(d1MsgHdlr_);
     EXPECT_EQ(1u, msgSelf_->nMsg(EMsgPri_NORM));
     EXPECT_TRUE(msgSelf_->hasMsg());
+    EXPECT_EQ(queue<int>(), hdlrIDs_);            // req: not immediate call d1MsgHdlr_ but wait msg-to-self
 
-    loopbackFunc_();
-    EXPECT_EQ(queue<int>({1}), hdlrIDs_);  // req: callback
+    EXPECT_CALL(*this, toMain(_)).Times(0);       // req: no more no call
+    fromMainFN_();                                // simulate eg msg-to-self received, then call fromMainFN_()
+    EXPECT_EQ(queue<int>({1}), hdlrIDs_);         // req: call d1MsgHdlr_
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM));
     EXPECT_FALSE(msgSelf_->hasMsg());
 }
-TEST_F(MsgSelfTests, dupSendMsg)
+TEST_F(MsgSelfTest, dupSendMsg)
 {
+    EXPECT_CALL(*this, toMain(_)).WillOnce(SaveArg<0>(&fromMainFN_));
     msgSelf_->newMsg(d1MsgHdlr_);
-    msgSelf_->newMsg(d1MsgHdlr_);                  // req: dup
+    msgSelf_->newMsg(d1MsgHdlr_);                 // req: dup
     EXPECT_EQ(2u, msgSelf_->nMsg(EMsgPri_NORM));
-    EXPECT_TRUE(msgSelf_->hasMsg());
+    EXPECT_EQ(queue<int>(), hdlrIDs_);
 
-    loopbackFunc_();
-    EXPECT_EQ(queue<int>({1, 1}), hdlrIDs_);  // req: callback
+    EXPECT_CALL(*this, toMain(_)).Times(0);
+    fromMainFN_();
+    EXPECT_EQ(queue<int>({1, 1}), hdlrIDs_);      // req: call all
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM));
-    EXPECT_FALSE(msgSelf_->hasMsg());
 }
-TEST_F(MsgSelfTests, sendInvalidMsg_noCrash)
+TEST_F(MsgSelfTest, sendInvalidMsg_noCrash)
 {
-    msgSelf_->newMsg(MsgCB());
-    loopbackFunc_();
+    EXPECT_CALL(*this, toMain(_)).WillOnce(SaveArg<0>(&fromMainFN_));
+    msgSelf_->newMsg(MsgCB());                    // invalid cb
+    fromMainFN_();
+    EXPECT_EQ(queue<int>(), hdlrIDs_);
 }
-TEST_F(MsgSelfTests, GOLD_loopback_handleAll_butOneByOneLowPri)
+TEST_F(MsgSelfTest, GOLD_loopback_handleAll_butOneByOneLowPri)
 {
+    EXPECT_CALL(*this, toMain(_)).WillOnce(SaveArg<0>(&fromMainFN_));
     msgSelf_->newMsg(d1MsgHdlr_);
     msgSelf_->newMsg(d1MsgHdlr_);
     msgSelf_->newMsg(d1MsgHdlr_, EMsgPri_HIGH);
@@ -84,64 +94,79 @@ TEST_F(MsgSelfTests, GOLD_loopback_handleAll_butOneByOneLowPri)
     EXPECT_EQ(2u, msgSelf_->nMsg(EMsgPri_HIGH));
     EXPECT_EQ(3u, msgSelf_->nMsg(EMsgPri_LOW));
 
-    loopbackFunc_();
+    EXPECT_CALL(*this, toMain(_)).WillOnce(SaveArg<0>(&fromMainFN_));
+    fromMainFN_();
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM));  // req: all normal
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_HIGH));  // req: all high
     EXPECT_EQ(2u, msgSelf_->nMsg(EMsgPri_LOW));   // req: 1/loopback()
 
-    loopbackFunc_();
+    EXPECT_CALL(*this, toMain(_)).WillOnce(SaveArg<0>(&fromMainFN_));
+    fromMainFN_();
     EXPECT_EQ(1u, msgSelf_->nMsg(EMsgPri_LOW));
 
-    loopbackFunc_();
+    EXPECT_CALL(*this, toMain(_)).Times(0);       // req: last low need not trigger toMain()
+    fromMainFN_();
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_LOW));
 
-    loopbackFunc_();                         // req: can loopBack w/o any msg
+    EXPECT_CALL(*this, toMain(_)).Times(0);       // req: no msg shall not trigger toMain()
+    fromMainFN_();
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_LOW));
 }
 
 #define PRI
 // ***********************************************************************************************
-TEST_F(MsgSelfTests, GOLD_highPriority_first)
+TEST_F(MsgSelfTest, GOLD_highPriority_first)
 {
+    EXPECT_CALL(*this, toMain(_)).WillOnce(SaveArg<0>(&fromMainFN_));
     msgSelf_->newMsg(d1MsgHdlr_);
     msgSelf_->newMsg(d2MsgHdlr_, EMsgPri_HIGH);
-    loopbackFunc_();
+    fromMainFN_();
 
     EXPECT_EQ(queue<int>({2, 1}), hdlrIDs_);
 }
-TEST_F(MsgSelfTests, GOLD_samePriority_fifo)
+TEST_F(MsgSelfTest, GOLD_samePriority_fifo)
 {
+    EXPECT_CALL(*this, toMain(_)).WillOnce(SaveArg<0>(&fromMainFN_));
     msgSelf_->newMsg(d1MsgHdlr_);
     msgSelf_->newMsg(d2MsgHdlr_, EMsgPri_HIGH);
     msgSelf_->newMsg(d3MsgHdlr_);
     msgSelf_->newMsg(d4MsgHdlr_, EMsgPri_HIGH);
-    loopbackFunc_();
+    fromMainFN_();
 
     EXPECT_EQ(queue<int>({2, 4, 1, 3}), hdlrIDs_);
 }
-TEST_F(MsgSelfTests, newHighPri_first)
+TEST_F(MsgSelfTest, newHighPri_first)
 {
+    EXPECT_CALL(*this, toMain(_)).WillOnce(SaveArg<0>(&fromMainFN_));
     msgSelf_->newMsg(d1MsgHdlr_);
     msgSelf_->newMsg(d5MsgHdlr_, EMsgPri_HIGH);
     msgSelf_->newMsg(d3MsgHdlr_);
     msgSelf_->newMsg(d4MsgHdlr_, EMsgPri_HIGH);
-    loopbackFunc_();
+    fromMainFN_();
 
     EXPECT_EQ(queue<int>({5, 4, 2, 1, 3}), hdlrIDs_);
 }
 
-#define INVALID_MSGSELF
+#define DESTRUCT_MSGSELF
 // ***********************************************************************************************
-TEST_F(MsgSelfTests, invalidMsgSelf_callbackShallNotCrash)
+TEST_F(MsgSelfTest, invalidMsgSelf_fromMainFnShallNotCrash)
 {
+    EXPECT_CALL(*this, toMain(_)).WillOnce(SaveArg<0>(&fromMainFN_));
     msgSelf_->newMsg(d1MsgHdlr_);
     auto valid = msgSelf_->getValid();
 
     EXPECT_EQ(1, msgSelf_.use_count());
-    msgSelf_.reset();  // rm msgSelf
+    msgSelf_.reset();                                      // rm msgSelf
     EXPECT_FALSE(*valid);
 
-    loopbackFunc_();   // req: no crash
+    fromMainFN_();                                         // req: no crash
 }
-
+TEST_F(MsgSelfTest, destructMsgSelf_noCallback_noMemLeak)  // mem leak is checked by valgrind upon UT
+{
+    EXPECT_CALL(*this, toMain(_)).WillOnce(SaveArg<0>(&fromMainFN_));
+    EXPECT_CALL(*this, d6MsgHdlr()).Times(0);              // req: no call
+    msgSelf_->newMsg(bind(&MsgSelfTest::d6MsgHdlr, this));
+    EXPECT_EQ(1u, msgSelf_->nMsg(EMsgPri_NORM));
+    msgSelf_.reset();                                      // rm msgSelf
+}
 }  // namespace

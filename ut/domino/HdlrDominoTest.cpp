@@ -21,9 +21,6 @@ struct HdlrDominoTest : public Test, public UniLog
     HdlrDominoTest()
         : UniLog(UnitTest::GetInstance()->current_test_info()->name())
         , utInit_(uniLogName())
-        , hdlr0_([this](){ this->hdlr0(); })
-        , hdlr1_([this](){ this->hdlr1(); })
-        , hdlr2_([this](){ this->hdlr2(); })
     {}
     ~HdlrDominoTest() { GTEST_LOG_FAIL }
 
@@ -33,10 +30,10 @@ struct HdlrDominoTest : public Test, public UniLog
 
     // -------------------------------------------------------------------------------------------
     UtInitObjAnywhere utInit_;
-    LoopBackFUNC loopbackFunc_;
-    MsgCB hdlr0_;
-    MsgCB hdlr1_;
-    MsgCB hdlr2_;
+    FromMainFN fromMainFN_;
+    MsgCB hdlr0_ = [this](){ this->hdlr0(); };
+    MsgCB hdlr1_ = [this](){ this->hdlr1(); };
+    MsgCB hdlr2_ = [this](){ this->hdlr2(); };
 
     set<Domino::Event> uniqueEVs_;
 };
@@ -92,19 +89,19 @@ TYPED_TEST_P(NofreeHdlrDominoTest, GOLD_trigger_reTrigger_callback_reCallback)
 {
     // not auto-cb but manually
     auto msgSelf = make_shared<MsgSelf>(
-        [this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; }, this->uniLogName());
-    PARA_DOM->setMsgSelf(msgSelf);          // req: change MsgSelf
+        [this](FromMainFN aFromMainFN){ this->fromMainFN_ = aFromMainFN; }, this->uniLogName());
+    PARA_DOM->setMsgSelf(msgSelf);             // req: change MsgSelf
 
     PARA_DOM->setHdlr("event", this->hdlr0_);
     EXPECT_CALL(*this, hdlr0()).Times(0);
-    PARA_DOM->setState({{"event", true}});  // 1st on road
+    PARA_DOM->setState({{"event", true}});     // 1st on road
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
     PARA_DOM->setState({{"event", false}});
-    PARA_DOM->setState({{"event", true}});  // 2nd on road
+    PARA_DOM->setState({{"event", true}});     // 2nd on road
 
     EXPECT_CALL(*this, hdlr0()).Times(2);
-    this->loopbackFunc_();                  // manual trigger on road cb
+    this->fromMainFN_();                       // manual trigger on road cb
 }
 
 #define CHAIN
@@ -115,14 +112,14 @@ TYPED_TEST_P(HdlrDominoTest, GOLD_hdlrInChain_callbackOk)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->setPrev("event", {{"prev", true}});
-    EXPECT_CALL(*this, hdlr0());           // req: call in chain
+    EXPECT_CALL(*this, hdlr0());                    // req: call in chain
     PARA_DOM->setState({{"prev", true}});
 }
 TYPED_TEST_P(HdlrDominoTest, hdlrInChain_immediateCallback)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->setState({{"prev", true}});
-    EXPECT_CALL(*this, hdlr0());           // req: immediate call
+    EXPECT_CALL(*this, hdlr0());                    // req: immediate call
     PARA_DOM->setPrev("event", {{"prev", true}});
 }
 TYPED_TEST_P(HdlrDominoTest, hdlrInChain_dupSatisfy_callbackOnce)
@@ -268,7 +265,7 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlr_thenNoCallback)
     PARA_DOM->setHdlr("event", this->hdlr0_);
     EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event"));
 
-    EXPECT_CALL(*this, hdlr0()).Times(0);  // req: no call since rm
+    EXPECT_CALL(*this, hdlr0()).Times(0);                    // req: no call since rm
     PARA_DOM->setState({{"event", true}});
 }
 TYPED_TEST_P(HdlrDominoTest, rmHdlr_fail)
@@ -286,24 +283,24 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlrOnRoad_noCallback)
 {
     // not auto-cb but manually
     auto msgSelf = make_shared<MsgSelf>(
-        [this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; }, this->uniLogName());
+        [this](FromMainFN aFromMainFN){ this->fromMainFN_ = aFromMainFN; }, this->uniLogName());
     PARA_DOM->setMsgSelf(msgSelf);
 
     PARA_DOM->multiHdlrByAliasEv("e0", this->hdlr0_, "e");
     PARA_DOM->multiHdlrByAliasEv("e1", this->hdlr1_, "e");
-    PARA_DOM->setState({{"e", true}});         // cb on road
+    PARA_DOM->setState({{"e", true}});            // cb on road
     EXPECT_TRUE(msgSelf->hasMsg());
-    EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("e0"));  // req: rm hdlr on-road
+    EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("e0"));     // req: rm hdlr on-road
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1());
-    this->loopbackFunc_();                     // manual trigger on road cb
+    this->fromMainFN_();                          // manual trigger on road cb
 }
 TYPED_TEST_P(NofreeHdlrDominoTest, rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigger)
 {
     // not auto-cb but manually
     auto msgSelf = make_shared<MsgSelf>(
-        [this](LoopBackFUNC aFunc){ this->loopbackFunc_ = aFunc; }, this->uniLogName());
+        [this](FromMainFN aFromMainFN){ this->fromMainFN_ = aFromMainFN; }, this->uniLogName());
     PARA_DOM->setMsgSelf(msgSelf);
 
     PARA_DOM->setHdlr("event", this->hdlr0_);
@@ -320,12 +317,12 @@ TYPED_TEST_P(NofreeHdlrDominoTest, rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigg
     PARA_DOM->setHdlr("event", this->hdlr0_);     // re-add hdlr
 
     EXPECT_CALL(*this, hdlr0()).Times(0);         // req: no cb since rm-ed
-    this->loopbackFunc_();
+    this->fromMainFN_();
 
     PARA_DOM->setState({{"event", true}});
     EXPECT_TRUE(msgSelf->hasMsg());
     EXPECT_CALL(*this, hdlr0());                  // req: new cb
-    this->loopbackFunc_();
+    this->fromMainFN_();
 }
 
 #define ID_STATE

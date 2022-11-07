@@ -54,9 +54,9 @@ struct ThreadBackTest : public Test, public UniLog
 //                      [main thread]
 //                            |
 //                            | std::async()    [new thread]
-//    ThreadBack::newThread() |--------------------->| ThreadEntryFn()
+//    ThreadBack::newThread() |--------------------->| ThreadEntryFN()
 //                            |                      |
-//                            |                      | finishedThreads_.push(ThreadBackFn, ret)
+//                            |                      | finishedThreads_.push(ThreadBackFN, ret)
 //                            |                      |
 //                            |<.....................| UtMainRouser.toMainThread()
 //                            |                       (idle = false)
@@ -73,17 +73,17 @@ TEST_F(ThreadBackTest, GOLD_backFn_in_mainThread)
     for (size_t idxThread = 0; idxThread < MAX_THREAD; idxThread++)
     {
         fut.push(ThreadBack::newThread(
-            // ThreadEntryFn
+            // ThreadEntryFN
             [idxThread, idMainThread]() -> bool
             {
                 EXPECT_NE(idMainThread, this_thread::get_id());  // req: new thread
                 return (idxThread % 2 == 0);
             },
-            // ThreadBackFn
+            // ThreadBackFN
             [idxThread, idMainThread, &nFinishedThread, this](bool aRet)
             {
                 EXPECT_EQ(idMainThread, this_thread::get_id());  // req: main thread !!!
-                EXPECT_EQ(idxThread % 2 == 0, aRet);             // req: ThreadBackFn(ThreadEntryFn());
+                EXPECT_EQ(idxThread % 2 == 0, aRet);             // req: ThreadBackFN(ThreadEntryFN());
                 ++nFinishedThread;
                 HID("main thread=" << idMainThread << ": 1 back() done, idxThread=" << idxThread
                     << ", ret=" << aRet << ", nFinishedThread=" << nFinishedThread);
@@ -97,15 +97,15 @@ TEST_F(ThreadBackTest, GOLD_backFn_in_mainThread)
     {
         utMainRouser_->idle.test_and_set()                      // req: new thread end at MainRouser.toMainThread()
             ? this_thread::yield()                              // real world may block on wait()
-            : ThreadBack::runAllBackFn(*this);                  // req: ThreadBackFn & aRet available
+            : ThreadBack::runAllBackFn(*this);                  // req: ThreadBackFN & aRet available
     } while (nFinishedThread < MAX_THREAD);                     // req: loop till all thread done !!!
 }
 
 // ***********************************************************************************************
 TEST_F(ThreadBackTest, canWithMsgSelf)
 {
-    LoopBackFUNC loopbackFunc;
-    MsgSelf msgSelf([&loopbackFunc](LoopBackFUNC aFunc){ loopbackFunc = aFunc; }, uniLogName());
+    FromMainFN loopbackFunc;
+    MsgSelf msgSelf([&loopbackFunc](FromMainFN aFromMainFN){ loopbackFunc = aFromMainFN; }, uniLogName());
 
     queue<shared_future<void> > fut;
     queue<size_t> order;
@@ -113,12 +113,12 @@ TEST_F(ThreadBackTest, canWithMsgSelf)
     for (size_t idxThread = EMsgPri_MIN; idxThread < EMsgPri_MAX; idxThread++)
     {
         fut.push(ThreadBack::newThread(
-            // ThreadEntryFn
+            // ThreadEntryFN
             []() -> bool
             {
                 return false;
             },
-            // ThreadBackFn
+            // ThreadBackFN
             [idxThread, &nFinishedThread, this, &order, &msgSelf](bool aRet)
             {
                 msgSelf.newMsg([&order, idxThread](){ order.push(idxThread); }, (EMsgPriority)idxThread);

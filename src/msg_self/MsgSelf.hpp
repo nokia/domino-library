@@ -6,13 +6,15 @@
 // ***********************************************************************************************
 // - why: not callback directly but wait current function return to main() then callback
 //   * avoid logic surprise when immediate callback [MUST-HAVE!]
-//   . avoid deep/loop callbacks, exe after all executing/in-stack func returned
-//   . priority FIFO msg (eg abort is higher priority)
+//   . avoid deep/loop callbacks, but exe after all executing/in-stack func returned
+//   * priority FIFO msg (eg "abort" is higher priority event)
 //   . single thread (in main thread)
-//   . encapsulate diff solution (async, IM, syscom, etc)
+//   * support diff cb mechanism (async, IM, syscom, etc)
+//   . can withdraw on-road MsgCB (eg HdlrDomino.rmHdlr())
+//   . destruct MsgSelf shall not call MsgCB in msgQueues_, & no mem-leak
 // - how:
 //   . newMsg(): send msgHdlr into msgQueues_ (all info are in msgHdlr so func<void()> is enough)
-//   . loopBack(): call all msgHdlr in msgQueues_, priority then FIFO
+//   . fromMain(): call all msgHdlr in msgQueues_, priority then FIFO
 // - core: msgQueues_
 // - which way?    speed                   UT                           code
 //   . async task  may slow if async busy  no but direct-CB instead     simple
@@ -56,14 +58,14 @@ using MsgCB        = function<void()>;
 using WeakMsgCB    = weak_ptr<MsgCB>;
 using SharedMsgCB  = shared_ptr<MsgCB>;
 
-using LoopBackFUNC = function<void()>;
-using LoopReqFUNC  = function<void(LoopBackFUNC)>;
+using FromMainFN   = function<void()>;
+using ToMainFN     = function<void(FromMainFN)>;
 
 // ***********************************************************************************************
 class MsgSelf : public UniLog
 {
 public:
-    MsgSelf(LoopReqFUNC, const UniLogName& = ULN_DEFAULT);
+    MsgSelf(ToMainFN, const UniLogName& = ULN_DEFAULT);
     ~MsgSelf();
     const shared_ptr<bool> getValid() const { return isValid_; }
 
@@ -75,13 +77,13 @@ public:
 
 private:
     bool handleOneMsg();
-    void loopBack(const shared_ptr<bool> aValidMsgSelf = make_shared<bool>(true));
+    void fromMain(const shared_ptr<bool> aValidMsgSelf = make_shared<bool>(true));
 
     // -------------------------------------------------------------------------------------------
     queue<MsgCB> msgQueues_[EMsgPri_MAX];
 
     shared_ptr<bool> isValid_ = make_shared<bool>(true);  // MsgSelf is still valid?
-    LoopReqFUNC      loopReq_;
+    ToMainFN         toMainFN_;
     size_t           nMsg_ = 0;
 };
 }  // namespace
@@ -90,8 +92,8 @@ private:
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2016-12-02  CSZ       1)create & support priority
-// 2019-11-06  CSZ       - lower priority by 1msg/loopBack
-// 2020-04-21  CSZ       - can loopBack() after MsgSelf is deleted
+// 2019-11-06  CSZ       - lower priority by 1msg/fromMain
+// 2020-04-21  CSZ       - can fromMain() after MsgSelf is deleted
 // 2020-08-10  CSZ       2)refactory to MsgSelf + AsyncLooper/ShortLooper/EmptyLooper/etc
 // 2020-12-28  CSZ       3)fix invalid cb by weak_ptr<cb>
 // 2021-04-05  CSZ       - coding req
@@ -102,4 +104,4 @@ private:
 // 2022-11-04  CSZ       4)simplify newMsg(WeakMsgCB -> MsgCB)
 //                         . easier to user
 //                         . support both MsgCB & WeakMsgCB(by lambda)
-// ***********************************************************************************************// ***********************************************************************************************
+// ***********************************************************************************************

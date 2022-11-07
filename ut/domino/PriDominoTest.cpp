@@ -30,8 +30,8 @@ struct PriDominoTest : public Test, public UniLog
     // -------------------------------------------------------------------------------------------
     UtInitObjAnywhere utInit_;
     shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(
-        [this](LoopBackFUNC aFunc){ loopbackFunc_ = aFunc; }, uniLogName());
-    LoopBackFUNC loopbackFunc_;
+        [this](FromMainFN aFromMainFN){ fromMainFN_ = aFromMainFN; }, uniLogName());
+    FromMainFN fromMainFN_;
 
     MsgCB d1EventHdlr_ = [&](){ hdlrIDs_.push(1); };
     MsgCB d2EventHdlr_ = [&](){ hdlrIDs_.push(2); };
@@ -43,7 +43,7 @@ struct PriDominoTest : public Test, public UniLog
 
         ObjAnywhere::get<aParaDom>(*this)->setState({{"e2", true}});
         ObjAnywhere::get<aParaDom>(*this)->setPriority("e2", EMsgPri_HIGH);
-        ObjAnywhere::get<aParaDom>(*this)->setHdlr("e2", d2EventHdlr_);  // raise when d5() is exe
+        ObjAnywhere::get<aParaDom>(*this)->setHdlr("e2", d2EventHdlr_);          // raise when d5() is exe
     };
 
     queue<int> hdlrIDs_;
@@ -52,7 +52,7 @@ struct PriDominoTest : public Test, public UniLog
 TYPED_TEST_SUITE_P(PriDominoTest);
 
 // ***********************************************************************************************
-template<class aParaDom> using NofreePriDominoTest = PriDominoTest<aParaDom>;  // for no-free testcase
+template<class aParaDom> using NofreePriDominoTest = PriDominoTest<aParaDom>;    // for no-free testcase
 TYPED_TEST_SUITE_P(NofreePriDominoTest);
 
 #define PRI
@@ -81,21 +81,21 @@ TYPED_TEST_P(PriDominoTest, GOLD_setPriority_thenPriorityFifoCallback)
     PARA_DOM->setHdlr("e1", this->d1EventHdlr_);
 
     PARA_DOM->setState({{"e5", true}});
-    PARA_DOM->setPriority("e5", EMsgPri_HIGH);       // req: higher firstly, & derived callback
+    PARA_DOM->setPriority("e5", EMsgPri_HIGH);                    // req: higher firstly, & derived callback
     PARA_DOM->setHdlr("e5", this->d5EventHdlr_);
 
     PARA_DOM->setState({{"e3", true}});
-    PARA_DOM->setHdlr("e3", this->d3EventHdlr_);  // req: fifo same priority
+    PARA_DOM->setHdlr("e3", this->d3EventHdlr_);                  // req: fifo same priority
 
     PARA_DOM->setState({{"e4", true}});
     PARA_DOM->setPriority("e4", EMsgPri_HIGH);
     PARA_DOM->setHdlr("e4", this->d4EventHdlr_);
 
-    PARA_DOM->setPriority("e4", EMsgPri_NORM);       // req: new pri effective immediately, but no impact on road
+    PARA_DOM->setPriority("e4", EMsgPri_NORM);                    // req: new pri effective immediately, but no impact on road
     PARA_DOM->setState({{"e4", false}});
     PARA_DOM->setState({{"e4", true}});
 
-    if (this->msgSelf_->hasMsg()) this->loopbackFunc_();
+    if (this->msgSelf_->hasMsg()) this->fromMainFN_();
     if (this->hdlrIDs_.size() == 6) EXPECT_EQ(queue<int>({5, 4, 2, 1, 3, 4}), this->hdlrIDs_);
     else EXPECT_EQ(queue<int>({5, 4, 2, 1, 3}), this->hdlrIDs_);  // auto-rm-hdlr dom
 }

@@ -4,18 +4,17 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-// - what:
-//   . mv hdlr out Domino
-//   . extend Domino to basic hdlr: 1 hdlr, MsgSelf
-//   . can extend to PriDomino by overriding getPriority()
-//   . can extend to FreeHdlrDomino+MultiHdlrDomino by overriding invalidAllHdlrOK()
-// - why:
+// - what issue:
+//   * complex to keep hdlr in Domino
+//   . state & hdlr are different core
+//   . so mv hdlr out Domino
+// - why/value:
 //   . pure Domino w/o hdlr (SOLID#1: single-responbility)
 //   * basic hdlr for common usage
-//   * hdlr extendable
+//     . and extendable
+//   . support rm hdlr
+//     . whenever succ, no cb, even cb already on road
 // - core: hdlrs_
-// - why invalidate hdlr: fix cb-invalid for all domino hdlr
-//   . whenever succ, no cb, even cb already on road
 // ***********************************************************************************************
 #ifndef HDLR_DOMINO_HPP_
 #define HDLR_DOMINO_HPP_

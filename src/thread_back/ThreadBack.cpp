@@ -24,7 +24,7 @@ void ThreadBack::runAllBackFn(UniLog& oneLog)
         return;
     }
 
-    // run all finished threads' ThreadBackFn()
+    // run all finished threads' ThreadBackFN()
     HID("main thread=" << this_thread::get_id() << ": nFinished=" << finishedThreads_.size()
         << ", nTotalThread_=" << nTotalThread_);
     while (not finishedThreads_.empty())
@@ -36,7 +36,7 @@ void ThreadBack::runAllBackFn(UniLog& oneLog)
 }
 
 // ***********************************************************************************************
-shared_future<void> ThreadBack::newThread(ThreadEntryFn aEntry, ThreadBackFn aBack, UniLog& oneLog)
+shared_future<void> ThreadBack::newThread(ThreadEntryFN aEntry, ThreadBackFN aBack, UniLog& oneLog)
 {
     ++nTotalThread_;
 
@@ -57,12 +57,12 @@ shared_future<void> ThreadBack::newThread(ThreadEntryFn aEntry, ThreadBackFn aBa
 // ***********************************************************************************************
 void ThreadBack::reset()
 {
-    queue<FullBackFn>().swap(finishedThreads_);
+    queue<FullBackFN>().swap(finishedThreads_);
     nTotalThread_ = 0;
 }
 
 // ***********************************************************************************************
-queue<FullBackFn> ThreadBack::finishedThreads_;
+queue<FullBackFN> ThreadBack::finishedThreads_;
 mutex             ThreadBack::finishedLock_;
 size_t            ThreadBack::nTotalThread_ = 0;
 

@@ -10,13 +10,13 @@
 //                   [main thread]
 //                         |
 //                         | std::async()    [new thread]
-// ThreadBack::newThread() |--------------------->| ThreadEntryFn()  // time-consuming task eg block to rec msg)
+// ThreadBack::newThread() |--------------------->| ThreadEntryFN()  // time-consuming task eg block to rec msg)
 //                         |                      |
-//          ThreadBackFn() |<.....................| (over)
+//          ThreadBackFN() |<.....................| (over)
 //                         |
 //                         |
-// - core: ThreadBackFn
-//   . after ThreadEntryFn() over in "other thread", ThreadBackFn() is run in MAIN THREAD - key diff std::async()
+// - core: ThreadBackFN
+//   . after ThreadEntryFN() over in "other thread", ThreadBackFN() is run in MAIN THREAD - key diff std::async()
 // - VALUE/why:
 //   * keep all logic in main thread / single thread (simple, eg no lock/deadlock, no complex logic)
 //     . while time-consuming tasks in other threads
@@ -24,13 +24,13 @@
 //   . cross platform (base on MainWaker, diff impl eg UtMainWaker, SwmMainWaker)
 //   . UtMainRouser is example to real world
 // - Req:
-//   * ThreadBackFn() in main thread
+//   * ThreadBackFN() in main thread
 //   . support diff MainWaker
 //     . in-time callback when new thread over (by MainWaker::threadOver())
 //   . not integrated with MsgSelf
 //     . aovid complicate MsgSelf which include back to main(), priority FIFO, withdraw msg
 //     . avoid block main thread
-//     . avoid complicate ThreadBack (focus on 1 think: ThreadBackFn in main thread)
+//     . avoid complicate ThreadBack (focus on 1 think: ThreadBackFN in main thread)
 //   . can work with MsgSelf
 // ***********************************************************************************************
 #pragma once
@@ -48,16 +48,16 @@ using namespace std;
 namespace RLib
 {
 // ***********************************************************************************************
-using ThreadEntryFn = function<bool()>;
-using ThreadBackFn  = function<void(bool)>;
-using FullBackFn    = function<void()>;
+using ThreadEntryFN = function<bool()>;
+using ThreadBackFN  = function<void(bool)>;
+using FullBackFN    = function<void()>;
 
 // ***********************************************************************************************
 class ThreadBack
 {
 public:
     // !!!must return future<>, otherwise the thread looks like serialized with main thread
-    static shared_future<void> newThread(ThreadEntryFn, ThreadBackFn, UNI_LOG);
+    static shared_future<void> newThread(ThreadEntryFN, ThreadBackFN, UNI_LOG);
     static void                runAllBackFn(UniLog&);  // non-ref UniLog for safety in cb
 
     static void reset();
@@ -65,7 +65,7 @@ public:
 
 private:
     // -------------------------------------------------------------------------------------------
-    static queue<FullBackFn> finishedThreads_;
+    static queue<FullBackFN> finishedThreads_;
     static mutex             finishedLock_;
     static size_t            nTotalThread_;
 };

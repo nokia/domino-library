@@ -9,9 +9,9 @@
 namespace RLib
 {
 // ***********************************************************************************************
-MsgSelf::MsgSelf(LoopReqFUNC aFunc, const UniLogName& aUniLogName)
+MsgSelf::MsgSelf(ToMainFN aToMainFN, const UniLogName& aUniLogName)
     : UniLog(aUniLogName)
-    , loopReq_(aFunc)
+    , toMainFN_(aToMainFN)
 {}
 
 // ***********************************************************************************************
@@ -35,16 +35,17 @@ bool MsgSelf::handleOneMsg()
         --nMsg_;
 
         if (!isLowPri(EMsgPriority(priority))) return true;
-        if (hasMsg()) loopReq_([this, isValid = isValid_]() mutable { loopBack(isValid); });
+HID("nMsg="<<nMsg_);
+        if (hasMsg()) {toMainFN_([this, isValid = isValid_]() mutable { fromMain(isValid); });HID("toMain again!!!")}
         return false;  // 1 low msg per loopReq so queue with eg IM CB, syscom, etc. (lower)
     }
     return false;
 }
 
 // ***********************************************************************************************
-void MsgSelf::loopBack(const shared_ptr<bool> aValidMsgSelf)
+void MsgSelf::fromMain(const shared_ptr<bool> aValidMsgSelf)
 {
-    if (*aValidMsgSelf)  // impossible aValidMsgSelf==nullptr till 022-Mar-11
+    if (*aValidMsgSelf)            // impossible aValidMsgSelf==nullptr till 022-Mar-11
     {
         // may be called after MsgSelf destructed, not use this at all
         HID("How many reference to this MsgSelf? " << aValidMsgSelf.use_count());
@@ -61,6 +62,6 @@ void MsgSelf::newMsg(const MsgCB& aMsgCB, const EMsgPriority aPriority)
     ++nMsg_;
     if (nMsg_ > 1) return;
 
-    loopReq_([this, isValid = isValid_]() mutable { loopBack(isValid); });
+    toMainFN_([this, isValid = isValid_]() mutable { fromMain(isValid); });
 }
 }  // namespace
