@@ -21,9 +21,15 @@ namespace RLib
 // ***********************************************************************************************
 struct UtMainRouser : public MainRouser
 {
-    //UtMainRouser() : idle(true) {}
-    void toMainThread(FnInMainThread) override { idle.clear(); }
+    void toMainThread(FnInMainThread aFunc) override
+    {
+        runAllBackFn_ = aFunc;
+        idle.clear();
+    }
+
+    // -------------------------------------------------------------------------------------------
     atomic_flag idle = ATOMIC_VAR_INIT(true);
+    FnInMainThread runAllBackFn_;
 };
 
 // ***********************************************************************************************
@@ -97,7 +103,7 @@ TEST_F(ThreadBackTest, GOLD_backFn_in_mainThread)
     {
         utMainRouser_->idle.test_and_set()                      // req: new thread end at MainRouser.toMainThread()
             ? this_thread::yield()                              // real world may block on wait()
-            : ThreadBack::runAllBackFn(*this);                  // req: ThreadBackFN & aRet available
+            : utMainRouser_->runAllBackFn_();                   // req: ThreadBackFN & aRet available
     } while (nFinishedThread < MAX_THREAD);                     // req: loop till all thread done !!!
 }
 
@@ -132,7 +138,7 @@ TEST_F(ThreadBackTest, canWithMsgSelf)
     {
         utMainRouser_->idle.test_and_set()
             ? this_thread::yield()
-            : ThreadBack::runAllBackFn(*this);
+            : utMainRouser_->runAllBackFn_();
     } while (nFinishedThread < EMsgPri_MAX);
 
     loopbackFunc();

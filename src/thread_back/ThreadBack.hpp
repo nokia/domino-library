@@ -32,6 +32,10 @@
 //     . avoid block main thread
 //     . avoid complicate ThreadBack (focus on 1 think: ThreadBackFN in main thread)
 //   . can work with MsgSelf
+// - Note:
+//   . why MainRouser to provide toMainThread()?
+//     . another way is as para of ThreadBack::newThread() - complex to provide for each thread
+//     . real world may implement MainRouser::toMain() then para to MsgSelf()
 // ***********************************************************************************************
 #pragma once
 
@@ -58,13 +62,14 @@ class ThreadBack
 public:
     // !!!must return future<>, otherwise the thread looks like serialized with main thread
     static shared_future<void> newThread(ThreadEntryFN, ThreadBackFN, UNI_LOG);
-    static void                runAllBackFn(UniLog&);  // non-ref UniLog for safety in cb
 
-    static void reset();
+    static void reset();  // ut clean for next case
     static bool empty() { return nTotalThread_ == 0; }
 
 private:
-    // -------------------------------------------------------------------------------------------
+     static void runAllBackFn(UniLog&);
+
+   // -------------------------------------------------------------------------------------------
     static queue<FullBackFN> finishedThreads_;
     static mutex             finishedLock_;
     static size_t            nTotalThread_;

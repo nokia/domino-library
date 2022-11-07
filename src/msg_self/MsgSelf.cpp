@@ -22,28 +22,7 @@ MsgSelf::~MsgSelf()
 }
 
 // ***********************************************************************************************
-bool MsgSelf::handleOneMsg()
-{
-    for (auto&& priority = EMsgPri_MAX-1; priority >=EMsgPri_MIN ; priority--)
-    {
-        auto&& oneQueue = msgQueues_[priority];
-        if (oneQueue.empty()) continue;
-
-        auto&& cb = oneQueue.front();
-        if (cb) cb();
-        oneQueue.pop();
-        --nMsg_;
-
-        if (!isLowPri(EMsgPriority(priority))) return true;
-HID("nMsg="<<nMsg_);
-        if (hasMsg()) {toMainFN_([this, isValid = isValid_]() mutable { fromMain(isValid); });HID("toMain again!!!")}
-        return false;  // 1 low msg per loopReq so queue with eg IM CB, syscom, etc. (lower)
-    }
-    return false;
-}
-
-// ***********************************************************************************************
-void MsgSelf::fromMain(const shared_ptr<bool> aValidMsgSelf)
+void MsgSelf::handleAllMsg(const shared_ptr<bool> aValidMsgSelf)
 {
     if (*aValidMsgSelf)            // impossible aValidMsgSelf==nullptr till 022-Mar-11
     {
@@ -56,12 +35,32 @@ void MsgSelf::fromMain(const shared_ptr<bool> aValidMsgSelf)
 }
 
 // ***********************************************************************************************
+bool MsgSelf::handleOneMsg()
+{
+    for (auto&& priority = EMsgPri_MAX-1; priority >=EMsgPri_MIN ; priority--)
+    {
+        auto&& oneQueue = msgQueues_[priority];
+        if (oneQueue.empty()) continue;
+
+        auto&& cb = oneQueue.front();
+        if (cb) cb();
+        oneQueue.pop();
+        --nMsg_;
+
+        if (not isLowPri(EMsgPriority(priority))) return true;
+        if (hasMsg()) toMainFN_([this, isValid = isValid_]() mutable { handleAllMsg(isValid); });
+        return false;  // 1 low msg per loopReq so queue with eg IM CB, syscom, etc. (lower)
+    }
+    return false;
+}
+
+// ***********************************************************************************************
 void MsgSelf::newMsg(const MsgCB& aMsgCB, const EMsgPriority aPriority)
 {
     msgQueues_[aPriority].push(aMsgCB);
     ++nMsg_;
     if (nMsg_ > 1) return;
 
-    toMainFN_([this, isValid = isValid_]() mutable { fromMain(isValid); });
+    toMainFN_([this, isValid = isValid_]() mutable { handleAllMsg(isValid); });
 }
 }  // namespace

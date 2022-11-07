@@ -57,6 +57,7 @@ shared_future<void> ThreadBack::newThread(ThreadEntryFN aEntry, ThreadBackFN aBa
 // ***********************************************************************************************
 void ThreadBack::reset()
 {
+    lock_guard<mutex> guard(finishedLock_);  // safer
     queue<FullBackFN>().swap(finishedThreads_);
     nTotalThread_ = 0;
 }

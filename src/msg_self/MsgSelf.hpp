@@ -14,7 +14,7 @@
 //   . destruct MsgSelf shall not call MsgCB in msgQueues_, & no mem-leak
 // - how:
 //   . newMsg(): send msgHdlr into msgQueues_ (all info are in msgHdlr so func<void()> is enough)
-//   . fromMain(): call all msgHdlr in msgQueues_, priority then FIFO
+//   . handleAllMsg(): call all msgHdlr in msgQueues_, priority then FIFO
 // - core: msgQueues_
 // - which way?    speed                   UT                           code
 //   . async task  may slow if async busy  no but direct-CB instead     simple
@@ -76,8 +76,8 @@ public:
     static bool isLowPri(const EMsgPriority aPri) { return aPri < EMsgPri_NORM; }
 
 private:
+    void handleAllMsg(const shared_ptr<bool> aValidMsgSelf = make_shared<bool>(true));
     bool handleOneMsg();
-    void fromMain(const shared_ptr<bool> aValidMsgSelf = make_shared<bool>(true));
 
     // -------------------------------------------------------------------------------------------
     queue<MsgCB> msgQueues_[EMsgPri_MAX];
@@ -92,8 +92,8 @@ private:
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2016-12-02  CSZ       1)create & support priority
-// 2019-11-06  CSZ       - lower priority by 1msg/fromMain
-// 2020-04-21  CSZ       - can fromMain() after MsgSelf is deleted
+// 2019-11-06  CSZ       - lower priority by 1msg/handleAllMsg
+// 2020-04-21  CSZ       - no crash to callback handleAllMsg() after MsgSelf is deleted
 // 2020-08-10  CSZ       2)refactory to MsgSelf + AsyncLooper/ShortLooper/EmptyLooper/etc
 // 2020-12-28  CSZ       3)fix invalid cb by weak_ptr<cb>
 // 2021-04-05  CSZ       - coding req
