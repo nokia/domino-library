@@ -59,13 +59,13 @@ using WeakMsgCB    = weak_ptr<MsgCB>;
 using SharedMsgCB  = shared_ptr<MsgCB>;
 
 using FromMainFN   = function<void()>;
-using ToMainFN     = function<void(FromMainFN)>;
+using ToMainFN     = function<void(const FromMainFN&)>;
 
 // ***********************************************************************************************
 class MsgSelf : public UniLog
 {
 public:
-    MsgSelf(ToMainFN, const UniLogName& = ULN_DEFAULT);
+    MsgSelf(const ToMainFN&, const UniLogName& = ULN_DEFAULT);
     ~MsgSelf();
     const shared_ptr<bool> getValid() const { return isValid_; }
 

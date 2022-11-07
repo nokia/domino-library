@@ -21,7 +21,7 @@ namespace RLib
 // ***********************************************************************************************
 struct UtMainRouser : public MainRouser
 {
-    void toMainThread(FnInMainThread aFunc) override
+    void toMainThread(const FnInMainThread& aFunc) override
     {
         runAllBackFn_ = aFunc;
         idle.clear();
@@ -110,8 +110,8 @@ TEST_F(ThreadBackTest, GOLD_backFn_in_mainThread)
 // ***********************************************************************************************
 TEST_F(ThreadBackTest, canWithMsgSelf)
 {
-    FromMainFN loopbackFunc;
-    MsgSelf msgSelf([&loopbackFunc](FromMainFN aFromMainFN){ loopbackFunc = aFromMainFN; }, uniLogName());
+    FromMainFN handleAllMsgFn;
+    MsgSelf msgSelf([&handleAllMsgFn](const FromMainFN& aFromMainFN){ handleAllMsgFn = aFromMainFN; }, uniLogName());
 
     queue<shared_future<void> > fut;
     queue<size_t> order;
@@ -141,7 +141,7 @@ TEST_F(ThreadBackTest, canWithMsgSelf)
             : utMainRouser_->runAllBackFn_();
     } while (nFinishedThread < EMsgPri_MAX);
 
-    loopbackFunc();
+    handleAllMsgFn();
     EXPECT_EQ(queue<size_t>({2,1,0}), order);
 }
 

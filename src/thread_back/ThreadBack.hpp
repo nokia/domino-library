@@ -61,7 +61,7 @@ class ThreadBack
 {
 public:
     // !!!must return future<>, otherwise the thread looks like serialized with main thread
-    static shared_future<void> newThread(ThreadEntryFN, ThreadBackFN, UNI_LOG);
+    static shared_future<void> newThread(const ThreadEntryFN&, const ThreadBackFN&, UNI_LOG);
 
     static void reset();  // ut clean for next case
     static bool empty() { return nTotalThread_ == 0; }

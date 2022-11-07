@@ -29,7 +29,7 @@ struct FreeHdlrDominoTest : public Test, public UniLog
     // -------------------------------------------------------------------------------------------
     UtInitObjAnywhere utInit_;
     shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(
-        [this](FromMainFN aFromMainFN){ fromMainFN_ = aFromMainFN; }, uniLogName());
+        [this](const FromMainFN& aFromMainFN){ fromMainFN_ = aFromMainFN; }, uniLogName());
     FromMainFN fromMainFN_;
 
     MsgCB h1_ = [this](){ hdlrIDs_.insert(1); };

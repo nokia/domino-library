@@ -23,7 +23,7 @@ namespace RLib
 class MainRouser
 {
 public:
-    virtual void toMainThread(FnInMainThread) = 0;
+    virtual void toMainThread(const FnInMainThread&) = 0;
 };
 
 }  // namespace

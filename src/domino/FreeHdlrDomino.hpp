@@ -64,7 +64,7 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Do
     if (isRepeatHdlr(aEv)) aDominoType::triggerHdlr(aHdlr, aEv);
     else
     {
-        auto&& superHdlr = make_shared<MsgCB>();
+        auto superHdlr = make_shared<MsgCB>();
         *superHdlr = [weakHdlr = WeakMsgCB(aHdlr), this, aEv, superHdlr]() mutable
         {
             // req: call hdlr

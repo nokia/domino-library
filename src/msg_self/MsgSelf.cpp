@@ -9,7 +9,7 @@
 namespace RLib
 {
 // ***********************************************************************************************
-MsgSelf::MsgSelf(ToMainFN aToMainFN, const UniLogName& aUniLogName)
+MsgSelf::MsgSelf(const ToMainFN& aToMainFN, const UniLogName& aUniLogName)
     : UniLog(aUniLogName)
     , toMainFN_(aToMainFN)
 {}

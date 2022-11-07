@@ -36,7 +36,7 @@ void ThreadBack::runAllBackFn(UniLog& oneLog)
 }
 
 // ***********************************************************************************************
-shared_future<void> ThreadBack::newThread(ThreadEntryFN aEntry, ThreadBackFN aBack, UniLog& oneLog)
+shared_future<void> ThreadBack::newThread(const ThreadEntryFN& aEntry, const ThreadBackFN& aBack, UniLog& oneLog)
 {
     ++nTotalThread_;
 

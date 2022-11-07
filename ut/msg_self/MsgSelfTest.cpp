@@ -21,7 +21,7 @@ struct MsgSelfTest : public Test, public UniLog
     MsgSelfTest() : UniLog(UnitTest::GetInstance()->current_test_info()->name()) {}
     ~MsgSelfTest() { GTEST_LOG_FAIL }
 
-    MOCK_METHOD(void, toMain, (FromMainFN));  // simulate toMain() which may send msg to self
+    MOCK_METHOD(void, toMain, (const FromMainFN&));  // simulate toMain() which may send msg to self
 
     // -------------------------------------------------------------------------------------------
     shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(bind(&MsgSelfTest::toMain, this, placeholders::_1), uniLogName());

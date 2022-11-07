@@ -89,7 +89,7 @@ TYPED_TEST_P(NofreeHdlrDominoTest, GOLD_trigger_reTrigger_callback_reCallback)
 {
     // not auto-cb but manually
     auto msgSelf = make_shared<MsgSelf>(
-        [this](FromMainFN aFromMainFN){ this->fromMainFN_ = aFromMainFN; }, this->uniLogName());
+        [this](const FromMainFN& aFromMainFN){ this->fromMainFN_ = aFromMainFN; }, this->uniLogName());
     PARA_DOM->setMsgSelf(msgSelf);             // req: change MsgSelf
 
     PARA_DOM->setHdlr("event", this->hdlr0_);
@@ -283,7 +283,7 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlrOnRoad_noCallback)
 {
     // not auto-cb but manually
     auto msgSelf = make_shared<MsgSelf>(
-        [this](FromMainFN aFromMainFN){ this->fromMainFN_ = aFromMainFN; }, this->uniLogName());
+        [this](const FromMainFN& aFromMainFN){ this->fromMainFN_ = aFromMainFN; }, this->uniLogName());
     PARA_DOM->setMsgSelf(msgSelf);
 
     PARA_DOM->multiHdlrByAliasEv("e0", this->hdlr0_, "e");
@@ -300,7 +300,7 @@ TYPED_TEST_P(NofreeHdlrDominoTest, rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigg
 {
     // not auto-cb but manually
     auto msgSelf = make_shared<MsgSelf>(
-        [this](FromMainFN aFromMainFN){ this->fromMainFN_ = aFromMainFN; }, this->uniLogName());
+        [this](const FromMainFN& aFromMainFN){ this->fromMainFN_ = aFromMainFN; }, this->uniLogName());
     PARA_DOM->setMsgSelf(msgSelf);
 
     PARA_DOM->setHdlr("event", this->hdlr0_);

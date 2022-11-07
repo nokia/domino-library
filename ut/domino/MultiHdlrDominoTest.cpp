@@ -212,7 +212,7 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, rmHdlrOnRoad)
 {
     // not auto-cb but manually
     auto msgSelf = make_shared<MsgSelf>(
-        [this](FromMainFN aFromMainFN){ this->fromMainFN_ = aFromMainFN; }, this->uniLogName());
+        [this](const FromMainFN& aFromMainFN){ this->fromMainFN_ = aFromMainFN; }, this->uniLogName());
     PARA_DOM->setMsgSelf(msgSelf);
 
     PARA_DOM->setHdlr("event", this->hdlr0_);
