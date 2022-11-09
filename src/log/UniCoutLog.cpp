@@ -30,7 +30,7 @@ char* timestamp()
 // ***********************************************************************************************
 ostream& UniCoutLog::oneLog()
 {
-    cerr << timestamp() << '[' << uniLogName_ << '/';
+    cout << '[' << uniLogName_ << '/';
     ++nLogLine_;
     return cout;
 }
