@@ -8,4 +8,4 @@
 namespace RLib { using UniLog = UniCoutLog; }
 
 #define UNI_LOG_TEST UniCoutLogTest
-#include "UniLogTest.hpp"
+//#include "UniLogTest.hpp"
