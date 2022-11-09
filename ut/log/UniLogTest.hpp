@@ -6,27 +6,39 @@
 // ***********************************************************************************************
 #include <gtest/gtest.h>
 
-#include "UniLog.hpp"
-
 using namespace testing;
 
 namespace RLib
 {
 // ***********************************************************************************************
-struct ClassUsr : public UniLog
+struct UNI_LOG_TEST : public Test
 {
-    // req: can log
-    ClassUsr(const UniLogName aUniLogName = ULN_DEFAULT) : UniLog(aUniLogName) { DBG("hello, this=" << this); }
-    ~ClassUsr() { DBG("bye, this=" << this); }
+    struct ClassUsr : public UniLog
+    {
+        // req: can log
+        ClassUsr(const UniLogName aUniLogName = ULN_DEFAULT) : UniLog(aUniLogName) { DBG("hello, this=" << this); }
+        ~ClassUsr() { DBG("bye, this=" << this); }
+    };
+
+    void funcUsr(UniLog& oneLog = UniLog::defaultUniLog())
+    {
+        DBG("hello");                          // req: can log, same API
+    }
+
+    struct ClassUseDefaultLog
+    {
+        ClassUseDefaultLog() { DBG("hello"); } // req: can log
+        ~ClassUseDefaultLog() { DBG("bye"); }  // req: can log
+    };
+
+    void funcUseDefaultLog()
+    {
+        DBG("hello");                          // req: can log, same API
+    }
 };
 
-void funcUsr(UniLog& oneLog = UniLog::defaultUniLog())
-{
-    DBG("hello");  // req: can log, same API
-}
-
 // ***********************************************************************************************
-TEST(UniLogTest, GOLD_usr_of_class_and_func)
+TEST_F(UNI_LOG_TEST, GOLD_usr_of_class_and_func)
 {
     const auto nLogBegin = UniLog::nLog();
 
@@ -55,7 +67,7 @@ TEST(UniLogTest, GOLD_usr_of_class_and_func)
 }
 
 // ***********************************************************************************************
-TEST(UniLogTest, low_couple_objects)
+TEST_F(UNI_LOG_TEST, low_couple_objects)
 {
     const auto nLogBegin = UniLog::nLog();
 
@@ -76,7 +88,7 @@ TEST(UniLogTest, low_couple_objects)
     classUsr_2.reset();
     EXPECT_EQ(nLogBegin, UniLog::nLog());  // req: del log when no user
 }
-TEST(UniLogTest, low_couple_between_copies)
+TEST_F(UNI_LOG_TEST, low_couple_between_copies)
 {
     const auto nLogBegin = UniLog::nLog();
 
@@ -97,7 +109,7 @@ TEST(UniLogTest, low_couple_between_copies)
     copy.reset();
     EXPECT_EQ(nLogBegin, UniLog::nLog());  // req: del log when no user
 }
-TEST(UniLogTest, low_couple_callbackFunc)
+TEST_F(UNI_LOG_TEST, low_couple_callbackFunc)
 {
     const auto nLogBegin = UniLog::nLog();
 
@@ -119,19 +131,7 @@ TEST(UniLogTest, low_couple_callbackFunc)
 }
 
 // ***********************************************************************************************
-struct ClassUseDefaultLog
-{
-    ClassUseDefaultLog() { DBG("hello"); } // req: can log
-    ~ClassUseDefaultLog() { DBG("bye"); }  // req: can log
-};
-
-void funcUseDefaultLog()
-{
-    DBG("hello");                          // req: can log, same API
-}
-
-// ***********************************************************************************************
-TEST(UniLogTest, no_explicit_CellLog_like_legacy)
+TEST_F(UNI_LOG_TEST, no_explicit_CellLog_like_legacy)
 {
     const auto nLogBegin = UniLog::nLog();
     {
