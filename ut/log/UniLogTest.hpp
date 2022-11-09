@@ -129,6 +129,7 @@ TEST_F(UNI_LOG_TEST, low_couple_callbackFunc)
 }
 
 // ***********************************************************************************************
+#if 0
 TEST_F(UNI_LOG_TEST, no_explicit_CellLog_like_legacy)
 {
     const auto nLogBegin = UniLog::nLog();
@@ -143,5 +144,6 @@ TEST_F(UNI_LOG_TEST, no_explicit_CellLog_like_legacy)
     UniLog::defaultUniLog_.reset();        // dump log in time
     EXPECT_EQ(nLogBegin, UniLog::nLog());  // req: del log when no user
 }
+#endif
 
 }  // namespace
