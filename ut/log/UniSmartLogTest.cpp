@@ -8,4 +8,5 @@
 namespace RLib { using UniLog = UniSmartLog; }
 
 #define UNI_LOG_TEST UniSmartLogTest
+#define CLASS_USR    SmartClassUsr
 #include "UniLogTest.hpp"
