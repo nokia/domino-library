@@ -37,10 +37,10 @@ public:
 
     SmartLog& oneLog();
     SmartLog& operator()() { return oneLog(); }
+    void needLog() { if (smartLog_) smartLog_->needLog(); }
     const UniLogName& uniLogName() const { return uniLogName_; }
 
     static size_t logLen(const UniLogName&);
-    static void needLog() { for (auto&& it : logStore_) it.second->needLog(); }
     static auto nLog() { return logStore_.size(); }
     static UniSmartLog& defaultUniLog();
 
@@ -56,9 +56,6 @@ public:
 
 // ***********************************************************************************************
 inline SmartLog& oneLog() { return UniSmartLog::defaultUniLog().oneLog(); }
-
-// ***********************************************************************************************
-using UniLog = UniSmartLog;
 
 }  // namespace
 #endif  // UNI_SMART_LOG_HPP_

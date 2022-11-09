@@ -30,10 +30,10 @@ public:
     explicit UniCoutLog(const UniLogName& aUniLogName = ULN_DEFAULT) : uniLogName_(aUniLogName) {}
     ostream& oneLog();
     ostream& operator()() { return oneLog(); }
+    void needLog() {}
     const UniLogName& uniLogName() const { return uniLogName_; }
 
     static size_t logLen(const UniLogName&) { return nLogLine_; }
-    static void needLog() {}
     static auto nLog() { return 1; }
     static UniCoutLog& defaultUniLog();
 
@@ -47,9 +47,6 @@ public:
 
 // ***********************************************************************************************
 inline ostream& oneLog() { return UniCoutLog::defaultUniLog().oneLog(); }
-
-// ***********************************************************************************************
-using UniLog = UniCoutLog;
 
 }  // namespace
 #endif  // UNI_COUT_LOG_HPP_

@@ -7,6 +7,7 @@
 // - ISSUE:
 //   . log is always needed
 //   * no usr code change when switch log among cout, LoggingSystem, SmartLog/cell-log, etc
+//   * simple & natural
 // - Usage:
 //   * class A : public UniLog         // typical/inherit
 //   . class B { UniLog oneLog; ... }  // alt/member, member name must be "oneLog"
@@ -54,10 +55,12 @@
 // ***********************************************************************************************
 #if 1  // base on smartlog
 #include "UniSmartLog.hpp"
+namespace RLib { using UniLog = UniSmartLog; }
 
 // ***********************************************************************************************
 #else  // base on cout (LoggingSystem is similar)
 #include "UniCoutLog.hpp"
+namespace RLib { using UniLog = UniCoutLog; }
 #endif
 
 #endif  // UNI_LOG_HPP_

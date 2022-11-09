@@ -33,7 +33,7 @@ using namespace std;
 // ***********************************************************************************************
 #define UNI_LOG UniLog& oneLog = UniLog::defaultUniLog()
 
-#define GTEST_LOG_FAIL { if (Test::HasFailure()) UniLog::needLog(); }
+#define GTEST_LOG_FAIL { if (Test::HasFailure()) needLog(); }
 
 // ***********************************************************************************************
 namespace RLib

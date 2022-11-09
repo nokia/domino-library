@@ -49,7 +49,7 @@ TEST(UniLogTest, GOLD_usr_of_class_and_func)
         const auto len_4 = UniLog::logLen(LOG_NAME);
         EXPECT_GT(len_4, len_3);           // req: can log more in same log
 
-        UniLog::needLog();                 // req: shall output log to screen
+        classUsr.needLog();                // req: shall output log to screen
     }
     EXPECT_EQ(nLogBegin, UniLog::nLog());  // req: del log when no user
 }
@@ -72,7 +72,7 @@ TEST(UniLogTest, low_couple_objects)
     const auto len_3 = UniLog::logLen(LOG_NAME);
     EXPECT_GT(len_3, len_2);               // req: ClassUsr-destructed shall not crash/impact ClassUsr's logging
 
-    if (Test::HasFailure()) UniLog::needLog();
+    if (Test::HasFailure()) classUsr_2->needLog();
     classUsr_2.reset();
     EXPECT_EQ(nLogBegin, UniLog::nLog());  // req: del log when no user
 }
@@ -93,7 +93,7 @@ TEST(UniLogTest, low_couple_between_copies)
     const auto len_3 = UniLog::logLen(LOG_NAME);
     EXPECT_GT(len_3, len_2);               // req: ClassUsr-destructed shall not crash/impact copy's logging
 
-    if (Test::HasFailure()) UniLog::needLog();
+    if (Test::HasFailure()) copy->needLog();
     copy.reset();
     EXPECT_EQ(nLogBegin, UniLog::nLog());  // req: del log when no user
 }
@@ -114,8 +114,6 @@ TEST(UniLogTest, low_couple_callbackFunc)
         cb();
         const auto len_3 = UniLog::logLen(LOG_NAME);
         EXPECT_GT(len_3, len_2);           // req: can log
-
-        if (Test::HasFailure()) UniLog::needLog();
     }
     EXPECT_EQ(nLogBegin, UniLog::nLog());  // req: del log when no user
 }
@@ -144,7 +142,6 @@ TEST(UniLogTest, no_explicit_CellLog_like_legacy)
         ClassUseDefaultLog nonCell;        // req: class not based on UniLog
         funcUseDefaultLog();               // req: func w/o UniLog para
     }
-    if (Test::HasFailure()) UniLog::needLog();
     UniLog::defaultUniLog_.reset();        // dump log in time
     EXPECT_EQ(nLogBegin, UniLog::nLog());  // req: del log when no user
 }
