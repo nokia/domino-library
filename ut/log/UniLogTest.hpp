@@ -132,16 +132,25 @@ TEST_F(UNI_LOG_TEST, low_couple_callbackFunc)
 TEST_F(UNI_LOG_TEST, no_explicit_CellLog_like_legacy)
 {
     const auto nLogBegin = UniLog::nLog();
+cerr<<__LINE__<<endl;
     {
         CLASS_USR classUsr;                 // req: no explicit UniLog
+cerr<<__LINE__<<endl;
         CLASS_USR classUsr_2;               // req: no explicit UniLog
         funcUsr();                         // req: no explicit UniLog
+cerr<<__LINE__<<endl;
 
         CLASS_USE_DFT_LOG nonCell;        // req: class not based on UniLog
+cerr<<__LINE__<<endl;
         funcUseDefaultLog();               // req: func w/o UniLog para
+cerr<<__LINE__<<endl;
     }
+    UniLog::defaultUniLog_->needLog();
+cerr<<__LINE__<<endl;
     UniLog::defaultUniLog_.reset();        // dump log in time
+cerr<<__LINE__<<endl;
     EXPECT_EQ(nLogBegin, UniLog::nLog());  // req: del log when no user
+cerr<<__LINE__<<endl;
 }
 
 }  // namespace
