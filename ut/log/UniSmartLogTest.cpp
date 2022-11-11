@@ -5,7 +5,6 @@
  */
 // ***********************************************************************************************
 #include "UniSmartLog.hpp"
-namespace RLib { using UniLog = UniSmartLog; }
 
 #define UNI_LOG_TEST UniSmartLogTest
 #include "UniLogTest.hpp"

@@ -18,13 +18,16 @@
 //   . min oneLog() to DBG/etc in all scenarios: inner class & func, default global log
 //   . UniLogName to avoid para/UniLog travel (from creator, to mid ..., to end-usr)
 // - File include:
-//                      UniBaseLog.hpp
-//                      /            \
-//          UniSmartLog.hpp        UniCoutLog.hpp
-//          /             \        /            \
-//   UniSmartLog.cpp      UniLog.hpp       UniCoutLog.cpp
-//                            |
-//                       "eg Usr.cpp"
+//                          ------ UniBaseLog.hpp ------
+//                         /             |              \
+//          UniSmartLog.hpp        UniLogTest.hpp        UniCoutLog.hpp
+//         /         |     \      /              \      /      |       \
+//   UniSmartLog.cpp | UniSmartLogTest.cpp  UniCoutLogTest.cpp | UniCoutLog.cpp
+//                   |                                         |
+//                   |                                         |
+//                   --------------- UniLog.hpp ----------------
+//                                  /    |     \
+//                      "eg Usr_1.cpp"  ...     ...
 // - REQ:
 //   * uni-interface (DBG/...) for all users (eg DomLib, swm, rfsw)
 //     * easily support DBG/etc macros
@@ -55,12 +58,10 @@
 // ***********************************************************************************************
 #if 1  // base on smartlog
 #include "UniSmartLog.hpp"
-namespace RLib { using UniLog = UniSmartLog; }
 
 // ***********************************************************************************************
 #else  // base on cout (LoggingSystem is similar)
 #include "UniCoutLog.hpp"
-namespace RLib { using UniLog = UniCoutLog; }
 #endif
 
 #endif  // UNI_LOG_HPP_

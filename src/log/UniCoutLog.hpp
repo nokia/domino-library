@@ -52,6 +52,8 @@ public:
 // ***********************************************************************************************
 static ostream& oneLog() { return UniCoutLog::defaultUniLog().oneLog(); }
 
+using UniLog = UniCoutLog;
+
 }  // namespace
 #endif  // UNI_COUT_LOG_HPP_
 // ***********************************************************************************************
