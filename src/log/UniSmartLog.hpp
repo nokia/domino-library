@@ -40,9 +40,10 @@ public:
     void needLog() { if (smartLog_) smartLog_->needLog(); }
     const UniLogName& uniLogName() const { return uniLogName_; }
 
-    static size_t logLen(const UniLogName&);
+    static size_t logLen(const UniLogName& = ULN_DEFAULT);
     static auto nLog() { return logStore_.size(); }
     static UniSmartLog& defaultUniLog();
+    static void reset();
 
 private:
     // -------------------------------------------------------------------------------------------

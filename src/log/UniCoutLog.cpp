@@ -30,13 +30,20 @@ char* timestamp()
 // ***********************************************************************************************
 ostream& UniCoutLog::oneLog()
 {
-    cout << '[' << uniLogName_ << '/';
+    cout << '[' << ULN_DEFAULT << '/';
     ++nLogLine_;
     return cout;
 }
 
 // ***********************************************************************************************
-size_t UniCoutLog::nLogLine_ = 0;
+void UniCoutLog::reset()
+{
+    defaultUniLog_.reset();
+    nLogLine_ = 0;
+}
+
+// ***********************************************************************************************
+size_t                 UniCoutLog::nLogLine_ = 0;
 shared_ptr<UniCoutLog> UniCoutLog::defaultUniLog_;
 
 }  // namespaces

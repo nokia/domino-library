@@ -4,10 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-// - CONSTITUTION:
+// - ISSUE/why:
 //   . implement UniLog based on cout
-//   * so failed case log can perfectly integrate with gtest output - easy debug
+//     . so failed case log can perfectly integrate with gtest output - easy debug
 //     (SmartLog always gtest outputs then case log)
+//     . case destructor can't catch EXPECT_CALL() failure, so SmartLog doesn't work
+//     . other unknown issue(s) that SmartLog can't fix
 // - CORE:
 //   . cout
 // ***********************************************************************************************
@@ -27,19 +29,20 @@ namespace RLib
 class UniCoutLog
 {
 public:
-    explicit UniCoutLog(const UniLogName& aUniLogName = ULN_DEFAULT) : uniLogName_(aUniLogName) {}
+    explicit UniCoutLog(const UniLogName& = ULN_DEFAULT) {}
+
     ostream& oneLog();
     ostream& operator()() { return oneLog(); }
     void needLog() {}
-    const UniLogName& uniLogName() const { return uniLogName_; }
+    const UniLogName uniLogName() const { return ULN_DEFAULT; }
 
-    static size_t logLen(const UniLogName&) { return nLogLine_; }
+    static size_t logLen(const UniLogName& = ULN_DEFAULT) { return nLogLine_; }
     static auto nLog() { return 1; }
     static UniCoutLog& defaultUniLog();
+    static void reset();
 
 private:
     // -------------------------------------------------------------------------------------------
-    const UniLogName uniLogName_;
     static size_t nLogLine_;
 public:
     static shared_ptr<UniCoutLog> defaultUniLog_;
