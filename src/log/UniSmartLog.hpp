@@ -37,7 +37,7 @@ public:
 
     SmartLog& oneLog();  // for logging
     SmartLog& operator()() { return oneLog(); }
-    void needLog() { if (smartLog_) smartLog_->needLog(); }  // flag to dump
+    void needLog() { smartLog_->needLog(); }  // flag to dump
     const UniLogName& uniLogName() const { return uniLogName_; }
 
     static UniSmartLog& defaultUniLog();  // usage like legacy
