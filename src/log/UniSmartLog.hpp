@@ -35,14 +35,15 @@ public:
     explicit UniSmartLog(const UniLogName& = ULN_DEFAULT);
     ~UniSmartLog() { if (smartLog_.use_count() == 2) logStore_.erase(uniLogName_); }
 
-    SmartLog& oneLog();
+    SmartLog& oneLog();  // for logging
     SmartLog& operator()() { return oneLog(); }
-    void needLog() { if (smartLog_) smartLog_->needLog(); }
+    void needLog() { if (smartLog_) smartLog_->needLog(); }  // flag to dump
     const UniLogName& uniLogName() const { return uniLogName_; }
 
+    static UniSmartLog& defaultUniLog();  // usage like legacy
+    // for ut
     static size_t logLen(const UniLogName& = ULN_DEFAULT);
     static auto nLog() { return logStore_.size(); }
-    static UniSmartLog& defaultUniLog();
     static void reset();
 
 private:

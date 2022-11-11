@@ -36,9 +36,10 @@ public:
     void needLog() {}
     const UniLogName uniLogName() const { return ULN_DEFAULT; }
 
+    static UniCoutLog& defaultUniLog();
+    // for ut
     static size_t logLen(const UniLogName& = ULN_DEFAULT) { return nLogLine_; }
     static auto nLog() { return 1; }
-    static UniCoutLog& defaultUniLog();
     static void reset();
 
 private:

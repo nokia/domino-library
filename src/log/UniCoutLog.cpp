@@ -4,9 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-#include <cstring>
-#include <ctime>
-
 #include "UniCoutLog.hpp"
 
 namespace RLib
@@ -16,15 +13,6 @@ UniCoutLog& UniCoutLog::defaultUniLog()
 {
     if (not defaultUniLog_) defaultUniLog_ = make_shared<UniCoutLog>();
     return *defaultUniLog_;
-}
-
-// ***********************************************************************************************
-char* timestamp()
-{
-    auto now = time(nullptr);
-    auto str = ctime(&now);
-    str[strlen(str)-1] = 0;
-    return str;
 }
 
 // ***********************************************************************************************

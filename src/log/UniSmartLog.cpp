@@ -16,12 +16,12 @@ UniSmartLog::UniSmartLog(const UniLogName& aUniLogName) : uniLogName_(aUniLogNam
     {
         smartLog_ = make_shared<SmartLog>();
         logStore_[aUniLogName] = smartLog_;
-        DBG("creatd new log");
+        HID("creatd new log");
     }
     else
     {
         smartLog_ = it->second;
-        DBG("reused existing log");
+        HID("reused existing log");
     }
 }
 
