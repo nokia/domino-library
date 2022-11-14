@@ -36,11 +36,11 @@
 //                          UniBaseLog.hpp
 //                         /              \
 //          UniSmartLog.hpp                UniCoutLog.hpp
-//         /           :   :              :   :          \
-//   UniSmartLog.cpp   :    :            :    :     UniCoutLog.cpp
-//                     :     :          :     :
+//         /           :                      :          \
+//   UniSmartLog.cpp   :                      :     UniCoutLog.cpp
+//                     :                      :
 //                     :    UniLogTest.hpp    :
-//                     :     :          :     :
+//                     :    :            :    :
 //                     :    :            :    :
 //         UniSmartLogTest.cpp          UniCoutLogTest.cpp
  //
