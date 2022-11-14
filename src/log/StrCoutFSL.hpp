@@ -13,6 +13,8 @@
 // - derive from BaseSL is to reuse common func
 //
 // CORE: _tmpBuf (func around it)
+
+// MT safe: false
 // ***********************************************************************************************
 #ifndef STREAM2COUT_FORMATTED_SMART_LOG_HPP_
 #define STREAM2COUT_FORMATTED_SMART_LOG_HPP_
@@ -27,15 +29,15 @@ using namespace std;
 namespace RLib
 {
 // ***********************************************************************************************
-class StrCoutFSL           // FSL = Formatted Smart Log
+class StrCoutFSL            // FSL = Formatted Smart Log
     : public BaseSL
-    , public stringstream  // for operator<<()
+    , public ostringstream  // for operator<<()
 {
 public :
     ~StrCoutFSL();
 
     // for gtest/etc that failure maybe after testcase destruction
-    void forceDel() { stringstream().swap(*this); }
+    void forceDel() { ostringstream().swap(*this); }
     void forceSave();
 };
 

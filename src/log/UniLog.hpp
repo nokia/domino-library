@@ -8,26 +8,42 @@
 //   . log is always needed
 //   * no usr code change when switch log among cout, LoggingSystem, SmartLog/cell-log, etc
 //   * simple & natural
+//
 // - Usage:
 //   * class A : public UniLog         // typical/inherit
 //   . class B { UniLog oneLog; ... }  // alt/member, member name must be "oneLog"
 //   . func_c(..., UniLog& oneLog)     // alt/ref, ref name must be "oneLog"
 //   . func_d(..., UniLog  conLog)     // alt/copy, copy name must be "oneLog"
+//
 // - VALUE:
 //   * unified logging interface: DBG/INF/WRN/ERR/HID
 //   . min oneLog() to DBG/etc in all scenarios: inner class & func, default global log
 //   . UniLogName to avoid para/UniLog travel (from creator, to mid ..., to end-usr)
+//
 // - File include:
-//                          ------ UniBaseLog.hpp ------
-//                         /             |              \
-//          UniSmartLog.hpp        UniLogTest.hpp        UniCoutLog.hpp
-//         /         |     \      /              \      /      |       \
-//   UniSmartLog.cpp | UniSmartLogTest.cpp  UniCoutLogTest.cpp | UniCoutLog.cpp
-//                   |                                         |
-//                   |                                         |
-//                   --------------- UniLog.hpp ----------------
-//                                  /    |     \
-//                      "eg Usr_1.cpp"  ...     ...
+//                          UniBaseLog.hpp
+//                         /              \
+//          UniSmartLog.hpp                UniCoutLog.hpp
+//         /               \              /              \
+//   UniSmartLog.cpp        \            /          UniCoutLog.cpp
+//                           \          /
+//                            UniLog.hpp
+//                                :
+//                                :
+//                              users
+//
+// - UT include:
+//                          UniBaseLog.hpp
+//                         /              \
+//          UniSmartLog.hpp                UniCoutLog.hpp
+//         /           :   :              :  :           \
+//   UniSmartLog.cpp   :    :            :   :      UniCoutLog.cpp
+//                     :     :          :    :
+//                     :    UniLogTest.hpp   :
+//                     :     :          :    :
+//                     :    :            :   :
+//         UniSmartLogTest.cpp          UniCoutLogTest.cpp
+ //
 // - REQ:
 //   * uni-interface (DBG/...) for all users (eg DomLib, swm, rfsw)
 //     * easily support DBG/etc macros
@@ -42,7 +58,12 @@
 //     . class based on UniLog: default using UniLog(ULN_DEFAULT)
 //     . func with UniLog para: default using UniLog::defaultUniLog()
 //     . class & func w/o UniLog: using global oneLog()
-// - note:
+//
+// - MT safe: FALSE
+//   * so can only use in main thread
+//   . though cout is MT safe, UniCoutLog is NOT
+//
+// - Q&A:
 //   . why oneLog() as func than var: more flexible, eg can print prefix in oneLog()
 //   . why UniLog& to func:
 //     . unify usr class & func: own its UniLog
@@ -51,6 +72,9 @@
 //   . why name as oneLog:
 //     . vs ssLog: oneLog can represent SmartLog or UniLog
 //     . vs log: too common, possible comflict with user definition
+//   . why not support multi-thread:
+//     . mainthread/logic is the most usage
+//     . not worth to pay(lock-mechanism) for low-possible usage
 // ***********************************************************************************************
 #ifndef UNI_LOG_HPP_
 #define UNI_LOG_HPP_

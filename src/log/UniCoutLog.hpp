@@ -10,6 +10,7 @@
 //     (SmartLog always gtest outputs then case log)
 //     . case destructor can't catch EXPECT_CALL() failure, so SmartLog doesn't work
 //     . other unknown issue(s) that SmartLog can't fix
+//
 // - CORE:
 //   . cout
 // ***********************************************************************************************
