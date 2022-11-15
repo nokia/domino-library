@@ -10,17 +10,17 @@
 //                   [main thread]
 //                         |
 //                         | std::async()    [new thread]
-// ThreadBack::newThread() |--------------------->| ThreadEntryFN()  // time-consuming task eg block to rec msg)
+// ThreadBack::newThread() |--------------------->| MT_ThreadEntryFN()  // time-consuming task eg block to rec msg)
 //                         |                      |
 //          ThreadBackFN() |<.....................| (over)
 //                         |
 //                         |
 // - core: ThreadBackFN
-//   . after ThreadEntryFN() over in "other thread", ThreadBackFN() is run in MAIN THREAD - key diff std::async()
+//   . after MT_ThreadEntryFN() over in "other thread", ThreadBackFN() is run in MAIN THREAD - key diff std::async()
 // - VALUE/why:
 //   * keep all logic in main thread / single thread (simple, eg no lock/deadlock, no complex logic)
 //     . while time-consuming tasks in other threads
-//   . simple impl
+//   . simple & natural
 //   . cross platform (base on MainWaker, diff impl eg UtMainWaker, SwmMainWaker)
 //   . UtMainRouser is example to real world
 // - Req:
@@ -32,7 +32,14 @@
 //     . avoid block main thread
 //     . avoid complicate ThreadBack (focus on 1 think: ThreadBackFN in main thread)
 //   . can work with MsgSelf
-// - Note:
+// - Q&A:
+//   . MT_/mt_ prefix
+//     . MT = multi-thread: mark it to run in diff thread
+//     . most func/variable are in main-thread, so w/o this prefix
+//   . must save future<>
+//     . otherwise the thread looks like serialized with main thread
+
+
 //   . why MainRouser to provide toMainThread()?
 //     . another way is as para of ThreadBack::newThread() - complex to provide for each thread
 //     . real world may implement MainRouser::toMain() then para to MsgSelf()
@@ -41,10 +48,8 @@
 
 #include <functional>
 #include <future>
-#include <queue>
-#include <mutex>
+#include <list>
 
-#include "MsgSelf.hpp"
 #include "UniLog.hpp"
 
 using namespace std;
@@ -52,27 +57,24 @@ using namespace std;
 namespace RLib
 {
 // ***********************************************************************************************
-using ThreadEntryFN = function<bool()>;
-using ThreadBackFN  = function<void(bool)>;
-using FullBackFN    = function<void()>;
+using MT_ThreadEntryFN  = function<bool()>;      // succ ret true, otherwise false
+using ThreadBackFN      = function<void(bool)>;  // entry ret as para
+using StoreThreadBack   = list<pair<future<bool>, ThreadBackFN> >;
 
 // ***********************************************************************************************
 class ThreadBack
 {
 public:
-    // !!!must return future<>, otherwise the thread looks like serialized with main thread
-    static shared_future<void> newThread(const ThreadEntryFN&, const ThreadBackFN&, UNI_LOG);
+    static void newThread(const MT_ThreadEntryFN&, const ThreadBackFN&, UNI_LOG);
+    static void hdlFinishedThreads(UNI_LOG);
 
     static void reset();  // ut clean for next case
-    static bool empty() { return nTotalThread_ == 0; }
+    static size_t nThread() { return allThreads_.size(); }
 
 private:
-     static void runAllBackFn(UniLog&);
-
-   // -------------------------------------------------------------------------------------------
-    static queue<FullBackFN> finishedThreads_;
-    static mutex             finishedLock_;
-    static size_t            nTotalThread_;
+    // -------------------------------------------------------------------------------------------
+    static StoreThreadBack allThreads_;
+    static atomic<size_t>  mt_nFinishedThread_;
 };
 
 }  // namespace
@@ -80,4 +82,5 @@ private:
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2022-10-23  CSZ       1)create
+// 2022-11-15  CSZ       - simpler & MT safe
 // ***********************************************************************************************

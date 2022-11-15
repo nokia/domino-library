@@ -9,103 +9,76 @@
 #include <thread>
 #include <unistd.h>
 
-#include "MainRouser.hpp"
+#include "MsgSelf.hpp"
 #include "ThreadBack.hpp"
 #include "UniLog.hpp"
-#include "UtInitObjAnywhere.hpp"
 
 using namespace testing;
 
 namespace RLib
 {
 // ***********************************************************************************************
-struct UtMainRouser : public MainRouser
-{
-    void toMainThread(const FnInMainThread& aFunc) override
-    {
-        runAllBackFn_ = aFunc;
-        idle.clear();
-    }
-
-    // -------------------------------------------------------------------------------------------
-    atomic_flag idle = ATOMIC_VAR_INIT(true);
-    FnInMainThread runAllBackFn_;
-};
-
-// ***********************************************************************************************
 struct ThreadBackTest : public Test, public UniLog
 {
     ThreadBackTest()
         : UniLog(string("ThreadBack.") + UnitTest::GetInstance()->current_test_info()->name())
-        , utInit_(uniLogName())
     {
-        ObjAnywhere::set<MainRouser>(utMainRouser_, *this);
-
-        EXPECT_TRUE(ThreadBack::empty());  // req: clean env
+        EXPECT_EQ(0, ThreadBack::nThread());  // req: clean env
     }
 
     ~ThreadBackTest()
     {
-        EXPECT_TRUE(ThreadBack::empty());  // req: handle all
+        EXPECT_EQ(0, ThreadBack::nThread());  // req: handle all
         ThreadBack::reset();
         GTEST_LOG_FAIL
     }
-
-    // -------------------------------------------------------------------------------------------
-    UtInitObjAnywhere        utInit_;
-    shared_ptr<UtMainRouser> utMainRouser_ = make_shared<UtMainRouser>();
 };
 
 // ***********************************************************************************************
 //                      [main thread]
 //                            |
 //                            | std::async()    [new thread]
-//    ThreadBack::newThread() |--------------------->| ThreadEntryFN()
+//    ThreadBack::newThread() |--------------------->| MT_ThreadEntryFN()
 //                            |                      |
-//                            |                      | finishedThreads_.push(ThreadBackFN, ret)
+//                            |                      | allThreads_.push(ThreadBackFN, ret)
 //                            |                      |
 //                            |<.....................| UtMainRouser.toMainThread()
 //                            |                       (idle = false)
 //              (idle = true) |
-// ThreadBack::runAllBackFn() |
+// ThreadBack::hdlFinishedThreads() |
 //                            |
 TEST_F(ThreadBackTest, GOLD_backFn_in_mainThread)
 {
     const size_t MAX_THREAD = 100;
     const auto idMainThread = this_thread::get_id();
     HID("main thread=" << idMainThread << ": start creating nThread=" << MAX_THREAD);
-    queue<shared_future<void> > fut;
-    size_t nFinishedThread = 0;
     for (size_t idxThread = 0; idxThread < MAX_THREAD; idxThread++)
     {
-        fut.push(ThreadBack::newThread(
-            // ThreadEntryFN
+        ThreadBack::newThread(
+            // MT_ThreadEntryFN
             [idxThread, idMainThread]() -> bool
             {
                 EXPECT_NE(idMainThread, this_thread::get_id());  // req: new thread
                 return (idxThread % 2 == 0);
             },
             // ThreadBackFN
-            [idxThread, idMainThread, &nFinishedThread, this](bool aRet)
+            [idxThread, idMainThread, this](bool aRet)
             {
                 EXPECT_EQ(idMainThread, this_thread::get_id());  // req: main thread !!!
-                EXPECT_EQ(idxThread % 2 == 0, aRet);             // req: ThreadBackFN(ThreadEntryFN());
-                ++nFinishedThread;
-                HID("main thread=" << idMainThread << ": 1 back() done, idxThread=" << idxThread
-                    << ", ret=" << aRet << ", nFinishedThread=" << nFinishedThread);
-            },
-            *this
-        ));
-        EXPECT_FALSE(ThreadBack::empty());                      // req: has thread(s)
+                EXPECT_EQ(idxThread % 2 == 0, aRet);             // req: ThreadBackFN(MT_ThreadEntryFN());
+                HID("main thread=" << idMainThread << ": 1 back() done, idxThread=" << idxThread << ", ret=" << aRet);
+            }
+        );
+        EXPECT_GT(ThreadBack::nThread(), 0);  // req: has thread(s)
     }
 
-    do
+    while (ThreadBack::nThread() > 0)
     {
-        utMainRouser_->idle.test_and_set()                      // req: new thread end at MainRouser.toMainThread()
-            ? this_thread::yield()                              // real world may block on wait()
-            : utMainRouser_->runAllBackFn_();                   // req: ThreadBackFN & aRet available
-    } while (nFinishedThread < MAX_THREAD);                     // req: loop till all thread done !!!
+        ThreadBack::hdlFinishedThreads();
+        this_thread::yield();
+    }
 }
+#if 0
 
 // ***********************************************************************************************
 TEST_F(ThreadBackTest, canWithMsgSelf)
@@ -119,7 +92,7 @@ TEST_F(ThreadBackTest, canWithMsgSelf)
     for (size_t idxThread = EMsgPri_MIN; idxThread < EMsgPri_MAX; idxThread++)
     {
         fut.push(ThreadBack::newThread(
-            // ThreadEntryFN
+            // MT_ThreadEntryFN
             []() -> bool
             {
                 return false;
@@ -130,7 +103,7 @@ TEST_F(ThreadBackTest, canWithMsgSelf)
                 msgSelf.newMsg([&order, idxThread](){ order.push(idxThread); }, (EMsgPriority)idxThread);
                 ++nFinishedThread;
             },
-            *this
+            bind(&ThreadBackTest::toMainThread, this);
         ));
     }
 
@@ -144,5 +117,6 @@ TEST_F(ThreadBackTest, canWithMsgSelf)
     handleAllMsgFn();
     EXPECT_EQ(queue<size_t>({2,1,0}), order);
 }
+#endif
 
 }  // namespace
