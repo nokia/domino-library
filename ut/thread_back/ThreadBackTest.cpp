@@ -59,7 +59,7 @@ TEST_F(ThreadBackTest, GOLD_backFn_in_mainThread)
             [idxThread, idMainThread]() -> bool
             {
                 EXPECT_NE(idMainThread, this_thread::get_id());  // req: new thread
-                return (idxThread % 2 == 0);
+                return (idxThread % 2 == 0) ? true : throw idxThread;
             },
             // ThreadBackFN
             [idxThread, idMainThread, this](bool aRet)

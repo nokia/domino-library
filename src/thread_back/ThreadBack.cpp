@@ -41,17 +41,15 @@ void ThreadBack::newThread(const MT_ThreadEntryFN& mt_aEntry, const ThreadBackFN
     allThreads_.emplace_back(
         async(launch::async, [mt_aEntry]() -> bool
         {
-            try
+            bool ret = false;
+            try { ret = mt_aEntry(); }
+            catch (...)  // shall not hang future<>.wait_for()
             {
-                const auto ret = mt_aEntry();
-                ++ThreadBack::mt_nFinishedThread_;
-                return ret;
+                cout << "!!!Fail: mt_aEntry throw exception" << endl;  // can't use UniLog that's not MT safe
+                ret = false;
             }
-            catch (...)
-            {
-                //cout << "!!!Fail: mt_aEntry throw exception" << endl;  // can't use UniLog that's not MT safe
-                return false;  // shall not hang future<>.wait_for()
-            }
+            ++ThreadBack::mt_nFinishedThread_;
+            return ret;
         }),
         aBack
     );
