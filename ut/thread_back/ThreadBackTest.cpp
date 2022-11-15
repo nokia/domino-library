@@ -49,17 +49,89 @@ struct ThreadBackTest : public Test, public UniLog
 //                            |
 TEST_F(ThreadBackTest, GOLD_backFn_in_mainThread)
 {
-    const size_t MAX_THREAD = 100;
+    atomic<thread::id> threadID(this_thread::get_id());
+    ThreadBack::newThread(
+        // MT_ThreadEntryFN
+        [&threadID]() -> bool
+        {
+            threadID = this_thread::get_id();
+            return true;
+        },
+        // ThreadBackFN
+        [&threadID](bool)
+        {
+            threadID = this_thread::get_id();
+        }
+    );
+
+    while (this_thread::get_id() == threadID) this_thread::yield();  // req: MT_ThreadEntryFN() in new thread
+
+    while (ThreadBack::hdlFinishedThreads() == 0) this_thread::yield();
+    EXPECT_EQ(threadID, this_thread::get_id());  // req: ThreadBackFN() in main thread
+}
+TEST_F(ThreadBackTest, entryFnRetTrue_toBackFn)
+{
+    ThreadBack::newThread(
+        // MT_ThreadEntryFN
+        []() -> bool
+        {
+            return true;
+        },
+        // ThreadBackFN
+        [](bool aRet)
+        {
+            EXPECT_TRUE(aRet);  // req
+        }
+    );
+    while (ThreadBack::hdlFinishedThreads() == 0) this_thread::yield();
+}
+TEST_F(ThreadBackTest, entryFnRetFalse_toBackFn)
+{
+    ThreadBack::newThread(
+        // MT_ThreadEntryFN
+        []() -> bool
+        {
+            return false;
+        },
+        // ThreadBackFN
+        [](bool aRet)
+        {
+            EXPECT_FALSE(aRet);
+        }
+    );
+    while (ThreadBack::hdlFinishedThreads() == 0) this_thread::yield();
+}
+TEST_F(ThreadBackTest, entryFnException_falseToBackFn)
+{
+    ThreadBack::newThread(
+        // MT_ThreadEntryFN
+        []() -> bool
+        {
+            throw 7;
+        },
+        // ThreadBackFN
+        [](bool aRet)
+        {
+            EXPECT_FALSE(aRet);
+        }
+    );
+    while (ThreadBack::hdlFinishedThreads() == 0) this_thread::yield();
+}
+#if 0
+
+
+    atomic<size_t> idxThread = 100;
     const auto idMainThread = this_thread::get_id();
-    HID("main thread=" << idMainThread << ": start creating nThread=" << MAX_THREAD);
-    for (size_t idxThread = 0; idxThread < MAX_THREAD; idxThread++)
+    HID("main thread=" << idMainThread << ": start creating nThread=" << idxThread);
+
+    while (idxThread > 0)
     {
         ThreadBack::newThread(
             // MT_ThreadEntryFN
             [idxThread, idMainThread]() -> bool
             {
-                EXPECT_NE(idMainThread, this_thread::get_id());  // req: new thread
-                return (idxThread % 2 == 0) ? true : throw idxThread;
+                EXPECT_NE(idMainThread, this_thread::get_id());          // req: new thread
+                return (idxThread++ % 2 == 0) ? true : throw idxThread;  // req: shall support exception
             },
             // ThreadBackFN
             [idxThread, idMainThread, this](bool aRet)
@@ -72,13 +144,12 @@ TEST_F(ThreadBackTest, GOLD_backFn_in_mainThread)
         EXPECT_GT(ThreadBack::nThread(), 0);  // req: has thread(s)
     }
 
-    while (ThreadBack::nThread() > 0)
+    while (idxThread <= MAX_THREAD)
     {
         ThreadBack::hdlFinishedThreads();
         this_thread::yield();
     }
 }
-#if 0
 
 // ***********************************************************************************************
 TEST_F(ThreadBackTest, canWithMsgSelf)

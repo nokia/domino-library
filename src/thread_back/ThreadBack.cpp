@@ -14,12 +14,13 @@
 namespace RLib
 {
 // ***********************************************************************************************
-void ThreadBack::hdlFinishedThreads(UniLog& oneLog)
+size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
 {
+    size_t nHandledThread = 0;
     while (allThreads_.size() > 0)
     {
         size_t nFinishedThread = mt_nFinishedThread_.exchange(0);
-        if (not nFinishedThread) return;
+        if (not nFinishedThread) return 0;
 
         HID("nFinishedThread=" << nFinishedThread);
         for (auto&& it = allThreads_.begin(); it != allThreads_.end();)
@@ -28,11 +29,13 @@ void ThreadBack::hdlFinishedThreads(UniLog& oneLog)
             {
                 it->second(it->first.get());
                 it = allThreads_.erase(it);
+                ++nHandledThread;
                 if (--nFinishedThread == 0) break;
             }
             else ++it;
         }
     }
+    return nHandledThread;
 }
 
 // ***********************************************************************************************

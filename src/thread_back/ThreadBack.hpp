@@ -66,7 +66,7 @@ class ThreadBack
 {
 public:
     static void newThread(const MT_ThreadEntryFN&, const ThreadBackFN&, UNI_LOG);
-    static void hdlFinishedThreads(UNI_LOG);
+    static size_t hdlFinishedThreads(UNI_LOG);
 
     static void reset();  // ut clean for next case
     static size_t nThread() { return allThreads_.size(); }
