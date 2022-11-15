@@ -9,7 +9,6 @@ if(ENABLE_COVERAGE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")              # gcovr need
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs")   # gcovr need
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ftest-coverage")  # gcovr need
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions")     # inc branch coverage
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")  # gcovr need
 endif()
 
