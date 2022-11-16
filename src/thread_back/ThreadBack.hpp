@@ -6,6 +6,7 @@
 // ***********************************************************************************************
 // - ISSUE/what:
 //   . How to coordinate main thread(containing all logic) with other thread(time-consuming task)
+//
 // - Usage/how:
 //                   [main thread]
 //                         |
@@ -15,14 +16,18 @@
 //          ThreadBackFN() |<.....................| (over)
 //                         |
 //                         |
+//
 // - core: ThreadBackFN
-//   . after MT_ThreadEntryFN() over in "other thread", ThreadBackFN() is run in MAIN THREAD - key diff std::async()
+//   . after MT_ThreadEntryFN() over in "other thread", ThreadBackFN() is run in MAIN THREAD - key diff vs async()
+//
 // - VALUE/why:
 //   * keep all logic in main thread / single thread (simple, eg no lock/deadlock, no complex logic)
 //     . while time-consuming tasks in other threads
 //   . simple & natural
-//   . cross platform (base on MainWaker, diff impl eg UtMainWaker, SwmMainWaker)
-//   . UtMainRouser is example to real world
+//     * use std::future to msg from other thread back to main thread
+//     * most info in main thread, eg allThreads_, easy handle ThreadBackFN() by diff ways
+//   . cross platform
+//
 // - Req:
 //   * ThreadBackFN() in main thread
 //   . support diff MainWaker
@@ -32,17 +37,13 @@
 //     . avoid block main thread
 //     . avoid complicate ThreadBack (focus on 1 think: ThreadBackFN in main thread)
 //   . can work with MsgSelf
+//
 // - Q&A:
 //   . MT_/mt_ prefix
 //     . MT = multi-thread: mark it to run in diff thread
 //     . most func/variable are in main-thread, so w/o this prefix
 //   . must save future<>
 //     . otherwise the thread looks like serialized with main thread
-
-
-//   . why MainRouser to provide toMainThread()?
-//     . another way is as para of ThreadBack::newThread() - complex to provide for each thread
-//     . real world may implement MainRouser::toMain() then para to MsgSelf()
 // ***********************************************************************************************
 #pragma once
 

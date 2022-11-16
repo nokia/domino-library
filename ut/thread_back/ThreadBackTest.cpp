@@ -35,17 +35,15 @@ struct ThreadBackTest : public Test, public UniLog
 };
 
 // ***********************************************************************************************
-//                      [main thread]
-//                            |
-//                            | std::async()    [new thread]
-//    ThreadBack::newThread() |--------------------->| MT_ThreadEntryFN()
-//                            |                      |
-//                            |                      | allThreads_.push(ThreadBackFN, ret)
-//                            |                      |
-//                            |<.....................| UtMainRouser.toMainThread()
-//                            |                       (idle = false)
-//              (idle = true) |
-// ThreadBack::hdlFinishedThreads() |
+//                               [main thread]
+//                                     |
+//                                     | std::async()    [new thread]
+//             ThreadBack::newThread() |--------------------->| MT_ThreadEntryFN()
+// [future, ThreadBackFN]->allThreads_ |                      |
+//                                     |                      |
+//                                     |                      |
+//                                     |<.....................| future<>
+//    ThreadBack::hdlFinishedThreads() |
 //                            |
 TEST_F(ThreadBackTest, GOLD_backFn_in_mainThread)
 {
@@ -71,7 +69,7 @@ TEST_F(ThreadBackTest, GOLD_backFn_in_mainThread)
 }
 TEST_F(ThreadBackTest, entryFnRet_toBackFn)
 {
-    const size_t maxThread = 200;  // req: performance
+    const size_t maxThread = 100;  // req: multi / performance
     for (size_t idxThread = 0; idxThread < maxThread; ++idxThread)
     {
         ThreadBack::newThread(
@@ -88,7 +86,8 @@ TEST_F(ThreadBackTest, entryFnRet_toBackFn)
         );
     }
 
-    for (size_t nHandled = 0; nHandled < maxThread; nHandled += ThreadBack::hdlFinishedThreads());  // req: call all ThreadBackFN
+    // req: call all ThreadBackFN
+    for (size_t nHandled = 0; nHandled < maxThread; nHandled += ThreadBack::hdlFinishedThreads());
 }
 TEST_F(ThreadBackTest, entryFnException_falseToBackFn)
 {
@@ -106,39 +105,42 @@ TEST_F(ThreadBackTest, entryFnException_falseToBackFn)
     );
     while (ThreadBack::hdlFinishedThreads() == 0) this_thread::yield();
 }
-#if 0
+TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
+{
+    atomic<bool> canEnd(false);
+    ThreadBack::newThread(
+        // MT_ThreadEntryFN
+        [&canEnd]() -> bool
+        {
+            while (not canEnd) this_thread::yield();  // not end until instruction
+            return true;
+        },
+        // ThreadBackFN
+        [](bool)
+        {
+        }
+    );
 
+    ThreadBack::newThread(
+        // MT_ThreadEntryFN
+        []() -> bool
+        {
+            return true;  // quick end
+        },
+        // ThreadBackFN
+        [](bool)
+        {
+        }
+    );
 
-    atomic<size_t> idxThread = 100;
-    const auto idMainThread = this_thread::get_id();
-    HID("main thread=" << idMainThread << ": start creating nThread=" << idxThread);
+    HID("nThread=" << ThreadBack::nThread());
+    while (ThreadBack::hdlFinishedThreads() == 0) this_thread::yield();  // req: 2nd thread done while 1st running
 
-    while (idxThread > 0)
-    {
-        ThreadBack::newThread(
-            // MT_ThreadEntryFN
-            [idxThread, idMainThread]() -> bool
-            {
-                EXPECT_NE(idMainThread, this_thread::get_id());          // req: new thread
-                return (idxThread++ % 2 == 0) ? true : throw idxThread;  // req: shall support exception
-            },
-            // ThreadBackFN
-            [idxThread, idMainThread, this](bool aRet)
-            {
-                EXPECT_EQ(idMainThread, this_thread::get_id());  // req: main thread !!!
-                EXPECT_EQ(idxThread % 2 == 0, aRet);             // req: ThreadBackFN(MT_ThreadEntryFN());
-                HID("main thread=" << idMainThread << ": 1 back() done, idxThread=" << idxThread << ", ret=" << aRet);
-            }
-        );
-        EXPECT_GT(ThreadBack::nThread(), 0);  // req: has thread(s)
-    }
-
-    while (idxThread <= MAX_THREAD)
-    {
-        ThreadBack::hdlFinishedThreads();
-        this_thread::yield();
-    }
+    HID("nThread=" << ThreadBack::nThread());
+    canEnd = true;  // 1st thread keep running till now
+    while (ThreadBack::hdlFinishedThreads() == 0) this_thread::yield();
 }
+#if 0
 
 // ***********************************************************************************************
 TEST_F(ThreadBackTest, canWithMsgSelf)
