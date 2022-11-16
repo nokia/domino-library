@@ -71,7 +71,7 @@ TEST_F(ThreadBackTest, GOLD_backFn_in_mainThread)
 }
 TEST_F(ThreadBackTest, entryFnRet_toBackFn)
 {
-    const size_t maxThread = 2000;  // req: performance
+    const size_t maxThread = 200;  // req: performance
     for (size_t idxThread = 0; idxThread < maxThread; ++idxThread)
     {
         ThreadBack::newThread(
