@@ -20,7 +20,7 @@ size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
     while (allThreads_.size() > 0)
     {
         size_t nFinishedThread = mt_nFinishedThread_.exchange(0);
-        if (not nFinishedThread) return 0;
+        if (nFinishedThread == 0) return 0;
 
         HID("nFinishedThread=" << nFinishedThread);
         for (auto&& it = allThreads_.begin(); it != allThreads_.end();)
