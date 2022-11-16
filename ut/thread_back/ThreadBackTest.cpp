@@ -34,6 +34,7 @@ struct ThreadBackTest : public Test, public UniLog
     }
 };
 
+#define REQ
 // ***********************************************************************************************
 //                               [main thread]
 //                                     |
@@ -140,45 +141,33 @@ TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
     canEnd = true;  // 1st thread keep running till now
     while (ThreadBack::hdlFinishedThreads() == 0) this_thread::yield();
 }
-#if 0
 
+#define CAN_WITH_MSGSELF
 // ***********************************************************************************************
 TEST_F(ThreadBackTest, canWithMsgSelf)
 {
-    FromMainFN handleAllMsgFn;
-    MsgSelf msgSelf([&handleAllMsgFn](const FromMainFN& aFromMainFN){ handleAllMsgFn = aFromMainFN; }, uniLogName());
-
-    queue<shared_future<void> > fut;
+    FromMainFN handleAllMsg;
+    MsgSelf msgSelf([&handleAllMsg](const FromMainFN& aFromMainFN){ handleAllMsg = aFromMainFN; }, uniLogName());
     queue<size_t> order;
-    size_t nFinishedThread = 0;
     for (size_t idxThread = EMsgPri_MIN; idxThread < EMsgPri_MAX; idxThread++)
     {
-        fut.push(ThreadBack::newThread(
+        ThreadBack::newThread(
             // MT_ThreadEntryFN
             []() -> bool
             {
                 return false;
             },
             // ThreadBackFN
-            [idxThread, &nFinishedThread, this, &order, &msgSelf](bool aRet)
+            [idxThread, &order, &msgSelf](bool)
             {
-                msgSelf.newMsg([&order, idxThread](){ order.push(idxThread); }, (EMsgPriority)idxThread);
-                ++nFinishedThread;
-            },
-            bind(&ThreadBackTest::toMainThread, this);
-        ));
+                msgSelf.newMsg([&order, idxThread](){ order.push(idxThread); }, (EMsgPriority)idxThread);  // req
+            }
+        );
     }
 
-    do
-    {
-        utMainRouser_->idle.test_and_set()
-            ? this_thread::yield()
-            : utMainRouser_->runAllBackFn_();
-    } while (nFinishedThread < EMsgPri_MAX);
-
-    handleAllMsgFn();
-    EXPECT_EQ(queue<size_t>({2,1,0}), order);
+    for (size_t nHandled = 0; nHandled < EMsgPri_MAX; nHandled += ThreadBack::hdlFinishedThreads());  // all BackFN()
+    handleAllMsg();
+    EXPECT_EQ(queue<size_t>({2,1,0}), order);  // req: priority FIFO
 }
-#endif
 
 }  // namespace
