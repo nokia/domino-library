@@ -69,37 +69,26 @@ TEST_F(ThreadBackTest, GOLD_backFn_in_mainThread)
     while (ThreadBack::hdlFinishedThreads() == 0) this_thread::yield();
     EXPECT_EQ(threadID, this_thread::get_id());  // req: ThreadBackFN() in main thread
 }
-TEST_F(ThreadBackTest, entryFnRetTrue_toBackFn)
+TEST_F(ThreadBackTest, entryFnRet_toBackFn)
 {
-    ThreadBack::newThread(
-        // MT_ThreadEntryFN
-        []() -> bool
-        {
-            return true;
-        },
-        // ThreadBackFN
-        [](bool aRet)
-        {
-            EXPECT_TRUE(aRet);  // req
-        }
-    );
-    while (ThreadBack::hdlFinishedThreads() == 0) this_thread::yield();
-}
-TEST_F(ThreadBackTest, entryFnRetFalse_toBackFn)
-{
-    ThreadBack::newThread(
-        // MT_ThreadEntryFN
-        []() -> bool
-        {
-            return false;
-        },
-        // ThreadBackFN
-        [](bool aRet)
-        {
-            EXPECT_FALSE(aRet);
-        }
-    );
-    while (ThreadBack::hdlFinishedThreads() == 0) this_thread::yield();
+    const size_t maxThread = 100;
+    for (size_t idxThread = 0; idxThread < maxThread; ++idxThread)
+    {
+        ThreadBack::newThread(
+            // MT_ThreadEntryFN
+            [idxThread]() -> bool
+            {
+                return idxThread % 5 != 0;
+            },
+            // ThreadBackFN
+            [idxThread](bool aRet)
+            {
+                EXPECT_EQ(idxThread % 5 != 0, aRet);  // req
+            }
+        );
+    }
+
+    for (size_t nHandled = 0; nHandled < maxThread; nHandled += ThreadBack::hdlFinishedThreads());  // req: call all ThreadBackFN
 }
 TEST_F(ThreadBackTest, entryFnException_falseToBackFn)
 {
