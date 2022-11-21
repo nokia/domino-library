@@ -15,23 +15,19 @@
 using namespace std;
 
 // ***********************************************************************************************
-#if 1  // normal
 #define BUF(content) __func__ << "()" << __LINE__ << "# " << content << endl
 #define DBG(content) { oneLog() << "DBG] " << BUF(content); }
 #define INF(content) { oneLog() << "INF] " << BUF(content); }
 #define WRN(content) { oneLog() << "WRN] " << BUF(content); }
 #define ERR(content) { oneLog() << "ERR] " << BUF(content); }
+#if 0  // more debug
 #define HID(content) { oneLog() << "HID] " << BUF(content); }
-#else  // eg code coverage
-#define DBG(content) {}
-#define INF(content) {}
-#define WRN(content) {}
-#define ERR(content) {}
+#else
 #define HID(content) {}
 #endif
 
 // ***********************************************************************************************
-#define UNI_LOG UniLog& oneLog = UniLog::defaultUniLog()
+#define UNI_LOG_PARA UniLog& oneLog = UniLog::defaultUniLog()
 
 #define GTEST_LOG_FAIL { if (Test::HasFailure()) needLog(); }
 

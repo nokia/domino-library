@@ -43,7 +43,7 @@ public:
     static UniSmartLog& defaultUniLog();  // usage like legacy
     // for ut
     static size_t logLen(const UniLogName& = ULN_DEFAULT);
-    static auto nLog() { return logStore_.size(); }
+    static size_t nLog() { return logStore_.size(); }
     static void reset();
 
 private:
@@ -57,9 +57,7 @@ public:
 };
 
 // ***********************************************************************************************
-inline SmartLog& oneLog() { return UniSmartLog::defaultUniLog().oneLog(); }
-
-using UniLog = UniSmartLog;
+static SmartLog& oneLog() { return UniSmartLog::defaultUniLog().oneLog(); }
 
 }  // namespace
 #endif  // UNI_SMART_LOG_HPP_

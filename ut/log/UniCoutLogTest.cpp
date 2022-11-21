@@ -7,4 +7,5 @@
 #include "UniCoutLog.hpp"
 
 #define UNI_LOG_TEST UniCoutLogTest
+#define UNI_LOG      UniCoutLog
 #include "UniLogTest.hpp"

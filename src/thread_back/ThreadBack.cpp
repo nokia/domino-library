@@ -14,26 +14,24 @@ namespace RLib
 // ***********************************************************************************************
 size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
 {
-    size_t nHandledThread = 0;
-    while (allThreads_.size() > 0)
+    size_t nHandled = 0;
+    for (auto nFinished = mt_nFinishedThread_.load(); nFinished > 0; nFinished = mt_nFinishedThread_.load())
     {
-        size_t nFinishedThread = mt_nFinishedThread_.exchange(0);
-        if (nFinishedThread == 0) return nHandledThread;
-
-        HID("nFinishedThread=" << nFinishedThread);
         for (auto&& it = allThreads_.begin(); it != allThreads_.end();)
         {
-            if (it->first.wait_for(0s) == future_status::ready)
+            future_status status;
+            if ((status = it->first.wait_for(0s)) == future_status::ready)
             {
                 it->second(it->first.get());
                 it = allThreads_.erase(it);
-                ++nHandledThread;
-                if (--nFinishedThread == 0) break;
+                ++nHandled;
+                if (--mt_nFinishedThread_ == 0) break;
             }
             else ++it;
+            HID("nFinished=" << nFinished << ", nHandled=" << nHandled << ", status=" << static_cast<int>(status));
         }
     }
-    return nHandledThread;
+    return nHandled;
 }
 
 // ***********************************************************************************************
@@ -47,7 +45,6 @@ void ThreadBack::newThread(const MT_ThreadEntryFN& mt_aEntry, const ThreadBackFN
             catch (...)  // shall not hang future<>.wait_for()
             {
                 cout << "!!!Fail: mt_aEntry throw exception" << endl;  // can't use UniLog that's not MT safe
-                ret = false;
             }
             ++ThreadBack::mt_nFinishedThread_;
             return ret;

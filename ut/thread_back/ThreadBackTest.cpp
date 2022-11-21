@@ -49,24 +49,35 @@ struct ThreadBackTest : public Test, public UniLog
 TEST_F(ThreadBackTest, GOLD_backFn_in_mainThread)
 {
     atomic<thread::id> threadID(this_thread::get_id());
+    DBG("main thread id=" << threadID);
     ThreadBack::newThread(
         // MT_ThreadEntryFN
         [&threadID]() -> bool
         {
             threadID = this_thread::get_id();
+            cout << "MT_ThreadEntryFN thread id=" << threadID << endl;
             return true;
         },
         // ThreadBackFN
-        [&threadID](bool)
+        [&threadID, this](bool)
         {
             threadID = this_thread::get_id();
+            DBG("ThreadBackFN thread id=" << threadID);
         }
     );
 
-    while (this_thread::get_id() == threadID) this_thread::yield();  // req: MT_ThreadEntryFN() in new thread
+    while (this_thread::get_id() == threadID)            // req: MT_ThreadEntryFN() in new thread
+    {
+        DBG("new thread not start yet, wait... threadID=" << threadID);
+        this_thread::yield();
+    }
 
-    while (ThreadBack::hdlFinishedThreads() == 0) this_thread::yield();
-    EXPECT_EQ(threadID, this_thread::get_id());  // req: ThreadBackFN() in main thread
+    while (ThreadBack::hdlFinishedThreads() == 0)
+    {
+        DBG("new thread not end yet, wait... threadID=" << threadID)
+        this_thread::yield();
+    }
+    EXPECT_EQ(threadID, this_thread::get_id());          // req: ThreadBackFN() in main thread
 }
 TEST_F(ThreadBackTest, entryFnRet_toBackFn)
 {
@@ -88,7 +99,10 @@ TEST_F(ThreadBackTest, entryFnRet_toBackFn)
     }
 
     // req: call all ThreadBackFN
-    for (size_t nHandled = 0; nHandled < maxThread; nHandled += ThreadBack::hdlFinishedThreads());
+    for (size_t nHandled = 0; nHandled < maxThread; nHandled += ThreadBack::hdlFinishedThreads())
+    {
+        DBG("nHandled=" << nHandled);
+    }
 }
 TEST_F(ThreadBackTest, entryFnException_falseToBackFn)
 {
@@ -104,7 +118,11 @@ TEST_F(ThreadBackTest, entryFnException_falseToBackFn)
             EXPECT_FALSE(aRet);
         }
     );
-    while (ThreadBack::hdlFinishedThreads() == 0) this_thread::yield();
+    while (ThreadBack::hdlFinishedThreads() == 0)
+    {
+        DBG("new thread not end yet, wait...")
+        this_thread::yield();
+    }
 }
 TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
 {
@@ -126,7 +144,7 @@ TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
         // MT_ThreadEntryFN
         []() -> bool
         {
-            return true;  // quick end
+            return false;  // quick end
         },
         // ThreadBackFN
         [](bool)
@@ -134,12 +152,18 @@ TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
         }
     );
 
-    HID("nThread=" << ThreadBack::nThread());
-    while (ThreadBack::hdlFinishedThreads() == 0) this_thread::yield();  // req: 2nd thread done while 1st running
+    while (ThreadBack::hdlFinishedThreads() == 0)
+    {
+        DBG("both threads not end yet, wait...");
+        this_thread::yield();
+    }
 
-    HID("nThread=" << ThreadBack::nThread());
     canEnd = true;  // 1st thread keep running till now
-    while (ThreadBack::hdlFinishedThreads() == 0) this_thread::yield();
+    while (ThreadBack::hdlFinishedThreads() == 0)
+    {
+        DBG("2nd thread done, wait 1st done...")
+        this_thread::yield();
+    }
 }
 
 #define CAN_WITH_MSGSELF
@@ -165,7 +189,10 @@ TEST_F(ThreadBackTest, canWithMsgSelf)
         );
     }
 
-    for (size_t nHandled = 0; nHandled < EMsgPri_MAX; nHandled += ThreadBack::hdlFinishedThreads());  // all BackFN()
+    for (size_t nHandled = 0; nHandled < EMsgPri_MAX; nHandled += ThreadBack::hdlFinishedThreads())  // all BackFN()
+    {
+        DBG("nHandled=" << nHandled);
+    }
     handleAllMsg();
     EXPECT_EQ(queue<size_t>({2,1,0}), order);  // req: priority FIFO
 }

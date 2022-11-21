@@ -31,13 +31,13 @@ namespace RLib
 // ***********************************************************************************************
 class StrCoutFSL            // FSL = Formatted Smart Log
     : public BaseSL
-    , public ostringstream  // for operator<<()
+    , public stringstream   // for operator<<(); must not ostringstream since dump need read it!!!
 {
 public :
     ~StrCoutFSL();
 
     // for gtest/etc that failure maybe after testcase destruction
-    void forceDel() { ostringstream().swap(*this); }
+    void forceDel() { stringstream().swap(*this); }
     void forceSave();
 };
 

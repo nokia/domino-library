@@ -82,10 +82,12 @@
 // ***********************************************************************************************
 #if 1  // base on smartlog
 #include "UniSmartLog.hpp"
+using UniLog = RLib::UniSmartLog;
 
 // ***********************************************************************************************
 #else  // base on cout (LoggingSystem is similar)
 #include "UniCoutLog.hpp"
+using UniLog = RLib::UniCoutLog;
 #endif
 
 #endif  // UNI_LOG_HPP_

@@ -30,7 +30,7 @@ namespace RLib
 class UniCoutLog
 {
 public:
-    explicit UniCoutLog(const UniLogName& = ULN_DEFAULT) {}
+    explicit UniCoutLog(const UniLogName& aUniLogName = ULN_DEFAULT) { HID(aUniLogName << " c=" << this) }
 
     ostream& oneLog();
     ostream& operator()() { return oneLog(); }
@@ -40,7 +40,7 @@ public:
     static UniCoutLog& defaultUniLog();
     // for ut
     static size_t logLen(const UniLogName& = ULN_DEFAULT) { return nLogLine_; }
-    static auto nLog() { return 1; }
+    static size_t nLog() { return 1; }
     static void reset();
 
 private:
@@ -52,8 +52,6 @@ public:
 
 // ***********************************************************************************************
 static ostream& oneLog() { return UniCoutLog::defaultUniLog().oneLog(); }
-
-using UniLog = UniCoutLog;
 
 }  // namespace
 #endif  // UNI_COUT_LOG_HPP_
