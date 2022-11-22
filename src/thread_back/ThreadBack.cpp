@@ -40,12 +40,7 @@ void ThreadBack::newThread(const MT_ThreadEntryFN& mt_aEntry, const ThreadBackFN
     allThreads_.emplace_back(
         async(launch::async, [mt_aEntry]() -> bool
         {
-            bool ret = false;
-            try { ret = mt_aEntry(); }
-            catch (...)  // shall not hang future<>.wait_for()
-            {
-                cout << "!!!Fail: mt_aEntry throw exception" << endl;  // can't use UniLog that's not MT safe
-            }
+            bool ret = mt_aEntry();  // can NOT throw within mt_aEntry()!!! (can use lambda to catch)
             ++ThreadBack::mt_nFinishedThread_;  // last but still before future_status::ready, careful !!!
             return ret;
         }),

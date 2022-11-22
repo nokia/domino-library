@@ -77,7 +77,7 @@ struct UNI_LOG_TEST : public Test
 // ***********************************************************************************************
 TEST_F(UNI_LOG_TEST, GOLD_usr_of_class_and_func)
 {
-    for (size_t i=0; i < 100; ++i)  // for perf bug
+    for (size_t i=0; i < 100; ++i)             // for perf bug
     {
         ClassUsr classUsr(logName_);
         const auto len_1 = UNI_LOG::logLen(logName_);
