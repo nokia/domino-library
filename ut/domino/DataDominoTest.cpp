@@ -24,7 +24,7 @@ struct DataDominoTest : public Test, public UniLog
         : UniLog(UnitTest::GetInstance()->current_test_info()->name())
         , utInit_(uniLogName())
     {}
-    ~DataDominoTest() { GTEST_LOG_FAIL }
+    ~DataDominoTest() { if (Test::HasFailure()) needLog(); }
 
     UtInitObjAnywhere utInit_;
     set<Domino::Event> uniqueEVs_;

@@ -19,7 +19,6 @@
 #include <map>
 
 #include "Domino.hpp"
-#include "UniLog.hpp"
 
 using namespace std;
 

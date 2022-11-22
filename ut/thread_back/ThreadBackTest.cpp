@@ -55,7 +55,7 @@ TEST_F(ThreadBackTest, GOLD_backFn_in_mainThread)
         [&threadID]() -> bool
         {
             threadID = this_thread::get_id();
-            cout << "MT_ThreadEntryFN thread id=" << threadID << endl;
+            cout << "MT_ThreadEntryFN(): thread id=" << threadID << endl;
             return true;
         },
         // ThreadBackFN

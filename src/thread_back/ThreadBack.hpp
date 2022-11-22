@@ -66,8 +66,8 @@ using StoreThreadBack   = list<pair<future<bool>, ThreadBackFN> >;
 class ThreadBack
 {
 public:
-    static void newThread(const MT_ThreadEntryFN&, const ThreadBackFN&, UNI_LOG_PARA);
-    static size_t hdlFinishedThreads(UNI_LOG_PARA);
+    static void newThread(const MT_ThreadEntryFN&, const ThreadBackFN&, UniLog& = UniLog::defaultUniLog());
+    static size_t hdlFinishedThreads(UniLog& = UniLog::defaultUniLog());
 
     static void reset();  // ut clean for next case
     static size_t nThread() { return allThreads_.size(); }

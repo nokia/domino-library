@@ -65,7 +65,10 @@ struct UtInitObjAnywhere : public UniLog
         ObjAnywhere::set<MaxDom>         (make_shared<MaxDom>         (uniLogName()), *this);
         ObjAnywhere::set<MaxNofreeDom>   (make_shared<MaxNofreeDom>   (uniLogName()), *this);
     }
-    ~UtInitObjAnywhere() { ObjAnywhere::deinit(*this); }
+    ~UtInitObjAnywhere()
+    {
+        ObjAnywhere::deinit(*this);
+    }
 };
 }  // namespace
 #endif  // SWM_UT_INIT_SVC_CLOUD_HPP_

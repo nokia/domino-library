@@ -27,8 +27,6 @@ using namespace std;
 #endif
 
 // ***********************************************************************************************
-#define UNI_LOG_PARA UniLog& oneLog = UniLog::defaultUniLog()
-
 #define GTEST_LOG_FAIL { if (Test::HasFailure()) needLog(); }
 
 // ***********************************************************************************************
