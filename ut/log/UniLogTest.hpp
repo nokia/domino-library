@@ -77,23 +77,26 @@ struct UNI_LOG_TEST : public Test
 // ***********************************************************************************************
 TEST_F(UNI_LOG_TEST, GOLD_usr_of_class_and_func)
 {
-    ClassUsr classUsr(logName_);
-    const auto len_1 = UNI_LOG::logLen(logName_);
-    EXPECT_GT(len_1, 0);                       // req: can log
+    for (size_t i=0; i < 100; ++i)  // for perf bug
+    {
+        ClassUsr classUsr(logName_);
+        const auto len_1 = UNI_LOG::logLen(logName_);
+        EXPECT_GT(len_1, 0);                   // req: can log
 
-    ClassUsr classUsr_2(logName_);
-    const auto len_2 = UNI_LOG::logLen(logName_);
-    EXPECT_GT(len_2, len_1);                   // req: can log more in same log
+        ClassUsr classUsr_2(logName_);
+        const auto len_2 = UNI_LOG::logLen(logName_);
+        EXPECT_GT(len_2, len_1);               // req: can log more in same log
 
-    funcUsr(classUsr);                         // req: classUsr can call func & log into same smartlog
-    const auto len_3 = UNI_LOG::logLen(logName_);
-    EXPECT_GT(len_3, len_2);                   // req: can log more in same log
+        funcUsr(classUsr);                     // req: classUsr can call func & log into same smartlog
+        const auto len_3 = UNI_LOG::logLen(logName_);
+        EXPECT_GT(len_3, len_2);               // req: can log more in same log
 
-    funcUsr(classUsr_2);                       // req: classUsr_2 can call func & log into same smartlog
-    const auto len_4 = UNI_LOG::logLen(logName_);
-    EXPECT_GT(len_4, len_3);                   // req: can log more in same log
+        funcUsr(classUsr_2);                   // req: classUsr_2 can call func & log into same smartlog
+        const auto len_4 = UNI_LOG::logLen(logName_);
+        EXPECT_GT(len_4, len_3);               // req: can log more in same log
 
-    if (Test::HasFailure()) classUsr.needLog();
+        if (Test::HasFailure()) classUsr.needLog();
+    }
 }
 
 // ***********************************************************************************************

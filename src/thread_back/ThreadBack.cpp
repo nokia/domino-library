@@ -46,7 +46,7 @@ void ThreadBack::newThread(const MT_ThreadEntryFN& mt_aEntry, const ThreadBackFN
             {
                 cout << "!!!Fail: mt_aEntry throw exception" << endl;  // can't use UniLog that's not MT safe
             }
-            ++ThreadBack::mt_nFinishedThread_;
+            ++ThreadBack::mt_nFinishedThread_;  // last but still before future_status::ready, careful !!!
             return ret;
         }),
         aBack
