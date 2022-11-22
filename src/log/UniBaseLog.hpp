@@ -20,7 +20,7 @@ using namespace std;
 #define INF(content) { oneLog() << "INF] " << BUF(content); }
 #define WRN(content) { oneLog() << "WRN] " << BUF(content); }
 #define ERR(content) { oneLog() << "ERR] " << BUF(content); }
-#if 0  // more debug
+#if 1  // more debug
 #define HID(content) { oneLog() << "HID] " << BUF(content); }
 #else
 #define HID(content) {}

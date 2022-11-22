@@ -1,3 +1,5 @@
+# req: failed log available in detail
+
 name: UT + valgrind
 
 on:
