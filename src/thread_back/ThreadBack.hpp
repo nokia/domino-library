@@ -38,6 +38,13 @@
 //     . avoid complicate ThreadBack (focus on 1 think: ThreadBackFN in main thread)
 //   . can work with MsgSelf
 //
+// - support exception: NO, since
+//   . dom lib branches inc 77%, unnecessary complex
+//
+// - support multi-thread
+//   . MT_/mt_ prefix: yes
+//   . others: NO (only use in main thread - most dom lib code shall in main thread - simple & easy)
+//
 // - Q&A:
 //   . MT_/mt_ prefix
 //     . MT = multi-thread: mark it to run in diff thread

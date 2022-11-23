@@ -20,8 +20,7 @@ namespace RLib
 // ***********************************************************************************************
 struct ThreadBackTest : public Test, public UniLog
 {
-    ThreadBackTest()
-        : UniLog(string("ThreadBack.") + UnitTest::GetInstance()->current_test_info()->name())
+    ThreadBackTest() : UniLog(UnitTest::GetInstance()->current_test_info()->name())
     {
         EXPECT_EQ(0, ThreadBack::nThread());  // req: clean env
     }

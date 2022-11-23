@@ -6,13 +6,13 @@
 // ***********************************************************************************************
 // (SMART log: ONLY log for error transaction; NO log for succ transaction)
 //
-// CONSTITUTION : base class of smart log,
-// - common & easy part of smart log is here [MUST-HAVE!]
-// - derivers to cover special & difficult part
-// . (tmp log can be fixed-len or dyn-len char[])
-// . (permanent log can be file or socket)
+// - CONSTITUTION : base class of smart log,
+//   * common & easy part of smart log is here [MUST-HAVE!]
+//   * derivers to cover special & difficult part
+//   . (tmp log can be fixed-len or dyn-len char[])
+//   . (permanent log can be file or socket)
 //
-// CORE : needLog_ (soul of smart log)
+// - core : needLog_ (soul of smart log)
 // ***********************************************************************************************
 #ifndef BASE_SMART_LOG_HPP_
 #define BASE_SMART_LOG_HPP_

@@ -49,7 +49,7 @@ using MaxNofreeDom = PriDomino<MultiHdlrDomino<HdlrDomino<WbasicDatDom<DataDomin
 // ***********************************************************************************************
 struct UtInitObjAnywhere : public UniLog, public Test
 {
-    UtInitObjAnywhere(const UniLogName& aUniLogName = ULN_DEFAULT) : UniLog(aUniLogName)
+    UtInitObjAnywhere() : UniLog(UnitTest::GetInstance()->current_test_info()->name())
     {
         ObjAnywhere::init(*this);
 
@@ -70,7 +70,7 @@ struct UtInitObjAnywhere : public UniLog, public Test
     ~UtInitObjAnywhere()
     {
         ObjAnywhere::deinit(*this);
-        if (Test::HasFailure()) needLog();
+        GTEST_LOG_FAIL
     }
 };
 }  // namespace
