@@ -5,31 +5,21 @@
  */
 // ***********************************************************************************************
 #include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include <set>
 
 #include "UtInitObjAnywhere.hpp"
-
-using namespace testing;
 
 namespace RLib
 {
 // ***********************************************************************************************
 template<class aParaDom>
-struct HdlrDominoTest : public Test, public UniLog
+struct HdlrDominoTest : public UtInitObjAnywhere
 {
-    HdlrDominoTest()
-        : UniLog(UnitTest::GetInstance()->current_test_info()->name())
-        , utInit_(uniLogName())
-    {}
-    ~HdlrDominoTest() { GTEST_LOG_FAIL }
-
     MOCK_METHOD(void, hdlr0, ());
     MOCK_METHOD(void, hdlr1, ());
     MOCK_METHOD(void, hdlr2, ());
 
     // -------------------------------------------------------------------------------------------
-    UtInitObjAnywhere utInit_;
     FromMainFN fromMainFN_;
     MsgCB hdlr0_ = [this](){ this->hdlr0(); };
     MsgCB hdlr1_ = [this](){ this->hdlr1(); };

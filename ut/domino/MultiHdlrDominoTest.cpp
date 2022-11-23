@@ -5,39 +5,26 @@
  */
 // ***********************************************************************************************
 #include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include <memory>  // for shared_ptr
 #include <set>
 
 #include "UtInitObjAnywhere.hpp"
 
-using namespace testing;
-
 namespace RLib
 {
 // ***********************************************************************************************
 template<class aParaDom>
-struct MultiHdlrDominoTest : public Test, public UniLog
+struct MultiHdlrDominoTest : public UtInitObjAnywhere
 {
-    MultiHdlrDominoTest()
-        : UniLog(UnitTest::GetInstance()->current_test_info()->name())
-        , utInit_(uniLogName())
-        , hdlr0_([this](){ this->hdlr0(); })
-        , hdlr1_([this](){ this->hdlr1(); })
-        , hdlr2_([this](){ this->hdlr2(); })
-    {}
-    ~MultiHdlrDominoTest() { GTEST_LOG_FAIL }
-
     MOCK_METHOD(void, hdlr0, ());
     MOCK_METHOD(void, hdlr1, ());
     MOCK_METHOD(void, hdlr2, ());
 
     // -------------------------------------------------------------------------------------------
-    UtInitObjAnywhere utInit_;
     FromMainFN fromMainFN_;
-    MsgCB hdlr0_;
-    MsgCB hdlr1_;
-    MsgCB hdlr2_;
+    MsgCB hdlr0_ = [this](){ this->hdlr0(); };
+    MsgCB hdlr1_ = [this](){ this->hdlr1(); };
+    MsgCB hdlr2_ = [this](){ this->hdlr2(); };
 
     set<Domino::Event> uniqueEVs_;
 };

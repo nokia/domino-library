@@ -4,30 +4,20 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-#include <gtest/gtest.h>
 #include <memory>
 #include <set>
 
 #include "UtInitObjAnywhere.hpp"
 
-using namespace testing;
-
 namespace RLib
 {
 // ***********************************************************************************************
 template<class aParaDom>
-struct FreeHdlrDominoTest : public Test, public UniLog
+struct FreeHdlrDominoTest : public UtInitObjAnywhere
 {
-    FreeHdlrDominoTest()
-        : UniLog(UnitTest::GetInstance()->current_test_info()->name())
-        , utInit_(uniLogName())
-    {
-        ObjAnywhere::get<aParaDom>(*this)->setMsgSelf(msgSelf_);
-    }
-    ~FreeHdlrDominoTest() { GTEST_LOG_FAIL }
+    FreeHdlrDominoTest() { ObjAnywhere::get<aParaDom>(*this)->setMsgSelf(msgSelf_); }
 
     // -------------------------------------------------------------------------------------------
-    UtInitObjAnywhere utInit_;
     shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(
         [this](const FromMainFN& aFromMainFN){ fromMainFN_ = aFromMainFN; }, uniLogName());
     FromMainFN fromMainFN_;

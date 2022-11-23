@@ -9,6 +9,7 @@
 #ifndef SWM_UT_INIT_SVC_CLOUD_HPP_
 #define SWM_UT_INIT_SVC_CLOUD_HPP_
 
+#include <gtest/gtest.h>
 #include <memory>  // shared_ptr
 
 #include "UniLog.hpp"
@@ -29,6 +30,7 @@
 #define PARA_DOM    (ObjAnywhere::get<TypeParam>(*this))
 
 using namespace std;
+using namespace testing;
 
 namespace RLib
 {
@@ -45,7 +47,7 @@ using MaxDom = WbasicDatDom<MultiHdlrDomino<DataDomino<FreeHdlrDomino<PriDomino<
 using MaxNofreeDom = PriDomino<MultiHdlrDomino<HdlrDomino<WbasicDatDom<DataDomino<Domino> > > > >;
 
 // ***********************************************************************************************
-struct UtInitObjAnywhere : public UniLog
+struct UtInitObjAnywhere : public UniLog, public Test
 {
     UtInitObjAnywhere(const UniLogName& aUniLogName = ULN_DEFAULT) : UniLog(aUniLogName)
     {
@@ -68,6 +70,7 @@ struct UtInitObjAnywhere : public UniLog
     ~UtInitObjAnywhere()
     {
         ObjAnywhere::deinit(*this);
+        if (Test::HasFailure()) needLog();
     }
 };
 }  // namespace

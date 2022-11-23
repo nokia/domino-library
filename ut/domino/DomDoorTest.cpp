@@ -4,24 +4,19 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-#include <gtest/gtest.h>
 #include <memory>
 
 #include "DomDoor.hpp"
 #include "UtInitObjAnywhere.hpp"
 
-using namespace testing;
-
 namespace RLib
 {
 // ***********************************************************************************************
 template<class aParaDom>
-struct DomDoorTest : public Test, public UniLog
+struct DomDoorTest : public UtInitObjAnywhere
 {
     // -------------------------------------------------------------------------------------------
     DomDoor domDoor_;
-
-    UtInitObjAnywhere utInit_;
     shared_ptr<Domino> anotherDom_ = make_shared<Domino>(uniLogName());
 };
 TYPED_TEST_SUITE_P(DomDoorTest);

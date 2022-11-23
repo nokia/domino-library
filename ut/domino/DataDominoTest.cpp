@@ -4,29 +4,18 @@
  * SPDX-License-Identifier: BSD-3-Clause
 */
 // ***********************************************************************************************
-#include <gtest/gtest.h>
 #include <memory>  // make_shared
 #include <set>
 #include <string>
 
-#include "UniLog.hpp"
 #include "UtInitObjAnywhere.hpp"
-
-using namespace testing;
 
 namespace RLib
 {
 // ***********************************************************************************************
 template<class aParaDom>
-struct DataDominoTest : public Test, public UniLog
+struct DataDominoTest : public UtInitObjAnywhere
 {
-    DataDominoTest()
-        : UniLog(UnitTest::GetInstance()->current_test_info()->name())
-        , utInit_(uniLogName())
-    {}
-    ~DataDominoTest() { if (Test::HasFailure()) needLog(); }
-
-    UtInitObjAnywhere utInit_;
     set<Domino::Event> uniqueEVs_;
 };
 TYPED_TEST_SUITE_P(DataDominoTest);
