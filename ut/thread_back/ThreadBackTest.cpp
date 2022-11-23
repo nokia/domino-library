@@ -104,26 +104,6 @@ TEST_F(ThreadBackTest, entryFnRet_toBackFn)
         DBG("nHandled=" << nHandled);
     }
 }
-/*TEST_F(ThreadBackTest, entryFnException_falseToBackFn)
-{
-    ThreadBack::newThread(
-        // MT_ThreadEntryFN
-        []() -> bool
-        {
-            throw 7;
-        },
-        // ThreadBackFN
-        [](bool aRet)
-        {
-            EXPECT_FALSE(aRet);
-        }
-    );
-    while (ThreadBack::hdlFinishedThreads() == 0)
-    {
-        DBG("new thread not end yet, wait...")
-        this_thread::yield();
-    }
-}*/
 TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
 {
     atomic<bool> canEnd(false);
