@@ -10,6 +10,7 @@
 #ifndef UNI_BASE_HPP_
 #define UNI_BASE_HPP_
 
+#include <ctime>
 #include <string>
 
 using namespace std;
@@ -26,16 +27,23 @@ using namespace std;
 #define HID(content) {}
 #endif
 
-// ***********************************************************************************************
 #define GTEST_LOG_FAIL { if (Test::HasFailure()) needLog(); }
 
-// ***********************************************************************************************
 namespace RLib
 {
+// ***********************************************************************************************
 using UniLogName = string;
 const char ULN_DEFAULT[] = "DEFAULT";
-}  // namespace
 
+// ***********************************************************************************************
+inline char* timestamp()
+{
+    static char buf[] = "HH:MM:SS.mmm";  // TODO: no simple way to impl ms
+    auto now = time(nullptr);
+    strftime(buf, sizeof(buf), "%T", localtime(&now));
+    return buf;
+}
+}  // namespace
 #endif  // UNI_BASE_HPP_
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
