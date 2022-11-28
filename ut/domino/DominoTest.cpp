@@ -229,12 +229,6 @@ TYPED_TEST_P(DominoTest, invalidEvent_retEmpty)
 }
 
 // ***********************************************************************************************
-TYPED_TEST_P(DominoTest, incGcovr_destructDomino)
-{
-    Domino(this->uniLogName());
-}
-
-// ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse
     , noID_for_not_exist_EvName
@@ -248,7 +242,6 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , trueEvent_retEmpty
     , eventWithoutPrev_retEmpty
     , invalidEvent_retEmpty
-    , incGcovr_destructDomino
 );
 using AnyDom = Types<Domino, MinDatDom, MinWbasicDatDom, MinHdlrDom, MinMhdlrDom, MinPriDom, MinFreeDom, MaxNofreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, DominoTest, AnyDom);
