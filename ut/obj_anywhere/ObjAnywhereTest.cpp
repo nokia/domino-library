@@ -85,8 +85,8 @@ TEST_F(ObjAnywhereTest, destructBySetNull)
     ObjAnywhere::init(*this);
     ObjAnywhere::set<TestObj>(make_shared<TestObj>(isDestructed), *this);
     ObjAnywhere::set<TestObj>(shared_ptr<TestObj>(), *this);  // set null
-    EXPECT_FALSE(ObjAnywhere::get<TestObj>(*this));           // req: destruct TestObj
     EXPECT_TRUE(isDestructed);                                // req: destruct correctly
+    EXPECT_FALSE(ObjAnywhere::get<TestObj>(*this));           // req: destruct TestObj
     ObjAnywhere::deinit(*this);
 }
 

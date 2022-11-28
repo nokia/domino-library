@@ -62,6 +62,7 @@ struct UNI_LOG_TEST : public Test
         DBG("hello");                          // req: can log, same API
     }
 
+    // -------------------------------------------------------------------------------------------
     struct ClassUseDefaultLog
     {
         ClassUseDefaultLog() { DBG("hello"); } // req: can log

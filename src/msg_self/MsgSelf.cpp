@@ -18,7 +18,7 @@ MsgSelf::MsgSelf(const ToMainFN& aToMainFN, const UniLogName& aUniLogName)
 MsgSelf::~MsgSelf()
 {
     *isValid_ = false;
-    if (nMsg_) DBG("Succeed, & discard nMsg=" << nMsg_);
+    if (nMsg_) DBG("discard nMsg=" << nMsg_);
 }
 
 // ***********************************************************************************************
