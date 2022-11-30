@@ -14,17 +14,17 @@ void ObjAnywhere::deinit(UniLog& oneLog)
 {
     if (!objStore_) return;
 
-    INF("Succeed. ObjAnywhere giveup nSvc=" << objStore_->size());
+    INF("(ObjAnywhere) Succeed. ObjAnywhere giveup nSvc=" << objStore_->size());
     objStore_.reset();
 }
 
 // ***********************************************************************************************
 void ObjAnywhere::init(UniLog& oneLog)
 {
-    if (objStore_) WRN("!!! Refuse dup init.")
+    if (objStore_) WRN("(ObjAnywhere) !!! Refuse dup init.")
     else
     {
-        INF("Succeed.");
+        INF("(ObjAnywhere) Succeed.");
         objStore_ = make_shared<ObjStore>();
     }
 }

@@ -20,6 +20,7 @@ struct DataDominoTest : public UtInitObjAnywhere
 };
 TYPED_TEST_SUITE_P(DataDominoTest);
 
+#define SET_GET
 // ***********************************************************************************************
 TYPED_TEST_P(DataDominoTest, GOLD_setShared_thenGetIt)
 {
@@ -64,6 +65,7 @@ TYPED_TEST_P(DataDominoTest, get_noData)
     EXPECT_EQ(0u, ((const TypeParam)*PARA_DOM).nShared("not exist event"));  // req: const domino
 }
 
+#define DESTRUCT
 // ***********************************************************************************************
 TYPED_TEST_P(DataDominoTest, GOLD_desruct_data)
 {

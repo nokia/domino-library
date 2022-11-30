@@ -73,7 +73,7 @@ shared_ptr<aObjType> ObjAnywhere::get(UniLog& oneLog)
     auto&& found = (*objStore_).find(typeid(aObjType).hash_code());
     if (found != (*objStore_).end()) return static_pointer_cast<aObjType>(found->second);
 
-    INF("!!! Failed, unavailable obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
+    INF("(ObjAnywhere) !!! Failed, unavailable obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
     return shared_ptr<aObjType>();
 }
 
@@ -83,7 +83,7 @@ void ObjAnywhere::set(shared_ptr<aObjType> aSharedObj, UniLog& oneLog)
 {
     if (not isInit())
     {
-        WRN("!!! Failed, ObjAnywhere is not initialized yet.");
+        WRN("(ObjAnywhere) !!! Failed, ObjAnywhere is not initialized yet.");
         return;
     }
 
@@ -91,15 +91,15 @@ void ObjAnywhere::set(shared_ptr<aObjType> aSharedObj, UniLog& oneLog)
     if (not aSharedObj)
     {
         objStore_->erase(objIndex);  // natural expectation
-        INF("Removed obj=" << typeid(aObjType).name() << " from ObjAnywhere.");
+        INF("(ObjAnywhere) Removed obj=" << typeid(aObjType).name() << " from ObjAnywhere.");
         return;
     }
 
     auto&& found = (*objStore_).find(objIndex);
     if (found == (*objStore_).end())
-        INF("Set obj=" << typeid(aObjType).name() << " into ObjAnywhere.")
+        INF("(ObjAnywhere) Set obj=" << typeid(aObjType).name() << " into ObjAnywhere.")
     else
-        INF("!!!Replace obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
+        INF("(ObjAnywhere) !!!Replace obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
     (*objStore_)[objIndex] = aSharedObj;
 }
 }  // namespace

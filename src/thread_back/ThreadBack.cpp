@@ -28,7 +28,8 @@ size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
                 if (--mt_nFinishedThread_ == 0) break;
             }
             else ++it;
-            HID("nFinished=" << nFinished << ", nHandled=" << nHandled << ", status=" << static_cast<int>(status));
+            HID("(ThreadBack) nFinished=" << nFinished << ", nHandled=" << nHandled
+                << ", status=" << static_cast<int>(status));
         }
     }
     return nHandled;

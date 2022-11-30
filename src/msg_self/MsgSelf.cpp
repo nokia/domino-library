@@ -18,7 +18,7 @@ MsgSelf::MsgSelf(const ToMainFN& aToMainFN, const UniLogName& aUniLogName)
 MsgSelf::~MsgSelf()
 {
     *isValid_ = false;
-    if (nMsg_) DBG("discard nMsg=" << nMsg_);
+    if (nMsg_) DBG("(MsgSelf) discard nMsg=" << nMsg_);
 }
 
 // ***********************************************************************************************
@@ -27,7 +27,7 @@ void MsgSelf::handleAllMsg(const shared_ptr<bool> aValidMsgSelf)
     if (*aValidMsgSelf)            // impossible aValidMsgSelf==nullptr till 022-Mar-11
     {
         // may be called after MsgSelf destructed, not use this at all
-        HID("How many reference to this MsgSelf? " << aValidMsgSelf.use_count());
+        HID("(MsgSelf) How many reference to this MsgSelf? " << aValidMsgSelf.use_count());
 
         if (not hasMsg()) return;
         while (handleOneMsg()) {}  // handleOneMsg() may create new high priority msg(s)
