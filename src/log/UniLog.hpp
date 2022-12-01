@@ -80,7 +80,7 @@
 #define UNI_LOG_HPP_
 
 // ***********************************************************************************************
-#if 1  // base on smartlog
+#if SMART_LOG  // base on smartlog
 #include "UniSmartLog.hpp"
 using UniLog = RLib::UniSmartLog;
 

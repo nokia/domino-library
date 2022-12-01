@@ -11,6 +11,10 @@ if(ENABLE_COVERAGE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ftest-coverage")  # gcovr need
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")  # inc branch coverage
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")  # gcovr need
+
+    add_compile_definitions(SMART_LOG)
+else()
+    add_compile_definitions(WITH_HID_LOG)
 endif()
 
 set(UT ut_exe)
