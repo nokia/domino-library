@@ -50,7 +50,7 @@ EMsgPriority PriDomino<aDominoType>::getPriority(const Domino::Event aEv) const
 template<class aDominoType>
 Domino::Event PriDomino<aDominoType>::setPriority(const Domino::EvName& aEvName, const EMsgPriority aPri)
 {
-    DBG("(PriDomino) EvName=" << aEvName << ", newPri=" << aPri);
+    DBG("(PriDomino) EvName=" << aEvName << ", newPri=" << size_t(aPri));
     auto&& event = this->newEvent(aEvName);
     if (aPri == EMsgPri_NORM) priorities_.erase(event);  // less mem & faster searching
     else priorities_[event] = aPri;

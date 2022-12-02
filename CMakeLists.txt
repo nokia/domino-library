@@ -40,4 +40,4 @@ target_link_libraries(${UT} PRIVATE
 )
 
 set(RUN_UT run-${UT})
-add_custom_target(${RUN_UT} COMMAND ./${UT} --gtest_brief=1 DEPENDS ${UT})  # make run-ut_exe
+add_custom_target(${RUN_UT} COMMAND ./${UT} --gtest_brief=0 DEPENDS ${UT})  # make run-ut_exe
