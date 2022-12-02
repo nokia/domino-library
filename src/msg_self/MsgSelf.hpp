@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-// - why: not callback directly but wait current function return to main() then callback
+// - Issue/why: not callback directly but wait current function return to main() then callback
 //   * avoid logic surprise when immediate callback [MUST-HAVE!]
 //   . avoid deep/loop callbacks, but exe after all executing/in-stack func returned
 //   * priority FIFO msg (eg "abort" is higher priority event)
@@ -21,10 +21,6 @@
 //   . IM          may ensure speed        no but direct-CB instead     Im, ActiveBtsL, StatusMo
 //   . syscom      may ensure speed        ?                            ?
 //   . (conclusion: async for product, direct-CB for UT)
-// - multi-thread safe?
-//   . no since msgQueues_
-//   . FIFO is common need for many classes besides Domino
-//   . SimpleAsyncTask is multi-thread safe
 // ***********************************************************************************************
 #ifndef MSG_SELF_HPP_
 #define MSG_SELF_HPP_
@@ -104,4 +100,5 @@ private:
 // 2022-11-04  CSZ       4)simplify newMsg(WeakMsgCB -> MsgCB)
 //                         . easier to user
 //                         . support both MsgCB & WeakMsgCB(by lambda)
+// 2022-12-02  CSZ       - simple & natural
 // ***********************************************************************************************
