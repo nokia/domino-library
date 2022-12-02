@@ -24,13 +24,13 @@ MsgSelf::~MsgSelf()
 // ***********************************************************************************************
 void MsgSelf::handleAllMsg(const shared_ptr<bool> aValidMsgSelf)
 {
-    if (*aValidMsgSelf)            // impossible aValidMsgSelf==nullptr till 022-Mar-11
+    if (*aValidMsgSelf)          // impossible aValidMsgSelf==nullptr till 022-Mar-11
     {
         // may be called after MsgSelf destructed, not use this at all
         HID("(MsgSelf) How many reference to this MsgSelf? " << aValidMsgSelf.use_count());
 
         if (not hasMsg()) return;
-        while (handleOneMsg()) {}  // handleOneMsg() may create new high priority msg(s)
+        while (handleOneMsg());  // handleOneMsg() may create new high priority msg(s)
     }
 }
 

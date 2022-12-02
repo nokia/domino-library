@@ -70,8 +70,8 @@ shared_ptr<aObjType> ObjAnywhere::get(UniLog& oneLog)
 {
     if (not isInit()) return shared_ptr<aObjType>();
 
-    auto&& found = (*objStore_).find(typeid(aObjType).hash_code());
-    if (found != (*objStore_).end()) return static_pointer_cast<aObjType>(found->second);
+    auto&& found = objStore_->find(typeid(aObjType).hash_code());
+    if (found != objStore_->end()) return static_pointer_cast<aObjType>(found->second);
 
     INF("(ObjAnywhere) !!! Failed, unavailable obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
     return shared_ptr<aObjType>();
@@ -95,8 +95,8 @@ void ObjAnywhere::set(shared_ptr<aObjType> aSharedObj, UniLog& oneLog)
         return;
     }
 
-    auto&& found = (*objStore_).find(objIndex);
-    if (found == (*objStore_).end())
+    auto&& found = objStore_->find(objIndex);
+    if (found == objStore_->end())
         INF("(ObjAnywhere) Set obj=" << typeid(aObjType).name() << " into ObjAnywhere.")
     else
         INF("(ObjAnywhere) !!!Replace obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
@@ -122,4 +122,5 @@ void ObjAnywhere::set(shared_ptr<aObjType> aSharedObj, UniLog& oneLog)
 // 2021-04-30  ZQ        6)ZhangQiang told me shared_ptr<void> can del Obj correctly
 // 2022-01-01  PJ & CSZ  - formal log & naming
 // 2022-08-18  CSZ       - replace CppLog by UniLog
+// 2022-12-02  CSZ       - simple & natural
 // ***********************************************************************************************
