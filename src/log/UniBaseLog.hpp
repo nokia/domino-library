@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-// - CONSTITUTION:
+// - Issue/why:
 //   . all common of eg UniSmartLog, UniCoutLog
 // ***********************************************************************************************
 #ifndef UNI_BASE_HPP_
@@ -38,9 +38,9 @@ const char ULN_DEFAULT[] = "DEFAULT";
 // ***********************************************************************************************
 inline char* timestamp()
 {
-    static char buf[] = "HH:MM:SS.mmm";  // TODO: no simple way to impl ms
+    static char buf[] = "ddd/HH:MM:SS.mmm";  // TODO: no simple way to impl ms
     auto now = time(nullptr);
-    strftime(buf, sizeof(buf), "%T", localtime(&now));
+    strftime(buf, sizeof(buf), "%j/%T", localtime(&now));
     return buf;
 }
 }  // namespace
@@ -48,5 +48,5 @@ inline char* timestamp()
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
-// 2020-08-29  CSZ       1)create
+// 2022-08-29  CSZ       1)create
 // ***********************************************************************************************

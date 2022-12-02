@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-// - CONSTITUTION:
+// - ISSUE/why:
 //   . implement UniLog based on SmartLog
 //   * so can log only failed UT case(s) - no log for all succ case(s)
 //
@@ -17,8 +17,8 @@
 #include <memory>
 #include <unordered_map>
 
-#include "UniBaseLog.hpp"
 #include "StrCoutFSL.hpp"
+#include "UniBaseLog.hpp"
 
 using namespace std;
 
@@ -44,7 +44,7 @@ public:
     // for ut
     static size_t logLen(const UniLogName& = ULN_DEFAULT);
     static size_t nLog() { return logStore_.size(); }
-    static void reset();
+    static void reset();  // for ut case clean at the end
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -64,5 +64,6 @@ static SmartLog& oneLog() { return UniSmartLog::defaultUniLog().oneLog(); }
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
-// 2020-08-25  CSZ       1)mv major from UniLog.hpp
+// 2022-08-25  CSZ       1)mv major from UniLog.hpp
+// 2022-12-02  CSZ       - simple & natural
 // ***********************************************************************************************

@@ -30,7 +30,7 @@ namespace RLib
 class UniCoutLog
 {
 public:
-    explicit UniCoutLog(const UniLogName& aUniLogName = ULN_DEFAULT) { HID(aUniLogName << " c=" << this) }
+    explicit UniCoutLog(const UniLogName& = ULN_DEFAULT) { HID("ignore LogName but default, this=" << this) }
 
     ostream& oneLog();
     ostream& operator()() { return oneLog(); }
@@ -41,7 +41,7 @@ public:
     // for ut
     static size_t logLen(const UniLogName& = ULN_DEFAULT) { return nLogLine_; }
     static size_t nLog() { return 1; }
-    static void reset();
+    static void reset();  // for ut case clean at the end
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -58,5 +58,6 @@ static ostream& oneLog() { return UniCoutLog::defaultUniLog().oneLog(); }
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
-// 2020-08-26  CSZ       1)create
+// 2022-08-26  CSZ       1)create
+// 2022-12-02  CSZ       - simple & natural
 // ***********************************************************************************************
