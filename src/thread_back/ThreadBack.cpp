@@ -15,7 +15,7 @@ namespace RLib
 size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
 {
     size_t nHandled = 0;
-    for (auto nFinished = mt_nFinishedThread_.load(); nFinished > 0; nFinished = mt_nFinishedThread_.load())
+    for (auto nFinished = mt_nFinishedThread_.load(); nFinished > 0; nFinished = mt_nFinishedThread_)
     {
         for (auto&& it = allThreads_.begin(); it != allThreads_.end();)
         {
@@ -47,13 +47,6 @@ void ThreadBack::newThread(const MT_ThreadEntryFN& mt_aEntry, const ThreadBackFN
         }),
         aBack
     );
-}
-
-// ***********************************************************************************************
-void ThreadBack::reset()
-{
-    allThreads_.clear();
-    mt_nFinishedThread_ = 0;
 }
 
 // ***********************************************************************************************

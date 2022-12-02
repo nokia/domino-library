@@ -76,7 +76,7 @@ public:
     static void newThread(const MT_ThreadEntryFN&, const ThreadBackFN&, UniLog& = UniLog::defaultUniLog());
     static size_t hdlFinishedThreads(UniLog& = UniLog::defaultUniLog());
 
-    static void reset();  // ut clean for next case
+    static size_t nFinishedThread() { return mt_nFinishedThread_; }
     static size_t nThread() { return allThreads_.size(); }
 
 private:
