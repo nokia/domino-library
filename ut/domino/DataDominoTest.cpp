@@ -16,7 +16,6 @@ namespace RLib
 template<class aParaDom>
 struct DataDominoTest : public UtInitObjAnywhere
 {
-    set<Domino::Event> uniqueEVs_;
 };
 TYPED_TEST_SUITE_P(DataDominoTest);
 
@@ -25,9 +24,8 @@ TYPED_TEST_SUITE_P(DataDominoTest);
 TYPED_TEST_P(DataDominoTest, GOLD_setShared_thenGetIt)
 {
     PARA_DOM->replaceShared("ev0", make_shared<string>("ev0's data"));
-    EXPECT_NE(0u, PARA_DOM->nShared("ev0"));                                           // req: after creation
-
     auto sharedString = static_pointer_cast<string>(PARA_DOM->getShared("ev0"));
+    ASSERT_NE(nullptr, sharedString);
     EXPECT_EQ("ev0's data", *sharedString);                                            // req: get=set
 
     *sharedString = "ev0's updated data";
@@ -44,8 +42,6 @@ TYPED_TEST_P(DataDominoTest, GOLD_setValue_thenGetIt)
 {
     size_t initValue = 50000;
     setValue<TypeParam, size_t>(*PARA_DOM, XPATH_BW, initValue);
-    EXPECT_NE(0u, PARA_DOM->nShared(XPATH_BW));  // req: after creation
-
     auto valGet = getValue<TypeParam, size_t>(*PARA_DOM, XPATH_BW);
     EXPECT_EQ(initValue, valGet);                // req: getValue = setValue
 
@@ -57,12 +53,11 @@ TYPED_TEST_P(DataDominoTest, GOLD_setValue_thenGetIt)
 }
 TYPED_TEST_P(DataDominoTest, get_noData)
 {
-    getValue<TypeParam, int>(*PARA_DOM, "not exist event");
-    EXPECT_EQ(0u, PARA_DOM->nShared("not exist event"));
+    auto value = getValue<TypeParam, int>(*PARA_DOM, "not exist event");
+    EXPECT_EQ(0, value);  // req: no value return default
 
     PARA_DOM->replaceShared("not exist event", shared_ptr<size_t>());
-    EXPECT_EQ(0u, PARA_DOM->nShared("not exist event"));                     // req: setValue empty data
-    EXPECT_EQ(0u, ((const TypeParam)*PARA_DOM).nShared("not exist event"));  // req: const domino
+    EXPECT_EQ(nullptr, ((const TypeParam)*PARA_DOM).getShared("not exist event"));  // req: const domino (coverage)
 }
 
 #define DESTRUCT
@@ -104,19 +99,12 @@ TYPED_TEST_P(DataDominoTest, GOLD_nonConstInterface_shall_createUnExistEvent_wit
 {
     // DataDomino::
     PARA_DOM->getShared("e1");
-    PARA_DOM->getShared("e1");
-    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e1"));
-    EXPECT_EQ(1u, this->uniqueEVs_.size());
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1"));  // req: no Event
     EXPECT_FALSE(PARA_DOM->state("e1"));
 
     PARA_DOM->replaceShared("e2", nullptr);
-    PARA_DOM->replaceShared("e2", nullptr);
-    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e2"));
-    EXPECT_EQ(2u, this->uniqueEVs_.size());
+    EXPECT_NE(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e2"));  // req: new Event
     EXPECT_FALSE(PARA_DOM->state("e2"));
-
-    this->uniqueEVs_.insert(Domino::D_EVENT_FAILED_RET);
-    EXPECT_EQ(3u, this->uniqueEVs_.size());
 }
 
 // ***********************************************************************************************

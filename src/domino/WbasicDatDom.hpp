@@ -24,8 +24,8 @@ public:
     bool isWrCtrl(const Domino::EvName&) const;
     bool wrCtrlOk(const Domino::EvName&, const bool aNewState = true);
 
-    shared_ptr<void> getShared(const Domino::EvName&) override;
-    shared_ptr<void> wbasic_getShared(const Domino::EvName&);
+    shared_ptr<void> getShared(const Domino::EvName&) const override;
+    shared_ptr<void> wbasic_getShared(const Domino::EvName&) const;
 
     void replaceShared(const Domino::EvName&, shared_ptr<void> aSharedData) override;
     void wbasic_replaceShared(const Domino::EvName&, shared_ptr<void> aSharedData);
@@ -43,10 +43,11 @@ public:
 
 // ***********************************************************************************************
 template<typename aDominoType>
-shared_ptr<void> WbasicDatDom<aDominoType>::getShared(const Domino::EvName& aEvName)
+shared_ptr<void> WbasicDatDom<aDominoType>::getShared(const Domino::EvName& aEvName) const
 {
     if (not isWrCtrl(aEvName)) return aDominoType::getShared(aEvName);
 
+    UniLog oneLog(this->uniLogName());
     WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!");
     return shared_ptr<void>();
 }
@@ -70,10 +71,11 @@ void WbasicDatDom<aDominoType>::replaceShared(const Domino::EvName& aEvName, sha
 
 // ***********************************************************************************************
 template<typename aDominoType>
-shared_ptr<void> WbasicDatDom<aDominoType>::wbasic_getShared(const Domino::EvName& aEvName)
+shared_ptr<void> WbasicDatDom<aDominoType>::wbasic_getShared(const Domino::EvName& aEvName) const
 {
     if (isWrCtrl(aEvName)) return aDominoType::getShared(aEvName);
 
+    UniLog oneLog(this->uniLogName());
     WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!");
     return shared_ptr<void>();
 }
@@ -90,7 +92,7 @@ void WbasicDatDom<aDominoType>::wbasic_replaceShared(const Domino::EvName& aEvNa
 template<typename aDominoType>
 bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName, const bool aNewState)
 {
-    const auto nShared = this->nShared(aEvName);
+    const auto nShared = this->getShared(aEvName).use_count();
     if (nShared != 0)
     {
         WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName
@@ -113,7 +115,7 @@ template<typename aDataDominoType, typename aDataType>
 aDataType wbasic_getValue(aDataDominoType& aDom, const Domino::EvName& aEvName)
 {
     auto&& data = static_pointer_cast<aDataType>(aDom.wbasic_getShared(aEvName));
-    if (data.use_count() > 0) return *data;
+    if (data != nullptr) return *data;
 
     auto&& oneLog = aDom;
     WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " not found, return undefined obj!!!");
@@ -124,8 +126,7 @@ aDataType wbasic_getValue(aDataDominoType& aDom, const Domino::EvName& aEvName)
 template<typename aDataDominoType, typename aDataType>
 void wbasic_setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData)
 {
-    auto&& data = make_shared<aDataType>(aData);
-    aDom.wbasic_replaceShared(aEvName, data);
+    aDom.wbasic_replaceShared(aEvName, make_shared<aDataType>(aData));
 }
 }  // namespace
 // ***********************************************************************************************
@@ -146,4 +147,5 @@ void wbasic_setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const
 // 2022-03-26  CSZ       - ut's PARA_DOM include self class & ALL its base class(es)
 // 2022-03-27  CSZ       - if ut case can test base class, never specify derive
 // 2022-08-18  CSZ       - replace CppLog by UniLog
+// 2022-12-03  CSZ       - simple & natural
 // ***********************************************************************************************

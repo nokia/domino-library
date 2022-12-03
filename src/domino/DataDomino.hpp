@@ -35,9 +35,7 @@ public:
     // - if aEvName/data invalid, return null
     // - not template<aDataType> so can virtual for WrDatDom
     // . & let DataDomino has little idea of read-write ctrl, simpler
-    virtual shared_ptr<void> getShared(const Domino::EvName&);
-
-    size_t nShared(const Domino::EvName&) const;
+    virtual shared_ptr<void> getShared(const Domino::EvName&) const;
 
     // -------------------------------------------------------------------------------------------
     // - replace old data by new=aSharedData if old != new
@@ -47,25 +45,14 @@ public:
 private:
     // -------------------------------------------------------------------------------------------
     unordered_map<Domino::Event, shared_ptr<void> > dataStore_;  // [event]=shared_ptr<"DataType">
-public:
-    using aDominoType::oneLog;
 };
 
 // ***********************************************************************************************
 template<typename aDominoType>
-shared_ptr<void> DataDomino<aDominoType>::getShared(const Domino::EvName& aEvName)
-{
-    const auto ev = this->newEvent(aEvName);
-    auto&& data = dataStore_[ev];
-    return (data.use_count() > 0) ? data : shared_ptr<void>();
-}
-
-// ***********************************************************************************************
-template<typename aDominoType>
-size_t DataDomino<aDominoType>::nShared(const Domino::EvName& aEvName) const
+shared_ptr<void> DataDomino<aDominoType>::getShared(const Domino::EvName& aEvName) const
 {
     auto&& found = dataStore_.find(this->getEventBy(aEvName));
-    return (found == dataStore_.end()) ? 0 : found->second.use_count();
+    return (found == dataStore_.end()) ? shared_ptr<void>() : found->second;
 }
 
 // ***********************************************************************************************
@@ -83,7 +70,7 @@ template<typename aDataDominoType, typename aDataType>
 aDataType getValue(aDataDominoType& aDom, const Domino::EvName& aEvName)
 {
     auto&& data = static_pointer_cast<aDataType>(aDom.getShared(aEvName));
-    if (data.use_count() > 0) return *data;
+    if (data != nullptr) return *data;
 
     auto&& oneLog = aDom;
     WRN("(DataDomino) Failed!!! EvName=" << aEvName << " not found, return undefined obj!!!");
@@ -94,8 +81,7 @@ aDataType getValue(aDataDominoType& aDom, const Domino::EvName& aEvName)
 template<typename aDataDominoType, typename aDataType>
 void setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData)
 {
-    auto&& data = make_shared<aDataType>(aData);
-    aDom.replaceShared(aEvName, data);
+    aDom.replaceShared(aEvName, make_shared<aDataType>(aData));
 }
 }  // namespace
 // ***********************************************************************************************
@@ -110,4 +96,5 @@ void setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataT
 // 2022-03-26  CSZ       - ut's PARA_DOM include self class & ALL its base class(es)
 // 2022-03-27  CSZ       - if ut case can test base class, never specify derive
 // 2022-08-18  CSZ       - replace CppLog by UniLog
+// 2022-12-03  CSZ       - simple & natural
 // ***********************************************************************************************

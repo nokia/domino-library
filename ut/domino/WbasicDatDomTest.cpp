@@ -103,34 +103,31 @@ TYPED_TEST_P(WbasicDatDomTest, canNOT_setWriteCtrl_sinceOutCtrl)
 // ***********************************************************************************************
 TYPED_TEST_P(WbasicDatDomTest, GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse)
 {
-    PARA_DOM->wrCtrlOk("e1");
-    PARA_DOM->wrCtrlOk("e1");
-    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e1"));
+    this->uniqueEVs_.insert(Domino::D_EVENT_FAILED_RET);
     EXPECT_EQ(1u, this->uniqueEVs_.size());
+
+    PARA_DOM->wrCtrlOk("e1");                       // req: new Event
+    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e1"));
+    EXPECT_EQ(2u, this->uniqueEVs_.size());
     EXPECT_FALSE(PARA_DOM->state("e1"));
 
-    PARA_DOM->getShared("e2");
-    PARA_DOM->getShared("e2");
+    PARA_DOM->getShared("e2");                      // req: no Event
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e2"));
     EXPECT_EQ(2u, this->uniqueEVs_.size());
     EXPECT_FALSE(PARA_DOM->state("e2"));
 
-    PARA_DOM->replaceShared("e3", nullptr);
-    PARA_DOM->replaceShared("e3", nullptr);
+    PARA_DOM->replaceShared("e3", nullptr);         // req: new Event
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e3"));
     EXPECT_EQ(3u, this->uniqueEVs_.size());
     EXPECT_FALSE(PARA_DOM->state("e3"));
 
-    this->uniqueEVs_.insert(Domino::D_EVENT_FAILED_RET);
-    EXPECT_EQ(4u, this->uniqueEVs_.size());
-
-    PARA_DOM->wbasic_getShared("e4");               // shall NOT generate new event
+    PARA_DOM->wbasic_getShared("e4");               // req: no Event
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e4"));
-    EXPECT_EQ(4u, this->uniqueEVs_.size());
+    EXPECT_EQ(3u, this->uniqueEVs_.size());
 
-    PARA_DOM->wbasic_replaceShared("e5", nullptr);  // shall NOT generate new event
+    PARA_DOM->wbasic_replaceShared("e5", nullptr);  // req: no Event since not isWrCtrl("e5")
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e5"));
-    EXPECT_EQ(4u, this->uniqueEVs_.size());
+    EXPECT_EQ(3u, this->uniqueEVs_.size());
 }
 
 // ***********************************************************************************************
