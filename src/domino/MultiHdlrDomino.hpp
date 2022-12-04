@@ -34,7 +34,7 @@ public:
 
     // -------------------------------------------------------------------------------------------
     // - add multi-hdlr on 1 event
-    // . cons: can NOT FreeHdlrDomino::flagRepeatedHdlr() for each hdlr
+    // . cons: can NOT FreeHdlrDomino::repeatedHdlr() for each hdlr
     // . pros: 1 state, always sync
     // -------------------------------------------------------------------------------------------
     Domino::Event multiHdlrOnSameEv(const Domino::EvName&, const MsgCB& aHdlr, const HdlrName&);

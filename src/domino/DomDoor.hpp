@@ -11,8 +11,11 @@
 // - Usage:
 //   . get most matchable domino by EvName
 //   . store different dominos in 1 (EvName) tree, each domino covers 1 branch (no overlap)
-// - note:
+// - Q&A:
 //   . DomDoor is not a domino (so need not domino APIs), but a door
+//   . overwrite subroot is allowed:
+//     . simple (also no UT to cover this)
+//     . user shall take care of his behavior
 // ***********************************************************************************************
 #pragma once
 

@@ -47,6 +47,7 @@ TYPED_TEST_P(DomDoorTest, GOLD_most_match)
 REGISTER_TYPED_TEST_SUITE_P(DomDoorTest
     , GOLD_most_match
 );
-using AnyDatDom = Types<Domino, MinDatDom, MinWbasicDatDom, MinHdlrDom, MinMhdlrDom, MinPriDom, MinFreeDom, MaxNofreeDom, MaxDom>;
+using AnyDatDom = Types<Domino, MinDatDom, MinWbasicDatDom, MinHdlrDom, MinMhdlrDom,
+    MinPriDom, MinFreeDom, MaxNofreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, DomDoorTest, AnyDatDom);
 }  // namespace

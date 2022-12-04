@@ -28,7 +28,7 @@ class FreeHdlrDomino : public aDominoType
 public:
     explicit FreeHdlrDomino(const UniLogName& aUniLogName) : aDominoType(aUniLogName) {}
 
-    Domino::Event flagRepeatedHdlr(const Domino::EvName&);
+    Domino::Event repeatedHdlr(const Domino::EvName&);
     bool isRepeatHdlr(const Domino::Event) const;
 
 protected:
@@ -42,7 +42,7 @@ public:
 
 // ***********************************************************************************************
 template<class aDominoType>
-Domino::Event FreeHdlrDomino<aDominoType>::flagRepeatedHdlr(const Domino::EvName& aEvName)
+Domino::Event FreeHdlrDomino<aDominoType>::repeatedHdlr(const Domino::EvName& aEvName)
 {
     auto&& event = this->newEvent(aEvName);
     if (event >= isRepeatHdlr_.size()) isRepeatHdlr_.resize(event + 1);
@@ -95,4 +95,5 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Do
 // 2022-03-26  CSZ       - ut's PARA_DOM include self class & ALL its base class(es)
 // 2022-03-27  CSZ       - if ut case can test base class, never specify derive
 // 2022-08-18  CSZ       - replace CppLog by UniLog
+// 2022-12-04  CSZ       - simple & natural
 // ***********************************************************************************************

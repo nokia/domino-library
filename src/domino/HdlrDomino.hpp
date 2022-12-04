@@ -40,7 +40,7 @@ public:
 
     // -------------------------------------------------------------------------------------------
     // - add a new ev=aAliasEN to store aHdlr (aAliasEN's true prev is aHostEN)
-    // . pros: can FreeHdlrDomino::flagRepeatedHdlr() for each hdlr
+    // . pros: can FreeHdlrDomino::repeatedHdlr() for each hdlr
     // . cons: the state of aHostEN & aAliasEN may not sync
     // -------------------------------------------------------------------------------------------
     Domino::Event multiHdlrByAliasEv(const Domino::EvName& aAliasEN, const MsgCB& aHdlr,

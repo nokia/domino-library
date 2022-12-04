@@ -31,8 +31,7 @@ void Domino::deduceState(const Event aEv)
 Domino::Event Domino::getEventBy(const EvName& aEvName) const
 {
     auto&& it = events_.find(aEvName);
-    if (it == events_.end()) return D_EVENT_FAILED_RET;
-    return it->second;
+    return it == events_.end() ? D_EVENT_FAILED_RET : it->second;
 }
 
 // ***********************************************************************************************

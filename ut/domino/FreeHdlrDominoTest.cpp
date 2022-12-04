@@ -76,8 +76,8 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, GOLD_afterCallback_notRmHdlr)
     auto e1 = PARA_DOM->setHdlr("e1", this->h1_);
     PARA_DOM->multiHdlrOnSameEv("e1", this->h2_, "h2_");
     auto aliasE1 = PARA_DOM->multiHdlrByAliasEv("alias e1", this->h3_, "e1");
-    PARA_DOM->flagRepeatedHdlr("e1");                              // req: not auto rm; d1 & d2 together
-    PARA_DOM->flagRepeatedHdlr("alias e1");                        // req: not auto rm; d3 separately
+    PARA_DOM->repeatedHdlr("e1");                              // req: not auto rm; d1 & d2 together
+    PARA_DOM->repeatedHdlr("alias e1");                        // req: not auto rm; d3 separately
     EXPECT_TRUE(PARA_DOM->isRepeatHdlr(e1));
     EXPECT_TRUE(PARA_DOM->isRepeatHdlr(aliasE1));
 
@@ -158,14 +158,25 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_multiCallbackOnRoad_noCrash_noMulti
     EXPECT_EQ(multiset<int>({1, 2}), this->hdlrIDs_);     // req: no more cb since auto-rm
 }
 
+#define MEM_LEAK
+// ***********************************************************************************************
+TYPED_TEST_P(FreeHdlrDominoTest, BugFix_no_mem_leak)
+{
+    auto e1 = PARA_DOM->setHdlr("e1", this->h1_);
+    PARA_DOM->repeatedHdlr("e1");
+    PARA_DOM->setState({{"e1", true}});
+    ASSERT_TRUE(this->msgSelf_->hasMsg());
+    this->msgSelf_.reset();
+}
+
 #define ID_STATE
 // ***********************************************************************************************
 // event & EvName are ID
 // ***********************************************************************************************
 TYPED_TEST_P(FreeHdlrDominoTest, GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse)
 {
-    PARA_DOM->flagRepeatedHdlr("e1");
-    PARA_DOM->flagRepeatedHdlr("e1");
+    PARA_DOM->repeatedHdlr("e1");
+    PARA_DOM->repeatedHdlr("e1");
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e1"));
     EXPECT_EQ(1u, this->uniqueEVs_.size());
     EXPECT_FALSE(PARA_DOM->state("e1"));
@@ -179,6 +190,7 @@ REGISTER_TYPED_TEST_SUITE_P(FreeHdlrDominoTest
     , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse
     , invalidEv_isRepeatFalse
     , multiCallbackOnRoad_noCrash_noMultiCall
+    , BugFix_no_mem_leak
 );
 using AnyFreeDom = Types<MinFreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, FreeHdlrDominoTest, AnyFreeDom);
