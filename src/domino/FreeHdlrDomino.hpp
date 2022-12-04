@@ -57,6 +57,7 @@ bool FreeHdlrDomino<aDominoType>::isRepeatHdlr(const Domino::Event aEv) const
     return aEv < isRepeatHdlr_.size() ? isRepeatHdlr_.at(aEv) : false;
 }
 
+extern WeakMsgCB weak;
 // ***********************************************************************************************
 template<class aDominoType>
 void FreeHdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event aEv)
@@ -65,6 +66,8 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Do
     else
     {
         auto superHdlr = make_shared<MsgCB>();
+weak=superHdlr;
+DBG(weak.use_count());
         *superHdlr = [weakHdlr = WeakMsgCB(aHdlr), this, aEv, superHdlr]() mutable
         {
             // req: call hdlr
@@ -80,7 +83,9 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Do
             // req: rm superHdlr
             superHdlr.reset();
         };
+DBG(weak.use_count());
         aDominoType::triggerHdlr(superHdlr, aEv);
+DBG(weak.use_count());
     }
 }
 }  // namespace

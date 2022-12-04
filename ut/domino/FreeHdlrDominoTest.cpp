@@ -158,15 +158,18 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_multiCallbackOnRoad_noCrash_noMulti
     EXPECT_EQ(multiset<int>({1, 2}), this->hdlrIDs_);     // req: no more cb since auto-rm
 }
 
+WeakMsgCB weak;
 #define MEM_LEAK
 // ***********************************************************************************************
 TYPED_TEST_P(FreeHdlrDominoTest, BugFix_no_mem_leak)
 {
     auto e1 = PARA_DOM->setHdlr("e1", this->h1_);
-    PARA_DOM->repeatedHdlr("e1");
+DBG(weak.use_count());
     PARA_DOM->setState({{"e1", true}});
     ASSERT_TRUE(this->msgSelf_->hasMsg());
+DBG(weak.use_count());
     this->msgSelf_.reset();
+DBG(weak.use_count());
 }
 
 #define ID_STATE
