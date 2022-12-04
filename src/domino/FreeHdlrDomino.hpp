@@ -57,36 +57,21 @@ bool FreeHdlrDomino<aDominoType>::isRepeatHdlr(const Domino::Event aEv) const
     return aEv < isRepeatHdlr_.size() ? isRepeatHdlr_.at(aEv) : false;
 }
 
-extern WeakMsgCB weak;
 // ***********************************************************************************************
 template<class aDominoType>
 void FreeHdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event aEv)
 {
-    if (isRepeatHdlr(aEv)) aDominoType::triggerHdlr(aHdlr, aEv);
-    else
-    {
-        auto superHdlr = make_shared<MsgCB>();
-weak=superHdlr;
-DBG(weak.use_count());
-        *superHdlr = [weakHdlr = WeakMsgCB(aHdlr), this, aEv, superHdlr]() mutable
+    aDominoType::triggerHdlr(aHdlr, aEv);
+    if (isRepeatHdlr(aEv)) return;
+
+    // auto free aHdlr
+    this->msgSelf_->newMsg([this, aEv, weakHdlr = WeakMsgCB(aHdlr)]()  // weak_ptr to avoid fail rmHdlr
         {
-            // req: call hdlr
-            auto&& hdlr = weakHdlr.lock();
-            if (hdlr)
-            {
-                if (*hdlr) (*hdlr)();
-
-                // req: rm hdlr
-                this->pureRmHdlrOK(aEv, hdlr);  // only *HdlrDomino owns shared hdlr, prove "this" available
-            }
-
-            // req: rm superHdlr
-            superHdlr.reset();
-        };
-DBG(weak.use_count());
-        aDominoType::triggerHdlr(superHdlr, aEv);
-DBG(weak.use_count());
-    }
+            if (weakHdlr.expired()) return;
+            this->pureRmHdlrOK(aEv, weakHdlr.lock());  // is valid "this" since still own aHdlr
+        },
+        this->getPriority(aEv)
+    );
 }
 }  // namespace
 #endif  // FREE_HDLR_DOMINO_HPP_

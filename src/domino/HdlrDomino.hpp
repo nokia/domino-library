@@ -65,9 +65,10 @@ protected:
 
     size_t nHdlrRef(const Domino::Event) const;
 
-private:
     // -------------------------------------------------------------------------------------------
+private:
     unordered_map<Domino::Event, SharedMsgCB> hdlrs_;
+protected:
     shared_ptr<MsgSelf> msgSelf_;
 public:
     using aDominoType::oneLog;
