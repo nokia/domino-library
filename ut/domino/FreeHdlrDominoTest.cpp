@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
+#include <gmock/gmock.h>
 #include <memory>
 #include <set>
 
@@ -28,6 +29,7 @@ struct FreeHdlrDominoTest : public UtInitObjAnywhere
     MsgCB h4_ = [this](){ hdlrIDs_.insert(4); };
     MsgCB h5_ = [this](){ hdlrIDs_.insert(5); };
     MsgCB h6_ = [this](){ hdlrIDs_.insert(6); };
+    MOCK_METHOD(void, h7, ());
 
     multiset<int> hdlrIDs_;
     set<Domino::Event> uniqueEVs_;
@@ -160,12 +162,22 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_multiCallbackOnRoad_noCrash_noMulti
 
 #define MEM_LEAK
 // ***********************************************************************************************
-TYPED_TEST_P(FreeHdlrDominoTest, BugFix_no_mem_leak)  // checked by CI valgrind
+TYPED_TEST_P(FreeHdlrDominoTest, BugFix_noMemLeak_whenRmMsgSelf)  // checked by CI valgrind
 {
-    PARA_DOM->setHdlr("e1", this->h1_);
+    EXPECT_CALL(*this, h7()).Times(0);
+    PARA_DOM->setHdlr("e1", bind(&FreeHdlrDominoTest<TypeParam>::h7, this));
     PARA_DOM->setState({{"e1", true}});
     ASSERT_TRUE(this->msgSelf_->hasMsg());
-    this->msgSelf_.reset();
+    this->msgSelf_.reset();  // req: no mem leak when rm MsgSelf with h7 in msg queue
+}
+TYPED_TEST_P(FreeHdlrDominoTest, BugFix_noCrash_whenRmDom)
+{
+    EXPECT_CALL(*this, h7()).Times(0);
+    PARA_DOM->setHdlr("e1", bind(&FreeHdlrDominoTest<TypeParam>::h7, this));
+    PARA_DOM->setState({{"e1", true}});
+    ASSERT_TRUE(this->msgSelf_->hasMsg());
+    ObjAnywhere::set<TypeParam>(nullptr, *this);  // req: no mem leak when rm MsgSelf with h7 in msg queue
+    this->fromMainFN_();
 }
 
 #define ID_STATE
@@ -189,7 +201,8 @@ REGISTER_TYPED_TEST_SUITE_P(FreeHdlrDominoTest
     , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse
     , invalidEv_isRepeatFalse
     , multiCallbackOnRoad_noCrash_noMultiCall
-    , BugFix_no_mem_leak
+    , BugFix_noMemLeak_whenRmMsgSelf
+    , BugFix_noCrash_whenRmDom
 );
 using AnyFreeDom = Types<MinFreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, FreeHdlrDominoTest, AnyFreeDom);

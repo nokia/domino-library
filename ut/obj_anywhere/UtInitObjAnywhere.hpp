@@ -53,19 +53,19 @@ struct UtInitObjAnywhere : public UniLog, public Test
     {
         ObjAnywhere::init(*this);
 
-        ObjAnywhere::set<MsgSelf>(make_shared<MsgSelf>(
+        ObjAnywhere::set(make_shared<MsgSelf>(
             [](const FromMainFN& aHandleAllMsgFn){ aHandleAllMsgFn(); }, uniLogName()), *this);
 
-        ObjAnywhere::set<Domino>         (make_shared<Domino>         (uniLogName()), *this);
-        ObjAnywhere::set<MinDatDom>      (make_shared<MinDatDom>      (uniLogName()), *this);
-        ObjAnywhere::set<MinWbasicDatDom>(make_shared<MinWbasicDatDom>(uniLogName()), *this);
-        ObjAnywhere::set<MinHdlrDom>     (make_shared<MinHdlrDom>     (uniLogName()), *this);
-        ObjAnywhere::set<MinMhdlrDom>    (make_shared<MinMhdlrDom>    (uniLogName()), *this);
-        ObjAnywhere::set<MinPriDom>      (make_shared<MinPriDom>      (uniLogName()), *this);
-        ObjAnywhere::set<MinFreeDom>     (make_shared<MinFreeDom>     (uniLogName()), *this);
+        ObjAnywhere::set(make_shared<Domino>         (uniLogName()), *this);
+        ObjAnywhere::set(make_shared<MinDatDom>      (uniLogName()), *this);
+        ObjAnywhere::set(make_shared<MinWbasicDatDom>(uniLogName()), *this);
+        ObjAnywhere::set(make_shared<MinHdlrDom>     (uniLogName()), *this);
+        ObjAnywhere::set(make_shared<MinMhdlrDom>    (uniLogName()), *this);
+        ObjAnywhere::set(make_shared<MinPriDom>      (uniLogName()), *this);
+        ObjAnywhere::set(make_shared<MinFreeDom>     (uniLogName()), *this);
 
-        ObjAnywhere::set<MaxDom>         (make_shared<MaxDom>         (uniLogName()), *this);
-        ObjAnywhere::set<MaxNofreeDom>   (make_shared<MaxNofreeDom>   (uniLogName()), *this);
+        ObjAnywhere::set(make_shared<MaxDom>         (uniLogName()), *this);
+        ObjAnywhere::set(make_shared<MaxNofreeDom>   (uniLogName()), *this);
     }
     ~UtInitObjAnywhere()
     {
