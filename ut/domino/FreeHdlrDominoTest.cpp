@@ -78,18 +78,18 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, GOLD_afterCallback_notRmHdlr)
     auto e1 = PARA_DOM->setHdlr("e1", this->h1_);
     PARA_DOM->multiHdlrOnSameEv("e1", this->h2_, "h2_");
     auto aliasE1 = PARA_DOM->multiHdlrByAliasEv("alias e1", this->h3_, "e1");
-    PARA_DOM->repeatedHdlr("e1");                              // req: not auto rm; d1 & d2 together
-    PARA_DOM->repeatedHdlr("alias e1");                        // req: not auto rm; d3 separately
+    PARA_DOM->repeatedHdlr("e1");  // req: not auto rm; d1 & d2 together
+    PARA_DOM->repeatedHdlr("alias e1");  // req: not auto rm; d3 separately
     EXPECT_TRUE(PARA_DOM->isRepeatHdlr(e1));
     EXPECT_TRUE(PARA_DOM->isRepeatHdlr(aliasE1));
 
     PARA_DOM->setState({{"e1", true}});
-    if (this->msgSelf_->hasMsg()) this->fromMainFN_();             // 1st cb
-    EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_);           // req: not auto-rm
+    if (this->msgSelf_->hasMsg()) this->fromMainFN_();  // 1st cb
+    EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_);  // req: not auto-rm
 
-    PARA_DOM->setState({{"e1", false}, {"alias e1", false}});      // SameEv simpler than AliasEv
+    PARA_DOM->setState({{"e1", false}, {"alias e1", false}});  // SameEv simpler than AliasEv
     PARA_DOM->setState({{"e1", true}});
-    if (this->msgSelf_->hasMsg()) this->fromMainFN_();             // 2nd cb
+    if (this->msgSelf_->hasMsg()) this->fromMainFN_();  // 2nd cb
     EXPECT_EQ(multiset<int>({1, 2, 3, 1, 2, 3}), this->hdlrIDs_);  // req: not auto-rm
 
     // re-add hdlr
