@@ -243,6 +243,7 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , eventWithoutPrev_retEmpty
     , invalidEvent_retEmpty
 );
-using AnyDom = Types<Domino, MinDatDom, MinWbasicDatDom, MinHdlrDom, MinMhdlrDom, MinPriDom, MinFreeDom, MaxNofreeDom, MaxDom>;
+using AnyDom = Types<Domino, MinDatDom, MinWbasicDatDom, MinHdlrDom, MinMhdlrDom, MinPriDom,
+    MinFreeDom, MaxNofreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, DominoTest, AnyDom);
 }  // namespace
