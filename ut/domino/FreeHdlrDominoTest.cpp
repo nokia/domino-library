@@ -42,7 +42,35 @@ TYPED_TEST_SUITE_P(FreeMultiHdlrDominoTest);
 
 #define AUTO_FREE
 // ***********************************************************************************************
-TYPED_TEST_P(FreeMultiHdlrDominoTest, GOLD_afterCallback_autoRmHdlr)
+TYPED_TEST_P(FreeHdlrDominoTest, GOLD_afterCallback_autoRmHdlr)
+{
+    auto e1 = PARA_DOM->setHdlr("e1", this->h1_);
+    EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e1));  // req: default false (most hdlr used once)
+
+    PARA_DOM->setState({{"e1", true}});
+    if (this->msgSelf_->hasMsg()) this->fromMainFN_();
+    EXPECT_EQ(multiset<int>({1}), this->hdlrIDs_);  // cb
+
+    PARA_DOM->setState({{"e1", false}});
+    PARA_DOM->setState({{"e1", true}});
+    if (this->msgSelf_->hasMsg()) this->fromMainFN_() ;
+    EXPECT_EQ(multiset<int>({1}), this->hdlrIDs_);  // req: no more cb since auto-rm
+}
+TYPED_TEST_P(FreeHdlrDominoTest, afterCallback_autoRmHdlr_aliasMultiHdlr)
+{
+    auto aliasE1 = PARA_DOM->multiHdlrByAliasEv("alias e1", this->h3_, "e1");
+    EXPECT_FALSE(PARA_DOM->isRepeatHdlr(aliasE1));
+
+    PARA_DOM->setState({{"e1", true}});
+    if (this->msgSelf_->hasMsg()) this->fromMainFN_();
+    EXPECT_EQ(multiset<int>({3}), this->hdlrIDs_);  // cb
+
+    PARA_DOM->setState({{"e1", false}});
+    PARA_DOM->setState({{"e1", true}});
+    if (this->msgSelf_->hasMsg()) this->fromMainFN_() ;
+    EXPECT_EQ(multiset<int>({3}), this->hdlrIDs_);  // req: no more cb since auto-rm
+}
+TYPED_TEST_P(FreeMultiHdlrDominoTest, afterCallback_autoRmHdlr_multiHdlr)
 {
     auto e1 = PARA_DOM->setHdlr("e1", this->h1_);
     PARA_DOM->multiHdlrOnSameEv("e1", this->h2_, "h2_");
@@ -51,20 +79,18 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, GOLD_afterCallback_autoRmHdlr)
     EXPECT_FALSE(PARA_DOM->isRepeatHdlr(aliasE1));
 
     PARA_DOM->setState({{"e1", true}});
-    EXPECT_EQ(0u, this->hdlrIDs_.size());                          // on road
     if (this->msgSelf_->hasMsg()) this->fromMainFN_();
-    EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_);           // cb
+    EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_);  // cb
 
     PARA_DOM->setState({{"e1", false}});
     PARA_DOM->setState({{"e1", true}});
     if (this->msgSelf_->hasMsg()) this->fromMainFN_() ;
-    EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_);           // req: no more cb since auto-rm
+    EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_);  // req: no more cb since auto-rm
 
     // re-add hdlr
     PARA_DOM->multiHdlrByAliasEv("alias e1", this->h6_, "e1");
     PARA_DOM->multiHdlrOnSameEv("e1", this->h5_, "h2_");
-    PARA_DOM->setHdlr("e1", this->h4_);                            // reverse order to inc coverage
-
+    PARA_DOM->setHdlr("e1", this->h4_);  // reverse order to inc coverage
     if (this->msgSelf_->hasMsg()) this->fromMainFN_() ;
     EXPECT_EQ(multiset<int>({1, 2, 3, 4, 5, 6}), this->hdlrIDs_);  // req: re-add ok
 
@@ -73,7 +99,7 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, GOLD_afterCallback_autoRmHdlr)
     if (this->msgSelf_->hasMsg()) this->fromMainFN_() ;
     EXPECT_EQ(multiset<int>({1, 2, 3, 4, 5, 6}), this->hdlrIDs_);  // req: no more cb since auto-rm
 }
-TYPED_TEST_P(FreeMultiHdlrDominoTest, GOLD_afterCallback_notRmHdlr)
+TYPED_TEST_P(FreeMultiHdlrDominoTest, afterCallback_notRmHdlr)
 {
     auto e1 = PARA_DOM->setHdlr("e1", this->h1_);
     PARA_DOM->multiHdlrOnSameEv("e1", this->h2_, "h2_");
@@ -198,19 +224,22 @@ TYPED_TEST_P(FreeHdlrDominoTest, GOLD_nonConstInterface_shall_createUnExistEvent
 
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(FreeHdlrDominoTest
-    , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse
+    , GOLD_afterCallback_autoRmHdlr
+    , afterCallback_autoRmHdlr_aliasMultiHdlr
     , invalidEv_isRepeatFalse
     , multiCallbackOnRoad_noCrash_noMultiCall
     , BugFix_noMemLeak_whenRmMsgSelf
     , BugFix_noCrash_whenRmDom
+
+    , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse
 );
 using AnyFreeDom = Types<MinFreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, FreeHdlrDominoTest, AnyFreeDom);
 
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(FreeMultiHdlrDominoTest
-    , GOLD_afterCallback_autoRmHdlr
-    , GOLD_afterCallback_notRmHdlr
+    , afterCallback_autoRmHdlr_multiHdlr
+    , afterCallback_notRmHdlr
     , BugFix_disorderAutoRm_ok
     , BugFix_invalidHdlr_noCrash
     , BugFix_multiCallbackOnRoad_noCrash_noMultiCall
