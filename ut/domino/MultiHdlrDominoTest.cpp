@@ -258,14 +258,17 @@ REGISTER_TYPED_TEST_SUITE_P(MultiHdlrDominoTest
     , aloneAddHdlr_ok
     , multiAddHdlr_bySameHdlrName_nok
     , immediateCallback_ok
-    , rmHdlr_byHdlrName
-    , rmLegacyHdlr_byNoHdlrName
-    , rmHdlr_invalid
+
     , chain_callbackAllHdlr
     , newChain_immediateCallbackAll
     , newChain_dupSatisfy_callbackOnce
     , chain_sameHdlrOnDiffEvent_callbackEach
     , multiPrev_onlyAllSatisfy_thenCallback
+
+    , rmHdlr_byHdlrName
+    , rmLegacyHdlr_byNoHdlrName
+    , rmHdlr_invalid
+
     , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse
 );
 using AnyMultiHdlrDom = Types<MinMhdlrDom, MaxNofreeDom, MaxDom>;
@@ -274,6 +277,7 @@ INSTANTIATE_TYPED_TEST_SUITE_P(PARA, MultiHdlrDominoTest, AnyMultiHdlrDom);
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(NofreeMultiHdlrDominoTest
     , repeatCallback_ok
+
     , rmHdlrOnRoad
 );
 using AnyNofreeMultiHdlrDom = Types<MinMhdlrDom, MaxNofreeDom>;
