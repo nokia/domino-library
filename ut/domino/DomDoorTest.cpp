@@ -23,9 +23,9 @@ struct DomDoorTest : public UtInitObjAnywhere
 TYPED_TEST_SUITE_P(DomDoorTest);
 
 // ***********************************************************************************************
-// EvName tree:      A (PARA_DOM)
-//                  / \
-//                 B   C (dom2_)
+// EvName tree:      A (PARA_DOM)    a (dom3_)
+//                  / \               \
+//                 B   C (dom2_)       C
 //                    /
 //                   D
 TYPED_TEST_P(DomDoorTest, GOLD_most_match)
