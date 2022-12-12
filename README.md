@@ -17,12 +17,12 @@ Reuse-Library of C++, include classes eg:
 
     How to avoid nested callback?
 
-4. SmartLog ([手册](https://mp.weixin.qq.com/s/KNKBC-uHOylRXxpspZbVnA))
+4. SmartLog ([手册](https://mp.weixin.qq.com/s/KNKBC-uHOylRXxpspZbVnA) | [Manual](https://mp.weixin.qq.com/s/X3XZOGOQGDQtwQDEPNA32A))
 
     How to collect only error related logs? eg, only print for failed ut case(s):
     ![](image/ut_smartlog.jpg)
 
-5. ThreadBack ([手册](https://mp.weixin.qq.com/s/bb1slMqhuoBLZZCd3NmbYA))
+5. ThreadBack ([手册*](https://mp.weixin.qq.com/s/bb1slMqhuoBLZZCd3NmbYA))
 
     How to coordinate main thread(containing all logic) with other threads(time-consuming tasks)
 
