@@ -5,7 +5,7 @@
  */
 // ***********************************************************************************************
 // - ISSUE/what:
-//   . How to coordinate main thread(containing all logic) with other thread(time-consuming task)
+//   . How to coordinate main thread(containing all logic) with other threads(time-consuming tasks)
 //
 // - Usage/how:
 //                   [main thread]
@@ -39,7 +39,7 @@
 //   . can work with MsgSelf
 //
 // - support exception: NO, since
-//   . dom lib branches inc 77%, unnecessary complex
+//   . dom lib branches inc 77% (Dec,2022), unnecessary complex
 //
 // - support multi-thread
 //   . MT_/mt_ prefix: yes
