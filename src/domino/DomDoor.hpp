@@ -50,8 +50,10 @@ shared_ptr<aDominoType> DomDoor::subTree(const Domino::EvName& aEvName) const
     for (auto&& it : domStore_)
     {
         const auto subRootLen = it.first.length();
-        if (subRootLen <= maxNameMatched) continue;
-        if (aEvName.substr(0, subRootLen) != it.first) continue;
+        if (subRootLen <= maxNameMatched)
+            continue;
+        if (aEvName.substr(0, subRootLen) != it.first)
+            continue;
         maxNameMatched = subRootLen;
         domMatched = it.second;
     }
