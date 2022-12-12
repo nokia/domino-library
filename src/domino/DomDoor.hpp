@@ -22,6 +22,7 @@
 #include <map>
 
 #include "Domino.hpp"
+#include "UniLog.hpp"
 
 using namespace std;
 
@@ -34,7 +35,7 @@ public:
     void subTree(const Domino::EvName& aSubRoot, shared_ptr<void> aDom) { domStore_[aSubRoot] = aDom; }
 
     template<typename aDominoType>
-    shared_ptr<aDominoType> subTree(const Domino::EvName&) const;
+    shared_ptr<aDominoType> subTree(const Domino::EvName&, UniLog& = UniLog::defaultUniLog()) const;
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -43,12 +44,13 @@ private:
 
 // ***********************************************************************************************
 template<typename aDominoType>
-shared_ptr<aDominoType> DomDoor::subTree(const Domino::EvName& aEvName) const
+shared_ptr<aDominoType> DomDoor::subTree(const Domino::EvName& aEvName, UniLog& oneLog) const
 {
     auto maxNameMatched = 0;
     shared_ptr<void> domMatched;
     for (auto&& it : domStore_)
     {
+        HID("available dom=" << it.first);
         const auto subRootLen = it.first.length();
         if (subRootLen <= maxNameMatched)
             continue;
