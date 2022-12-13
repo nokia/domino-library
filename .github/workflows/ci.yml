@@ -33,7 +33,7 @@ jobs:
       run: pip install gcovr
 
     - name: ut coverage (ret=2 is fail-under-line, =4 is fail-under-branch)
-      run: gcovr -k --config=ut/gcovr/gcovr.cfg --exclude-lines-by-pattern '^(\s)*\b(DBG|INF|WRN|ERR|HID)\b\(.*$' -s && ls -l ut/gcovr/
+      run: gcovr -k --config=ut/gcovr/gcovr.cfg --exclude-lines-by-pattern '^(\s)*\b(DBG|INF|WRN|ERR|HID)\b\(.*$' -s && ls -lR .
 
     - uses: actions/upload-artifact@v3
       if: always()
