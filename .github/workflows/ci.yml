@@ -39,7 +39,9 @@ jobs:
       if: always()
       with:
         name: coverage-report
-        path: ./ut/gcovr/cov.*
+        path: |
+          ./ut/gcovr/cov.*
+          ./*gcov
 
     - uses: codecov/codecov-action@v3
       if: always()
