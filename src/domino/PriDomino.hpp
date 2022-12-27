@@ -43,7 +43,9 @@ template<class aDominoType>
 EMsgPriority PriDomino<aDominoType>::getPriority(const Domino::Event aEv) const
 {
     auto&& it = priorities_.find(aEv);
-    return it == priorities_.end() ? EMsgPri_NORM : it->second;
+    return it == priorities_.end()
+        ? EMsgPri_NORM
+        : it->second;
 }
 
 // ***********************************************************************************************
