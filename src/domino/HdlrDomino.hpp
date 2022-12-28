@@ -56,7 +56,7 @@ protected:
             [weakMsgCB = WeakMsgCB(aHdlr)]() mutable  // WeakMsgCB is to support rm hdlr
             {
                 auto cb = weakMsgCB.lock();
-                if (cb && *cb) (*cb)();
+                if (cb) (*cb)();  // doesn't make sense that domino stores *cb==null
             },
             getPriority(aEv)
         );
