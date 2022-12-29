@@ -87,6 +87,23 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, repeatCallback_ok)
     EXPECT_CALL(*this, hdlr1());
     PARA_DOM->setState({{"event", true}});  // req: repeat call
 }
+TYPED_TEST_P(MultiHdlrDominoTest, BugFix_invalidHdlr_noCrash)
+{
+    PARA_DOM->setHdlr("e1", nullptr);
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1"));  // req: not create new Ev
+
+    PARA_DOM->multiHdlrOnSameEv("e1", nullptr, "e1 multi");
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1"));  // req: not create new Ev
+
+    PARA_DOM->setState({{"e1", true}});  // req: no crash
+
+    PARA_DOM->setState({{"e1", false}});
+    PARA_DOM->setHdlr("e1", this->hdlr0_);
+    PARA_DOM->multiHdlrOnSameEv("e1", this->hdlr1_, "e1 multi");
+    EXPECT_CALL(*this, hdlr0());  // req: can add hdlr
+    EXPECT_CALL(*this, hdlr1());  // req: can add hdlr
+    PARA_DOM->setState({{"e1", true}});
+}
 
 #define CHAIN
 // ***********************************************************************************************
@@ -258,6 +275,7 @@ REGISTER_TYPED_TEST_SUITE_P(MultiHdlrDominoTest
     , aloneAddHdlr_ok
     , multiAddHdlr_bySameHdlrName_nok
     , immediateCallback_ok
+    , BugFix_invalidHdlr_noCrash
 
     , chain_callbackAllHdlr
     , newChain_immediateCallbackAll

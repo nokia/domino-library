@@ -76,8 +76,13 @@ template<class aDominoType>
 Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvName& aEvName,
     const MsgCB& aHdlr, const HdlrName& aHdlrName)
 {
-    auto&& hdlr = make_shared<MsgCB>(aHdlr);
+    if (aHdlr == nullptr)
+    {
+        WRN("(MultiHdlrDomino) Failed!!! not accept aHdlr=nullptr.");
+        return Domino::D_EVENT_FAILED_RET;
+    }
 
+    auto&& hdlr = make_shared<MsgCB>(aHdlr);
     auto&& event = this->newEvent(aEvName);
     auto&& itEv = multiHdlrs_.find(event);
     if (itEv == multiHdlrs_.end())

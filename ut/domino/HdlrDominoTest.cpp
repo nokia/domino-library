@@ -80,6 +80,24 @@ TYPED_TEST_P(NofreeHdlrDominoTest, trigger_reTrigger_callback_reCallback)
     EXPECT_CALL(*this, hdlr0()).Times(2);
     this->fromMainFN_();                       // manual trigger on road cb
 }
+TYPED_TEST_P(HdlrDominoTest, BugFix_invalidHdlr_noCrash)
+{
+    PARA_DOM->setHdlr("e1", nullptr);
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1"));  // req: not create new Ev
+
+    PARA_DOM->multiHdlrByAliasEv("alias e1", nullptr, "e1");
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("alias e1"));  // req: not create new Ev
+
+    PARA_DOM->setState({{"e1", true}});  // req: no crash
+
+    PARA_DOM->setState({{"e1", false}});
+    PARA_DOM->setState({{"alias e1", false}});
+    PARA_DOM->setHdlr("e1", this->hdlr0_);
+    PARA_DOM->multiHdlrByAliasEv("alias e1", this->hdlr1_, "e1");
+    EXPECT_CALL(*this, hdlr0());  // req: can add hdlr
+    EXPECT_CALL(*this, hdlr1());  // req: can add hdlr
+    PARA_DOM->setState({{"e1", true}});
+}
 
 #define CHAIN
 // ***********************************************************************************************
@@ -334,6 +352,7 @@ TYPED_TEST_P(HdlrDominoTest, GOLD_nonConstInterface_shall_createUnExistEvent_wit
 REGISTER_TYPED_TEST_SUITE_P(HdlrDominoTest
     , GOLD_addHdlr_ok
     , immediateCallback_ok
+    , BugFix_invalidHdlr_noCrash
 
     , GOLD_hdlrInChain_callbackOk
     , hdlrInChain_immediateCallback

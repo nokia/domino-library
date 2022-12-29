@@ -139,24 +139,6 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_disorderAutoRm_ok)
     if (this->msgSelf_->hasMsg()) this->fromMainFN_();
     EXPECT_EQ(multiset<int>({1, 2, 3, 4}), this->hdlrIDs_);
 }
-TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_invalidHdlr_noCrash)
-{
-    PARA_DOM->setHdlr("e1", nullptr);
-    PARA_DOM->multiHdlrOnSameEv("e1", nullptr, "h2_");
-    PARA_DOM->multiHdlrByAliasEv("alias e1", nullptr, "e1");
-    PARA_DOM->setState({{"e1", true}});
-    if (this->msgSelf_->hasMsg()) this->fromMainFN_();
-
-    // re-add hdlr
-    PARA_DOM->setHdlr("e1", this->h4_);
-    PARA_DOM->multiHdlrOnSameEv("e1", this->h5_, "h2_");
-    PARA_DOM->multiHdlrByAliasEv("alias e1", this->h6_, "e1");
-
-    PARA_DOM->setState({{"e1", false}, {"alias e1", false}});
-    PARA_DOM->setState({{"e1", true}});
-    if (this->msgSelf_->hasMsg()) this->fromMainFN_() ;
-    EXPECT_EQ(multiset<int>({4, 5, 6}), this->hdlrIDs_);  // req: re-add ok
-}
 TYPED_TEST_P(FreeHdlrDominoTest, invalidEv_isRepeatFalse)
 {
     EXPECT_FALSE(PARA_DOM->isRepeatHdlr(Domino::D_EVENT_FAILED_RET));  // ev=0 is invalid ID
@@ -241,7 +223,6 @@ REGISTER_TYPED_TEST_SUITE_P(FreeMultiHdlrDominoTest
     , afterCallback_autoRmHdlr_multiHdlr
     , afterCallback_notRmHdlr
     , BugFix_disorderAutoRm_ok
-    , BugFix_invalidHdlr_noCrash
     , BugFix_multiCallbackOnRoad_noCrash_noMultiCall
 );
 using AnyFreeMultiDom = Types<MaxDom>;
