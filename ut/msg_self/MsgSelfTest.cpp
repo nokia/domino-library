@@ -76,9 +76,10 @@ TEST_F(MsgSelfTest, dupSendMsg)
 TEST_F(MsgSelfTest, sendInvalidMsg_noCrash)
 {
     EXPECT_CALL(*this, toMain(_)).WillOnce(SaveArg<0>(&fromMainFN_));
+    msgSelf_->newMsg(d1MsgHdlr_);                 // valid cb
     msgSelf_->newMsg(MsgCB());                    // invalid cb
     fromMainFN_();
-    EXPECT_EQ(queue<int>(), hdlrIDs_);
+    EXPECT_EQ(queue<int>({1}), hdlrIDs_);
 }
 TEST_F(MsgSelfTest, GOLD_loopback_handleAll_butOneByOneLowPri)
 {

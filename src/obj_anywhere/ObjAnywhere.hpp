@@ -88,7 +88,7 @@ void ObjAnywhere::set(shared_ptr<aObjType> aSharedObj, UniLog& oneLog)
     }
 
     auto&& objIndex = typeid(aObjType).hash_code();
-    if (not aSharedObj)
+    if (aSharedObj == nullptr)
     {
         objStore_->erase(objIndex);  // natural expectation
         INF("(ObjAnywhere) Removed obj=" << typeid(aObjType).name() << " from ObjAnywhere.");

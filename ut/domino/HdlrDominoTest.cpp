@@ -318,6 +318,21 @@ TYPED_TEST_P(NofreeHdlrDominoTest, rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigg
     EXPECT_CALL(*this, hdlr0());                  // req: new cb
     this->fromMainFN_();
 }
+TYPED_TEST_P(NofreeHdlrDominoTest, hdlrOnRoad_thenRmDom_noCrash_noLeak)
+{
+    // not auto-cb but manually
+    auto msgSelf = make_shared<MsgSelf>(
+        [this](const FromMainFN& aFromMainFN){ this->fromMainFN_ = aFromMainFN; }, this->uniLogName());
+    PARA_DOM->setMsgSelf(msgSelf);
+
+    PARA_DOM->setHdlr("event", this->hdlr0_);
+    PARA_DOM->setState({{"event", true}});
+    EXPECT_EQ(1U, msgSelf->nMsg(EMsgPri_NORM));   // 1 cb on road
+
+    ObjAnywhere::set<TypeParam>(nullptr, *this);  // rm dom
+    EXPECT_CALL(*this, hdlr0()).Times(0);         // req: no cb
+    this->fromMainFN_();
+}
 
 #define ID_STATE
 // ***********************************************************************************************
@@ -383,6 +398,7 @@ REGISTER_TYPED_TEST_SUITE_P(NofreeHdlrDominoTest
     , multiHdlr_chainTrigger
 
     , rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigger
+    , hdlrOnRoad_thenRmDom_noCrash_noLeak
 );
 using AnyNofreeHdlrDom = Types<MinHdlrDom, MinMhdlrDom, MinPriDom, MaxNofreeDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, NofreeHdlrDominoTest, AnyNofreeHdlrDom);

@@ -43,7 +43,7 @@ bool MsgSelf::handleOneMsg()
         if (oneQueue.empty()) continue;
 
         auto&& cb = oneQueue.front();
-        if (cb) cb();
+        cb();  // not support cb=nullptr
         oneQueue.pop();
         --nMsg_;
 
@@ -57,6 +57,12 @@ bool MsgSelf::handleOneMsg()
 // ***********************************************************************************************
 void MsgSelf::newMsg(const MsgCB& aMsgCB, const EMsgPriority aPriority)
 {
+    if (aMsgCB == nullptr)
+    {
+        WRN("(MsgSelf) failed!!! aMsgCB=nullptr doesn't make sense.");
+        return;
+    }
+
     msgQueues_[aPriority].push(aMsgCB);
     ++nMsg_;
     if (nMsg_ > 1) return;

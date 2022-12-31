@@ -101,4 +101,5 @@ private:
 //                         . easier to user
 //                         . support both MsgCB & WeakMsgCB(by lambda)
 // 2022-12-02  CSZ       - simple & natural
+// 2022-12-31  CSZ       - not support MsgCB=nullptr
 // ***********************************************************************************************
