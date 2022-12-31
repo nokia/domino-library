@@ -21,12 +21,13 @@ TYPED_TEST_SUITE_P(DataDominoTest);
 
 #define SET_GET
 // ***********************************************************************************************
-TYPED_TEST_P(DataDominoTest, GOLD_setShared_thenGetIt)
+TYPED_TEST_P(DataDominoTest, GOLD_setShared_thenGetIt_thenRmIt)
 {
     PARA_DOM->replaceShared("ev0", make_shared<string>("ev0's data"));
+    EXPECT_EQ(1u, PARA_DOM->nData());  // req: create data
     auto sharedString = static_pointer_cast<string>(PARA_DOM->getShared("ev0"));
     ASSERT_NE(nullptr, sharedString);
-    EXPECT_EQ("ev0's data", *sharedString);                                            // req: get=set
+    EXPECT_EQ("ev0's data", *sharedString);  // req: get=set
 
     *sharedString = "ev0's updated data";
     EXPECT_EQ("ev0's updated data", (getValue<TypeParam, string>(*PARA_DOM, "ev0")));  // req: get=update
@@ -34,6 +35,10 @@ TYPED_TEST_P(DataDominoTest, GOLD_setShared_thenGetIt)
     PARA_DOM->replaceShared("ev0", make_shared<string>("replace ev0's data"));
     EXPECT_EQ("replace ev0's data", (getValue<TypeParam, string>(*PARA_DOM, "ev0")));  // req: get replaced
     EXPECT_NE(sharedString, static_pointer_cast<string>(PARA_DOM->getShared("ev0")));  // req: replace != old
+
+    PARA_DOM->replaceShared("ev0");
+    EXPECT_EQ(0u, PARA_DOM->nData());  // req: rm data
+    EXPECT_EQ(nullptr, PARA_DOM->getShared("ev0"));  // req: get null
 }
 const string XPATH_BW =
     "/o-ran-delay-management:delay-management/bandwidth-scs-delay-state[bandwidth=50000][subcarrier-spacing=30]"
@@ -55,9 +60,15 @@ TYPED_TEST_P(DataDominoTest, get_noData)
 {
     auto value = getValue<TypeParam, int>(*PARA_DOM, "not exist event");
     EXPECT_EQ(0, value);  // req: no value return default
+    EXPECT_EQ(0u, PARA_DOM->nData());  // req: not create
 
-    PARA_DOM->replaceShared("not exist event", shared_ptr<size_t>());
+    PARA_DOM->replaceShared("not exist event");
     EXPECT_EQ(nullptr, ((const TypeParam)*PARA_DOM).getShared("not exist event"));  // req: const domino (coverage)
+    EXPECT_EQ(0u, PARA_DOM->nData());  // req: not create
+
+    PARA_DOM->replaceShared("not exist event", shared_ptr<void>());
+    EXPECT_EQ(nullptr, ((const TypeParam)*PARA_DOM).getShared("not exist event"));  // req: const domino (coverage)
+    EXPECT_EQ(0u, PARA_DOM->nData());  // req: not create
 }
 
 #define DESTRUCT
@@ -102,14 +113,14 @@ TYPED_TEST_P(DataDominoTest, GOLD_nonConstInterface_shall_createUnExistEvent_wit
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1"));  // req: no Event
     EXPECT_FALSE(PARA_DOM->state("e1"));
 
-    PARA_DOM->replaceShared("e2", nullptr);
+    PARA_DOM->replaceShared("e2", make_shared<int>(0));
     EXPECT_NE(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e2"));  // req: new Event
     EXPECT_FALSE(PARA_DOM->state("e2"));
 }
 
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(DataDominoTest
-    , GOLD_setShared_thenGetIt
+    , GOLD_setShared_thenGetIt_thenRmIt
     , GOLD_setValue_thenGetIt
     , get_noData
     , GOLD_desruct_data

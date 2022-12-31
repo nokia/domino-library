@@ -27,7 +27,7 @@ public:
     shared_ptr<void> getShared(const Domino::EvName&) const override;
     shared_ptr<void> wbasic_getShared(const Domino::EvName&) const;
 
-    void replaceShared(const Domino::EvName&, shared_ptr<void> aSharedData) override;
+    void replaceShared(const Domino::EvName&, shared_ptr<void> aSharedData = nullptr) override;
     void wbasic_replaceShared(const Domino::EvName&, shared_ptr<void> aSharedData);
 
 private:

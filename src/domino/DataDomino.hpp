@@ -29,6 +29,7 @@ class DataDomino : public aDominoType
 
 public:
     explicit DataDomino(const UniLogName& aUniLogName) : aDominoType(aUniLogName) {}
+    size_t nData() const { return dataStore_.size(); }
 
     // -------------------------------------------------------------------------------------------
     // - for read/write data
@@ -40,7 +41,7 @@ public:
     // -------------------------------------------------------------------------------------------
     // - replace old data by new=aSharedData if old != new
     // - for aDataType w/o default constructor!!!
-    virtual void replaceShared(const Domino::EvName&, shared_ptr<void> aSharedData);
+    virtual void replaceShared(const Domino::EvName&, shared_ptr<void> aSharedData = nullptr);
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -59,7 +60,8 @@ shared_ptr<void> DataDomino<aDominoType>::getShared(const Domino::EvName& aEvNam
 template<typename aDominoType>
 void DataDomino<aDominoType>::replaceShared(const Domino::EvName& aEvName, shared_ptr<void> aSharedData)
 {
-    dataStore_[this->newEvent(aEvName)] = aSharedData;
+    if (aSharedData == nullptr) dataStore_.erase(this->getEventBy(aEvName));  // avoid keep inc dataStore_
+    else dataStore_[this->newEvent(aEvName)] = aSharedData;
 }
 
 
@@ -97,4 +99,5 @@ void setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataT
 // 2022-03-27  CSZ       - if ut case can test base class, never specify derive
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2022-12-03  CSZ       - simple & natural
+// 2022-12-30  CSZ       - rm data
 // ***********************************************************************************************

@@ -116,7 +116,7 @@ TYPED_TEST_P(WbasicDatDomTest, GOLD_nonConstInterface_shall_createUnExistEvent_w
     EXPECT_EQ(2u, this->uniqueEVs_.size());
     EXPECT_FALSE(PARA_DOM->state("e2"));
 
-    PARA_DOM->replaceShared("e3", nullptr);         // req: new Event
+    PARA_DOM->replaceShared("e3", make_shared<int>(0));  // req: new Event
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e3"));
     EXPECT_EQ(3u, this->uniqueEVs_.size());
     EXPECT_FALSE(PARA_DOM->state("e3"));
@@ -125,7 +125,7 @@ TYPED_TEST_P(WbasicDatDomTest, GOLD_nonConstInterface_shall_createUnExistEvent_w
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e4"));
     EXPECT_EQ(3u, this->uniqueEVs_.size());
 
-    PARA_DOM->wbasic_replaceShared("e5", nullptr);  // req: no Event since not isWrCtrl("e5")
+    PARA_DOM->wbasic_replaceShared("e5", make_shared<int>(0));  // req: no Event since not isWrCtrl("e5")
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e5"));
     EXPECT_EQ(3u, this->uniqueEVs_.size());
 }
