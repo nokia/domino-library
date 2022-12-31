@@ -44,23 +44,31 @@ TYPED_TEST_P(WbasicDatDomTest, GOLD_setFlag_thenGetIt)
 
 #define SET_GET
 // ***********************************************************************************************
-TYPED_TEST_P(WbasicDatDomTest, GOLD_writeCtrlData_set_get)
+TYPED_TEST_P(WbasicDatDomTest, GOLD_writeCtrlData_set_get_rm)
 {
-    PARA_DOM->wrCtrlOk("ev0");                         // write-ctrl data
+    PARA_DOM->wrCtrlOk("ev0");  // write-ctrl data
     wbasic_setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 1);
+    EXPECT_EQ(1u, PARA_DOM->nData());  // req: create data
     auto valGet = wbasic_getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
-    EXPECT_EQ(1u, valGet);                             // req: get=set
+    EXPECT_EQ(1u, valGet);  // req: get=set
 
     wbasic_setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 2);
+    EXPECT_EQ(1u, PARA_DOM->nData());  // req: not create but update
     valGet = wbasic_getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
-    EXPECT_EQ(2u, valGet);                             // req: get=update
+    EXPECT_EQ(2u, valGet);  // req: get=update
 
     setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 3);  // legacy set
     valGet = wbasic_getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
-    EXPECT_EQ(2u, valGet);                             // req: legacy set failed
+    EXPECT_EQ(2u, valGet);  // req: legacy set failed
 
     valGet = getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
-    EXPECT_NE(3u, valGet);                             // req: legacy get failed
+    EXPECT_NE(3u, valGet);  // req: legacy get failed
+
+    PARA_DOM->replaceShared("ev0");
+    EXPECT_EQ(1u, PARA_DOM->nData());  // req: legacy can't rm wr-data
+
+    PARA_DOM->wbasic_replaceShared("ev0");
+    EXPECT_EQ(0u, PARA_DOM->nData());  // req: rm wr-data
 }
 TYPED_TEST_P(WbasicDatDomTest, GOLD_noWriteCtrl_set_get)
 {
@@ -133,7 +141,7 @@ TYPED_TEST_P(WbasicDatDomTest, GOLD_nonConstInterface_shall_createUnExistEvent_w
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(WbasicDatDomTest
     , GOLD_setFlag_thenGetIt
-    , GOLD_writeCtrlData_set_get
+    , GOLD_writeCtrlData_set_get_rm
     , GOLD_noWriteCtrl_set_get
     , canNOT_setWriteCtrl_sinceOutCtrl
     , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse

@@ -28,7 +28,7 @@ public:
     shared_ptr<void> wbasic_getShared(const Domino::EvName&) const;
 
     void replaceShared(const Domino::EvName&, shared_ptr<void> aSharedData = nullptr) override;
-    void wbasic_replaceShared(const Domino::EvName&, shared_ptr<void> aSharedData);
+    void wbasic_replaceShared(const Domino::EvName&, shared_ptr<void> aSharedData = nullptr);
 
 private:
     // forbid ouside usage
@@ -148,4 +148,5 @@ void wbasic_setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const
 // 2022-03-27  CSZ       - if ut case can test base class, never specify derive
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2022-12-03  CSZ       - simple & natural
+// 2022-12-31  CSZ       - rm data
 // ***********************************************************************************************
