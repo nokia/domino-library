@@ -13,7 +13,7 @@ Reuse-Library of C++, include classes eg:
 
     How can a program **adaptively** perform at its best in any scenario?
 
-3. MsgSelf ([手册*](http://mp.weixin.qq.com/s?__biz=Mzk0NzIzNzY0OQ==&mid=2247508384&idx=1&sn=86e1614b56deab11ee2474de3ba352f4&chksm=c37b07def40c8ec8ee0617d919b94bfe30aaa2993757b4ef00eb37c2853cf5a3e9e19a701d39&scene=21#wechat_redirect))
+3. MsgSelf ([手册*](https://mp.weixin.qq.com/s/aPjhY7nRmlD4xHhUL_ykxg))
 
     How to avoid nested callback?
 
