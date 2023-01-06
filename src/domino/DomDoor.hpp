@@ -32,7 +32,11 @@ namespace RLib
 class DomDoor
 {
 public:
-    void subTree(const Domino::EvName& aSubRoot, shared_ptr<void> aDom) { domStore_[aSubRoot] = aDom; }
+    void subTree(const Domino::EvName& aSubRoot, shared_ptr<void> aDom)
+    {
+        if (aDom == nullptr) domStore_.erase(aSubRoot);
+        else domStore_[aSubRoot] = aDom;
+    }
 
     template<typename aDominoType>
     shared_ptr<aDominoType> subTree(const Domino::EvName&, UniLog& = UniLog::defaultUniLog()) const;
@@ -66,4 +70,5 @@ shared_ptr<aDominoType> DomDoor::subTree(const Domino::EvName& aEvName, UniLog& 
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2022-09-28  CSZ       1)create
+// 2023-01-06  CSZ       - rm dom
 // ***********************************************************************************************

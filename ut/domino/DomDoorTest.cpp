@@ -44,6 +44,10 @@ TYPED_TEST_P(DomDoorTest, GOLD_most_match)
     EXPECT_FALSE(this->domDoor_.template subTree<TypeParam>("/E"));  // req: no match
     EXPECT_FALSE(this->domDoor_.template subTree<TypeParam>("/"));   // req: no match
     EXPECT_FALSE(this->domDoor_.template subTree<TypeParam>(""));    // req: no match
+
+    this->domDoor_.subTree("/A/C", nullptr);  // req: rm dom
+    EXPECT_EQ(PARA_DOM, this->domDoor_.template subTree<TypeParam>("/A/C",   *this));  // req: exact match
+    EXPECT_EQ(PARA_DOM, this->domDoor_.template subTree<TypeParam>("/A/C/D", *this));  // req: most match
 }
 
 // ***********************************************************************************************
