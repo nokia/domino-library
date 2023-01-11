@@ -228,20 +228,47 @@ TYPED_TEST_P(DominoTest, invalidEvent_retEmpty)
     EXPECT_TRUE(PARA_DOM->whyFalse("").empty());
 }
 
+#define SEARCH_PARTIAL_EVNAME
+// ***********************************************************************************************
+TYPED_TEST_P(DominoTest, search_partial_evName)
+{
+    PARA_DOM->newEvent("/A");
+    PARA_DOM->newEvent("/A/B");
+    auto&& evNames = PARA_DOM->evNames();
+
+    size_t nFound = 0;
+    for (auto&& evName : evNames)
+    {
+        if (evName.find("/A") != string::npos) ++nFound;
+    }
+    EXPECT_EQ(2u, nFound);  // req: found
+
+    nFound = 0;
+    for (auto&& evName : evNames)
+    {
+        if (evName.find("/X") != string::npos) ++nFound;
+    }
+    EXPECT_EQ(0u, nFound);  // req: not found
+}
+
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse
     , noID_for_not_exist_EvName
     , stateFalse_for_not_exist_EvName
     , GOLD_setState_thenGetIt
+
     , GOLD_broadcast_trueState
     , immediate_broadcast
     , GOLD_broadcast_only_allPrev_satisfied
     , prevSelf_is_invalid
+
     , GOLD_multi_retOne
     , trueEvent_retEmpty
     , eventWithoutPrev_retEmpty
     , invalidEvent_retEmpty
+
+    , search_partial_evName
 );
 using AnyDom = Types<Domino, MinDatDom, MinWbasicDatDom, MinHdlrDom, MinMhdlrDom, MinPriDom,
     MinFreeDom, MaxNofreeDom, MaxDom>;

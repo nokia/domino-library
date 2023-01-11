@@ -23,6 +23,11 @@
 //   * light weight (better than IM)
 //   * need not base-derive classes, eg RuAgent/SmodAgent need not derive from BaseAgent
 //     . 1 set hdlrs with unique NDL/precheck/RFM/RB/FB domino set
+//   . evNames()
+//     . to search partial EvName
+//     . simplest to ret & (let user impl partial/template/etc match)
+//     . safe to ret const (don't defense users' abusing)
+//     . search DomDoor? no untill real req
 // - assmuption:
 //   . each event-hdlr is called only when event state F->T
 //   . repeated event/hdlr is complex, be careful(eg DominoTests.newTriggerViaChain)
@@ -55,6 +60,7 @@ public:
     using Events     = set<Event>;
     using EvName     = string;
     using SimuEvents = map<EvName, bool>;  // not unordered-map since most traversal
+    using EvNames    = vector<EvName>;
 
     enum
     {
@@ -82,14 +88,15 @@ public:
 
     // -------------------------------------------------------------------------------------------
     // misc:
-    size_t        nEvent() const { return states_.size(); }
+    size_t         nEvent()  const { return states_.size(); }
+    const EvNames& evNames() const { return evNames_; }
 protected:
-    const EvName& evName(const Event aEv) const { return evNames_[aEv]; }  // aEv must valid
-    bool          state(const Event aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
-    virtual void  effect(const Event) {}
+    const EvName&  evName(const Event aEv) const { return evNames_[aEv]; }  // aEv must valid
+    bool           state(const Event aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
+    virtual void   effect(const Event) {}
 private:
-    void          deduceState(const Event);
-    void          pureSetState(const Event, const bool aNewState);
+    void           deduceState(const Event);
+    void           pureSetState(const Event, const bool aNewState);
 
     // -------------------------------------------------------------------------------------------
     vector<bool>                 states_;               // bitmap & dyn expand, [event]=t/f
@@ -97,7 +104,7 @@ private:
     map<Event, Events>           prev_[N_EVENT_STATE];  // not unordered-map since most traversal
     map<Event, Events>           next_[N_EVENT_STATE];  // not unordered-map since most traversal
     unordered_map<EvName, Event> events_;               // [evName]=event
-    vector<EvName>               evNames_;              // [event]=evName for easy debug
+    EvNames                      evNames_;              // [event]=evName for easy debug
     bool                         sthChanged_ = false;   // for debug
 
     static const EvName          invalidEvName;
@@ -208,4 +215,5 @@ private:
 // 2022-03-26  CSZ       - ut's PARA_DOM include self class & ALL its base class(es)
 // 2022-03-27  CSZ       - if ut case can test base class, never specify derive
 // 2022-08-18  CSZ       - replace CppLog by UniLog
+// 2023-01-11  CSZ       - search partial EvName
 // ***********************************************************************************************
