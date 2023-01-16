@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION  3.14)
 
-set(UT  ut)
+set(UT  ut_exe)
 project(${UT}  CXX)
 
 set(CMAKE_CXX_STANDARD  14)
@@ -40,7 +40,7 @@ target_link_libraries(${UT}  PRIVATE
 )
 
 set(RUN_UT  run-${UT})
-add_custom_target(${RUN_UT}  # make run-ut
+add_custom_target(${RUN_UT}  # make run-ut_exe
   COMMAND  ./${UT} --gtest_brief=0
   DEPENDS  ${UT}
 )
