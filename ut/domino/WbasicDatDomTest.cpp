@@ -103,6 +103,11 @@ TYPED_TEST_P(WbasicDatDomTest, canNOT_setWriteCtrl_sinceOutCtrl)
     PARA_DOM->replaceShared("ev0", nullptr);
     EXPECT_TRUE(PARA_DOM->wrCtrlOk("ev0"));   // req: succ since no data
     EXPECT_TRUE(PARA_DOM->isWrCtrl("ev0"));   // req: flag change
+
+    PARA_DOM->wrCtrlOk("ev1");
+    wbasic_setValue<TypeParam, size_t>(*PARA_DOM, "ev1", 1);
+    EXPECT_FALSE(PARA_DOM->wrCtrlOk("ev1", false));  // req: failed to avoid out-ctrl
+    EXPECT_TRUE(PARA_DOM->isWrCtrl("ev1"));          // req: flag no change
 }
 
 #define ID_STATE

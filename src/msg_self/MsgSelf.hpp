@@ -30,7 +30,6 @@
 #include <queue>
 
 #include "UniLog.hpp"
-#include "ObjAnywhere.hpp"
 
 #define MSG_SELF (ObjAnywhere::get<MsgSelf>(*this))
 

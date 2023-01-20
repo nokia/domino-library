@@ -92,18 +92,17 @@ void WbasicDatDom<aDominoType>::wbasic_replaceShared(const Domino::EvName& aEvNa
 template<typename aDominoType>
 bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName, const bool aNewState)
 {
-    const auto nShared = this->getShared(aEvName).use_count();
-    if (nShared != 0)
+    if (aDominoType::getShared(aEvName) != nullptr)
     {
-        WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName
-            << ", its nShared=" << nShared << " (must=0 otherwise may out-ctrl!!!)");
+        WRN("(WbasicDatDom) !!! Failed to change wrCtrl when aleady own data(out-of-ctrl), EvName=" << aEvName);
         return false;
     }
 
     const auto ev = this->newEvent(aEvName);
-    if (ev >= wrCtrl_.size()) wrCtrl_.resize(ev + 1);
+    if (ev >= wrCtrl_.size()) wrCtrl_.resize(ev + 1);  // resize() can inc size()
     wrCtrl_[ev] = aNewState;
-    HID("(WbasicDatDom) Succeed, EvName=" << aEvName << ", newState=" << aNewState);
+    HID("(WbasicDatDom) Succeed, EvName=" << aEvName << ", new wrCtrl=" << aNewState
+        << ", nWr=" << wrCtrl_.size() << ", cap=" << wrCtrl_.capacity());
     return true;
 }
 

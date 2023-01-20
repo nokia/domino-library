@@ -24,6 +24,7 @@
 #include <unordered_map>
 
 #include "MsgSelf.hpp"
+#include "ObjAnywhere.hpp"
 
 namespace RLib
 {
