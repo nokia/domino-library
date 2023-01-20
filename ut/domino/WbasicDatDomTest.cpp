@@ -84,7 +84,7 @@ TYPED_TEST_P(WbasicDatDomTest, GOLD_writeCtrlData_set_get_rm)
     PARA_DOM->wbasic_replaceShared("ev0");
     EXPECT_EQ(0u, PARA_DOM->nData());  // req: rm wr-data
 }
-TYPED_TEST_P(WbasicDatDomTest, GOLD_noWriteCtrl_set_get)
+TYPED_TEST_P(WbasicDatDomTest, GOLD_noWriteCtrl_set_get_rm)
 {
     setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 1);
     auto valGet = getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
@@ -100,8 +100,14 @@ TYPED_TEST_P(WbasicDatDomTest, GOLD_noWriteCtrl_set_get)
 
     valGet = wbasic_getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
     EXPECT_NE(3u, valGet);  // req: wbasic_get failed
+
+    PARA_DOM->wbasic_replaceShared("ev0");
+    EXPECT_EQ(1u, PARA_DOM->nData());  // req: w- can't rm non-w-data
+
+    PARA_DOM->replaceShared("ev0");
+    EXPECT_EQ(0u, PARA_DOM->nData());  // req: rm non-w-data
 }
-TYPED_TEST_P(WbasicDatDomTest, canNOT_setWriteCtrl_sinceOutCtrl)
+TYPED_TEST_P(WbasicDatDomTest, canNOT_setWriteCtrl_afterOwnData)
 {
     setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 1);
     auto data = PARA_DOM->getShared("ev0");
@@ -162,8 +168,8 @@ REGISTER_TYPED_TEST_SUITE_P(WbasicDatDomTest
     , GOLD_setFlag_thenGetIt
     , setFlag_holeWorkWell
     , GOLD_writeCtrlData_set_get_rm
-    , GOLD_noWriteCtrl_set_get
-    , canNOT_setWriteCtrl_sinceOutCtrl
+    , GOLD_noWriteCtrl_set_get_rm
+    , canNOT_setWriteCtrl_afterOwnData
     , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse
 );
 using AnyDatDom = Types<MinWbasicDatDom, MaxNofreeDom, MaxDom>;
