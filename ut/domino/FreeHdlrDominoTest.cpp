@@ -40,6 +40,18 @@ TYPED_TEST_SUITE_P(FreeHdlrDominoTest);
 template<class aParaDom> using FreeMultiHdlrDominoTest = FreeHdlrDominoTest<aParaDom>;
 TYPED_TEST_SUITE_P(FreeMultiHdlrDominoTest);
 
+#define FLAG
+// ***********************************************************************************************
+TYPED_TEST_P(FreeHdlrDominoTest, GOLD_setFlag_thenGetIt)
+{
+    EXPECT_FALSE(PARA_DOM->isRepeatHdlr(Domino::D_EVENT_FAILED_RET));  // invalid event
+
+    auto e1 = PARA_DOM->newEvent("e1");  // not exist in flag bitmap
+    auto e2 = PARA_DOM->repeatedHdlr("e2");  // explicit set to bitmap
+    EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e1));  // req: default flag
+    EXPECT_TRUE (PARA_DOM->isRepeatHdlr(e2));  // req: get=set
+}
+
 #define AUTO_FREE
 // ***********************************************************************************************
 TYPED_TEST_P(FreeHdlrDominoTest, GOLD_afterCallback_autoRmHdlr)
@@ -139,10 +151,6 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_disorderAutoRm_ok)
     if (this->msgSelf_->hasMsg()) this->fromMainFN_();
     EXPECT_EQ(multiset<int>({1, 2, 3, 4}), this->hdlrIDs_);
 }
-TYPED_TEST_P(FreeHdlrDominoTest, invalidEv_isRepeatFalse)
-{
-    EXPECT_FALSE(PARA_DOM->isRepeatHdlr(Domino::D_EVENT_FAILED_RET));  // ev=0 is invalid ID
-}
 TYPED_TEST_P(FreeHdlrDominoTest, multiCallbackOnRoad_noCrash_noMultiCall)
 {
     PARA_DOM->setHdlr("e1", this->h1_);
@@ -206,9 +214,10 @@ TYPED_TEST_P(FreeHdlrDominoTest, GOLD_nonConstInterface_shall_createUnExistEvent
 
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(FreeHdlrDominoTest
+    , GOLD_setFlag_thenGetIt
+
     , GOLD_afterCallback_autoRmHdlr
     , afterCallback_autoRmHdlr_aliasMultiHdlr
-    , invalidEv_isRepeatFalse
     , multiCallbackOnRoad_noCrash_noMultiCall
     , BugFix_noMemLeak_whenRmMsgSelf
     , BugFix_noCrash_whenRmDom
