@@ -14,8 +14,10 @@ namespace RLib
 // ***********************************************************************************************
 size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
 {
+    if (mt_nFinishedThread_ == 0) return 0;
+
     size_t nHandled = 0;
-    for (auto nFinished = mt_nFinishedThread_.load(); nFinished > 0; nFinished = mt_nFinishedThread_)
+    while (mt_nFinishedThread_ > 0)
     {
         for (auto&& it = allThreads_.begin(); it != allThreads_.end();)
         {
@@ -25,11 +27,10 @@ size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
                 it->second(it->first.get());
                 it = allThreads_.erase(it);
                 ++nHandled;
-                --mt_nFinishedThread_;
+                if (--mt_nFinishedThread_ == 0) return nHandled;
             }
             else ++it;
-            HID("(ThreadBack) nFinished=" << nFinished << ", nHandled=" << nHandled
-                << ", status=" << static_cast<int>(status));
+            HID("(ThreadBack) nHandled=" << nHandled << ", status=" << static_cast<int>(status));
         }
     }
     return nHandled;
