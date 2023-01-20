@@ -25,7 +25,7 @@ size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
                 it->second(it->first.get());
                 it = allThreads_.erase(it);
                 ++nHandled;
-                if (--mt_nFinishedThread_ == 0) break;
+                --mt_nFinishedThread_;
             }
             else ++it;
             HID("(ThreadBack) nFinished=" << nFinished << ", nHandled=" << nHandled
