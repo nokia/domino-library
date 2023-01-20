@@ -14,8 +14,6 @@ namespace RLib
 // ***********************************************************************************************
 size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
 {
-    if (mt_nFinishedThread_ == 0) return 0;
-
     size_t nHandled = 0;
     while (mt_nFinishedThread_ > 0)
     {
