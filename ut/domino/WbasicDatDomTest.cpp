@@ -35,11 +35,25 @@ TYPED_TEST_P(WbasicDatDomTest, GOLD_setFlag_thenGetIt)
     PARA_DOM->wrCtrlOk("ev0", false);
     EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0"));  // req: set false
 
-    PARA_DOM->wrCtrlOk("ev2");
-    EXPECT_TRUE(PARA_DOM->isWrCtrl("ev2"));   // req: create & set true
+    PARA_DOM->wrCtrlOk("ev1");
+    EXPECT_TRUE(PARA_DOM->isWrCtrl("ev1"));   // req: create & set true
 
-    PARA_DOM->wrCtrlOk("ev2");
-    EXPECT_TRUE(PARA_DOM->isWrCtrl("ev2"));   // req: dup set true
+    PARA_DOM->wrCtrlOk("ev1");
+    EXPECT_TRUE(PARA_DOM->isWrCtrl("ev1"));   // req: dup set true
+
+    PARA_DOM->newEvent("ev2");
+    PARA_DOM->wrCtrlOk("ev3");
+    // req: alloc ev3 in bitmap can't impact ev2(still not exist in bitmap)
+    EXPECT_TRUE (PARA_DOM->isWrCtrl("ev3"));
+    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev2"));
+}
+TYPED_TEST_P(WbasicDatDomTest, setFlag_holeWorkWell)
+{
+    PARA_DOM->newEvent("ev2");
+    PARA_DOM->wrCtrlOk("ev3");
+    // req: alloc ev3 in bitmap can't impact ev2(still not exist in bitmap)
+    EXPECT_TRUE (PARA_DOM->isWrCtrl("ev3"));
+    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev2"));  // in bitmap hole
 }
 
 #define SET_GET
@@ -146,6 +160,7 @@ TYPED_TEST_P(WbasicDatDomTest, GOLD_nonConstInterface_shall_createUnExistEvent_w
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(WbasicDatDomTest
     , GOLD_setFlag_thenGetIt
+    , setFlag_holeWorkWell
     , GOLD_writeCtrlData_set_get_rm
     , GOLD_noWriteCtrl_set_get
     , canNOT_setWriteCtrl_sinceOutCtrl
