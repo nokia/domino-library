@@ -15,23 +15,20 @@ namespace RLib
 size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
 {
     size_t nHandled = 0;
-    while (mt_nFinishedThread_ > 0)
+    for (auto&& it = allThreads_.begin(); it != allThreads_.end();)
     {
-        for (auto&& it = allThreads_.begin(); it != allThreads_.end();)
+        future_status status;
+        if ((status = it->first.wait_for(0s)) == future_status::ready)
         {
-            future_status status;
-            if ((status = it->first.wait_for(0s)) == future_status::ready)
-            {
-                it->second(it->first.get());
-                it = allThreads_.erase(it);
-                ++nHandled;
-                if (--mt_nFinishedThread_ == 0) return nHandled;
-            }
-            else ++it;
-            HID("(ThreadBack) nHandled=" << nHandled << ", status=" << static_cast<int>(status));
+            it->second(it->first.get());
+            it = allThreads_.erase(it);
+            ++nHandled;
+            if (--mt_nFinishedThread_ == 0) return nHandled;
         }
+        else ++it;
+        HID("(ThreadBack) nHandled=" << nHandled << ", status=" << static_cast<int>(status));
     }
-    return nHandled;
+    return nHandled;  // though mt_nFinishedThread_ may > 0, to avoid dead-loop, limit-duty
 }
 
 // ***********************************************************************************************
