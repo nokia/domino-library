@@ -113,7 +113,7 @@ template<class aDominoType>
 bool MultiHdlrDomino<aDominoType>::pureRmHdlrOK(const Domino::Event& aEv, const SharedMsgCB& aHdlr)
 {
     const auto isRmOK = aDominoType::pureRmHdlrOK(aEv, aHdlr);
-    if (isRmOK || not aHdlr)
+    if (isRmOK || aHdlr == nullptr)
         return isRmOK;
 
     // req: "ret true" means real rm

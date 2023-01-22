@@ -28,7 +28,7 @@ size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
         else ++it;
         HID("(ThreadBack) nHandled=" << nHandled << ", status=" << static_cast<int>(status));
     }
-    return nHandled;  // though mt_nFinishedThread_ may > 0, to avoid dead-loop, limit-duty
+    return nHandled;  // though mt_nFinishedThread_ may > 0, to avoid dead-loop, & limit-duty
 }
 
 // ***********************************************************************************************

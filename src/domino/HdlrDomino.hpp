@@ -128,7 +128,14 @@ bool HdlrDomino<aDominoType>::pureRmHdlrOK(const Domino::Event& aEv, const Share
 template<class aDominoType>
 bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName)
 {
-    return pureRmHdlrOK(this->getEventBy(aEvName));
+    auto&& itHdlr = hdlrs_.find(this->getEventBy(aEvName));
+    if (itHdlr == hdlrs_.end())
+        return false;
+
+    HID("(HdlrDomino) Succeed to remove hdlr of EvName=" << aEvName
+        << ", nHdlrRef=" << itHdlr->second.use_count());
+    hdlrs_.erase(itHdlr);
+    return true;
 }
 
 // ***********************************************************************************************
