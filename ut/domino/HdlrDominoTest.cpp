@@ -259,16 +259,19 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlr_thenNoCallback)
     PARA_DOM->setHdlr("event", this->hdlr0_);
     ASSERT_TRUE(PARA_DOM->rmOneHdlrOK("event"));
 
-    EXPECT_CALL(*this, hdlr0()).Times(0);                    // req: no call since rm
+    EXPECT_CALL(*this, hdlr0()).Times(0);  // req: no call since rm
     PARA_DOM->setState({{"event", true}});
 }
 TYPED_TEST_P(HdlrDominoTest, rmHdlr_fail)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);
     EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event"));
-    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK("event"));            // req: rm unexist hdlr
+    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK("event"));  // req: rm unexist hdlr
 
     EXPECT_FALSE(PARA_DOM->rmOneHdlrOK("not exist event"));  // req: rm unexist ev
+
+    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK(Domino::D_EVENT_FAILED_RET, nullptr));  // req: rm null hdlr
+    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK(PARA_DOM->getEventBy("event"), nullptr));  // req: rm null hdlr
 }
 // ***********************************************************************************************
 // rm on-road-hdlr

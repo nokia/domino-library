@@ -39,12 +39,12 @@ public:
     // -------------------------------------------------------------------------------------------
     Domino::Event multiHdlrOnSameEv(const Domino::EvName&, const MsgCB& aHdlr, const HdlrName&);
 
-    using aDominoType::rmOneHdlrOK;
-    bool rmOneHdlrOK(const Domino::EvName&, const HdlrName&);
+    using aDominoType::rmOneHdlrOK;  // rm HdlrDom's by EvName
+    bool rmOneHdlrOK(const Domino::EvName&, const HdlrName&);  // rm MultiDom's by HdlrName
+    bool rmOneHdlrOK(const Domino::Event&, const SharedMsgCB& aHdlr) override;  // rm by aHdlr
 
 protected:
     void effect(const Domino::Event) override;  // key/min change other Dominos
-    bool pureRmHdlrOK(const Domino::Event&, const SharedMsgCB& aHdlr) override;
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -110,28 +110,27 @@ Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvNa
 
 // ***********************************************************************************************
 template<class aDominoType>
-bool MultiHdlrDomino<aDominoType>::pureRmHdlrOK(const Domino::Event& aEv, const SharedMsgCB& aHdlr)
+bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::Event& aEv, const SharedMsgCB& aHdlr)
 {
-    const auto isRmOK = aDominoType::pureRmHdlrOK(aEv, aHdlr);
-    if (isRmOK || aHdlr == nullptr)
-        return isRmOK;
+    if (aDominoType::rmOneHdlrOK(aEv, aHdlr))
+        return true;
 
     // req: "ret true" means real rm
     auto&& itEv = multiHdlrs_.find(aEv);
-    // impossible till 022-Mar-25
-    // if (itEv == multiHdlrs_.end()) return false;
+    if (itEv == multiHdlrs_.end())
+        return false;
 
     for (auto&& itHdlr = itEv->second.begin(); itHdlr != itEv->second.end(); ++itHdlr)
     {
         if (itHdlr->second != aHdlr)
             continue;
 
-        HID("(MultiHdlrDomino) Succeed to remove HdlrName=" << itHdlr->first << " of EvName=" << this->evName(aEv)
+        HID("(MultiHdlrDomino) Will remove HdlrName=" << itHdlr->first << " of EvName=" << this->evName(aEv)
             << ", nHdlrRef=" << itHdlr->second.use_count());
         itEv->second.erase(itHdlr);
         return true;
     }
-    return false;  // impossible till 022-Mar-25
+    return false;
 }
 
 // ***********************************************************************************************

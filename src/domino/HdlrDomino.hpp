@@ -37,7 +37,8 @@ public:
     void setMsgSelf(shared_ptr<MsgSelf>& aMsgSelf) { msgSelf_ = aMsgSelf; }  // can replace default
 
     Domino::Event setHdlr(const Domino::EvName&, const MsgCB& aHdlr);
-    bool rmOneHdlrOK(const Domino::EvName&);
+    bool rmOneHdlrOK(const Domino::EvName&);  // rm by EvName
+    virtual bool rmOneHdlrOK(const Domino::Event&, const SharedMsgCB& aHdlr);  // rm by aHdlr
 
     // -------------------------------------------------------------------------------------------
     // - add a new ev=aAliasEN to store aHdlr (aAliasEN's true prev is aHostEN)
@@ -62,7 +63,6 @@ protected:
             getPriority(aEv)
         );
     }
-    virtual bool pureRmHdlrOK(const Domino::Event&, const SharedMsgCB& aHdlr = SharedMsgCB());
 
     size_t nHdlrRef(const Domino::Event) const;
 
@@ -107,7 +107,7 @@ size_t HdlrDomino<aDominoType>::nHdlrRef(const Domino::Event aEvent) const
 
 // ***********************************************************************************************
 template<class aDominoType>
-bool HdlrDomino<aDominoType>::pureRmHdlrOK(const Domino::Event& aEv, const SharedMsgCB& aHdlr)
+bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::Event& aEv, const SharedMsgCB& aHdlr)
 {
     auto&& itHdlr = hdlrs_.find(aEv);
     if (itHdlr == hdlrs_.end())
@@ -117,7 +117,7 @@ bool HdlrDomino<aDominoType>::pureRmHdlrOK(const Domino::Event& aEv, const Share
     if (itHdlr->second != aHdlr)
         return false;
 
-    HID("(HdlrDomino) Succeed to remove hdlr of EvName=" << this->evName(aEv)
+    HID("(HdlrDomino) Will remove hdlr of EvName=" << this->evName(aEv)
         << ", nHdlrRef=" << itHdlr->second.use_count());
     hdlrs_.erase(itHdlr);
     return true;
@@ -171,4 +171,5 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
 // 2022-03-26  CSZ       - ut's PARA_DOM include self class & ALL its base class(es)
 // 2022-03-27  CSZ       - if ut case can test base class, never specify derive
 // 2022-08-18  CSZ       - replace CppLog by UniLog
+// 2023-01-23  CSZ       - rename pureRmHdlrOK to rmOneHdlrOK
 // ***********************************************************************************************
