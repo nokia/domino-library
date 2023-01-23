@@ -54,10 +54,7 @@ StrCoutFSL::~StrCoutFSL()
 inline
 void StrCoutFSL::forceSave()
 {
-    if(rdbuf()->in_avail())       // otherwise cout << rdbuf() will abnormal cout
-    {
-        cout << rdbuf() << endl;  // internet says rdbuf() is faster than str()
-    }
+    cout << rdbuf() << endl;  // internet says rdbuf() is faster than str()
 }
 }  // namespace
 #endif//STREAM2COUT_FORMATTED_SMART_LOG_HPP_
