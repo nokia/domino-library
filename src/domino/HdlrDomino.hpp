@@ -109,13 +109,12 @@ size_t HdlrDomino<aDominoType>::nHdlrRef(const Domino::Event aEvent) const
 template<class aDominoType>
 bool HdlrDomino<aDominoType>::pureRmHdlrOK(const Domino::Event& aEv, const SharedMsgCB& aHdlr)
 {
-    // req: "ret true" means real rm
     auto&& itHdlr = hdlrs_.find(aEv);
     if (itHdlr == hdlrs_.end())
         return false;
 
     // req: must match
-    if (aHdlr && itHdlr->second != aHdlr)
+    if (itHdlr->second != aHdlr)
         return false;
 
     HID("(HdlrDomino) Succeed to remove hdlr of EvName=" << this->evName(aEv)
@@ -129,7 +128,7 @@ template<class aDominoType>
 bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName)
 {
     HID("(HdlrDomino) EvName=" << aEvName);
-    return hdlrs_.erase(this->getEventBy(aEvName)) == 1;  // 0 or >1 are NOK
+    return hdlrs_.erase(this->getEventBy(aEvName));
 }
 
 // ***********************************************************************************************
