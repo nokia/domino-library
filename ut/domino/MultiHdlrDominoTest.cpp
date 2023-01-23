@@ -249,6 +249,8 @@ TYPED_TEST_P(MultiHdlrDominoTest, rmHdlr_invalid)
     EXPECT_FALSE(PARA_DOM->rmOneHdlrOK("event", "invalid hdlr"));  // req: invalid hdlr name
 
     EXPECT_FALSE(PARA_DOM->rmOneHdlrOK(Domino::D_EVENT_FAILED_RET, nullptr));  // req: invalid ev
+
+    PARA_DOM->multiHdlrOnSameEv("event", this->hdlr0_, "h0");  // inc cov
     EXPECT_FALSE(PARA_DOM->rmOneHdlrOK(ev, nullptr));  // req: rm null hdlr
 }
 
