@@ -38,7 +38,7 @@ public:
 
     Domino::Event setHdlr(const Domino::EvName&, const MsgCB& aHdlr);
     bool rmOneHdlrOK(const Domino::EvName&);  // rm by EvName
-    virtual bool rmOneHdlrOK(const Domino::Event&, const SharedMsgCB& aHdlr) noexcept;  // rm by aHdlr
+    virtual bool rmOneHdlrOK(const Domino::Event&, const SharedMsgCB& aHdlr);  // rm by aHdlr
 
     // -------------------------------------------------------------------------------------------
     // - add a new ev=aAliasEN to store aHdlr (aAliasEN's true prev is aHostEN)
@@ -107,7 +107,7 @@ size_t HdlrDomino<aDominoType>::nHdlrRef(const Domino::Event aEvent) const
 
 // ***********************************************************************************************
 template<class aDominoType>
-bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::Event& aEv, const SharedMsgCB& aHdlr) noexcept
+bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::Event& aEv, const SharedMsgCB& aHdlr)
 {
     auto&& itHdlr = hdlrs_.find(aEv);
     if (itHdlr == hdlrs_.end())
