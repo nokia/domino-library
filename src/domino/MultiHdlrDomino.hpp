@@ -41,7 +41,7 @@ public:
 
     using aDominoType::rmOneHdlrOK;  // rm HdlrDom's by EvName
     bool rmOneHdlrOK(const Domino::EvName&, const HdlrName&);  // rm MultiDom's by HdlrName
-    bool rmOneHdlrOK(const Domino::Event&, const SharedMsgCB& aHdlr) override;  // rm by aHdlr
+    bool rmOneHdlrOK(const Domino::Event&, const SharedMsgCB& aHdlr) noexcept override;  // rm by aHdlr
 
 protected:
     void effect(const Domino::Event) override;  // key/min change other Dominos
@@ -110,7 +110,7 @@ Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvNa
 
 // ***********************************************************************************************
 template<class aDominoType>
-bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::Event& aEv, const SharedMsgCB& aHdlr)
+bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::Event& aEv, const SharedMsgCB& aHdlr) noexcept
 {
     if (aDominoType::rmOneHdlrOK(aEv, aHdlr))
         return true;
