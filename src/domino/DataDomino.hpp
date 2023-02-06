@@ -29,7 +29,6 @@ class DataDomino : public aDominoType
 
 public:
     explicit DataDomino(const UniLogName& aUniLogName) : aDominoType(aUniLogName) {}
-    size_t nData() const { return dataStore_.size(); }
 
     // -------------------------------------------------------------------------------------------
     // - for read/write data
