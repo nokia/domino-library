@@ -29,32 +29,29 @@ TYPED_TEST_P(DominoTest, GOLD_nonConstInterface_shall_createUnExistEvent_withSta
     this->uniqueEVs_.insert(PARA_DOM->newEvent(""));      // req: create new
     this->uniqueEVs_.insert(PARA_DOM->newEvent(""));      // req: no dup
     EXPECT_EQ(1u, this->uniqueEVs_.size());
-    EXPECT_EQ(1u, PARA_DOM->nEvent());
     EXPECT_FALSE(PARA_DOM->state(""));                    // req: default state is false
 
     // req: new ID by setState()
     PARA_DOM->setState({{"", false}, {"e2", false}});
+    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e2"));
     PARA_DOM->setState({{"", false}, {"e2", false}});
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e2"));
     EXPECT_EQ(2u, this->uniqueEVs_.size());
-    EXPECT_EQ(2u, PARA_DOM->nEvent());
     EXPECT_FALSE(PARA_DOM->state("e2"));
 
     // req: new ID by setPrev()
     PARA_DOM->setPrev("e3", {{"e4", true}});
+    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e3"));
+    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e4"));
     PARA_DOM->setPrev("e3", {{"e4", true}});
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e3"));
-    EXPECT_EQ(3u, this->uniqueEVs_.size());
-    EXPECT_EQ(4u, PARA_DOM->nEvent());
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e4"));
     EXPECT_EQ(4u, this->uniqueEVs_.size());
-    EXPECT_EQ(4u, PARA_DOM->nEvent());
     EXPECT_FALSE(PARA_DOM->state("e3"));
     EXPECT_FALSE(PARA_DOM->state("e4"));
 
     this->uniqueEVs_.insert(Domino::D_EVENT_FAILED_RET);  // req: new ID != Domino::D_EVENT_FAILED_RET
     EXPECT_EQ(5u, this->uniqueEVs_.size());
-    EXPECT_EQ(4u, PARA_DOM->nEvent());
 }
 TYPED_TEST_P(DominoTest, noID_for_not_exist_EvName)
 {

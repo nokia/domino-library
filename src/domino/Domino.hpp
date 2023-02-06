@@ -88,7 +88,6 @@ public:
 
     // -------------------------------------------------------------------------------------------
     // misc:
-    size_t         nEvent()  const { return states_.size(); }
     const EvNames& evNames() const { return evNames_; }
 protected:
     const EvName&  evName(const Event aEv) const { return evNames_[aEv]; }  // aEv must valid
