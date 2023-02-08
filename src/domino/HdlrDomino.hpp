@@ -64,8 +64,6 @@ protected:
         );
     }
 
-    size_t nHdlrRef(const Domino::Event) const;
-
     // -------------------------------------------------------------------------------------------
 private:
     unordered_map<Domino::Event, SharedMsgCB> hdlrs_;
@@ -95,14 +93,6 @@ Domino::Event HdlrDomino<aDominoType>::multiHdlrByAliasEv(const Domino::EvName& 
     if (event == Domino::D_EVENT_FAILED_RET) return Domino::D_EVENT_FAILED_RET;
 
     return this->setPrev(aAliasEN, {{aHostEN, true}});
-}
-
-// ***********************************************************************************************
-template<class aDominoType>
-size_t HdlrDomino<aDominoType>::nHdlrRef(const Domino::Event aEvent) const
-{
-    auto&& it = hdlrs_.find(aEvent);
-    return it == hdlrs_.end() ? Domino::D_EVENT_FAILED_RET : it->second.use_count();
 }
 
 // ***********************************************************************************************

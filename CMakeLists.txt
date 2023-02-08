@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION  3.14)
+cmake_minimum_required(VERSION  3.8)
 
 set(UT  ut_exe)
 project(${UT}  CXX)  # as early as possible, eg must before CMAKE_CXX_FLAGS
@@ -25,18 +25,19 @@ endif()
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fno-exceptions")  # inc branch coverage
 
 file(GLOB SRC_LIST  # new file has to "cmake .." again
-  "src/*/*.cpp"
   "ut/*/*.cpp"
 )
 add_executable(${UT}  ${SRC_LIST})
 
 file(GLOB  INC_DIR_LIST
-  "src/*"
   "ut/*"
 )
 target_include_directories(${UT}  PRIVATE  ${INC_DIR_LIST})
 
+add_subdirectory(src)
+
 target_link_libraries(${UT}  PRIVATE
+  ${LIB_DOMINO_NAME}
   gtest
   gtest_main
   gmock
