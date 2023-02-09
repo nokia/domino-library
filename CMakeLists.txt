@@ -43,3 +43,7 @@ add_custom_target(${RUN_UT}
   COMMAND  ./${UT} --gtest_brief=0
   DEPENDS  ${UT}
 )
+
+# simplify "make help"
+set(CMAKE_SKIP_PREPROCESSED_SOURCE_RULES  true)
+set(CMAKE_SKIP_ASSEMBLY_SOURCE_RULES      true)
