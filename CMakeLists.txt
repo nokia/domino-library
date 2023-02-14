@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD  14)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_EXTENSIONS  OFF)
 if(ENABLE_COVERAGE)
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O0")                 # gcovr req
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -Ofast")                 # gcovr req
 #    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O0")                 # gcovr req
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fprofile-arcs")      # gcovr req
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -ftest-coverage")     # gcovr req
