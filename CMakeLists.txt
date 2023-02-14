@@ -8,14 +8,15 @@ set(CMAKE_CXX_STANDARD  14)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_EXTENSIONS  OFF)
 if(ENABLE_COVERAGE)
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O0")                 # gcovr req
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fprofile-arcs")      # gcovr req
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -ftest-coverage")     # gcovr req
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fPIC")               # gcovr opt
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  --coverage")          # gcov req (newer gcc)
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O0")                 # gcov req
+#    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fprofile-arcs")      # gcov req
+ #   set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -ftest-coverage")     # gcov req
+#    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fPIC")               # gcov opt
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fprofile-abs-path")  # gcovr opt
 
-    set(CMAKE_CXX_FLAGS_PROFILE  --coverage)                              # gcovr req
-    set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  --coverage")  # gcovr req
+    set(CMAKE_CXX_FLAGS_PROFILE  --coverage)                              # cmake req with -DCMAKE_BUILD_TYPE=PROFILE
+    set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  --coverage")  # cmake req before v3.13
 
     add_compile_definitions(SMART_LOG)
 else()
