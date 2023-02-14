@@ -12,7 +12,7 @@ set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fno-exceptions")  # inc branch covera
 if(ENABLE_COVERAGE)
     # --coverage: gcov req (newer gcc)
     # -O0       : gcov req
-    set(COMPILE_SRC  "--coverage  -O0  -fprofile-abs-path"  CACHE INTERNAL "")
+    set(COMPILE_SRC  "-O0  --coverage  -fprofile-abs-path"  CACHE INTERNAL "")
     set(COMPILE_TST  "-O1"  CACHE INTERNAL "")  #fastest build+ut
 
     set(CMAKE_CXX_FLAGS_PROFILE  --coverage)                              # cmake req with -DCMAKE_BUILD_TYPE=PROFILE
