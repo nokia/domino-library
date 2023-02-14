@@ -7,6 +7,7 @@ set(LIB_UT_NAME  UtLib  CACHE INTERNAL "")  # global var
 file(GLOB  LIB_SRC_LIST
   "${CMAKE_CURRENT_SOURCE_DIR}/*/*.cpp"
 )
+set_property(SOURCE  ${LIB_SRC_LIST}  PROPERTY COMPILE_FLAGS  ${COMPILE_TST})
 add_library(${LIB_UT_NAME}  OBJECT  ${LIB_SRC_LIST})
 
 # include

@@ -6,6 +6,7 @@ set(LIB_DOMINO_NAME  DominoLib  CACHE INTERNAL "")  # global var
 file(GLOB  LIB_SRC_LIST
   "${CMAKE_CURRENT_SOURCE_DIR}/*/*.cpp"
 )
+set_property(SOURCE  ${LIB_SRC_LIST}  PROPERTY COMPILE_FLAGS  ${COMPILE_SRC})
 add_library(${LIB_DOMINO_NAME}  ${LIB_SRC_LIST})
 
 # include
