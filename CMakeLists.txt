@@ -13,10 +13,6 @@ if(ENABLE_COVERAGE)
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  --coverage")          # gcov req (newer gcc)
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O0")                 # gcov req
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fprofile-abs-path")  # gcovr opt
-    # --coverage: gcov req (newer gcc)
-    # -O0       : gcov req
-    set(COMPILE_SRC  "-O0  --coverage  -fprofile-abs-path"  CACHE INTERNAL "")
-    set(COMPILE_TST  "-O1"  CACHE INTERNAL "")  #fastest build+ut
 
     set(CMAKE_CXX_FLAGS_PROFILE  --coverage)                              # cmake req with -DCMAKE_BUILD_TYPE=PROFILE
     set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  --coverage")  # cmake req before v3.13
