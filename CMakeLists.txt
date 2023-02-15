@@ -10,6 +10,9 @@ set(CMAKE_CXX_EXTENSIONS  OFF)
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fno-exceptions")  # inc branch coverage
 
 if(ENABLE_COVERAGE)
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  --coverage")          # gcov req (newer gcc)
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O0")                 # gcov req
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fprofile-abs-path")  # gcovr opt
     # --coverage: gcov req (newer gcc)
     # -O0       : gcov req
     set(COMPILE_SRC  "-O0  --coverage  -fprofile-abs-path"  CACHE INTERNAL "")
@@ -20,8 +23,7 @@ if(ENABLE_COVERAGE)
 
     add_compile_definitions(SMART_LOG)
 else()
-    set(COMPILE_SRC  "-O1"  CACHE INTERNAL "")
-    set(COMPILE_TST  "-O1"  CACHE INTERNAL "")
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O1")  # fastest build+ut
 
     add_compile_definitions(WITH_HID_LOG)
 endif()
