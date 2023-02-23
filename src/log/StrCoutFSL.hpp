@@ -37,7 +37,7 @@ public :
     ~StrCoutFSL();
 
     // for gtest/etc that failure maybe after testcase destruction
-    void forceDel() { stringstream().swap(*this); }
+    // void forceDel() { stringstream().swap(*this); }
     void forceSave();
 };
 

@@ -165,25 +165,27 @@ TEST_F(UNI_LOG_TEST, low_couple_callbackFunc)
 TEST_F(UNI_LOG_TEST, no_explicit_CellLog_like_legacy)
 {
     const auto len_1 = UNI_LOG::logLen();
-    ClassUsr classUsr;                         // no explicit UNI_LOG
+    ClassUsr classUsr;                                // no explicit UNI_LOG
     const auto len_2 = UNI_LOG::logLen();
-    EXPECT_GE(len_2, len_1);                   // req: can log
+    EXPECT_GE(len_2, len_1);                          // req: can log
+    EXPECT_EQ(ULN_DEFAULT, classUsr.uniLogName());    // req: default
 
-    ClassUsr classUsr_2;                       // dup no explicit UNI_LOG
+    ClassUsr classUsr_2;                              // dup no explicit UNI_LOG
     const auto len_3 = UNI_LOG::logLen();
-    EXPECT_GE(len_3, len_2);                   // req: can log
+    EXPECT_GE(len_3, len_2);                          // req: can log
+    EXPECT_EQ(ULN_DEFAULT, classUsr_2.uniLogName());  // req: default
 
-    funcUsr();                                 // no explicit UNI_LOG
+    funcUsr();                                        // no explicit UNI_LOG
     const auto len_4 = UNI_LOG::logLen();
-    EXPECT_GE(len_4, len_3);                   // req: can log
+    EXPECT_GE(len_4, len_3);                          // req: can log
 
-    ClassUseDefaultLog nonCell;                // class not based on UNI_LOG
+    ClassUseDefaultLog nonCell;                       // class not based on UNI_LOG
     const auto len_5 = UNI_LOG::logLen();
-    EXPECT_GE(len_5, len_4);                   // req: can log
+    EXPECT_GE(len_5, len_4);                          // req: can log
 
-    funcUseDefaultLog();                       // func w/o UNI_LOG para
+    funcUseDefaultLog();                              // func w/o UNI_LOG para
     const auto len_6 = UNI_LOG::logLen();
-    EXPECT_GE(len_6, len_5);                   // req: can log
+    EXPECT_GE(len_6, len_5);                          // req: can log
 
     if (Test::HasFailure()) UNI_LOG::defaultUniLog_->needLog();
 }

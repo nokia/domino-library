@@ -35,8 +35,8 @@ public:
     ostream& oneLog();
     ostream& operator()() { return oneLog(); }
     void needLog() {}
-    const UniLogName uniLogName() const { return ULN_DEFAULT; }
 
+    static const UniLogName uniLogName() { return ULN_DEFAULT; }
     static UniCoutLog& defaultUniLog();
     // for ut
     static size_t logLen(const UniLogName& = ULN_DEFAULT) { return nLogLine_; }
