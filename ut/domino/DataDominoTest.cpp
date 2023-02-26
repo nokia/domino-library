@@ -46,13 +46,13 @@ TYPED_TEST_P(DataDominoTest, GOLD_setValue_thenGetIt)
     size_t initValue = 50000;
     setValue<TypeParam, size_t>(*PARA_DOM, XPATH_BW, initValue);
     auto valGet = getValue<TypeParam, size_t>(*PARA_DOM, XPATH_BW);
-    EXPECT_EQ(initValue, valGet);                // req: getValue = setValue
+    EXPECT_EQ(initValue, valGet);  // req: getValue = setValue
 
     size_t newValue = 10000;
     setValue<TypeParam, size_t>(*PARA_DOM, XPATH_BW, newValue);
-    EXPECT_NE(newValue, valGet);                 // req: oldGet != newSet
+    EXPECT_NE(newValue, valGet);   // req: oldGet != newSet
     valGet = getValue<TypeParam, size_t>(*PARA_DOM, XPATH_BW);
-    EXPECT_EQ(newValue, valGet);                 // req: newGet = newSet
+    EXPECT_EQ(newValue, valGet);   // req: newGet = newSet
 }
 TYPED_TEST_P(DataDominoTest, get_noData)
 {
@@ -68,7 +68,7 @@ TYPED_TEST_P(DataDominoTest, get_noData)
 
 #define DESTRUCT
 // ***********************************************************************************************
-TYPED_TEST_P(DataDominoTest, GOLD_desruct_data)
+TYPED_TEST_P(DataDominoTest, desruct_data)
 {
     PARA_DOM->replaceShared("ev0", make_shared<char>('A'));
     weak_ptr<void> weak = PARA_DOM->getShared("ev0");
@@ -81,7 +81,7 @@ TYPED_TEST_P(DataDominoTest, GOLD_desruct_data)
     ObjAnywhere::deinit(*this);      // req: rm all
     EXPECT_EQ(0, weak.use_count());
 }
-TYPED_TEST_P(DataDominoTest, GOLD_correct_data_destructor)
+TYPED_TEST_P(DataDominoTest, correct_data_destructor)
 {
     struct TestData
     {
@@ -118,8 +118,8 @@ REGISTER_TYPED_TEST_SUITE_P(DataDominoTest
     , GOLD_setShared_thenGetIt_thenRmIt
     , GOLD_setValue_thenGetIt
     , get_noData
-    , GOLD_desruct_data
-    , GOLD_correct_data_destructor
+    , desruct_data
+    , correct_data_destructor
     , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse
 );
 using AnyDatDom = Types<MinDatDom, MinWbasicDatDom, MaxNofreeDom, MaxDom>;
