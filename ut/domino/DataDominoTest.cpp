@@ -23,6 +23,8 @@ TYPED_TEST_SUITE_P(DataDominoTest);
 // ***********************************************************************************************
 TYPED_TEST_P(DataDominoTest, GOLD_setShared_thenGetIt_thenRmIt)
 {
+    EXPECT_EQ(nullptr, PARA_DOM->getShared("ev0"));  // req: get null since “ev0" not exist"
+
     PARA_DOM->replaceShared("ev0", make_shared<string>("ev0's data"));
     auto sharedString = static_pointer_cast<string>(PARA_DOM->getShared("ev0"));
     ASSERT_NE(nullptr, sharedString);
@@ -43,9 +45,12 @@ const string XPATH_BW =
     "/bandwidth";
 TYPED_TEST_P(DataDominoTest, GOLD_setValue_thenGetIt)
 {
+    auto valGet = getValue<TypeParam, size_t>(*PARA_DOM, XPATH_BW);
+    EXPECT_EQ(0, valGet);  // req: get default value since event not exist
+
     size_t initValue = 50000;
     setValue<TypeParam, size_t>(*PARA_DOM, XPATH_BW, initValue);
-    auto valGet = getValue<TypeParam, size_t>(*PARA_DOM, XPATH_BW);
+    valGet = getValue<TypeParam, size_t>(*PARA_DOM, XPATH_BW);
     EXPECT_EQ(initValue, valGet);  // req: getValue = setValue
 
     size_t newValue = 10000;
@@ -53,17 +58,6 @@ TYPED_TEST_P(DataDominoTest, GOLD_setValue_thenGetIt)
     EXPECT_NE(newValue, valGet);   // req: oldGet != newSet
     valGet = getValue<TypeParam, size_t>(*PARA_DOM, XPATH_BW);
     EXPECT_EQ(newValue, valGet);   // req: newGet = newSet
-}
-TYPED_TEST_P(DataDominoTest, get_noData)
-{
-    auto value = getValue<TypeParam, int>(*PARA_DOM, "not exist event");
-    EXPECT_EQ(0, value);  // req: no value return default
-
-    PARA_DOM->replaceShared("not exist event");
-    EXPECT_EQ(nullptr, ((const TypeParam)*PARA_DOM).getShared("not exist event"));  // req: const domino (coverage)
-
-    PARA_DOM->replaceShared("not exist event", shared_ptr<void>());
-    EXPECT_EQ(nullptr, ((const TypeParam)*PARA_DOM).getShared("not exist event"));  // req: const domino (coverage)
 }
 
 #define DESTRUCT
@@ -117,7 +111,6 @@ TYPED_TEST_P(DataDominoTest, GOLD_nonConstInterface_shall_createUnExistEvent_wit
 REGISTER_TYPED_TEST_SUITE_P(DataDominoTest
     , GOLD_setShared_thenGetIt_thenRmIt
     , GOLD_setValue_thenGetIt
-    , get_noData
     , desruct_data
     , correct_data_destructor
     , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse

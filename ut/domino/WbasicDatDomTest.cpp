@@ -20,42 +20,6 @@ struct WbasicDatDomTest : public UtInitObjAnywhere
 };
 TYPED_TEST_SUITE_P(WbasicDatDomTest);
 
-#define FLAG
-// ***********************************************************************************************
-TYPED_TEST_P(WbasicDatDomTest, GOLD_setFlag_thenGetIt)
-{
-    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0"));  // req: invalid ev is false
-
-    PARA_DOM->newEvent("ev0");
-    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0"));  // req: valid ev is false
-
-    PARA_DOM->wrCtrlOk("ev0");
-    EXPECT_TRUE(PARA_DOM->isWrCtrl("ev0"));   // req: set true
-
-    PARA_DOM->wrCtrlOk("ev0", false);
-    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0"));  // req: set false
-
-    PARA_DOM->wrCtrlOk("ev1");
-    EXPECT_TRUE(PARA_DOM->isWrCtrl("ev1"));   // req: create & set true
-
-    PARA_DOM->wrCtrlOk("ev1");
-    EXPECT_TRUE(PARA_DOM->isWrCtrl("ev1"));   // req: dup set true
-
-    PARA_DOM->newEvent("ev2");
-    PARA_DOM->wrCtrlOk("ev3");
-    // req: alloc ev3 in bitmap can't impact ev2(still not exist in bitmap)
-    EXPECT_TRUE (PARA_DOM->isWrCtrl("ev3"));
-    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev2"));
-}
-TYPED_TEST_P(WbasicDatDomTest, setFlag_holeWorkWell)
-{
-    PARA_DOM->newEvent("ev2");
-    PARA_DOM->wrCtrlOk("ev3");
-    // req: alloc ev3 in bitmap can't impact ev2(still not exist in bitmap)
-    EXPECT_TRUE (PARA_DOM->isWrCtrl("ev3"));
-    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev2"));  // in bitmap hole
-}
-
 #define SET_GET
 // ***********************************************************************************************
 TYPED_TEST_P(WbasicDatDomTest, GOLD_writeCtrlData_set_get_rm)
@@ -134,6 +98,42 @@ TYPED_TEST_P(WbasicDatDomTest, canNOT_setWriteCtrl_afterOwnData)
     wbasic_setValue<TypeParam, size_t>(*PARA_DOM, "ev1", 1);
     EXPECT_FALSE(PARA_DOM->wrCtrlOk("ev1", false));  // req: failed to avoid out-ctrl
     EXPECT_TRUE(PARA_DOM->isWrCtrl("ev1"));          // req: flag no change
+}
+
+#define FLAG
+// ***********************************************************************************************
+TYPED_TEST_P(WbasicDatDomTest, GOLD_setFlag_thenGetIt)
+{
+    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0"));  // req: invalid ev is false
+
+    PARA_DOM->newEvent("ev0");
+    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0"));  // req: valid ev is false
+
+    PARA_DOM->wrCtrlOk("ev0");
+    EXPECT_TRUE(PARA_DOM->isWrCtrl("ev0"));   // req: set true
+
+    PARA_DOM->wrCtrlOk("ev0", false);
+    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0"));  // req: set false
+
+    PARA_DOM->wrCtrlOk("ev1");
+    EXPECT_TRUE(PARA_DOM->isWrCtrl("ev1"));   // req: create & set true
+
+    PARA_DOM->wrCtrlOk("ev1");
+    EXPECT_TRUE(PARA_DOM->isWrCtrl("ev1"));   // req: dup set true
+
+    PARA_DOM->newEvent("ev2");
+    PARA_DOM->wrCtrlOk("ev3");
+    // req: alloc ev3 in bitmap can't impact ev2(still not exist in bitmap)
+    EXPECT_TRUE (PARA_DOM->isWrCtrl("ev3"));
+    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev2"));
+}
+TYPED_TEST_P(WbasicDatDomTest, setFlag_holeWorkWell)
+{
+    PARA_DOM->newEvent("ev2");
+    PARA_DOM->wrCtrlOk("ev3");
+    // req: alloc ev3 in bitmap can't impact ev2(still not exist in bitmap)
+    EXPECT_TRUE (PARA_DOM->isWrCtrl("ev3"));
+    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev2"));  // in bitmap hole
 }
 
 #define ID_STATE
