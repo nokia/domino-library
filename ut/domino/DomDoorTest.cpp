@@ -28,7 +28,7 @@ TYPED_TEST_SUITE_P(DomDoorTest);
 //                 B   C (dom2_)       C
 //                    /
 //                   D
-TYPED_TEST_P(DomDoorTest, GOLD_most_match)
+TYPED_TEST_P(DomDoorTest, UC_most_match)
 {
     this->domDoor_.subTree("/A",   PARA_DOM);     // req: can support any type domino
     this->domDoor_.subTree("/A/C", this->dom2_);  // simplify (shall also be any type domino)
@@ -52,7 +52,7 @@ TYPED_TEST_P(DomDoorTest, GOLD_most_match)
 
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(DomDoorTest
-    , GOLD_most_match
+    , UC_most_match
 );
 using AnyDatDom = Types<Domino, MinDatDom, MinWbasicDatDom, MinHdlrDom, MinMhdlrDom,
     MinPriDom, MinFreeDom, MaxNofreeDom, MaxDom>;

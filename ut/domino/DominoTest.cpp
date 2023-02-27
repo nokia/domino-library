@@ -19,65 +19,12 @@ struct DominoTest : public UtInitObjAnywhere
 };
 TYPED_TEST_SUITE_P(DominoTest);
 
-#define ID_STATE
-// ***********************************************************************************************
-// req: both event & EvName are ID
-// ***********************************************************************************************
-TYPED_TEST_P(DominoTest, nonConstInterface_shall_createUnExistEvent_withStateFalse)
-{
-    // req: new ID by newEvent()
-    this->uniqueEVs_.insert(PARA_DOM->newEvent(""));      // req: create new
-    this->uniqueEVs_.insert(PARA_DOM->newEvent(""));      // req: no dup
-    EXPECT_EQ(1u, this->uniqueEVs_.size());
-    EXPECT_FALSE(PARA_DOM->state(""));                    // req: default state is false
-
-    // req: new ID by setState()
-    PARA_DOM->setState({{"", false}, {"e2", false}});
-    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e2"));
-    PARA_DOM->setState({{"", false}, {"e2", false}});
-    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e2"));
-    EXPECT_EQ(2u, this->uniqueEVs_.size());
-    EXPECT_FALSE(PARA_DOM->state("e2"));
-
-    // req: new ID by setPrev()
-    PARA_DOM->setPrev("e3", {{"e4", true}});
-    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e3"));
-    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e4"));
-    PARA_DOM->setPrev("e3", {{"e4", true}});
-    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e3"));
-    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e4"));
-    EXPECT_EQ(4u, this->uniqueEVs_.size());
-    EXPECT_FALSE(PARA_DOM->state("e3"));
-    EXPECT_FALSE(PARA_DOM->state("e4"));
-
-    this->uniqueEVs_.insert(Domino::D_EVENT_FAILED_RET);  // req: new ID != Domino::D_EVENT_FAILED_RET
-    EXPECT_EQ(5u, this->uniqueEVs_.size());
-}
-TYPED_TEST_P(DominoTest, noID_for_not_exist_EvName)
-{
-    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy(""));
-}
-TYPED_TEST_P(DominoTest, stateFalse_for_not_exist_EvName)
-{
-    EXPECT_FALSE(PARA_DOM->state(""));
-}
-TYPED_TEST_P(DominoTest, GOLD_setState_thenGetIt)
-{
-    PARA_DOM->setState({{"", true}, {"e2", false}});  // init set multi
-    EXPECT_TRUE(PARA_DOM->state(""));
-    EXPECT_FALSE(PARA_DOM->state("e2"));
-
-    PARA_DOM->setState({{"", false}});                // dup set 1 of the 2
-    EXPECT_FALSE(PARA_DOM->state(""));
-    EXPECT_FALSE(PARA_DOM->state("e2"));
-}
-
 #define BROADCAST_STATE
 // ***********************************************************************************************
 // - req: forward broadcast
 // - req: not backward broadcast
 // - req: true/false broadcast are same
-TYPED_TEST_P(DominoTest, GOLD_broadcast_trueState)
+TYPED_TEST_P(DominoTest, UC_broadcast_trueState)
 {
     // init, e1=up, e2=up
     PARA_DOM->setPrev("e2", {{"e1", true}});
@@ -158,7 +105,7 @@ TYPED_TEST_P(DominoTest, GOLD_broadcast_trueState)
     EXPECT_FALSE(PARA_DOM->state("e1"));
     EXPECT_FALSE(PARA_DOM->state("e2"));
 }
-TYPED_TEST_P(DominoTest, immediate_broadcast)
+TYPED_TEST_P(DominoTest, UC_immediate_broadcast)
 {
     // false broadcast
     PARA_DOM->setPrev("e2", {{"e1", false}});
@@ -171,18 +118,18 @@ TYPED_TEST_P(DominoTest, immediate_broadcast)
     EXPECT_TRUE(PARA_DOM->state("e3"));
     EXPECT_TRUE(PARA_DOM->state("e4"));
 }
-TYPED_TEST_P(DominoTest, GOLD_broadcast_only_allPrev_satisfied)
+TYPED_TEST_P(DominoTest, UC_broadcast_onlyWhen_allPrev_satisfied)
 {
     PARA_DOM->setPrev("e1", {{"e2", true}, {"e3", true}});  // multi
-    PARA_DOM->setPrev("e4", {{"e1", true}});                // chain
+    PARA_DOM->setPrev("e4", {{"e1", true}});  // chain
     EXPECT_FALSE(PARA_DOM->state("e1"));
     EXPECT_FALSE(PARA_DOM->state("e4"));
 
-    PARA_DOM->setState({{"e2", true}});                     // req: not full satisfied
+    PARA_DOM->setState({{"e2", true}});  // req: not allPrev satisfied
     EXPECT_FALSE(PARA_DOM->state("e1"));
     EXPECT_FALSE(PARA_DOM->state("e4"));
 
-    PARA_DOM->setState({{"e3", true}});                     // req: full satisfied
+    PARA_DOM->setState({{"e3", true}});  // req: full satisfied
     EXPECT_TRUE(PARA_DOM->state("e1"));
     EXPECT_TRUE(PARA_DOM->state("e4"));
 }
@@ -199,7 +146,7 @@ TYPED_TEST_P(DominoTest, prevSelf_is_invalid)
 //   . so SmodAgent can log_ << PARA_DOM.whyFalse(EnSmod_IS_FNC_TO_ROM_PLAN)
 // - no need whyTrue() since all prev-event must be satisfied
 // ***********************************************************************************************
-TYPED_TEST_P(DominoTest, GOLD_multi_retOne)
+TYPED_TEST_P(DominoTest, UC_multi_retOne)
 {
     PARA_DOM->setPrev("master succ", {{"all agents succ", true}, {"user abort", false}});
     EXPECT_EQ("all agents succ==false", PARA_DOM->whyFalse("master succ"));
@@ -207,7 +154,7 @@ TYPED_TEST_P(DominoTest, GOLD_multi_retOne)
     PARA_DOM->setState({{"all agents succ", true}, {"user abort", true}});
     EXPECT_EQ("user abort==true", PARA_DOM->whyFalse("master succ"));
 }
-TYPED_TEST_P(DominoTest, trueEvent_retEmpty)
+TYPED_TEST_P(DominoTest, UC_trueEvent_retEmpty)
 {
     PARA_DOM->setPrev("master succ", {{"all agents succ", true}, {"user abort", false}});
     PARA_DOM->setState({{"all agents succ", true}});
@@ -227,7 +174,7 @@ TYPED_TEST_P(DominoTest, invalidEvent_retEmpty)
 
 #define SEARCH_PARTIAL_EVNAME
 // ***********************************************************************************************
-TYPED_TEST_P(DominoTest, search_partial_evName)
+TYPED_TEST_P(DominoTest, UC_search_partial_evName)
 {
     PARA_DOM->newEvent("/A");
     PARA_DOM->newEvent("/A/B");
@@ -248,24 +195,77 @@ TYPED_TEST_P(DominoTest, search_partial_evName)
     EXPECT_EQ(0u, nFound);  // req: not found
 }
 
+#define ID_STATE
+// ***********************************************************************************************
+// req: both event & EvName are ID
+// ***********************************************************************************************
+TYPED_TEST_P(DominoTest, nonConstInterface_shall_createUnExistEvent_withStateFalse)
+{
+    // req: new ID by newEvent()
+    this->uniqueEVs_.insert(PARA_DOM->newEvent(""));  // req: create new
+    this->uniqueEVs_.insert(PARA_DOM->newEvent(""));  // req: no dup
+    EXPECT_EQ(1u, this->uniqueEVs_.size());
+    EXPECT_FALSE(PARA_DOM->state(""));  // req: default state is false
+
+    // req: new ID by setState()
+    PARA_DOM->setState({{"", false}, {"e2", false}});
+    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e2"));
+    PARA_DOM->setState({{"", false}, {"e2", false}});
+    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e2"));
+    EXPECT_EQ(2u, this->uniqueEVs_.size());
+    EXPECT_FALSE(PARA_DOM->state("e2"));
+
+    // req: new ID by setPrev()
+    PARA_DOM->setPrev("e3", {{"e4", true}});
+    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e3"));
+    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e4"));
+    PARA_DOM->setPrev("e3", {{"e4", true}});
+    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e3"));
+    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e4"));
+    EXPECT_EQ(4u, this->uniqueEVs_.size());
+    EXPECT_FALSE(PARA_DOM->state("e3"));
+    EXPECT_FALSE(PARA_DOM->state("e4"));
+
+    this->uniqueEVs_.insert(Domino::D_EVENT_FAILED_RET);  // req: new ID != Domino::D_EVENT_FAILED_RET
+    EXPECT_EQ(5u, this->uniqueEVs_.size());
+}
+TYPED_TEST_P(DominoTest, noID_for_not_exist_EvName)
+{
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy(""));
+}
+TYPED_TEST_P(DominoTest, stateFalse_for_not_exist_EvName)
+{
+    EXPECT_FALSE(PARA_DOM->state(""));
+}
+TYPED_TEST_P(DominoTest, GOLD_setState_thenGetIt)
+{
+    PARA_DOM->setState({{"", true}, {"e2", false}});  // init set multi
+    EXPECT_TRUE(PARA_DOM->state(""));
+    EXPECT_FALSE(PARA_DOM->state("e2"));
+
+    PARA_DOM->setState({{"", false}});  // dup set 1 of the 2
+    EXPECT_FALSE(PARA_DOM->state(""));
+    EXPECT_FALSE(PARA_DOM->state("e2"));
+}
+
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(DominoTest
+    , UC_broadcast_trueState
+    , UC_immediate_broadcast
+    , UC_broadcast_onlyWhen_allPrev_satisfied
+    , prevSelf_is_invalid
+
+    , UC_multi_retOne
+    , UC_trueEvent_retEmpty
+    , eventWithoutPrev_retEmpty
+    , invalidEvent_retEmpty
+
+    , UC_search_partial_evName
+
     , nonConstInterface_shall_createUnExistEvent_withStateFalse
     , noID_for_not_exist_EvName
     , stateFalse_for_not_exist_EvName
     , GOLD_setState_thenGetIt
-
-    , GOLD_broadcast_trueState
-    , immediate_broadcast
-    , GOLD_broadcast_only_allPrev_satisfied
-    , prevSelf_is_invalid
-
-    , GOLD_multi_retOne
-    , trueEvent_retEmpty
-    , eventWithoutPrev_retEmpty
-    , invalidEvent_retEmpty
-
-    , search_partial_evName
 );
 using AnyDom = Types<Domino, MinDatDom, MinWbasicDatDom, MinHdlrDom, MinMhdlrDom, MinPriDom,
     MinFreeDom, MaxNofreeDom, MaxDom>;
