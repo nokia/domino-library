@@ -94,7 +94,7 @@ TYPED_TEST_P(PriDominoTest, GOLD_setPriority_thenPriorityFifoCallback)
 // ***********************************************************************************************
 // event & EvName are ID
 // ***********************************************************************************************
-TYPED_TEST_P(PriDominoTest, GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse)
+TYPED_TEST_P(PriDominoTest, nonConstInterface_shall_createUnExistEvent_withStateFalse)
 {
     PARA_DOM->setPriority("e1", EMsgPri_HIGH);
     PARA_DOM->setPriority("e1", EMsgPri_HIGH);
@@ -110,7 +110,7 @@ TYPED_TEST_P(PriDominoTest, GOLD_nonConstInterface_shall_createUnExistEvent_with
 REGISTER_TYPED_TEST_SUITE_P(PriDominoTest
     , setPriority_thenGetIt
     , defaultPriority
-    , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse
+    , nonConstInterface_shall_createUnExistEvent_withStateFalse
     , GOLD_setPriority_thenPriorityFifoCallback
 );
 using AnyPriDom = Types<MinPriDom, MaxNofreeDom, MaxDom>;

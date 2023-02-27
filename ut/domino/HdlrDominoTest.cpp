@@ -342,7 +342,7 @@ TYPED_TEST_P(NofreeHdlrDominoTest, hdlrOnRoad_thenRmDom_noCrash_noLeak)
 // ***********************************************************************************************
 // event & EvName are ID
 // ***********************************************************************************************
-TYPED_TEST_P(HdlrDominoTest, GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse)
+TYPED_TEST_P(HdlrDominoTest, nonConstInterface_shall_createUnExistEvent_withStateFalse)
 {
     PARA_DOM->setHdlr("e1", this->hdlr0_);
     PARA_DOM->setHdlr("e1", this->hdlr0_);
@@ -388,7 +388,7 @@ REGISTER_TYPED_TEST_SUITE_P(HdlrDominoTest
     , rmHdlr_fail
     , rmHdlrOnRoad_noCallback
 
-    , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse
+    , nonConstInterface_shall_createUnExistEvent_withStateFalse
 );
 using AnyHdlrDom = Types<MinHdlrDom, MinMhdlrDom, MinFreeDom, MinPriDom, MaxNofreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, HdlrDominoTest, AnyHdlrDom);

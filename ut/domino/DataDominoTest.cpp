@@ -94,7 +94,7 @@ TYPED_TEST_P(DataDominoTest, correct_data_destructor)
 // ***********************************************************************************************
 // event & EvName are ID
 // ***********************************************************************************************
-TYPED_TEST_P(DataDominoTest, GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse)
+TYPED_TEST_P(DataDominoTest, nonConstInterface_shall_createUnExistEvent_withStateFalse)
 {
     // DataDomino::
     PARA_DOM->getShared("e1");
@@ -112,7 +112,7 @@ REGISTER_TYPED_TEST_SUITE_P(DataDominoTest
     , UC_setShared_thenGetIt_thenRmIt
     , desruct_data
     , correct_data_destructor
-    , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse
+    , nonConstInterface_shall_createUnExistEvent_withStateFalse
 );
 using AnyDatDom = Types<MinDatDom, MinWbasicDatDom, MaxNofreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, DataDominoTest, AnyDatDom);

@@ -258,7 +258,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, rmHdlr_invalid)
 // ***********************************************************************************************
 // event & EvName are ID
 // ***********************************************************************************************
-TYPED_TEST_P(MultiHdlrDominoTest, GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse)
+TYPED_TEST_P(MultiHdlrDominoTest, nonConstInterface_shall_createUnExistEvent_withStateFalse)
 {
     PARA_DOM->multiHdlrOnSameEv("e1", this->hdlr0_, "h0");
     PARA_DOM->multiHdlrOnSameEv("e1", this->hdlr1_, "h1");
@@ -292,7 +292,7 @@ REGISTER_TYPED_TEST_SUITE_P(MultiHdlrDominoTest
     , rmLegacyHdlr_byNoHdlrName
     , rmHdlr_invalid
 
-    , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse
+    , nonConstInterface_shall_createUnExistEvent_withStateFalse
 );
 using AnyMultiHdlrDom = Types<MinMhdlrDom, MaxNofreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, MultiHdlrDominoTest, AnyMultiHdlrDom);

@@ -23,7 +23,7 @@ TYPED_TEST_SUITE_P(DominoTest);
 // ***********************************************************************************************
 // req: both event & EvName are ID
 // ***********************************************************************************************
-TYPED_TEST_P(DominoTest, GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse)
+TYPED_TEST_P(DominoTest, nonConstInterface_shall_createUnExistEvent_withStateFalse)
 {
     // req: new ID by newEvent()
     this->uniqueEVs_.insert(PARA_DOM->newEvent(""));      // req: create new
@@ -250,7 +250,7 @@ TYPED_TEST_P(DominoTest, search_partial_evName)
 
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(DominoTest
-    , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse
+    , nonConstInterface_shall_createUnExistEvent_withStateFalse
     , noID_for_not_exist_EvName
     , stateFalse_for_not_exist_EvName
     , GOLD_setState_thenGetIt

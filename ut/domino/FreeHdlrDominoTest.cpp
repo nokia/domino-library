@@ -200,7 +200,7 @@ TYPED_TEST_P(FreeHdlrDominoTest, BugFix_noCrash_whenRmDom)
 // ***********************************************************************************************
 // event & EvName are ID
 // ***********************************************************************************************
-TYPED_TEST_P(FreeHdlrDominoTest, GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse)
+TYPED_TEST_P(FreeHdlrDominoTest, nonConstInterface_shall_createUnExistEvent_withStateFalse)
 {
     PARA_DOM->repeatedHdlr("e1");
     PARA_DOM->repeatedHdlr("e1");
@@ -222,7 +222,7 @@ REGISTER_TYPED_TEST_SUITE_P(FreeHdlrDominoTest
     , BugFix_noMemLeak_whenRmMsgSelf
     , BugFix_noCrash_whenRmDom
 
-    , GOLD_nonConstInterface_shall_createUnExistEvent_withStateFalse
+    , nonConstInterface_shall_createUnExistEvent_withStateFalse
 );
 using AnyFreeDom = Types<MinFreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, FreeHdlrDominoTest, AnyFreeDom);
