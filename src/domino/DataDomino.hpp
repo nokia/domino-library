@@ -59,8 +59,10 @@ shared_ptr<void> DataDomino<aDominoType>::getShared(const Domino::EvName& aEvNam
 template<typename aDominoType>
 void DataDomino<aDominoType>::replaceShared(const Domino::EvName& aEvName, shared_ptr<void> aSharedData)
 {
-    if (aSharedData == nullptr) dataStore_.erase(this->getEventBy(aEvName));  // avoid keep inc dataStore_
-    else dataStore_[this->newEvent(aEvName)] = aSharedData;
+    if (aSharedData == nullptr)
+        dataStore_.erase(this->getEventBy(aEvName));  // avoid keep inc dataStore_
+    else
+        dataStore_[this->newEvent(aEvName)] = aSharedData;
 }
 
 
@@ -71,7 +73,8 @@ template<typename aDataDominoType, typename aDataType>
 aDataType getValue(aDataDominoType& aDom, const Domino::EvName& aEvName)
 {
     auto&& data = static_pointer_cast<aDataType>(aDom.getShared(aEvName));
-    if (data != nullptr) return *data;
+    if (data != nullptr)
+        return *data;
 
     auto&& oneLog = aDom;
     WRN("(DataDomino) Failed!!! EvName=" << aEvName << " not found, return undefined obj!!!");

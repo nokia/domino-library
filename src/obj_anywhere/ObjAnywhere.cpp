@@ -12,7 +12,8 @@ shared_ptr<ObjAnywhere::ObjStore> ObjAnywhere::objStore_;
 // ***********************************************************************************************
 void ObjAnywhere::deinit(UniLog& oneLog)
 {
-    if (!objStore_) return;
+    if (!objStore_)
+        return;
 
     INF("(ObjAnywhere) Succeed. ObjAnywhere giveup nSvc=" << objStore_->size());
     objStore_.reset();
@@ -21,7 +22,8 @@ void ObjAnywhere::deinit(UniLog& oneLog)
 // ***********************************************************************************************
 void ObjAnywhere::init(UniLog& oneLog)
 {
-    if (objStore_) WRN("(ObjAnywhere) !!! Refuse dup init.")
+    if (objStore_)
+        WRN("(ObjAnywhere) !!! Refuse dup init.")
     else
     {
         INF("(ObjAnywhere) Succeed.");

@@ -45,7 +45,8 @@ public :
 inline
 StrCoutFSL::~StrCoutFSL()
 {
-    if( canDelLog() ) return;
+    if( canDelLog() )
+        return;
 
     forceSave();
 }

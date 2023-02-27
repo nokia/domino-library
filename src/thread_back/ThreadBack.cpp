@@ -23,9 +23,11 @@ size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
             it->second(it->first.get());
             it = allThreads_.erase(it);
             ++nHandled;
-            if (--mt_nFinishedThread_ == 0) return nHandled;
+            if (--mt_nFinishedThread_ == 0)
+                return nHandled;
         }
-        else ++it;
+        else
+            ++it;
         HID("(ThreadBack) nHandled=" << nHandled << ", status=" << static_cast<int>(status));
     }
     return nHandled;  // though mt_nFinishedThread_ may > 0, to avoid dead-loop, & limit-duty

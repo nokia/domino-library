@@ -45,7 +45,8 @@ public:
 template<typename aDominoType>
 shared_ptr<void> WbasicDatDom<aDominoType>::getShared(const Domino::EvName& aEvName) const
 {
-    if (not isWrCtrl(aEvName)) return aDominoType::getShared(aEvName);
+    if (not isWrCtrl(aEvName))
+        return aDominoType::getShared(aEvName);
 
     UniLog oneLog(this->uniLogName());
     WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!");
@@ -73,7 +74,8 @@ void WbasicDatDom<aDominoType>::replaceShared(const Domino::EvName& aEvName, sha
 template<typename aDominoType>
 shared_ptr<void> WbasicDatDom<aDominoType>::wbasic_getShared(const Domino::EvName& aEvName) const
 {
-    if (isWrCtrl(aEvName)) return aDominoType::getShared(aEvName);
+    if (isWrCtrl(aEvName))
+        return aDominoType::getShared(aEvName);
 
     UniLog oneLog(this->uniLogName());
     WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!");
@@ -84,8 +86,10 @@ shared_ptr<void> WbasicDatDom<aDominoType>::wbasic_getShared(const Domino::EvNam
 template<typename aDominoType>
 void WbasicDatDom<aDominoType>::wbasic_replaceShared(const Domino::EvName& aEvName, shared_ptr<void> aSharedData)
 {
-    if (isWrCtrl(aEvName)) aDominoType::replaceShared(aEvName, aSharedData);
-    else WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!")
+    if (isWrCtrl(aEvName))
+        aDominoType::replaceShared(aEvName, aSharedData);
+    else
+        WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!")
 }
 
 // ***********************************************************************************************
@@ -99,7 +103,8 @@ bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName, const bo
     }
 
     const auto ev = this->newEvent(aEvName);
-    if (ev >= wrCtrl_.size()) wrCtrl_.resize(ev + 1);  // resize() can inc size()
+    if (ev >= wrCtrl_.size())
+        wrCtrl_.resize(ev + 1);  // resize() can inc size()
     wrCtrl_[ev] = aNewState;
     HID("(WbasicDatDom) Succeed, EvName=" << aEvName << ", new wrCtrl=" << aNewState
         << ", nWr=" << wrCtrl_.size() << ", cap=" << wrCtrl_.capacity());
@@ -114,7 +119,8 @@ template<typename aDataDominoType, typename aDataType>
 aDataType wbasic_getValue(aDataDominoType& aDom, const Domino::EvName& aEvName)
 {
     auto&& data = static_pointer_cast<aDataType>(aDom.wbasic_getShared(aEvName));
-    if (data != nullptr) return *data;
+    if (data != nullptr)
+        return *data;
 
     auto&& oneLog = aDom;
     WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " not found, return undefined obj!!!");

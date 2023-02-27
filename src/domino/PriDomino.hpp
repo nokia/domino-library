@@ -43,8 +43,10 @@ template<class aDominoType>
 EMsgPriority PriDomino<aDominoType>::getPriority(const Domino::Event aEv) const
 {
     auto&& it = priorities_.find(aEv);
-    if (it == priorities_.end()) return aDominoType::getPriority(aEv);
-    else return it->second;
+    if (it == priorities_.end())
+        return aDominoType::getPriority(aEv);
+    else
+        return it->second;
 }
 
 // ***********************************************************************************************
@@ -53,8 +55,10 @@ Domino::Event PriDomino<aDominoType>::setPriority(const Domino::EvName& aEvName,
 {
     DBG("(PriDomino) EvName=" << aEvName << ", newPri=" << size_t(aPri));
     auto&& event = this->newEvent(aEvName);
-    if (aPri == aDominoType::getPriority(event)) priorities_.erase(event);  // less mem & faster searching
-    else priorities_[event] = aPri;
+    if (aPri == aDominoType::getPriority(event))
+        priorities_.erase(event);  // less mem & faster searching
+    else
+        priorities_[event] = aPri;
     return event;
 }
 }  // namespace

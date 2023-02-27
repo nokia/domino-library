@@ -68,10 +68,12 @@ private:
 template<typename aObjType>
 shared_ptr<aObjType> ObjAnywhere::get(UniLog& oneLog)
 {
-    if (not isInit()) return shared_ptr<aObjType>();
+    if (not isInit())
+        return shared_ptr<aObjType>();
 
     auto&& found = objStore_->find(typeid(aObjType).hash_code());
-    if (found != objStore_->end()) return static_pointer_cast<aObjType>(found->second);
+    if (found != objStore_->end())
+        return static_pointer_cast<aObjType>(found->second);
 
     INF("(ObjAnywhere) !!! Failed, unavailable obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
     return shared_ptr<aObjType>();

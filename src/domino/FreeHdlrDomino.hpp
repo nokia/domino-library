@@ -45,7 +45,8 @@ template<class aDominoType>
 Domino::Event FreeHdlrDomino<aDominoType>::repeatedHdlr(const Domino::EvName& aEvName)
 {
     auto&& event = this->newEvent(aEvName);
-    if (event >= isRepeatHdlr_.size()) isRepeatHdlr_.resize(event + 1);
+    if (event >= isRepeatHdlr_.size())
+        isRepeatHdlr_.resize(event + 1);
     isRepeatHdlr_[event] = true;
     return event;
 }
@@ -54,7 +55,9 @@ Domino::Event FreeHdlrDomino<aDominoType>::repeatedHdlr(const Domino::EvName& aE
 template<class aDominoType>
 bool FreeHdlrDomino<aDominoType>::isRepeatHdlr(const Domino::Event aEv) const
 {
-    return aEv < isRepeatHdlr_.size() ? isRepeatHdlr_.at(aEv) : false;
+    return aEv < isRepeatHdlr_.size()
+        ? isRepeatHdlr_.at(aEv)
+        : false;
 }
 
 // ***********************************************************************************************
@@ -62,14 +65,16 @@ template<class aDominoType>
 void FreeHdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event aEv)
 {
     aDominoType::triggerHdlr(aHdlr, aEv);
-    if (isRepeatHdlr(aEv)) return;
+    if (isRepeatHdlr(aEv))
+        return;
 
     // auto free aHdlr
     // - simple solution (FreeHdlrDomino is not crucial but convenient user)
     // - gap: higher priority hdlr may insert between hdlr & its auto-free
     this->msgSelf_->newMsg([this, aEv, weakHdlr = WeakMsgCB(aHdlr)]()  // weak_ptr to avoid fail rmHdlr
         {
-            if (weakHdlr.expired()) return;
+            if (weakHdlr.expired())
+                return;
             this->rmOneHdlrOK(aEv, weakHdlr.lock());  // is valid "this" since still own aHdlr
         },
         this->getPriority(aEv)

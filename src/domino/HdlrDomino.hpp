@@ -58,7 +58,8 @@ protected:
             [weakMsgCB = WeakMsgCB(aHdlr)]() mutable  // WeakMsgCB is to support rm hdlr
             {
                 auto cb = weakMsgCB.lock();
-                if (cb) (*cb)();  // doesn't make sense that domino stores *cb==null
+                if (cb)
+                    (*cb)();  // doesn't make sense that domino stores *cb==null
             },
             getPriority(aEv)
         );
@@ -78,7 +79,8 @@ template<class aDominoType>
 void HdlrDomino<aDominoType>::effect(const Domino::Event aEv)
 {
     auto&& it = hdlrs_.find(aEv);
-    if (it == hdlrs_.end()) return;
+    if (it == hdlrs_.end())
+        return;
 
     DBG("(HdlrDomino) Succeed to trigger 1 hdlr of EvName=" << this->evName(aEv));
     triggerHdlr(it->second, aEv);
@@ -90,7 +92,8 @@ Domino::Event HdlrDomino<aDominoType>::multiHdlrByAliasEv(const Domino::EvName& 
     const MsgCB& aHdlr, const Domino::EvName& aHostEN)
 {
     auto&& event = this->setHdlr(aAliasEN, aHdlr);
-    if (event == Domino::D_EVENT_FAILED_RET) return Domino::D_EVENT_FAILED_RET;
+    if (event == Domino::D_EVENT_FAILED_RET)
+        return Domino::D_EVENT_FAILED_RET;
 
     return this->setPrev(aAliasEN, {{aHostEN, true}});
 }

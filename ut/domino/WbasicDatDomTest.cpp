@@ -51,6 +51,33 @@ TYPED_TEST_P(WbasicDatDomTest, UC_wrCtrl_set_get_rm)  // non-wrData is covered b
     auto shared = PARA_DOM->wbasic_getShared("ev0");
     EXPECT_EQ(nullptr, shared);  // req: rm wr-data
 }
+TYPED_TEST_P(WbasicDatDomTest, DISABLED_wrCtrlIF_cannotHdl_nonWrDat)
+{
+    setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 1);
+    auto valGet = getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
+    EXPECT_EQ(1u, valGet);  // req: get=set
+
+    setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 2);
+    valGet = getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
+    EXPECT_EQ(2u, valGet);  // req: get=update
+
+    wbasic_setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 3);
+    valGet = getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
+    EXPECT_EQ(2u, valGet);  // req: wbasic_set failed
+
+    valGet = wbasic_getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
+    EXPECT_NE(3u, valGet);  // req: wbasic_get failed
+
+    PARA_DOM->wbasic_replaceShared("ev0");
+    valGet = getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
+    EXPECT_EQ(2u, valGet);  // req: w- can't rm non-w-data
+    valGet = wbasic_getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
+    EXPECT_EQ(0u, valGet);  // req: w- get default value
+
+    PARA_DOM->replaceShared("ev0");
+    valGet = getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
+    EXPECT_EQ(0u, valGet);  // req: rm non-w-data
+}
 TYPED_TEST_P(WbasicDatDomTest, canNOT_setWriteCtrl_afterOwnData)
 {
     setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 1);
@@ -146,6 +173,7 @@ TYPED_TEST_P(WbasicDatDomTest, GOLD_nonConstInterface_shall_createUnExistEvent_w
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(WbasicDatDomTest
     , UC_wrCtrl_set_get_rm
+    , DISABLED_wrCtrlIF_cannotHdl_nonWrDat
     , GOLD_setFlag_thenGetIt
     , setFlag_holeWorkWell
     , canNOT_setWriteCtrl_afterOwnData

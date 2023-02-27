@@ -29,7 +29,8 @@ UniSmartLog::UniSmartLog(const UniLogName& aUniLogName) : uniLogName_(aUniLogNam
 // ***********************************************************************************************
 UniSmartLog& UniSmartLog::defaultUniLog()
 {
-    if (not defaultUniLog_) defaultUniLog_ = make_shared<UniSmartLog>(ULN_DEFAULT);
+    if (not defaultUniLog_)
+        defaultUniLog_ = make_shared<UniSmartLog>(ULN_DEFAULT);
     return *defaultUniLog_;
 }
 
@@ -37,7 +38,9 @@ UniSmartLog& UniSmartLog::defaultUniLog()
 size_t UniSmartLog::logLen(const UniLogName& aUniLogName)
 {
     auto&& it = logStore_.find(aUniLogName);
-    return it == logStore_.end() ? 0 : it->second->str().size();
+    return it == logStore_.end()
+        ? 0
+        : it->second->str().size();
 }
 
 // ***********************************************************************************************

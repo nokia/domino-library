@@ -16,11 +16,13 @@ void Domino::deduceState(const Event aEv)
 {
     for (auto&& prevEvent : prev_[true][aEv])
     {
-        if (states_.at(prevEvent) != true) return;
+        if (states_.at(prevEvent) != true)
+            return;
     }
     for (auto&& prevEvent : prev_[false][aEv])
     {
-        if (states_.at(prevEvent) != false) return;
+        if (states_.at(prevEvent) != false)
+            return;
     }
 
     pureSetState(aEv, true);
@@ -31,14 +33,17 @@ void Domino::deduceState(const Event aEv)
 Domino::Event Domino::getEventBy(const EvName& aEvName) const
 {
     auto&& it = events_.find(aEvName);
-    return it == events_.end() ? D_EVENT_FAILED_RET : it->second;
+    return it == events_.end()
+        ? D_EVENT_FAILED_RET
+        : it->second;
 }
 
 // ***********************************************************************************************
 Domino::Event Domino::newEvent(const EvName& aEvName)
 {
     auto&& event = getEventBy(aEvName);
-    if (event != D_EVENT_FAILED_RET) return event;
+    if (event != D_EVENT_FAILED_RET)
+        return event;
 
     event = states_.size();
     HID("(Domino) Succeed, EvName=" << aEvName << ", event id=" << event);
@@ -55,7 +60,8 @@ void Domino::pureSetState(const Event aEv, const bool aNewState)
     {
         states_[aEv] = aNewState;
         DBG("(Domino) Succeed, EvName=" << evNames_[aEv] << " newState=" << aNewState);
-        if (aNewState == true) effect(aEv);
+        if (aNewState == true)
+            effect(aEv);
 
         sthChanged_ = true;
     }
@@ -97,7 +103,8 @@ void Domino::setState(const SimuEvents& aSimuEvents)
         for (auto&& nextEvent : next_[itSim.second][events_[itSim.first]]) deduceState(nextEvent);
     }
 
-    if (!sthChanged_) DBG("(Domino) nothing changed for all nEvent=" << aSimuEvents.size());
+    if (!sthChanged_)
+        DBG("(Domino) nothing changed for all nEvent=" << aSimuEvents.size());
 }
 
 // ***********************************************************************************************
@@ -110,7 +117,8 @@ Domino::EvName Domino::whyFalse(const EvName& aEvName) const
     {
         for (auto&& candEv : itPairTrue->second)
         {
-            if (states_[candEv] == false) return evNames_[candEv] + "==false";
+            if (states_[candEv] == false)
+                return evNames_[candEv] + "==false";
         }
     }
 
@@ -119,7 +127,8 @@ Domino::EvName Domino::whyFalse(const EvName& aEvName) const
     {
         for (auto&& candEv : itPairFalse->second)
         {
-            if (states_[candEv] == true) return evNames_[candEv] + "==true";
+            if (states_[candEv] == true)
+                return evNames_[candEv] + "==true";
         }
     }
 

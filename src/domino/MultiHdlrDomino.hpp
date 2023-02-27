@@ -138,7 +138,8 @@ template<class aDominoType>
 bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName, const HdlrName& aHdlrName)
 {
     auto&& itEv = multiHdlrs_.find(this->getEventBy(aEvName));
-    if (itEv == multiHdlrs_.end()) return false;
+    if (itEv == multiHdlrs_.end())
+        return false;
 
     DBG("(MultiHdlrDomino) Succeed to remove HdlrName=" << aHdlrName << " of EvName=" << aEvName);
     return itEv->second.erase(aHdlrName);

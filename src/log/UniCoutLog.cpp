@@ -11,7 +11,8 @@ namespace RLib
 // ***********************************************************************************************
 UniCoutLog& UniCoutLog::defaultUniLog()
 {
-    if (not defaultUniLog_) defaultUniLog_ = make_shared<UniCoutLog>();
+    if (not defaultUniLog_)
+        defaultUniLog_ = make_shared<UniCoutLog>();
     return *defaultUniLog_;
 }
 

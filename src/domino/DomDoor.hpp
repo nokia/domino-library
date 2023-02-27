@@ -34,8 +34,10 @@ class DomDoor
 public:
     void subTree(const Domino::EvName& aSubRoot, shared_ptr<void> aDom)
     {
-        if (aDom == nullptr) domStore_.erase(aSubRoot);
-        else domStore_[aSubRoot] = aDom;
+        if (aDom == nullptr)
+            domStore_.erase(aSubRoot);
+        else
+            domStore_[aSubRoot] = aDom;
     }
 
     template<typename aDominoType>
