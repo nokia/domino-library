@@ -30,28 +30,26 @@ TYPED_TEST_P(WbasicDatDomTest, UC_wrCtrl_set_get_rm)  // non-wrData is covered b
 
     wbasic_setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 1);
     valGet = wbasic_getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
-    EXPECT_EQ(1u, valGet);             // req: get=set
+    EXPECT_EQ(1u, valGet);  // req: get = set
 
     wbasic_setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 2);
     valGet = wbasic_getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
-    EXPECT_EQ(2u, valGet);             // req: get=update
+    EXPECT_EQ(2u, valGet);  // req: get = update
 
-    setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 3);  // legacy set
+    setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 3);
     valGet = wbasic_getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
-    EXPECT_EQ(2u, valGet);             // req: legacy set failed
+    EXPECT_EQ(2u, valGet);  // req: legacy set failed
 
     valGet = getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
-    EXPECT_NE(3u, valGet);             // req: legacy get failed
+    EXPECT_EQ(0u, valGet);  // req: legacy get failed (ret default value)
 
     PARA_DOM->replaceShared("ev0");
     valGet = wbasic_getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
-    EXPECT_EQ(2u, valGet);             // req: legacy can't rm wr-data
-    valGet = getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
-    EXPECT_EQ(0u, valGet);             // req: legacy get default value
+    EXPECT_EQ(2u, valGet);  // req: legacy rm failed
 
     PARA_DOM->wbasic_replaceShared("ev0");
-    valGet = wbasic_getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
-    EXPECT_EQ(0u, valGet);             // req: rm wr-data
+    auto shared = PARA_DOM->wbasic_getShared("ev0");
+    EXPECT_EQ(nullptr, shared);  // req: rm wr-data
 }
 TYPED_TEST_P(WbasicDatDomTest, canNOT_setWriteCtrl_afterOwnData)
 {
