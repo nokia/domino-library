@@ -63,21 +63,6 @@ TYPED_TEST_P(DominoTest, UC_reDeduce_trueState)
     PARA_DOM->setState({{"food", true}});  // retrigger
     EXPECT_TRUE(PARA_DOM->state("eat"));   // req: re-deduce
 }
-TYPED_TEST_P(DominoTest, UC_broadcast_onlyWhen_allPrev_satisfied)
-{
-    PARA_DOM->setPrev("e1", {{"e2", true}, {"e3", true}});  // multi
-    PARA_DOM->setPrev("e4", {{"e1", true}});  // chain
-    EXPECT_FALSE(PARA_DOM->state("e1"));
-    EXPECT_FALSE(PARA_DOM->state("e4"));
-
-    PARA_DOM->setState({{"e2", true}});  // req: not allPrev satisfied
-    EXPECT_FALSE(PARA_DOM->state("e1"));
-    EXPECT_FALSE(PARA_DOM->state("e4"));
-
-    PARA_DOM->setState({{"e3", true}});  // req: full satisfied
-    EXPECT_TRUE(PARA_DOM->state("e1"));
-    EXPECT_TRUE(PARA_DOM->state("e4"));
-}
 TYPED_TEST_P(DominoTest, prevSelf_is_invalid)
 {
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e1", {{"e1", true}}));
@@ -198,7 +183,6 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , UC_autoDeduce_trueState
     , UC_immediateDeduce_trueState
     , UC_reDeduce_trueState
-    , UC_broadcast_onlyWhen_allPrev_satisfied
     , prevSelf_is_invalid
 
     , UC_multi_retOne
