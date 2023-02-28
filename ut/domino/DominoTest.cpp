@@ -37,117 +37,31 @@ TYPED_TEST_P(DominoTest, UC_autoDeduce_trueState)
 
     PARA_DOM->setState({{"food", true}});     // req: change state
     EXPECT_TRUE(PARA_DOM->state("eat"));      // req: auto deduce
-#if 0
-    // init, e1=up, e2=up
-    PARA_DOM->setPrev("e2", {{"e1", true}});
-    EXPECT_FALSE(PARA_DOM->state("e1"));
-    EXPECT_FALSE(PARA_DOM->state("e2"));
-
-    PARA_DOM->setState({{"e1", false}});  // forward-1: e1 up-up -> e2 up-up (like real domino)
-    EXPECT_FALSE(PARA_DOM->state("e1"));
-    EXPECT_FALSE(PARA_DOM->state("e2"));
-
-    // -------------------------------------------------------------------------------------------
-    PARA_DOM->setState({{"e2", false}});  // backward-1: e1 up-up <- e2 up-up (like real domino)
-    EXPECT_FALSE(PARA_DOM->state("e1"));
-    EXPECT_FALSE(PARA_DOM->state("e2"));
-
-    PARA_DOM->setState({{"e2", true}});   // backward-2: e1 up-up <- e2 up-down (like real domino)
-    EXPECT_FALSE(PARA_DOM->state("e1"));
-    EXPECT_TRUE(PARA_DOM->state("e2"));
-
-    PARA_DOM->setState({{"e2", true}});   // backward-3: e1 up-up <- e2 down-down (like real domino)
-    EXPECT_FALSE(PARA_DOM->state("e1"));
-    EXPECT_TRUE(PARA_DOM->state("e2"));
-
-    PARA_DOM->setState({{"e2", false}});  // backward-4: e1 up-up <- e2 down-up (like real domino)
-    EXPECT_FALSE(PARA_DOM->state("e1"));
-    EXPECT_FALSE(PARA_DOM->state("e2"));
-
-    // -------------------------------------------------------------------------------------------
-    PARA_DOM->setState({{"e1", true}});   // forward-2: e1 up-down -> e2 up-down (like real domino!!!)
-    EXPECT_TRUE(PARA_DOM->state("e1"));
-    EXPECT_TRUE(PARA_DOM->state("e2"));
-
-    PARA_DOM->setState({{"e1", true}});   // forward-3: e1 down-down -> e2 down-down (like real domino)
-    EXPECT_TRUE(PARA_DOM->state("e1"));
-    EXPECT_TRUE(PARA_DOM->state("e2"));
-
-    PARA_DOM->setState({{"e1", false}});  // forward-4: e1 down-up -> e2 down-down (like real domino)
-    EXPECT_FALSE(PARA_DOM->state("e1"));
-    EXPECT_TRUE(PARA_DOM->state("e2"));
-
-    PARA_DOM->setState({{"e1", false}});  // forward-5: e1 up-up -> e2 down-down (like real domino)
-    EXPECT_FALSE(PARA_DOM->state("e1"));
-    EXPECT_TRUE(PARA_DOM->state("e2"));
-
-    PARA_DOM->setState({{"e1", true}});   // forward-6: e1 up-down -> e2 down-down (like real domino)
-    EXPECT_TRUE(PARA_DOM->state("e1"));
-    EXPECT_TRUE(PARA_DOM->state("e2"));
-
-    // -------------------------------------------------------------------------------------------
-    PARA_DOM->setState({{"e2", true}});   // backward-5: e1 down-down <- e2 down-down (like real domino)
-    EXPECT_TRUE(PARA_DOM->state("e1"));
-    EXPECT_TRUE(PARA_DOM->state("e2"));
-
-    PARA_DOM->setState({{"e2", false}});  // backward-6: e1 down-down <- e2 down-up (no backward broadcast)
-    EXPECT_TRUE(PARA_DOM->state("e1"));
-    EXPECT_FALSE(PARA_DOM->state("e2"));
-
-    PARA_DOM->setState({{"e2", false}});  // backward-7: e1 down-down <- e2 up-up (like real domino)
-    EXPECT_TRUE(PARA_DOM->state("e1"));
-    EXPECT_FALSE(PARA_DOM->state("e2"));
-
-    PARA_DOM->setState({{"e2", true}});   // backward-8: e1 down-down <- e2 up-down (like real domino)
-    EXPECT_TRUE(PARA_DOM->state("e1"));
-    EXPECT_TRUE(PARA_DOM->state("e2"));
-
-    // -------------------------------------------------------------------------------------------
-    PARA_DOM->setState({{"e2", false}});  // e1 down-down <- e2 down-up
-    EXPECT_TRUE(PARA_DOM->state("e1"));
-    EXPECT_FALSE(PARA_DOM->state("e2"));
-    PARA_DOM->setState({{"e1", true}});   // forward-7: e1 down-down -> e2 up-down (still forward!!!)
-    EXPECT_TRUE(PARA_DOM->state("e1"));
-    EXPECT_TRUE(PARA_DOM->state("e2"));
-
-    PARA_DOM->setState({{"e2", false}});  // e1 down-down <- e2 down-up
-    EXPECT_TRUE(PARA_DOM->state("e1"));
-    EXPECT_FALSE(PARA_DOM->state("e2"));
-    PARA_DOM->setState({{"e1", false}});  // forward-8: e1 down-up -> e2 up-up (like real domino)
-    EXPECT_FALSE(PARA_DOM->state("e1"));
-    EXPECT_FALSE(PARA_DOM->state("e2"));
-#endif
 }
 TYPED_TEST_P(DominoTest, UC_immediateDeduce_trueState)
 {
-    PARA_DOM->newEvent("work");             // req: create
-    EXPECT_FALSE(PARA_DOM->state("work"));  // req: default state
+    PARA_DOM->newEvent("rest");             // req: create
+    EXPECT_FALSE(PARA_DOM->state("rest"));  // req: default state
 
-    PARA_DOM->setPrev("work", {{"weekend", false}, {"OT", false}});  // req: prerequisite can be false
-    EXPECT_FALSE(PARA_DOM->state("weekend"));  // req: default state
+    PARA_DOM->setPrev("rest", {{"weekday", false}, {"OT", false}});  // req: prerequisite can be false
+    EXPECT_FALSE(PARA_DOM->state("weekday"));  // req: default state
     EXPECT_FALSE(PARA_DOM->state("OT"));    // req: default state
-    EXPECT_TRUE (PARA_DOM->state("work"));  // req: immediate deduce
+    EXPECT_TRUE (PARA_DOM->state("rest"));  // req: immediate deduce
+}
+TYPED_TEST_P(DominoTest, UC_reDeduce_trueState)
+{
+    PARA_DOM->setState({{"hungry", true}, {"food", true}});  // req: can set state simultaneously
+    PARA_DOM->setPrev("eat", {{"hungry", true}, {"food", true}});  // req: set prev simultaneously to avoid mis-deduce
+    EXPECT_TRUE (PARA_DOM->state("eat"));  // req: 1st deduce
 
-    PARA_DOM->setState({{"OT", true}});
-    EXPECT_TRUE(PARA_DOM->state("work"));   // req: no deduce if downstream tile already down/true
+    PARA_DOM->setState({{"eat", false}});  // req: can force tile up
+    EXPECT_FALSE(PARA_DOM->state("eat"));  // req: no deduce since no trigger
 
-    PARA_DOM->setState({{"work", false}});
-    EXPECT_FALSE(PARA_DOM->state("work"));  // req: support tile re-up (then re-down)
+    PARA_DOM->setState({{"food", false}});
+    EXPECT_FALSE(PARA_DOM->state("eat"));  // req: no trigger
 
-    PARA_DOM->setState({{"OT", false}});
-    EXPECT_TRUE(PARA_DOM->state("work"));   // req: re-down
-#if 0
-    // false broadcast
-    PARA_DOM->setPrev("e2", {{"e1", false}});
-    EXPECT_FALSE(PARA_DOM->state("e1"));
-    EXPECT_TRUE(PARA_DOM->state("e2"));
-
-    // true broadcast
-    PARA_DOM->setState({{"e3", true}});
-    PARA_DOM->setPrev("e4", {{"e3", true}});
-    EXPECT_TRUE(PARA_DOM->state("e3"));
-    EXPECT_TRUE(PARA_DOM->state("e4"));
-#endif
+    PARA_DOM->setState({{"food", true}});  // retrigger
+    EXPECT_TRUE(PARA_DOM->state("eat"));   // req: re-deduce
 }
 TYPED_TEST_P(DominoTest, UC_broadcast_onlyWhen_allPrev_satisfied)
 {
@@ -283,6 +197,7 @@ TYPED_TEST_P(DominoTest, GOLD_setState_thenGetIt)
 REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , UC_autoDeduce_trueState
     , UC_immediateDeduce_trueState
+    , UC_reDeduce_trueState
     , UC_broadcast_onlyWhen_allPrev_satisfied
     , prevSelf_is_invalid
 
