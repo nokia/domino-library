@@ -118,8 +118,25 @@ TYPED_TEST_P(DominoTest, UC_autoDeduce_trueState)
     EXPECT_FALSE(PARA_DOM->state("e2"));
 #endif
 }
-TYPED_TEST_P(DominoTest, UC_immediate_broadcast)
+TYPED_TEST_P(DominoTest, UC_immediateDeduce_trueState)
 {
+    PARA_DOM->newEvent("work");             // req: create
+    EXPECT_FALSE(PARA_DOM->state("work"));  // req: default state
+
+    PARA_DOM->setPrev("work", {{"weekend", false}, {"OT", false}});  // req: prerequisite can be false
+    EXPECT_FALSE(PARA_DOM->state("weekend"));  // req: default state
+    EXPECT_FALSE(PARA_DOM->state("OT"));    // req: default state
+    EXPECT_TRUE (PARA_DOM->state("work"));  // req: immediate deduce
+
+    PARA_DOM->setState({{"OT", true}});
+    EXPECT_TRUE(PARA_DOM->state("work"));   // req: no deduce if downstream tile already down/true
+
+    PARA_DOM->setState({{"work", false}});
+    EXPECT_FALSE(PARA_DOM->state("work"));  // req: support tile re-up (then re-down)
+
+    PARA_DOM->setState({{"OT", false}});
+    EXPECT_TRUE(PARA_DOM->state("work"));   // req: re-down
+#if 0
     // false broadcast
     PARA_DOM->setPrev("e2", {{"e1", false}});
     EXPECT_FALSE(PARA_DOM->state("e1"));
@@ -130,6 +147,7 @@ TYPED_TEST_P(DominoTest, UC_immediate_broadcast)
     PARA_DOM->setPrev("e4", {{"e3", true}});
     EXPECT_TRUE(PARA_DOM->state("e3"));
     EXPECT_TRUE(PARA_DOM->state("e4"));
+#endif
 }
 TYPED_TEST_P(DominoTest, UC_broadcast_onlyWhen_allPrev_satisfied)
 {
@@ -264,7 +282,7 @@ TYPED_TEST_P(DominoTest, GOLD_setState_thenGetIt)
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , UC_autoDeduce_trueState
-    , UC_immediate_broadcast
+    , UC_immediateDeduce_trueState
     , UC_broadcast_onlyWhen_allPrev_satisfied
     , prevSelf_is_invalid
 
