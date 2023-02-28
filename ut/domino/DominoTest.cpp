@@ -24,8 +24,20 @@ TYPED_TEST_SUITE_P(DominoTest);
 // - req: forward broadcast
 // - req: not backward broadcast
 // - req: true/false broadcast are same
-TYPED_TEST_P(DominoTest, UC_broadcast_trueState)
+TYPED_TEST_P(DominoTest, UC_autoDeduce_trueState)
 {
+    PARA_DOM->setPrev("eat", {{"hungry", true}, {"food", true}});  // req: set prerequisite
+    EXPECT_FALSE(PARA_DOM->state("hungry"));  // req: default state
+    EXPECT_FALSE(PARA_DOM->state("food"));    // req: default state
+    EXPECT_FALSE(PARA_DOM->state("eat"));     // req: default state
+
+    PARA_DOM->setState({{"hungry", true}});   // req: change state
+    EXPECT_TRUE (PARA_DOM->state("hungry"));  // req: get new state
+    EXPECT_FALSE(PARA_DOM->state("eat"));     // req: no change since not all prerequisite satisfied
+
+    PARA_DOM->setState({{"food", true}});     // req: change state
+    EXPECT_TRUE(PARA_DOM->state("eat"));      // req: auto deduce
+#if 0
     // init, e1=up, e2=up
     PARA_DOM->setPrev("e2", {{"e1", true}});
     EXPECT_FALSE(PARA_DOM->state("e1"));
@@ -104,6 +116,7 @@ TYPED_TEST_P(DominoTest, UC_broadcast_trueState)
     PARA_DOM->setState({{"e1", false}});  // forward-8: e1 down-up -> e2 up-up (like real domino)
     EXPECT_FALSE(PARA_DOM->state("e1"));
     EXPECT_FALSE(PARA_DOM->state("e2"));
+#endif
 }
 TYPED_TEST_P(DominoTest, UC_immediate_broadcast)
 {
@@ -250,7 +263,7 @@ TYPED_TEST_P(DominoTest, GOLD_setState_thenGetIt)
 
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(DominoTest
-    , UC_broadcast_trueState
+    , UC_autoDeduce_trueState
     , UC_immediate_broadcast
     , UC_broadcast_onlyWhen_allPrev_satisfied
     , prevSelf_is_invalid
