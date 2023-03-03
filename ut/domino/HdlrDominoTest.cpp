@@ -37,48 +37,34 @@ TYPED_TEST_SUITE_P(NofreeHdlrDominoTest);
 // ***********************************************************************************************
 // add & call hdlr
 // ***********************************************************************************************
-TYPED_TEST_P(HdlrDominoTest, GOLD_addHdlr_ok)
+TYPED_TEST_P(HdlrDominoTest, UC_add_and_call)
 {
-    PARA_DOM->setHdlr("event", this->hdlr0_);
-    EXPECT_CALL(*this, hdlr0());               // req: added & called
-    PARA_DOM->setState({{"event", true}});
-}
-TYPED_TEST_P(HdlrDominoTest, immediateCallback_ok)
-{
-    PARA_DOM->setState({{"event", true}});
+    PARA_DOM->setHdlr("event", this->hdlr0_);  // req: add hdlr
     EXPECT_CALL(*this, hdlr0());
-    PARA_DOM->setHdlr("event", this->hdlr0_);  // req: immediate call
-}
-TYPED_TEST_P(NofreeHdlrDominoTest, trigger_callback_reTrigger_reCallback)
-{
-    PARA_DOM->setHdlr("event", this->hdlr0_);
-    EXPECT_CALL(*this, hdlr0());
-    PARA_DOM->setState({{"event", true}});     // 1st cb
+    PARA_DOM->setState({{"event", true}});     // req: F->T trigger the call
 
     EXPECT_CALL(*this, hdlr1()).Times(0);      // req: T->T no call (only F->T is trigger)
     PARA_DOM->setState({{"event", true}});
 
+    EXPECT_CALL(*this, hdlr1()).Times(0);      // req: T->F no call
     PARA_DOM->setState({{"event", false}});
-    EXPECT_CALL(*this, hdlr0());
-    PARA_DOM->setState({{"event", true}});     // req: repeat cb
+
+    EXPECT_CALL(*this, hdlr1()).Times(0);      // req: F->F no call
+    PARA_DOM->setState({{"event", false}});
 }
-TYPED_TEST_P(NofreeHdlrDominoTest, trigger_reTrigger_callback_reCallback)
+TYPED_TEST_P(HdlrDominoTest, UC_immediate_call)
 {
-    // not auto-cb but manually
-    auto msgSelf = make_shared<MsgSelf>(
-        [this](const FromMainFN& aFromMainFN){ this->fromMainFN_ = aFromMainFN; }, this->uniLogName());
-    PARA_DOM->setMsgSelf(msgSelf);             // req: change MsgSelf
-
+    PARA_DOM->setState({{"event", true}});
+    EXPECT_CALL(*this, hdlr0());
+    PARA_DOM->setHdlr("event", this->hdlr0_);  // req: add & immediate call since already T
+}
+TYPED_TEST_P(NofreeHdlrDominoTest, UC_reTrigger_reCall)
+{
     PARA_DOM->setHdlr("event", this->hdlr0_);
-    EXPECT_CALL(*this, hdlr0()).Times(0);
-    PARA_DOM->setState({{"event", true}});     // 1st on road
-
-    EXPECT_CALL(*this, hdlr0()).Times(0);
-    PARA_DOM->setState({{"event", false}});
-    PARA_DOM->setState({{"event", true}});     // 2nd on road
-
     EXPECT_CALL(*this, hdlr0()).Times(2);
-    this->fromMainFN_();                       // manual trigger on road cb
+    PARA_DOM->setState({{"event", true}});     // 1st trigger
+    PARA_DOM->setState({{"event", false}});
+    PARA_DOM->setState({{"event", true}});     // 2nd trigger
 }
 TYPED_TEST_P(HdlrDominoTest, BugFix_invalidHdlr_noCrash)
 {
@@ -369,8 +355,8 @@ TYPED_TEST_P(HdlrDominoTest, nonConstInterface_shall_createUnExistEvent_withStat
 
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(HdlrDominoTest
-    , GOLD_addHdlr_ok
-    , immediateCallback_ok
+    , UC_add_and_call
+    , UC_immediate_call
     , BugFix_invalidHdlr_noCrash
 
     , GOLD_hdlrInChain_callbackOk
@@ -395,8 +381,7 @@ INSTANTIATE_TYPED_TEST_SUITE_P(PARA, HdlrDominoTest, AnyHdlrDom);
 
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(NofreeHdlrDominoTest
-    , trigger_callback_reTrigger_reCallback
-    , trigger_reTrigger_callback_reCallback
+    , UC_reTrigger_reCall
 
     , multiHdlr_hubTrigger
     , multiHdlr_chainTrigger
