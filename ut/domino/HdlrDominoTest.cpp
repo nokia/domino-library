@@ -66,24 +66,6 @@ TYPED_TEST_P(NofreeHdlrDominoTest, UC_reTrigger_reCall)
     PARA_DOM->setState({{"event", false}});
     PARA_DOM->setState({{"event", true}});     // 2nd trigger
 }
-TYPED_TEST_P(HdlrDominoTest, BugFix_invalidHdlr_noCrash)
-{
-    PARA_DOM->setHdlr("e1", nullptr);
-    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1"));  // req: not create new Ev
-
-    PARA_DOM->multiHdlrByAliasEv("alias e1", nullptr, "e1");
-    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("alias e1"));  // req: not create new Ev
-
-    PARA_DOM->setState({{"e1", true}});  // req: no crash
-
-    PARA_DOM->setState({{"e1", false}});
-    PARA_DOM->setState({{"alias e1", false}});
-    PARA_DOM->setHdlr("e1", this->hdlr0_);
-    PARA_DOM->multiHdlrByAliasEv("alias e1", this->hdlr1_, "e1");
-    EXPECT_CALL(*this, hdlr0());  // req: can add hdlr
-    EXPECT_CALL(*this, hdlr1());  // req: can add hdlr
-    PARA_DOM->setState({{"e1", true}});
-}
 
 #define CHAIN
 // ***********************************************************************************************
@@ -235,6 +217,22 @@ TYPED_TEST_P(NofreeHdlrDominoTest, multiHdlr_chainTrigger)
     EXPECT_CALL(*this, hdlr2());            // req: trigger cross e1
     PARA_DOM->setState({{"e0", true}});     // T->T->T
 }
+TYPED_TEST_P(HdlrDominoTest, BugFix_invalidHdlr_noCrash)
+{
+    PARA_DOM->setHdlr("e1", nullptr);
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1"));  // req: not create new Ev
+
+    PARA_DOM->multiHdlrByAliasEv("alias e1", nullptr, "e1");
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("alias e1"));  // req: not create new Ev
+
+    PARA_DOM->setState({{"e1", true}});  // req: no crash
+
+    EXPECT_CALL(*this, hdlr0());  // req: can add hdlr upon null
+    PARA_DOM->setHdlr("e1", this->hdlr0_);
+
+    EXPECT_CALL(*this, hdlr1());  // req: can add hdlr upon null
+    PARA_DOM->multiHdlrByAliasEv("alias e1", this->hdlr1_, "e1");
+}
 
 #define RM_HDLR
 // ***********************************************************************************************
@@ -357,7 +355,6 @@ TYPED_TEST_P(HdlrDominoTest, nonConstInterface_shall_createUnExistEvent_withStat
 REGISTER_TYPED_TEST_SUITE_P(HdlrDominoTest
     , UC_add_and_call
     , UC_immediate_call
-    , BugFix_invalidHdlr_noCrash
 
     , GOLD_hdlrInChain_callbackOk
     , hdlrInChain_immediateCallback
@@ -369,6 +366,7 @@ REGISTER_TYPED_TEST_SUITE_P(HdlrDominoTest
     , multiHdlr_onOneEvent_nok
     , multiHdlr_onDiffEvent_ok
     , multiHdlr_onOneAliasEvent_nok
+    , BugFix_invalidHdlr_noCrash
 
     , rmHdlr_thenNoCallback
     , rmHdlr_fail
