@@ -86,17 +86,18 @@ TYPED_TEST_P(HdlrDominoTest, UC_immediate_chain_call)
     EXPECT_CALL(*this, hdlr0());  // req: immediate call
     PARA_DOM->setPrev("event", {{"prev", true}});
 }
-TYPED_TEST_P(HdlrDominoTest, hdlrInChain_callAllHdlrs)
+TYPED_TEST_P(HdlrDominoTest, UC_trigger_chain_allCall)
 {
     PARA_DOM->setPrev("event", {{"prev", true}});
     PARA_DOM->setPrev("prev", {{"prev prev", true}});
     PARA_DOM->setHdlr("prev", this->hdlr0_);
-    PARA_DOM->setHdlr("event", this->hdlr0_);
+    PARA_DOM->setHdlr("event", this->hdlr1_);
 
-    EXPECT_CALL(*this, hdlr0()).Times(2);           // req: call each
+    EXPECT_CALL(*this, hdlr0());  // req: trigger each hdlr on the chain if F->T
+    EXPECT_CALL(*this, hdlr1());  // req: trigger each hdlr on the chain if F->T
     PARA_DOM->setState({{"prev prev", true}});
 }
-TYPED_TEST_P(HdlrDominoTest, hdlrInChain_simultaneousPrevStates_rightCallback)
+TYPED_TEST_P(HdlrDominoTest, UC_trigger_chain_satisfiedCall)
 {
     PARA_DOM->setHdlr("event1", this->hdlr0_);
     PARA_DOM->setPrev("event1", {{"prev1", true}});
@@ -350,8 +351,8 @@ REGISTER_TYPED_TEST_SUITE_P(HdlrDominoTest
 
     , UC_trigger_chain_call
     , UC_immediate_chain_call
-    , hdlrInChain_callAllHdlrs
-    , hdlrInChain_simultaneousPrevStates_rightCallback
+    , UC_trigger_chain_allCall
+    , UC_trigger_chain_satisfiedCall
     , hdlrInChain_wrongOrderPrev_wrongCallback
 
     , multiHdlr_onOneEvent_nok
