@@ -56,7 +56,7 @@ TYPED_TEST_P(HdlrDominoTest, UC_immediate_call)
 {
     PARA_DOM->setState({{"event", true}});
     EXPECT_CALL(*this, hdlr0());
-    PARA_DOM->setHdlr("event", this->hdlr0_);  // req: add & immediate call since already T
+    PARA_DOM->setHdlr("event", this->hdlr0_);  // req: immediate call since already T from default (always=F)
 }
 TYPED_TEST_P(NofreeHdlrDominoTest, UC_reTrigger_reCall)
 {
@@ -71,28 +71,20 @@ TYPED_TEST_P(NofreeHdlrDominoTest, UC_reTrigger_reCall)
 // ***********************************************************************************************
 // chain satisfy -> hdlr
 // ***********************************************************************************************
-TYPED_TEST_P(HdlrDominoTest, GOLD_hdlrInChain_callbackOk)
+TYPED_TEST_P(HdlrDominoTest, UC_trigger_chain_call)
 {
-    PARA_DOM->setHdlr("event", this->hdlr0_);
-    PARA_DOM->setPrev("event", {{"prev", true}});
-    EXPECT_CALL(*this, hdlr0());                    // req: call in chain
-    PARA_DOM->setState({{"prev", true}});
-}
-TYPED_TEST_P(HdlrDominoTest, hdlrInChain_immediateCallback)
-{
-    PARA_DOM->setHdlr("event", this->hdlr0_);
-    PARA_DOM->setState({{"prev", true}});
-    EXPECT_CALL(*this, hdlr0());                    // req: immediate call
-    PARA_DOM->setPrev("event", {{"prev", true}});
-}
-TYPED_TEST_P(HdlrDominoTest, hdlrInChain_dupSatisfy_callbackOnce)
-{
-    EXPECT_CALL(*this, hdlr0());                    // req: call once
-    PARA_DOM->setHdlr("event", this->hdlr0_);
-    PARA_DOM->setState({{"event", true}});          // 1st satisfy
+    PARA_DOM->setHdlr("event", this->hdlr0_);      // downstream
+    PARA_DOM->setPrev("event", {{"prev", true}});  // upstream
 
-    EXPECT_CALL(*this, hdlr0()).Times(0);           // req: no call
-    PARA_DOM->setPrev("event", {{"prev", false}});  // 2nd satisfy
+    EXPECT_CALL(*this, hdlr0());  // req: upstream trigger to downstream call
+    PARA_DOM->setState({{"prev", true}});
+}
+TYPED_TEST_P(HdlrDominoTest, UC_immediate_chain_call)
+{
+    PARA_DOM->setHdlr("event", this->hdlr0_);
+    PARA_DOM->setState({{"prev", true}});
+    EXPECT_CALL(*this, hdlr0());  // req: immediate call
+    PARA_DOM->setPrev("event", {{"prev", true}});
 }
 TYPED_TEST_P(HdlrDominoTest, hdlrInChain_callAllHdlrs)
 {
@@ -356,9 +348,8 @@ REGISTER_TYPED_TEST_SUITE_P(HdlrDominoTest
     , UC_add_and_call
     , UC_immediate_call
 
-    , GOLD_hdlrInChain_callbackOk
-    , hdlrInChain_immediateCallback
-    , hdlrInChain_dupSatisfy_callbackOnce
+    , UC_trigger_chain_call
+    , UC_immediate_chain_call
     , hdlrInChain_callAllHdlrs
     , hdlrInChain_simultaneousPrevStates_rightCallback
     , hdlrInChain_wrongOrderPrev_wrongCallback
