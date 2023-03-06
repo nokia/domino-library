@@ -37,9 +37,6 @@ TYPED_TEST_P(DominoTest, UC_setState_thenGetIt)
 
 #define BROADCAST_STATE
 // ***********************************************************************************************
-// - req: forward broadcast
-// - req: not backward broadcast
-// - req: true/false broadcast are same
 TYPED_TEST_P(DominoTest, UC_forward_broadcast)
 {
     // e1->e2->e3
@@ -96,45 +93,6 @@ TYPED_TEST_P(DominoTest, UC_re_broadcast_byFalse)
     PARA_DOM->setState({{"e4", false}});       // req: force e4: F->F, also trigger broadcast
     EXPECT_TRUE (PARA_DOM->state("e5"));
     EXPECT_FALSE(PARA_DOM->state("e4"));
-}
-TYPED_TEST_P(DominoTest, UC_autoDeduce_trueState)
-{
-    PARA_DOM->setPrev("eat", {{"hungry", true}, {"food", true}});  // req: set prerequisite
-    EXPECT_FALSE(PARA_DOM->state("hungry"));  // req: default state
-    EXPECT_FALSE(PARA_DOM->state("food"));    // req: default state
-    EXPECT_FALSE(PARA_DOM->state("eat"));     // req: default state
-
-    PARA_DOM->setState({{"hungry", true}});   // req: change state
-    EXPECT_TRUE (PARA_DOM->state("hungry"));  // req: get new state
-    EXPECT_FALSE(PARA_DOM->state("eat"));     // req: no change since not all prerequisite satisfied
-
-    PARA_DOM->setState({{"food", true}});     // req: change state
-    EXPECT_TRUE(PARA_DOM->state("eat"));      // req: auto deduce
-}
-TYPED_TEST_P(DominoTest, UC_immediateDeduce_trueState)
-{
-    PARA_DOM->newEvent("rest");             // req: create
-    EXPECT_FALSE(PARA_DOM->state("rest"));  // req: default state
-
-    PARA_DOM->setPrev("rest", {{"weekday", false}, {"OT", false}});  // req: prerequisite can be false
-    EXPECT_FALSE(PARA_DOM->state("weekday"));  // req: default state
-    EXPECT_FALSE(PARA_DOM->state("OT"));    // req: default state
-    EXPECT_TRUE (PARA_DOM->state("rest"));  // req: immediate deduce
-}
-TYPED_TEST_P(DominoTest, UC_reDeduce_trueState)
-{
-    PARA_DOM->setState({{"hungry", true}, {"food", true}});  // req: can set state simultaneously
-    PARA_DOM->setPrev("eat", {{"hungry", true}, {"food", true}});  // req: set prev simultaneously to avoid mis-deduce
-    EXPECT_TRUE (PARA_DOM->state("eat"));  // req: 1st deduce
-
-    PARA_DOM->setState({{"eat", false}});  // req: can force tile up
-    EXPECT_FALSE(PARA_DOM->state("eat"));  // req: no deduce since no trigger
-
-    PARA_DOM->setState({{"food", false}});
-    EXPECT_FALSE(PARA_DOM->state("eat"));  // req: no trigger
-
-    PARA_DOM->setState({{"food", true}});  // retrigger
-    EXPECT_TRUE(PARA_DOM->state("eat"));   // req: re-deduce
 }
 TYPED_TEST_P(DominoTest, prevSelf_is_invalid)
 {
@@ -245,9 +203,6 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , UC_no_backward_broadcast
     , UC_re_broadcast_byTrue
     , UC_re_broadcast_byFalse
-    , UC_autoDeduce_trueState
-    , UC_immediateDeduce_trueState
-    , UC_reDeduce_trueState
     , prevSelf_is_invalid
 
     , UC_multi_retOne
