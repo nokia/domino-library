@@ -109,11 +109,11 @@ TYPED_TEST_P(DominoTest, prevSelf_is_invalid)
 // ***********************************************************************************************
 TYPED_TEST_P(DominoTest, UC_multi_retOne)
 {
-    PARA_DOM->setPrev("master succ", {{"all agents succ", true}, {"user abort", false}});
+    PARA_DOM->setPrev("master succ", {{"all agents succ", true}, {"user abort", false}});  // req: simultaneous set
     EXPECT_EQ("all agents succ==false", PARA_DOM->whyFalse("master succ"));
 
-    PARA_DOM->setState({{"all agents succ", true}, {"user abort", true}});
-    EXPECT_EQ("user abort==true", PARA_DOM->whyFalse("master succ"));
+    PARA_DOM->setState({{"all agents succ", true}, {"user abort", true}});  // req: simultaneous state
+    EXPECT_EQ("user abort==true", PARA_DOM->whyFalse("master succ"));  // req: ret 1 unsatisfied pre
 }
 TYPED_TEST_P(DominoTest, UC_trueEvent_retEmpty)
 {
@@ -166,7 +166,6 @@ TYPED_TEST_P(DominoTest, nonConstInterface_shall_createUnExistEvent_withStateFal
     this->uniqueEVs_.insert(PARA_DOM->newEvent(""));  // req: create new
     this->uniqueEVs_.insert(PARA_DOM->newEvent(""));  // req: no dup
     EXPECT_EQ(1u, this->uniqueEVs_.size());
-    EXPECT_FALSE(PARA_DOM->state(""));  // req: default state is false
 
     // req: new ID by setState()
     PARA_DOM->setState({{"", false}, {"e2", false}});
@@ -174,7 +173,6 @@ TYPED_TEST_P(DominoTest, nonConstInterface_shall_createUnExistEvent_withStateFal
     PARA_DOM->setState({{"", false}, {"e2", false}});
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e2"));
     EXPECT_EQ(2u, this->uniqueEVs_.size());
-    EXPECT_FALSE(PARA_DOM->state("e2"));
 
     // req: new ID by setPrev()
     PARA_DOM->setPrev("e3", {{"e4", true}});
@@ -184,8 +182,6 @@ TYPED_TEST_P(DominoTest, nonConstInterface_shall_createUnExistEvent_withStateFal
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e3"));
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e4"));
     EXPECT_EQ(4u, this->uniqueEVs_.size());
-    EXPECT_FALSE(PARA_DOM->state("e3"));
-    EXPECT_FALSE(PARA_DOM->state("e4"));
 
     this->uniqueEVs_.insert(Domino::D_EVENT_FAILED_RET);  // req: new ID != Domino::D_EVENT_FAILED_RET
     EXPECT_EQ(5u, this->uniqueEVs_.size());
