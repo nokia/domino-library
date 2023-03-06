@@ -19,11 +19,84 @@ struct DominoTest : public UtInitObjAnywhere
 };
 TYPED_TEST_SUITE_P(DominoTest);
 
+#define STATE
+// ***********************************************************************************************
+TYPED_TEST_P(DominoTest, UC_setState_thenGetIt)
+{
+    EXPECT_FALSE(PARA_DOM->state("e1"));  // req: non-exist ev's state=F
+
+    PARA_DOM->newEvent("e1");
+    EXPECT_FALSE(PARA_DOM->state("e1"));  // req: new ev's state=F
+
+    PARA_DOM->setState({{"e1", true}});
+    EXPECT_TRUE(PARA_DOM->state("e1"));   // req: set T then get it
+
+    PARA_DOM->setState({{"e1", false}});
+    EXPECT_FALSE(PARA_DOM->state("e1"));  // req: set F then get it
+}
+
 #define BROADCAST_STATE
 // ***********************************************************************************************
 // - req: forward broadcast
 // - req: not backward broadcast
 // - req: true/false broadcast are same
+TYPED_TEST_P(DominoTest, UC_forward_broadcast)
+{
+    // e1->e2->e3
+    PARA_DOM->setPrev("e2", {{"e1", true}});
+    PARA_DOM->setPrev("e3", {{"e2", true}});
+    EXPECT_FALSE(PARA_DOM->state("e1"));
+    EXPECT_FALSE(PARA_DOM->state("e2"));
+    EXPECT_FALSE(PARA_DOM->state("e3"));
+
+    PARA_DOM->setState({{"e1", true}});  // set beginning
+    EXPECT_TRUE(PARA_DOM->state("e1"));
+    EXPECT_TRUE(PARA_DOM->state("e2"));  // req: broadcast e1->e2
+    EXPECT_TRUE(PARA_DOM->state("e3"));  // req: broadcast e2->e3
+}
+TYPED_TEST_P(DominoTest, UC_no_backward_broadcast)
+{
+    // e1->e2->e3
+    PARA_DOM->setPrev("e2", {{"e1", true}});
+    PARA_DOM->setPrev("e3", {{"e2", true}});
+
+    PARA_DOM->setState({{"e2", true}});   // set middle
+    EXPECT_FALSE(PARA_DOM->state("e1"));  // req: no e1<-e2
+    EXPECT_TRUE (PARA_DOM->state("e2"));
+    EXPECT_TRUE (PARA_DOM->state("e3"));
+}
+TYPED_TEST_P(DominoTest, UC_re_broadcast_byTrue)
+{
+    // e1->e2->e3
+    PARA_DOM->setPrev("e2", {{"e1", true}});
+    PARA_DOM->setPrev("e3", {{"e2", true}});
+    PARA_DOM->setState({{"e1", true}});   // 1st broadcast
+
+    PARA_DOM->setState({{"e3", false}});  // req: can force T->F
+    EXPECT_TRUE (PARA_DOM->state("e1"));
+    EXPECT_TRUE (PARA_DOM->state("e2"));
+    EXPECT_FALSE(PARA_DOM->state("e3"));
+
+    PARA_DOM->setState({{"e1", true}});   // req: e1=T->T also trigger broadcast
+    EXPECT_TRUE(PARA_DOM->state("e1"));
+    EXPECT_TRUE(PARA_DOM->state("e2"));   // req: broadcast e1->e2
+    EXPECT_TRUE(PARA_DOM->state("e3"));   // req: broadcast e2->e3
+}
+TYPED_TEST_P(DominoTest, UC_re_broadcast_byFalse)
+{
+    // e4->e5
+    PARA_DOM->setPrev("e5", {{"e4", false}});  // false relationship
+    EXPECT_FALSE(PARA_DOM->state("e4"));
+    EXPECT_TRUE (PARA_DOM->state("e5"));       // 1st broadcast
+
+    PARA_DOM->setState({{"e5", false}});       // force e5: T->F
+    EXPECT_FALSE(PARA_DOM->state("e5"));
+    EXPECT_FALSE(PARA_DOM->state("e4"));
+
+    PARA_DOM->setState({{"e4", false}});       // req: force e4: F->F, also trigger broadcast
+    EXPECT_TRUE (PARA_DOM->state("e5"));
+    EXPECT_FALSE(PARA_DOM->state("e4"));
+}
 TYPED_TEST_P(DominoTest, UC_autoDeduce_trueState)
 {
     PARA_DOM->setPrev("eat", {{"hungry", true}, {"food", true}});  // req: set prerequisite
@@ -125,7 +198,7 @@ TYPED_TEST_P(DominoTest, UC_search_partial_evName)
     EXPECT_EQ(0u, nFound);  // req: not found
 }
 
-#define ID_STATE
+#define ID
 // ***********************************************************************************************
 // req: both event & EvName are ID
 // ***********************************************************************************************
@@ -163,23 +236,15 @@ TYPED_TEST_P(DominoTest, noID_for_not_exist_EvName)
 {
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy(""));
 }
-TYPED_TEST_P(DominoTest, stateFalse_for_not_exist_EvName)
-{
-    EXPECT_FALSE(PARA_DOM->state(""));
-}
-TYPED_TEST_P(DominoTest, GOLD_setState_thenGetIt)
-{
-    PARA_DOM->setState({{"", true}, {"e2", false}});  // init set multi
-    EXPECT_TRUE(PARA_DOM->state(""));
-    EXPECT_FALSE(PARA_DOM->state("e2"));
-
-    PARA_DOM->setState({{"", false}});  // dup set 1 of the 2
-    EXPECT_FALSE(PARA_DOM->state(""));
-    EXPECT_FALSE(PARA_DOM->state("e2"));
-}
 
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(DominoTest
+    , UC_setState_thenGetIt
+
+    , UC_forward_broadcast
+    , UC_no_backward_broadcast
+    , UC_re_broadcast_byTrue
+    , UC_re_broadcast_byFalse
     , UC_autoDeduce_trueState
     , UC_immediateDeduce_trueState
     , UC_reDeduce_trueState
@@ -194,8 +259,6 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
 
     , nonConstInterface_shall_createUnExistEvent_withStateFalse
     , noID_for_not_exist_EvName
-    , stateFalse_for_not_exist_EvName
-    , GOLD_setState_thenGetIt
 );
 using AnyDom = Types<Domino, MinDatDom, MinWbasicDatDom, MinHdlrDom, MinMhdlrDom, MinPriDom,
     MinFreeDom, MaxNofreeDom, MaxDom>;
