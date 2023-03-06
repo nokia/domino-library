@@ -100,18 +100,16 @@ TYPED_TEST_P(HdlrDominoTest, UC_trigger_chain_allCall)
 TYPED_TEST_P(HdlrDominoTest, UC_trigger_chain_satisfiedCall)
 {
     PARA_DOM->setHdlr("event1", this->hdlr0_);
-    PARA_DOM->setPrev("event1", {{"prev1", true}});
-    PARA_DOM->setPrev("event1", {{"prev2", false}});
+    PARA_DOM->setPrev("event1", {{"prev1", true}, {"prev2", false}});
 
     PARA_DOM->setHdlr("event2", this->hdlr1_);
-    PARA_DOM->setPrev("event2", {{"prev1", true}});
-    PARA_DOM->setPrev("event2", {{"prev2", true}});
+    PARA_DOM->setPrev("event2", {{"prev1", true}, {"prev2", true}});
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1());
     PARA_DOM->setState({{"prev1", true}, {"prev2", true}});
 }
-TYPED_TEST_P(HdlrDominoTest, hdlrInChain_wrongOrderPrev_wrongCallback)
+TYPED_TEST_P(HdlrDominoTest, UC_wrongOrderPrev_wrongCallback)
 {
     EXPECT_CALL(*this, hdlr0()).Times(0);                                                    // no callback
     PARA_DOM->setHdlr("event with simu prev setting", this->hdlr0_);
@@ -353,7 +351,7 @@ REGISTER_TYPED_TEST_SUITE_P(HdlrDominoTest
     , UC_immediate_chain_call
     , UC_trigger_chain_allCall
     , UC_trigger_chain_satisfiedCall
-    , hdlrInChain_wrongOrderPrev_wrongCallback
+    , UC_wrongOrderPrev_wrongCallback
 
     , multiHdlr_onOneEvent_nok
     , multiHdlr_onDiffEvent_ok
