@@ -37,7 +37,7 @@ TYPED_TEST_SUITE_P(NofreeHdlrDominoTest);
 // ***********************************************************************************************
 // add & call hdlr
 // ***********************************************************************************************
-TYPED_TEST_P(HdlrDominoTest, UC_add_and_call)
+TYPED_TEST_P(HdlrDominoTest, GOLD_add_and_call)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);  // req: add hdlr
     EXPECT_CALL(*this, hdlr0());
@@ -52,7 +52,7 @@ TYPED_TEST_P(HdlrDominoTest, UC_add_and_call)
     EXPECT_CALL(*this, hdlr1()).Times(0);      // req: F->F no call
     PARA_DOM->setState({{"event", false}});
 }
-TYPED_TEST_P(HdlrDominoTest, UC_immediate_call)
+TYPED_TEST_P(HdlrDominoTest, immediate_call)
 {
     PARA_DOM->setState({{"event", true}});
     EXPECT_CALL(*this, hdlr0());
@@ -71,7 +71,7 @@ TYPED_TEST_P(NofreeHdlrDominoTest, UC_reTrigger_reCall)
 // ***********************************************************************************************
 // chain satisfy -> hdlr
 // ***********************************************************************************************
-TYPED_TEST_P(HdlrDominoTest, UC_trigger_chain_call)
+TYPED_TEST_P(HdlrDominoTest, GOLD_trigger_chain_call)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);      // downstream
     PARA_DOM->setPrev("event", {{"prev", true}});  // upstream
@@ -79,14 +79,14 @@ TYPED_TEST_P(HdlrDominoTest, UC_trigger_chain_call)
     EXPECT_CALL(*this, hdlr0());  // req: upstream trigger to downstream call
     PARA_DOM->setState({{"prev", true}});
 }
-TYPED_TEST_P(HdlrDominoTest, UC_immediate_chain_call)
+TYPED_TEST_P(HdlrDominoTest, immediate_chain_call)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->setState({{"prev", true}});
     EXPECT_CALL(*this, hdlr0());  // req: immediate call
     PARA_DOM->setPrev("event", {{"prev", true}});
 }
-TYPED_TEST_P(HdlrDominoTest, UC_trigger_chain_allCall)
+TYPED_TEST_P(HdlrDominoTest, GOLD_trigger_chain_allCall)
 {
     PARA_DOM->setPrev("event", {{"prev", true}});
     PARA_DOM->setPrev("prev", {{"prev prev", true}});
@@ -97,7 +97,7 @@ TYPED_TEST_P(HdlrDominoTest, UC_trigger_chain_allCall)
     EXPECT_CALL(*this, hdlr1());  // req: trigger each hdlr on the chain if F->T
     PARA_DOM->setState({{"prev prev", true}});
 }
-TYPED_TEST_P(HdlrDominoTest, UC_trigger_chain_satisfiedCall)
+TYPED_TEST_P(HdlrDominoTest, GOLD_trigger_chain_satisfiedCall)
 {
     PARA_DOM->setHdlr("event1", this->hdlr0_);
     PARA_DOM->setPrev("event1", {{"prev1", true}, {"prev2", false}});
@@ -109,7 +109,7 @@ TYPED_TEST_P(HdlrDominoTest, UC_trigger_chain_satisfiedCall)
     EXPECT_CALL(*this, hdlr1());
     PARA_DOM->setState({{"prev1", true}, {"prev2", true}});
 }
-TYPED_TEST_P(HdlrDominoTest, UC_wrongOrderPrev_wrongCallback)
+TYPED_TEST_P(HdlrDominoTest, wrongOrderPrev_wrongCallback)
 {
     EXPECT_CALL(*this, hdlr0()).Times(0);                                                    // no callback
     PARA_DOM->setHdlr("event with simu prev setting", this->hdlr0_);
@@ -121,11 +121,9 @@ TYPED_TEST_P(HdlrDominoTest, UC_wrongOrderPrev_wrongCallback)
     PARA_DOM->setPrev("event with wrong prev setting", {{"prev1", true}});
 }
 
-#define MULTI_HDLR
+#define MULTI_HDLR  // multi hdlr by alias event
 // ***********************************************************************************************
-// multi hdlr by alias event
-// ***********************************************************************************************
-TYPED_TEST_P(HdlrDominoTest, multiHdlr_onOneEvent_nok)
+TYPED_TEST_P(HdlrDominoTest, UC_multiHdlr_onOneEvent_nok)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->setHdlr("event", this->hdlr1_);  // req: refuse
@@ -134,7 +132,7 @@ TYPED_TEST_P(HdlrDominoTest, multiHdlr_onOneEvent_nok)
     EXPECT_CALL(*this, hdlr1()).Times(0);
     PARA_DOM->setState({{"event", true}});
 }
-TYPED_TEST_P(HdlrDominoTest, multiHdlr_onDiffEvent_ok)
+TYPED_TEST_P(HdlrDominoTest, UC_multiHdlr_onDiffEvent_ok)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->multiHdlrByAliasEv("alias event", this->hdlr1_, "event");  // req: accept on alias ev
@@ -145,7 +143,7 @@ TYPED_TEST_P(HdlrDominoTest, multiHdlr_onDiffEvent_ok)
     EXPECT_CALL(*this, hdlr2());
     PARA_DOM->setState({{"event", true}});
 }
-TYPED_TEST_P(HdlrDominoTest, multiHdlr_onOneAliasEvent_nok)
+TYPED_TEST_P(HdlrDominoTest, UC_multiHdlr_onOneAliasEvent_nok)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->multiHdlrByAliasEv("alias event", this->hdlr1_, "event");
@@ -344,18 +342,18 @@ TYPED_TEST_P(HdlrDominoTest, nonConstInterface_shall_createUnExistEvent_withStat
 
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(HdlrDominoTest
-    , UC_add_and_call
-    , UC_immediate_call
+    , GOLD_add_and_call
+    , immediate_call
 
-    , UC_trigger_chain_call
-    , UC_immediate_chain_call
-    , UC_trigger_chain_allCall
-    , UC_trigger_chain_satisfiedCall
-    , UC_wrongOrderPrev_wrongCallback
+    , GOLD_trigger_chain_call
+    , immediate_chain_call
+    , GOLD_trigger_chain_allCall
+    , GOLD_trigger_chain_satisfiedCall
+    , wrongOrderPrev_wrongCallback
 
-    , multiHdlr_onOneEvent_nok
-    , multiHdlr_onDiffEvent_ok
-    , multiHdlr_onOneAliasEvent_nok
+    , UC_multiHdlr_onOneEvent_nok
+    , UC_multiHdlr_onDiffEvent_ok
+    , UC_multiHdlr_onOneAliasEvent_nok
     , BugFix_invalidHdlr_noCrash
 
     , rmHdlr_thenNoCallback

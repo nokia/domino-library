@@ -22,7 +22,7 @@ TYPED_TEST_SUITE_P(WbasicDatDomTest);
 
 #define SET_GET
 // ***********************************************************************************************
-TYPED_TEST_P(WbasicDatDomTest, UC_wrCtrl_set_get_rm)  // non-wrData is covered by DataDominoTest
+TYPED_TEST_P(WbasicDatDomTest, GOLD_wrCtrl_set_get_rm)  // non-wrData is covered by DataDominoTest
 {
     PARA_DOM->wrCtrlOk("ev0");  // write-ctrl data
     auto valGet = wbasic_getValue<TypeParam, size_t>(*PARA_DOM, "ev0");  // req: any type data (1st=size_t>)
@@ -138,7 +138,7 @@ TYPED_TEST_P(WbasicDatDomTest, nonConstInterface_shall_createUnExistEvent_withSt
 
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(WbasicDatDomTest
-    , UC_wrCtrl_set_get_rm
+    , GOLD_wrCtrl_set_get_rm
     , wrCtrlInterface_cannotHdl_nonWrDat
     , canNOT_setWriteCtrl_afterOwnData
     , setFlag_thenGetIt

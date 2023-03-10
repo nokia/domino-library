@@ -21,7 +21,7 @@ TYPED_TEST_SUITE_P(DominoTest);
 
 #define STATE
 // ***********************************************************************************************
-TYPED_TEST_P(DominoTest, UC_setState_thenGetIt)
+TYPED_TEST_P(DominoTest, GOLD_setState_thenGetIt)
 {
     EXPECT_FALSE(PARA_DOM->state("e1"));  // req: non-exist ev's state=F
 
@@ -37,7 +37,7 @@ TYPED_TEST_P(DominoTest, UC_setState_thenGetIt)
 
 #define BROADCAST_STATE
 // ***********************************************************************************************
-TYPED_TEST_P(DominoTest, UC_forward_broadcast)
+TYPED_TEST_P(DominoTest, GOLD_forward_broadcast)
 {
     // e1->e2->e3
     PARA_DOM->setPrev("e2", {{"e1", true}});
@@ -51,7 +51,7 @@ TYPED_TEST_P(DominoTest, UC_forward_broadcast)
     EXPECT_TRUE(PARA_DOM->state("e2"));  // req: broadcast e1->e2
     EXPECT_TRUE(PARA_DOM->state("e3"));  // req: broadcast e2->e3
 }
-TYPED_TEST_P(DominoTest, UC_no_backward_broadcast)
+TYPED_TEST_P(DominoTest, no_backward_broadcast)
 {
     // e1->e2->e3
     PARA_DOM->setPrev("e2", {{"e1", true}});
@@ -62,7 +62,7 @@ TYPED_TEST_P(DominoTest, UC_no_backward_broadcast)
     EXPECT_TRUE (PARA_DOM->state("e2"));
     EXPECT_TRUE (PARA_DOM->state("e3"));
 }
-TYPED_TEST_P(DominoTest, UC_re_broadcast_byTrue)
+TYPED_TEST_P(DominoTest, GOLD_re_broadcast_byTrue)
 {
     // e1->e2->e3
     PARA_DOM->setPrev("e2", {{"e1", true}});
@@ -79,7 +79,7 @@ TYPED_TEST_P(DominoTest, UC_re_broadcast_byTrue)
     EXPECT_TRUE(PARA_DOM->state("e2"));   // req: broadcast e1->e2
     EXPECT_TRUE(PARA_DOM->state("e3"));   // req: broadcast e2->e3
 }
-TYPED_TEST_P(DominoTest, UC_re_broadcast_byFalse)
+TYPED_TEST_P(DominoTest, GOLD_re_broadcast_byFalse)
 {
     // e4->e5
     PARA_DOM->setPrev("e5", {{"e4", false}});  // false relationship
@@ -107,7 +107,7 @@ TYPED_TEST_P(DominoTest, prevSelf_is_invalid)
 //   . so SmodAgent can log_ << PARA_DOM.whyFalse(EnSmod_IS_FNC_TO_ROM_PLAN)
 // - no need whyTrue() since all prev-event must be satisfied
 // ***********************************************************************************************
-TYPED_TEST_P(DominoTest, UC_multi_retOne)
+TYPED_TEST_P(DominoTest, GOLD_multi_retOne)
 {
     PARA_DOM->setPrev("master succ", {{"all agents succ", true}, {"user abort", false}});  // req: simultaneous set
     EXPECT_EQ("all agents succ==false", PARA_DOM->whyFalse("master succ"));
@@ -115,7 +115,7 @@ TYPED_TEST_P(DominoTest, UC_multi_retOne)
     PARA_DOM->setState({{"all agents succ", true}, {"user abort", true}});  // req: simultaneous state
     EXPECT_EQ("user abort==true", PARA_DOM->whyFalse("master succ"));  // req: ret 1 unsatisfied pre
 }
-TYPED_TEST_P(DominoTest, UC_trueEvent_retEmpty)
+TYPED_TEST_P(DominoTest, trueEvent_retEmpty)
 {
     PARA_DOM->setPrev("master succ", {{"all agents succ", true}, {"user abort", false}});
     PARA_DOM->setState({{"all agents succ", true}});
@@ -135,7 +135,7 @@ TYPED_TEST_P(DominoTest, invalidEvent_retEmpty)
 
 #define SEARCH_PARTIAL_EVNAME
 // ***********************************************************************************************
-TYPED_TEST_P(DominoTest, UC_search_partial_evName)
+TYPED_TEST_P(DominoTest, search_partial_evName)
 {
     PARA_DOM->newEvent("/A");
     PARA_DOM->newEvent("/A/B");
@@ -193,20 +193,20 @@ TYPED_TEST_P(DominoTest, noID_for_not_exist_EvName)
 
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(DominoTest
-    , UC_setState_thenGetIt
+    , GOLD_setState_thenGetIt
 
-    , UC_forward_broadcast
-    , UC_no_backward_broadcast
-    , UC_re_broadcast_byTrue
-    , UC_re_broadcast_byFalse
+    , GOLD_forward_broadcast
+    , no_backward_broadcast
+    , GOLD_re_broadcast_byTrue
+    , GOLD_re_broadcast_byFalse
     , prevSelf_is_invalid
 
-    , UC_multi_retOne
-    , UC_trueEvent_retEmpty
+    , GOLD_multi_retOne
+    , trueEvent_retEmpty
     , eventWithoutPrev_retEmpty
     , invalidEvent_retEmpty
 
-    , UC_search_partial_evName
+    , search_partial_evName
 
     , nonConstInterface_shall_createUnExistEvent_withStateFalse
     , noID_for_not_exist_EvName

@@ -24,7 +24,7 @@ TYPED_TEST_SUITE_P(DataDominoTest);
 const string XPATH_BW =
     "/o-ran-delay-management:delay-management/bandwidth-scs-delay-state[bandwidth=50000][subcarrier-spacing=30]"
     "/bandwidth";
-TYPED_TEST_P(DataDominoTest, UC_setValue_thenGetIt)
+TYPED_TEST_P(DataDominoTest, GOLD_setValue_thenGetIt)
 {
     auto valGet = getValue<TypeParam, size_t>(*PARA_DOM, XPATH_BW);  // req: any type data (1st=size_t)
     EXPECT_EQ(0, valGet);  // req: default value for unexisted event
@@ -39,7 +39,7 @@ TYPED_TEST_P(DataDominoTest, UC_setValue_thenGetIt)
     valGet = getValue<TypeParam, size_t>(*PARA_DOM, XPATH_BW);
     EXPECT_EQ(newValue, valGet);   // req: newGet = newSet
 }
-TYPED_TEST_P(DataDominoTest, UC_setShared_thenGetIt_thenRmIt)
+TYPED_TEST_P(DataDominoTest, setShared_thenGetIt_thenRmIt)
 {
     EXPECT_EQ(nullptr, PARA_DOM->getShared("ev0"));  // req: get null since “ev0" not exist"
 
@@ -108,8 +108,8 @@ TYPED_TEST_P(DataDominoTest, nonConstInterface_shall_createUnExistEvent_withStat
 
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(DataDominoTest
-    , UC_setValue_thenGetIt
-    , UC_setShared_thenGetIt_thenRmIt
+    , GOLD_setValue_thenGetIt
+    , setShared_thenGetIt_thenRmIt
     , desruct_data
     , correct_data_destructor
     , nonConstInterface_shall_createUnExistEvent_withStateFalse
