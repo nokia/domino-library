@@ -4,8 +4,8 @@ cmake_minimum_required(VERSION  3.8)
 set(UT  ut_exe)
 project(${UT}  CXX)  # as early as possible, eg must before CMAKE_CXX_FLAGS
 
-set(CMAKE_CXX_STANDARD  20)
-set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+set(CMAKE_CXX_STANDARD  17)
+set(CMAKE_CXX_STANDARD_REQUIRED  TRUE)
 set(CMAKE_CXX_EXTENSIONS  OFF)
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fno-exceptions")  # inc branch coverage
 
