@@ -12,7 +12,7 @@ set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fno-exceptions")  # inc branch covera
 if(ENABLE_COVERAGE)
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  --coverage")          # gcov req (newer gcc)
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O0")                 # gcov req
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fprofile-abs-path")  # gcovr opt
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fprofile-abs-path")  # gcc 8
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fkeep-inline-functions -fkeep-static-functions")  # inc cov
 
     set(CMAKE_CXX_FLAGS_PROFILE  --coverage)                              # cmake req with -DCMAKE_BUILD_TYPE=PROFILE
