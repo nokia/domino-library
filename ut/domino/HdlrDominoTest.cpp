@@ -86,28 +86,31 @@ TYPED_TEST_P(HdlrDominoTest, immediate_chain_call)
     EXPECT_CALL(*this, hdlr0());  // req: immediate call
     PARA_DOM->setPrev("event", {{"prev", true}});
 }
-TYPED_TEST_P(HdlrDominoTest, GOLD_trigger_chain_allCall)
+TYPED_TEST_P(NofreeHdlrDominoTest, GOLD_trigger_chain_many_calls)
 {
-    PARA_DOM->setPrev("event", {{"prev", true}});
-    PARA_DOM->setPrev("prev", {{"prev prev", true}});
-    PARA_DOM->setHdlr("prev", this->hdlr0_);
-    PARA_DOM->setHdlr("event", this->hdlr1_);
+    PARA_DOM->setHdlr("e0", this->hdlr0_);
+    PARA_DOM->multiHdlrByAliasEv("e1", this->hdlr1_, "e0");
+    PARA_DOM->multiHdlrByAliasEv("e2", this->hdlr2_, "e1");
 
-    EXPECT_CALL(*this, hdlr0());  // req: trigger each hdlr on the chain if F->T
-    EXPECT_CALL(*this, hdlr1());  // req: trigger each hdlr on the chain if F->T
-    PARA_DOM->setState({{"prev prev", true}});
-}
-TYPED_TEST_P(HdlrDominoTest, GOLD_trigger_chain_satisfiedCall)
-{
-    PARA_DOM->setHdlr("event1", this->hdlr0_);
-    PARA_DOM->setPrev("event1", {{"prev1", true}, {"prev2", false}});
-
-    PARA_DOM->setHdlr("event2", this->hdlr1_);
-    PARA_DOM->setPrev("event2", {{"prev1", true}, {"prev2", true}});
+    EXPECT_CALL(*this, hdlr0());
+    EXPECT_CALL(*this, hdlr1());
+    EXPECT_CALL(*this, hdlr2());
+    PARA_DOM->setState({{"e0", true}});     // T->T->T, req: trigger all calls
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
-    EXPECT_CALL(*this, hdlr1());
-    PARA_DOM->setState({{"prev1", true}, {"prev2", true}});
+    EXPECT_CALL(*this, hdlr1()).Times(0);
+    EXPECT_CALL(*this, hdlr2()).Times(0);
+    PARA_DOM->setState({{"e2", false}});    // T,T,TF, req: not trigger any
+
+    EXPECT_CALL(*this, hdlr0()).Times(0);
+    EXPECT_CALL(*this, hdlr1()).Times(0);
+    EXPECT_CALL(*this, hdlr2()).Times(0);
+    PARA_DOM->setState({{"e0", false}});    // FT,T,F
+
+    EXPECT_CALL(*this, hdlr0());
+    EXPECT_CALL(*this, hdlr1()).Times(0);
+    EXPECT_CALL(*this, hdlr2());
+    PARA_DOM->setState({{"e0", true}});     // FT->T->FT, req: trigger only FT
 }
 TYPED_TEST_P(HdlrDominoTest, wrongOrderPrev_wrongCallback)
 {
@@ -153,32 +156,6 @@ TYPED_TEST_P(HdlrDominoTest, multiHdlr_onOneAliasEvent_nok)
     EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2()).Times(0);
     PARA_DOM->setState({{"event", true}});
-}
-TYPED_TEST_P(NofreeHdlrDominoTest, multiHdlr_chainTrigger)
-{
-    PARA_DOM->setHdlr("e0", this->hdlr0_);
-    PARA_DOM->multiHdlrByAliasEv("e1", this->hdlr1_, "e0");
-    PARA_DOM->multiHdlrByAliasEv("e2", this->hdlr2_, "e1");
-
-    EXPECT_CALL(*this, hdlr0());
-    EXPECT_CALL(*this, hdlr1());
-    EXPECT_CALL(*this, hdlr2());
-    PARA_DOM->setState({{"e0", true}});     // T->T->T
-
-    EXPECT_CALL(*this, hdlr0()).Times(0);
-    EXPECT_CALL(*this, hdlr1()).Times(0);
-    EXPECT_CALL(*this, hdlr2()).Times(0);
-    PARA_DOM->setState({{"e2", false}});    // T,T,T->F
-
-    EXPECT_CALL(*this, hdlr0()).Times(0);
-    EXPECT_CALL(*this, hdlr1()).Times(0);
-    EXPECT_CALL(*this, hdlr2()).Times(0);
-    PARA_DOM->setState({{"e0", false}});    // F->T,T,F
-
-    EXPECT_CALL(*this, hdlr0());
-    EXPECT_CALL(*this, hdlr1()).Times(0);
-    EXPECT_CALL(*this, hdlr2());            // req: trigger cross e1
-    PARA_DOM->setState({{"e0", true}});     // T->T->T
 }
 TYPED_TEST_P(HdlrDominoTest, BugFix_invalidHdlr_noCrash)
 {
@@ -321,8 +298,6 @@ REGISTER_TYPED_TEST_SUITE_P(HdlrDominoTest
 
     , GOLD_trigger_chain_call
     , immediate_chain_call
-    , GOLD_trigger_chain_allCall
-    , GOLD_trigger_chain_satisfiedCall
     , wrongOrderPrev_wrongCallback
 
     , multiHdlr_onOneEvent_nok
@@ -343,7 +318,7 @@ INSTANTIATE_TYPED_TEST_SUITE_P(PARA, HdlrDominoTest, AnyHdlrDom);
 REGISTER_TYPED_TEST_SUITE_P(NofreeHdlrDominoTest
     , UC_reTrigger_reCall
 
-    , multiHdlr_chainTrigger
+    , GOLD_trigger_chain_many_calls
 
     , rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigger
     , hdlrOnRoad_thenRmDom_noCrash_noLeak
