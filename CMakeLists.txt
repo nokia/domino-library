@@ -5,7 +5,7 @@ set(UT  ut_exe)
 project(${UT}  CXX)  # as early as possible, eg must before CMAKE_CXX_FLAGS
 
 if(ENABLE_COVERAGE)
-    set(CMAKE_CXX_STANDARD  20)
+    set(CMAKE_CXX_STANDARD  17)  # if gtest fix bug, try c++20/23 to see cov rate inc or not
 
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  --coverage")          # gcov req (newer gcc)
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O0")                 # gcov req
@@ -17,7 +17,7 @@ if(ENABLE_COVERAGE)
 
     add_compile_definitions(SMART_LOG)
 else()
-    set(CMAKE_CXX_STANDARD  17)
+    set(CMAKE_CXX_STANDARD  14)  # low c++ version for wide usage
 
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O1")  # fastest build+ut
 
