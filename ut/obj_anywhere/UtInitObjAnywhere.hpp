@@ -42,7 +42,7 @@ using MinPriDom       = PriDomino<MinHdlrDom>;
 using MinFreeDom      = FreeHdlrDomino<MinHdlrDom>;
 
 // natural order
-using MaxDom = WbasicDatDom<MultiHdlrDomino<DataDomino<FreeHdlrDomino<PriDomino<HdlrDomino<Domino> > > > > >;
+using MaxDom = WbasicDatDom<MultiHdlrDomino<DataDomino<FreeHdlrDomino<MinPriDom > > > >;
 // diff order
 using MaxNofreeDom = PriDomino<MultiHdlrDomino<HdlrDomino<MinWbasicDatDom > > >;
 
