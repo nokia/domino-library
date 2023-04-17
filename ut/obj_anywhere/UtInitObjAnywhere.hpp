@@ -44,7 +44,7 @@ using MinFreeDom      = FreeHdlrDomino<MinHdlrDom>;
 // natural order
 using MaxDom = WbasicDatDom<MultiHdlrDomino<DataDomino<FreeHdlrDomino<PriDomino<HdlrDomino<Domino> > > > > >;
 // diff order
-using MaxNofreeDom = PriDomino<MultiHdlrDomino<HdlrDomino<WbasicDatDom<DataDomino<Domino> > > > >;
+using MaxNofreeDom = PriDomino<MultiHdlrDomino<HdlrDomino<MinWbasicDatDom > > >;
 
 // ***********************************************************************************************
 struct UtInitObjAnywhere : public UniLog, public Test
