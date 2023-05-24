@@ -262,6 +262,33 @@ TYPED_TEST_P(NofreeHdlrDominoTest, hdlrOnRoad_thenRmDom_noCrash_noLeak)
     this->fromMainFN_();
 }
 
+#define FORCE_CALL
+// ***********************************************************************************************
+// eg allow DatDom call hdlr directly after data changed, need not state F->T
+// ***********************************************************************************************
+TYPED_TEST_P(HdlrDominoTest, GOLD_force_call)
+{
+    EXPECT_CALL(*this, hdlr0()).Times(0);  // req: no call
+    PARA_DOM->forceHdlr("e1");
+
+    PARA_DOM->setHdlr("e1", this->hdlr0_);
+    EXPECT_CALL(*this, hdlr0());  // req: force call
+    PARA_DOM->forceHdlr("e1");
+}
+TYPED_TEST_P(NofreeHdlrDominoTest, repeat_force_call)
+{
+    PARA_DOM->setHdlr("e1", this->hdlr0_);
+    EXPECT_CALL(*this, hdlr0());
+    PARA_DOM->forceHdlr("e1");
+
+    EXPECT_CALL(*this, hdlr0());  // req: repeat force call
+    PARA_DOM->forceHdlr("e1");
+
+    EXPECT_CALL(*this, hdlr0()).Times(0);  // req: no call
+    PARA_DOM->rmOneHdlrOK("e1");
+    PARA_DOM->forceHdlr("e1");
+}
+
 #define ID_STATE
 // ***********************************************************************************************
 // event & EvName are ID
@@ -289,6 +316,10 @@ TYPED_TEST_P(HdlrDominoTest, nonConstInterface_shall_createUnExistEvent_withStat
     PARA_DOM->rmOneHdlrOK("e4");  // shall NOT generate new event
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e4"));
     EXPECT_EQ(4u, this->uniqueEVs_.size());
+
+    PARA_DOM->forceHdlr("e5");  // shall NOT generate new event
+    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e5"));
+    EXPECT_EQ(4u, this->uniqueEVs_.size());
 }
 
 // ***********************************************************************************************
@@ -309,6 +340,8 @@ REGISTER_TYPED_TEST_SUITE_P(HdlrDominoTest
     , rmHdlr_fail
     , rmHdlrOnRoad_noCallback
 
+    , GOLD_force_call
+
     , nonConstInterface_shall_createUnExistEvent_withStateFalse
 );
 using AnyHdlrDom = Types<MinHdlrDom, MinMhdlrDom, MinFreeDom, MinPriDom, MaxNofreeDom, MaxDom>;
@@ -322,6 +355,8 @@ REGISTER_TYPED_TEST_SUITE_P(NofreeHdlrDominoTest
 
     , rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigger
     , hdlrOnRoad_thenRmDom_noCrash_noLeak
+
+    , repeat_force_call
 );
 using AnyNofreeHdlrDom = Types<MinHdlrDom, MinMhdlrDom, MinPriDom, MaxNofreeDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, NofreeHdlrDominoTest, AnyNofreeHdlrDom);
