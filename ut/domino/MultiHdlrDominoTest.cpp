@@ -254,6 +254,41 @@ TYPED_TEST_P(MultiHdlrDominoTest, rmHdlr_invalid)
     EXPECT_FALSE(PARA_DOM->rmOneHdlrOK(ev, nullptr));  // req: rm null hdlr
 }
 
+#define FORCE_CALL
+// ***********************************************************************************************
+//  call all hdlr(s) since via effect(), state F->T also all hdlr(s))
+// ***********************************************************************************************
+TYPED_TEST_P(MultiHdlrDominoTest, GOLD_force_call)
+{
+    EXPECT_CALL(*this, hdlr0()).Times(0);  // req: no call
+    EXPECT_CALL(*this, hdlr1()).Times(0);  // req: no call
+    PARA_DOM->forceAllHdlr("e1");
+
+    PARA_DOM->setHdlr("e1", this->hdlr0_);
+    PARA_DOM->multiHdlrOnSameEv("e1", this->hdlr1_, "this->hdlr1_");
+    EXPECT_CALL(*this, hdlr0());  // req: force call
+    EXPECT_CALL(*this, hdlr1());  // req: force call
+    PARA_DOM->forceAllHdlr("e1");
+}
+TYPED_TEST_P(NofreeMultiHdlrDominoTest, repeat_force_call)
+{
+    PARA_DOM->setHdlr("e1", this->hdlr0_);
+    PARA_DOM->multiHdlrOnSameEv("e1", this->hdlr1_, "this->hdlr1_");
+    EXPECT_CALL(*this, hdlr0());
+    EXPECT_CALL(*this, hdlr1());
+    PARA_DOM->forceAllHdlr("e1");
+
+    EXPECT_CALL(*this, hdlr0());  // req: repeat force call
+    EXPECT_CALL(*this, hdlr1());  // req: repeat force call
+    PARA_DOM->forceAllHdlr("e1");
+
+    EXPECT_CALL(*this, hdlr0()).Times(0);  // req: no call
+    EXPECT_CALL(*this, hdlr1()).Times(0);  // req: no call
+    PARA_DOM->rmOneHdlrOK("e1");
+    PARA_DOM->rmOneHdlrOK("e1", "this->hdlr1_");
+    PARA_DOM->forceAllHdlr("e1");
+}
+
 #define ID_STATE
 // ***********************************************************************************************
 // event & EvName are ID
@@ -292,6 +327,8 @@ REGISTER_TYPED_TEST_SUITE_P(MultiHdlrDominoTest
     , rmLegacyHdlr_byNoHdlrName
     , rmHdlr_invalid
 
+    , GOLD_force_call
+
     , nonConstInterface_shall_createUnExistEvent_withStateFalse
 );
 using AnyMultiHdlrDom = Types<MinMhdlrDom, MaxNofreeDom, MaxDom>;
@@ -302,6 +339,8 @@ REGISTER_TYPED_TEST_SUITE_P(NofreeMultiHdlrDominoTest
     , repeatCallback_ok
 
     , rmHdlrOnRoad
+
+    , repeat_force_call
 );
 using AnyNofreeMultiHdlrDom = Types<MinMhdlrDom, MaxNofreeDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, NofreeMultiHdlrDominoTest, AnyNofreeMultiHdlrDom);

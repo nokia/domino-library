@@ -39,7 +39,7 @@ public:
     Domino::Event setHdlr(const Domino::EvName&, const MsgCB& aHdlr);
     bool rmOneHdlrOK(const Domino::EvName&);  // rm by EvName
     virtual bool rmOneHdlrOK(const Domino::Event&, const SharedMsgCB& aHdlr);  // rm by aHdlr
-    void forceHdlr(const Domino::EvName& aEN) { effect(this->getEventBy(aEN)); }
+    void forceAllHdlr(const Domino::EvName& aEN) { effect(this->getEventBy(aEN)); }
 
     // -------------------------------------------------------------------------------------------
     // - add a new ev=aAliasEN to store aHdlr (aAliasEN's true prev is aHostEN)
@@ -166,4 +166,5 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
 // 2022-03-27  CSZ       - if ut case can test base class, never specify derive
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2023-01-23  CSZ       - rename pureRmHdlrOK to rmOneHdlrOK
+// 2023-05-24  CSZ       - support force call hdlr
 // ***********************************************************************************************

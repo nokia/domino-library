@@ -269,24 +269,24 @@ TYPED_TEST_P(NofreeHdlrDominoTest, hdlrOnRoad_thenRmDom_noCrash_noLeak)
 TYPED_TEST_P(HdlrDominoTest, GOLD_force_call)
 {
     EXPECT_CALL(*this, hdlr0()).Times(0);  // req: no call
-    PARA_DOM->forceHdlr("e1");
+    PARA_DOM->forceAllHdlr("e1");
 
     PARA_DOM->setHdlr("e1", this->hdlr0_);
     EXPECT_CALL(*this, hdlr0());  // req: force call
-    PARA_DOM->forceHdlr("e1");
+    PARA_DOM->forceAllHdlr("e1");
 }
 TYPED_TEST_P(NofreeHdlrDominoTest, repeat_force_call)
 {
     PARA_DOM->setHdlr("e1", this->hdlr0_);
     EXPECT_CALL(*this, hdlr0());
-    PARA_DOM->forceHdlr("e1");
+    PARA_DOM->forceAllHdlr("e1");
 
     EXPECT_CALL(*this, hdlr0());  // req: repeat force call
-    PARA_DOM->forceHdlr("e1");
+    PARA_DOM->forceAllHdlr("e1");
 
     EXPECT_CALL(*this, hdlr0()).Times(0);  // req: no call
     PARA_DOM->rmOneHdlrOK("e1");
-    PARA_DOM->forceHdlr("e1");
+    PARA_DOM->forceAllHdlr("e1");
 }
 
 #define ID_STATE
@@ -317,7 +317,7 @@ TYPED_TEST_P(HdlrDominoTest, nonConstInterface_shall_createUnExistEvent_withStat
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e4"));
     EXPECT_EQ(4u, this->uniqueEVs_.size());
 
-    PARA_DOM->forceHdlr("e5");  // shall NOT generate new event
+    PARA_DOM->forceAllHdlr("e5");  // shall NOT generate new event
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e5"));
     EXPECT_EQ(4u, this->uniqueEVs_.size());
 }

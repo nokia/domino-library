@@ -157,4 +157,5 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName, co
 // 2022-03-26  CSZ       - ut's PARA_DOM include self class & ALL its base class(es)
 // 2022-03-27  CSZ       - if ut case can test base class, never specify derive
 // 2022-08-18  CSZ       - replace CppLog by UniLog
+// 2023-05-25  CSZ       - support force call hdlr
 // ***********************************************************************************************
