@@ -29,19 +29,15 @@ using namespace std;
 namespace RLib
 {
 // ***********************************************************************************************
-class DomDoor
+class DomDoor : public UniLog
 {
 public:
-    void subTree(const Domino::EvName& aSubRoot, shared_ptr<void> aDom)
-    {
-        if (aDom == nullptr)
-            domStore_.erase(aSubRoot);
-        else
-            domStore_[aSubRoot] = aDom;
-    }
+    DomDoor(const UniLogName& aUniLogName = ULN_DEFAULT) : UniLog(aUniLogName) {}
+
+    void setSubTree(const Domino::EvName& aSubRoot, shared_ptr<void> aDom = nullptr);
 
     template<typename aDominoType>
-    shared_ptr<aDominoType> subTree(const Domino::EvName&, UniLog& = UniLog::defaultUniLog()) const;
+    shared_ptr<aDominoType> subTree(const Domino::EvName&);
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -50,7 +46,7 @@ private:
 
 // ***********************************************************************************************
 template<typename aDominoType>
-shared_ptr<aDominoType> DomDoor::subTree(const Domino::EvName& aEvName, UniLog& oneLog) const
+shared_ptr<aDominoType> DomDoor::subTree(const Domino::EvName& aEvName)
 {
     auto maxNameMatched = 0;
     shared_ptr<void> domMatched;

@@ -1,13 +1,14 @@
-cmake_minimum_required(VERSION  3.8)
+cmake_minimum_required(VERSION  3.12)
 
 # ------------------------------------------------------------------------------------------------
 set(UT  ut_exe)
 project(${UT}  CXX)  # as early as possible, eg must before CMAKE_CXX_FLAGS
 
 if(COV)
+    message("!!! coverage enabled")
     set(CMAKE_CXX_STANDARD  17)  # if gtest fix bug, try c++20/23 to see cov rate inc or not
 
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  --coverage")          # gcov req (newer gcc)
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  --coverage")          # gcov req (=-fprofile-arcs -ftest-coverage & -lgcov)
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O0")                 # gcov req
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fprofile-abs-path")  # gcc 8
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fkeep-inline-functions -fkeep-static-functions")  # inc cov
