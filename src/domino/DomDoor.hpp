@@ -34,7 +34,7 @@ class DomDoor : public UniLog
 public:
     DomDoor(const UniLogName& aUniLogName = ULN_DEFAULT) : UniLog(aUniLogName) {}
 
-    void setSubTree(const Domino::EvName& aSubRoot, shared_ptr<void> aDom = nullptr);
+    bool setSubTreeOK(const Domino::EvName& aSubRoot, shared_ptr<void> aDom = nullptr);
 
     template<typename aDominoType>
     shared_ptr<aDominoType> subTree(const Domino::EvName&);

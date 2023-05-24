@@ -8,11 +8,24 @@
 namespace RLib
 {
 // ***********************************************************************************************
-void DomDoor::setSubTree(const Domino::EvName& aSubRoot, shared_ptr<void> aDom)
+bool DomDoor::setSubTreeOK(const Domino::EvName& aSubRoot, shared_ptr<void> aDom)
 {
     if (aDom == nullptr)
+    {
         domStore_.erase(aSubRoot);
+        return true;
+    }
     else
+    {
+        auto candidateDom = subTree<Domino>(aSubRoot);
+        if (candidateDom && candidateDom->getEventBy(aSubRoot) != Domino::D_EVENT_FAILED_RET)
+        {
+            ERR("!!! Failed since subRoot=[" << aSubRoot << "] is alreay in use.")
+            return false;
+        }
+
         domStore_[aSubRoot] = aDom;
+        return true;
+    }
 }
 }  // namespace

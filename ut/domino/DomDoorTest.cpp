@@ -30,9 +30,9 @@ TYPED_TEST_SUITE_P(DomDoorTest);
 //                   D
 TYPED_TEST_P(DomDoorTest, GOLD_most_match)
 {
-    this->domDoor_.setSubTree("/A",   PARA_DOM);     // req: can support any type domino
-    this->domDoor_.setSubTree("/A/C", this->dom2_);  // simplify (shall also be any type domino)
-    this->domDoor_.setSubTree("/a",   this->dom3_);  // req: case sensitive; & inc code-cov
+    EXPECT_TRUE(this->domDoor_.setSubTreeOK("/A",   PARA_DOM));     // req: can support any type domino
+    EXPECT_TRUE(this->domDoor_.setSubTreeOK("/A/C", this->dom2_));  // simplify (shall also be any type domino)
+    EXPECT_TRUE(this->domDoor_.setSubTreeOK("/a",   this->dom3_));  // req: case sensitive; & inc code-cov
     ASSERT_NE(PARA_DOM, this->dom2_);
 
     EXPECT_EQ(PARA_DOM,    this->domDoor_.template subTree<TypeParam>("/A"));      // req: exact match
@@ -45,14 +45,22 @@ TYPED_TEST_P(DomDoorTest, GOLD_most_match)
     EXPECT_FALSE(this->domDoor_.template subTree<TypeParam>("/"));   // req: no match
     EXPECT_FALSE(this->domDoor_.template subTree<TypeParam>(""));    // req: no match
 
-    this->domDoor_.setSubTree("/A/C");  // req: rm dom
+    EXPECT_TRUE(this->domDoor_.setSubTreeOK("/A/C"));  // req: rm dom
     EXPECT_EQ(PARA_DOM, this->domDoor_.template subTree<TypeParam>("/A/C"));    // req: exact match
     EXPECT_EQ(PARA_DOM, this->domDoor_.template subTree<TypeParam>("/A/C/D"));  // req: most match
+}
+TYPED_TEST_P(DomDoorTest, set_fail)
+{
+    EXPECT_TRUE(this->domDoor_.setSubTreeOK("/A",   PARA_DOM));
+    PARA_DOM->newEvent("/A/C");
+    EXPECT_FALSE(this->domDoor_.setSubTreeOK("/A/C", this->dom2_));    // req: fail to avoid "/A/C" in 2 dom
+    //EXPECT_FALSE(this->domDoor_.setSubTreeOK("/A/C/D", this->dom2_));  // req: fail to avoid "/A/C/D" in 2 dom
 }
 
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(DomDoorTest
     , GOLD_most_match
+    , set_fail
 );
 using AnyDatDom = Types<Domino, MinDatDom, MinWbasicDatDom, MinHdlrDom, MinMhdlrDom,
     MinPriDom, MinFreeDom, MaxNofreeDom, MaxDom>;
