@@ -40,6 +40,7 @@ public:
     bool rmOneHdlrOK(const Domino::EvName&);  // rm by EvName
     virtual bool rmOneHdlrOK(const Domino::Event&, const SharedMsgCB& aHdlr);  // rm by aHdlr
     void forceAllHdlr(const Domino::EvName& aEN) { effect(this->getEventBy(aEN)); }
+    virtual size_t nHdlr(const Domino::EvName& aEN) const { return hdlrs_.count(this->getEventBy(aEN)); }
 
     // -------------------------------------------------------------------------------------------
     // - add a new ev=aAliasEN to store aHdlr (aAliasEN's true prev is aHostEN)

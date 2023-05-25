@@ -289,6 +289,25 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, repeat_force_call)
     PARA_DOM->forceAllHdlr("e1");
 }
 
+#define N_HDLR
+// ***********************************************************************************************
+TYPED_TEST_P(MultiHdlrDominoTest, n_hdlr)
+{
+    EXPECT_EQ(0u, PARA_DOM->nHdlr("e1"));  // req: init no hdlr
+
+    PARA_DOM->setHdlr("e1", this->hdlr0_);
+    EXPECT_EQ(1u, PARA_DOM->nHdlr("e1"));  // req: after added
+
+    PARA_DOM->multiHdlrOnSameEv("e1", this->hdlr1_, "this->hdlr1_");
+    EXPECT_EQ(2u, PARA_DOM->nHdlr("e1"));  // req: after added
+
+    PARA_DOM->rmOneHdlrOK("e1");
+    EXPECT_EQ(1u, PARA_DOM->nHdlr("e1"));  // req: after del
+
+    PARA_DOM->rmOneHdlrOK("e1", "this->hdlr1_");
+    EXPECT_EQ(0u, PARA_DOM->nHdlr("e1"));  // req: after del
+}
+
 #define ID_STATE
 // ***********************************************************************************************
 // event & EvName are ID
@@ -306,6 +325,10 @@ TYPED_TEST_P(MultiHdlrDominoTest, nonConstInterface_shall_createUnExistEvent_wit
 
     PARA_DOM->rmOneHdlrOK("e2", "h2");  // shall NOT generate new event
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e2"));
+    EXPECT_EQ(2u, this->uniqueEVs_.size());
+
+    PARA_DOM->nHdlr("e3");  // shall NOT generate new event
+    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e3"));
     EXPECT_EQ(2u, this->uniqueEVs_.size());
 }
 
@@ -328,6 +351,8 @@ REGISTER_TYPED_TEST_SUITE_P(MultiHdlrDominoTest
     , rmHdlr_invalid
 
     , GOLD_force_call
+
+    , n_hdlr
 
     , nonConstInterface_shall_createUnExistEvent_withStateFalse
 );

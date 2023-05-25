@@ -289,6 +289,21 @@ TYPED_TEST_P(NofreeHdlrDominoTest, repeat_force_call)
     PARA_DOM->forceAllHdlr("e1");
 }
 
+#define N_HDLR
+// ***********************************************************************************************
+// eg swm DownMgr use nHdlr to priority files
+// ***********************************************************************************************
+TYPED_TEST_P(HdlrDominoTest, n_hdlr)
+{
+    EXPECT_EQ(0u, PARA_DOM->nHdlr("e1"));  // req: init no hdlr
+
+    PARA_DOM->setHdlr("e1", this->hdlr0_);
+    EXPECT_EQ(1u, PARA_DOM->nHdlr("e1"));  // req: after added
+
+    PARA_DOM->rmOneHdlrOK("e1");
+    EXPECT_EQ(0u, PARA_DOM->nHdlr("e1"));  // req: after del
+}
+
 #define ID_STATE
 // ***********************************************************************************************
 // event & EvName are ID
@@ -320,6 +335,10 @@ TYPED_TEST_P(HdlrDominoTest, nonConstInterface_shall_createUnExistEvent_withStat
     PARA_DOM->forceAllHdlr("e5");  // shall NOT generate new event
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e5"));
     EXPECT_EQ(4u, this->uniqueEVs_.size());
+
+    PARA_DOM->nHdlr("e6");  // shall NOT generate new event
+    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e6"));
+    EXPECT_EQ(4u, this->uniqueEVs_.size());
 }
 
 // ***********************************************************************************************
@@ -341,6 +360,7 @@ REGISTER_TYPED_TEST_SUITE_P(HdlrDominoTest
     , rmHdlrOnRoad_noCallback
 
     , GOLD_force_call
+    , n_hdlr
 
     , nonConstInterface_shall_createUnExistEvent_withStateFalse
 );
