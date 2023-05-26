@@ -37,7 +37,7 @@ public:
     bool setSubTreeOK(const Domino::EvName& aSubRoot, shared_ptr<void> aDom = nullptr);
 
     template<typename aDominoType>
-    shared_ptr<aDominoType> subTree(const Domino::EvName&);
+    shared_ptr<aDominoType> subTree(const Domino::EvName&) const;
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -46,7 +46,7 @@ private:
 
 // ***********************************************************************************************
 template<typename aDominoType>
-shared_ptr<aDominoType> DomDoor::subTree(const Domino::EvName& aEvName)
+shared_ptr<aDominoType> DomDoor::subTree(const Domino::EvName& aEvName) const
 {
     auto maxNameMatched = 0;
     shared_ptr<void> domMatched;

@@ -102,4 +102,5 @@ using UniLog = RLib::UniCoutLog;
 // 2022-08-29  CSZ       - split common to UniBaseLog.hpp
 // 2022-11-10  CSZ       - ut smartlog & cout simultaneously
 // 2022-11-11  CSZ       - simple & natural
+// 2023-05-26  CSZ       5)const UniLog & derived can log
 // ***********************************************************************************************

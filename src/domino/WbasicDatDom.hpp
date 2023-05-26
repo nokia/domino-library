@@ -48,7 +48,6 @@ shared_ptr<void> WbasicDatDom<aDominoType>::getShared(const Domino::EvName& aEvN
     if (not isWrCtrl(aEvName))
         return aDominoType::getShared(aEvName);
 
-    UniLog oneLog(this->uniLogName());
     WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!");
     return shared_ptr<void>();
 }
@@ -77,7 +76,6 @@ shared_ptr<void> WbasicDatDom<aDominoType>::wbasic_getShared(const Domino::EvNam
     if (isWrCtrl(aEvName))
         return aDominoType::getShared(aEvName);
 
-    UniLog oneLog(this->uniLogName());
     WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!");
     return shared_ptr<void>();
 }

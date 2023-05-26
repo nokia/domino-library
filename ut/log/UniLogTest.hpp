@@ -190,4 +190,12 @@ TEST_F(UNI_LOG_TEST, no_explicit_CellLog_like_legacy)
     if (Test::HasFailure()) UNI_LOG::defaultUniLog_->needLog();
 }
 
+// ***********************************************************************************************
+TEST_F(UNI_LOG_TEST, GOLD_const_usr)
+{
+    const ClassUsr classUsr(logName_);
+    const auto len_1 = UNI_LOG::logLen(logName_);
+    EXPECT_GT(len_1, 0);  // req: can log
+}
+
 }  // namespace
