@@ -32,8 +32,8 @@ class UniCoutLog
 public:
     explicit UniCoutLog(const UniLogName& = ULN_DEFAULT) { HID("ignore LogName but default, this=" << this) }
 
-    ostream& oneLog();
-    ostream& operator()() { return oneLog(); }
+    ostream& oneLog() const;
+    ostream& operator()() const { return oneLog(); }
     void needLog() {}
 
     static const UniLogName uniLogName() { return ULN_DEFAULT; }

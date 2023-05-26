@@ -44,7 +44,7 @@ size_t UniSmartLog::logLen(const UniLogName& aUniLogName)
 }
 
 // ***********************************************************************************************
-SmartLog& UniSmartLog::oneLog()
+SmartLog& UniSmartLog::oneLog() const
 {
     *smartLog_ << "s[" << timestamp() << ' ' << uniLogName_ << '/';
     return *smartLog_;

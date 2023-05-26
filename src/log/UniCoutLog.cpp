@@ -17,7 +17,7 @@ UniCoutLog& UniCoutLog::defaultUniLog()
 }
 
 // ***********************************************************************************************
-ostream& UniCoutLog::oneLog()
+ostream& UniCoutLog::oneLog() const
 {
     cout << "c[" << timestamp() << ' ' << ULN_DEFAULT << '/';
     ++nLogLine_;

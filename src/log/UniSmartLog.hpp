@@ -35,8 +35,8 @@ public:
     explicit UniSmartLog(const UniLogName& = ULN_DEFAULT);
     ~UniSmartLog() { if (smartLog_.use_count() == 2) logStore_.erase(uniLogName_); }
 
-    SmartLog& oneLog();  // for logging
-    SmartLog& operator()() { return oneLog(); }
+    SmartLog& oneLog() const;  // for logging
+    SmartLog& operator()() const { return oneLog(); }
     void needLog() { smartLog_->needLog(); }  // flag to dump
     const UniLogName& uniLogName() const { return uniLogName_; }
 
