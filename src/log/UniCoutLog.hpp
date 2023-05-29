@@ -51,7 +51,7 @@ public:
 };
 
 // ***********************************************************************************************
-static ostream& oneLog() { return UniCoutLog::defaultUniLog().oneLog(); }
+inline ostream& oneLog() { return UniCoutLog::defaultUniLog().oneLog(); }
 
 }  // namespace
 #endif  // UNI_COUT_LOG_HPP_

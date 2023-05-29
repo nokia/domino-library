@@ -24,7 +24,7 @@
 //   * need not base-derive classes, eg RuAgent/SmodAgent need not derive from BaseAgent
 //     . 1 set hdlrs with unique NDL/precheck/RFM/RB/FB domino set
 //   . evNames()
-//     . to search partial EvName
+//     . to search partial EvName (for eg rm subtree's hdlrs)
 //     . simplest to ret & (let user impl partial/template/etc match)
 //     . safe to ret const (don't defense users' abusing)
 //     . search DomDoor? no untill real req
@@ -92,7 +92,7 @@ public:
 protected:
     const EvName&  evName(const Event aEv) const { return evNames_[aEv]; }  // aEv must valid
     bool           state(const Event aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
-    virtual void   effect(const Event) {}
+    virtual void   effect(const Event) {}  // can't const since FreeDom will rm hdlr
 private:
     void           deduceState(const Event);
     void           pureSetState(const Event, const bool aNewState);

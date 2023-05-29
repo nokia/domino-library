@@ -39,7 +39,7 @@ public:
     Domino::Event setHdlr(const Domino::EvName&, const MsgCB& aHdlr);
     bool rmOneHdlrOK(const Domino::EvName&);  // rm by EvName
     virtual bool rmOneHdlrOK(const Domino::Event&, const SharedMsgCB& aHdlr);  // rm by aHdlr
-    void forceAllHdlr(const Domino::EvName& aEN) { effect(this->getEventBy(aEN)); }
+    void forceAllHdlr(const Domino::EvName& aEN) { effect(this->getEventBy(aEN)); }  // can't const as FreeDom rm hdlr
     virtual size_t nHdlr(const Domino::EvName& aEN) const { return hdlrs_.count(this->getEventBy(aEN)); }
 
     // -------------------------------------------------------------------------------------------
@@ -54,18 +54,7 @@ public:
 
 protected:
     void effect(const Domino::Event) override;
-    virtual void triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event aEv)
-    {
-        msgSelf_->newMsg(
-            [weakMsgCB = WeakMsgCB(aHdlr)]() mutable  // WeakMsgCB is to support rm hdlr
-            {
-                auto cb = weakMsgCB.lock();
-                if (cb)
-                    (*cb)();  // doesn't make sense that domino stores *cb==null
-            },
-            getPriority(aEv)
-        );
-    }
+    virtual void triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event aEv);
 
     // -------------------------------------------------------------------------------------------
 private:
@@ -154,6 +143,22 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
     }
     return event;
 }
+
+// ***********************************************************************************************
+template<class aDominoType>
+void HdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event aEv)
+{
+    msgSelf_->newMsg(
+        [weakMsgCB = WeakMsgCB(aHdlr)]() mutable  // WeakMsgCB is to support rm hdlr
+        {
+            auto cb = weakMsgCB.lock();
+            if (cb)
+                (*cb)();  // doesn't make sense that domino stores *cb==null
+        },
+        getPriority(aEv)
+    );
+}
+
 }  // namespace
 #endif  // HDLR_DOMINO_HPP_
 // ***********************************************************************************************

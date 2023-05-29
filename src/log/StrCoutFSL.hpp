@@ -38,7 +38,7 @@ public :
 
     // for gtest/etc that failure maybe after testcase destruction
     // void forceDel() { stringstream().swap(*this); }
-    void forceSave();
+    void forceSave() const;
 };
 
 // ***********************************************************************************************
@@ -53,7 +53,7 @@ StrCoutFSL::~StrCoutFSL()
 
 // ***********************************************************************************************
 inline
-void StrCoutFSL::forceSave()
+void StrCoutFSL::forceSave() const
 {
     cout << rdbuf() << endl;  // internet says rdbuf() is faster than str()
 }
