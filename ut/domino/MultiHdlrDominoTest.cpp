@@ -209,6 +209,19 @@ TYPED_TEST_P(MultiHdlrDominoTest, rmLegacyHdlr_byNoHdlrName)
     EXPECT_CALL(*this, hdlr1());
     PARA_DOM->setState({{"event", true}});
 }
+// - easier than name-by-name rm
+// - HdlrDom need not since only 1 hdlr, simpler
+// - not must-have so not GOLD_
+TYPED_TEST_P(MultiHdlrDominoTest, rmHdlr_all)
+{
+    PARA_DOM->setHdlr("event", this->hdlr0_);
+    PARA_DOM->multiHdlrOnSameEv("event", this->hdlr1_, "this->hdlr1_");
+
+    PARA_DOM->rmAllHdlr("event");
+    EXPECT_CALL(*this, hdlr0()).Times(0);
+    EXPECT_CALL(*this, hdlr1()).Times(0);
+    PARA_DOM->setState({{"event", true}});
+}
 // ***********************************************************************************************
 // rm on-road-hdlr
 // ***********************************************************************************************
@@ -330,6 +343,10 @@ TYPED_TEST_P(MultiHdlrDominoTest, nonConstInterface_shall_createUnExistEvent_wit
     PARA_DOM->nHdlr("e3");  // shall NOT generate new event
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e3"));
     EXPECT_EQ(2u, this->uniqueEVs_.size());
+
+    PARA_DOM->rmAllHdlr("e4");  // shall NOT generate new event
+    this->uniqueEVs_.insert(PARA_DOM->getEventBy("e4"));
+    EXPECT_EQ(2u, this->uniqueEVs_.size());
 }
 
 // ***********************************************************************************************
@@ -348,6 +365,7 @@ REGISTER_TYPED_TEST_SUITE_P(MultiHdlrDominoTest
 
     , rmHdlr_byHdlrName
     , rmLegacyHdlr_byNoHdlrName
+    , rmHdlr_all
     , rmHdlr_invalid
 
     , GOLD_force_call

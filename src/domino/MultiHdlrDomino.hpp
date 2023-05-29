@@ -42,6 +42,7 @@ public:
     using aDominoType::rmOneHdlrOK;  // rm HdlrDom's by EvName
     bool rmOneHdlrOK(const Domino::EvName&, const HdlrName&);  // rm MultiDom's by HdlrName
     bool rmOneHdlrOK(const Domino::Event&, const SharedMsgCB& aHdlr) override;  // rm by aHdlr
+    void rmAllHdlr(const Domino::EvName&);
     size_t nHdlr(const Domino::EvName& aEN) const override;
 
 protected:
@@ -121,6 +122,19 @@ size_t MultiHdlrDomino<aDominoType>::nHdlr(const Domino::EvName& aEN) const
 
 // ***********************************************************************************************
 template<class aDominoType>
+void MultiHdlrDomino<aDominoType>::rmAllHdlr(const Domino::EvName& aEN)
+{
+    aDominoType::rmOneHdlrOK(aEN);
+
+    auto&& it = multiHdlrs_.find(this->getEventBy(aEN));
+    if (it != multiHdlrs_.end())
+    {
+        it->second.clear();
+    }
+}
+
+// ***********************************************************************************************
+template<class aDominoType>
 bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::Event& aEv, const SharedMsgCB& aHdlr)
 {
     if (aDominoType::rmOneHdlrOK(aEv, aHdlr))
@@ -169,4 +183,5 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName, co
 // 2022-03-27  CSZ       - if ut case can test base class, never specify derive
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2023-05-25  CSZ       - support force call hdlr
+// 2023-05-29  CSZ       - rmAllHdlr
 // ***********************************************************************************************
