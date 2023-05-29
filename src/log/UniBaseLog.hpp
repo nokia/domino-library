@@ -10,10 +10,13 @@
 #ifndef UNI_BASE_HPP_
 #define UNI_BASE_HPP_
 
+#include <chrono>
+#include <cstdio>
 #include <ctime>
 #include <string>
 
 using namespace std;
+using namespace std::chrono;
 
 // ***********************************************************************************************
 #define BUF(content) __func__ << "()#" << __LINE__ << ' ' << content << endl
@@ -38,9 +41,13 @@ const char ULN_DEFAULT[] = "DEFAULT";
 // ***********************************************************************************************
 inline char* timestamp()
 {
-    static char buf[] = "ddd/HH:MM:SS.mmm";  // TODO: no simple way to impl ms
-    auto now = time(nullptr);
-    strftime(buf, sizeof(buf), "%j/%T", localtime(&now));
+    static char buf[] = "ddd/HH:MM:SS.mmm";
+
+    auto now_tp = system_clock::now();
+    auto now_tt = system_clock::to_time_t(now_tp);
+    strftime(buf, sizeof(buf), "%j/%T.", localtime(&now_tt));
+    sprintf(buf + sizeof(buf) - 4, "%03u",
+        unsigned(duration_cast<milliseconds>(now_tp.time_since_epoch()).count() % 1000));
     return buf;
 }
 }  // namespace
@@ -49,4 +56,5 @@ inline char* timestamp()
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2022-08-29  CSZ       1)create
+// 2023-05-29  CSZ       - ms in timestamp
 // ***********************************************************************************************
