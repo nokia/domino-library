@@ -51,7 +51,9 @@ public:
 };
 
 // ***********************************************************************************************
-static ostream& oneLog() { return UniCoutLog::defaultUniLog().oneLog(); }  // static than inline for cov
+// static than inline, avoid ut conflict when coexist both UniLog
+// ***********************************************************************************************
+static ostream& oneLog() { return UniCoutLog::defaultUniLog().oneLog(); }
 
 }  // namespace
 #endif  // UNI_COUT_LOG_HPP_
