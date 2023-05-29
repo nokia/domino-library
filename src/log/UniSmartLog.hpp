@@ -57,7 +57,7 @@ public:
 };
 
 // ***********************************************************************************************
-inline SmartLog& oneLog() { return UniSmartLog::defaultUniLog().oneLog(); }
+static SmartLog& oneLog() { return UniSmartLog::defaultUniLog().oneLog(); }
 
 }  // namespace
 #endif  // UNI_SMART_LOG_HPP_
