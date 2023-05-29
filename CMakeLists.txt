@@ -9,6 +9,7 @@ if(COV)
     set(CMAKE_CXX_STANDARD  17)  # if gtest fix bug, try c++20/23 to see cov rate inc or not
 
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  --coverage")          # gcov req (=-fprofile-arcs -ftest-coverage & -lgcov)
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fPIC")               # gcov req
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O0")                 # gcov req
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fprofile-abs-path")  # gcc 8
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fkeep-inline-functions -fkeep-static-functions")  # inc cov
