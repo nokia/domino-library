@@ -222,6 +222,23 @@ TYPED_TEST_P(MultiHdlrDominoTest, rmHdlr_all)
     EXPECT_CALL(*this, hdlr1()).Times(0);
     PARA_DOM->setState({{"event", true}});
 }
+TYPED_TEST_P(MultiHdlrDominoTest, rmHdlr_subtree)
+{
+    PARA_DOM->setHdlr("/A", this->hdlr0_);
+    PARA_DOM->multiHdlrOnSameEv("/A", this->hdlr1_, "this->hdlr1_");
+
+    PARA_DOM->setHdlr("/A/B/C/D", this->hdlr2_);
+    PARA_DOM->multiHdlrOnSameEv("/A/B/C/D", this->hdlr1_, "this->hdlr1_");
+
+    auto&& evNames = PARA_DOM->evNames();
+    for (auto&& evName : evNames)
+    {
+        auto&& it = evName.find("/A");
+        if (it != string::npos) PARA_DOM->rmAllHdlr(evName);
+    }
+    EXPECT_EQ(0u, PARA_DOM->nHdlr("/A"));  // req: rm-ed
+    EXPECT_EQ(0u, PARA_DOM->nHdlr("/A/B/C/D"));  // req: rm-ed
+}
 // ***********************************************************************************************
 // rm on-road-hdlr
 // ***********************************************************************************************
@@ -367,6 +384,7 @@ REGISTER_TYPED_TEST_SUITE_P(MultiHdlrDominoTest
     , rmLegacyHdlr_byNoHdlrName
     , rmHdlr_all
     , rmHdlr_invalid
+    , rmHdlr_subtree
 
     , GOLD_force_call
 

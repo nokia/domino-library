@@ -13,6 +13,10 @@
 //   . whenever an event occurred, following event(s) can be auto-triggered, so on calling hdlr(s)
 //   . this will go till end (like domino)
 // - why:
+//   * no rm Ev
+//     . may impact related prev/next Ev, complex & out-control; rm entire Dom is safer
+//     . can rm hdlr & data
+//     . how rm Ev tree's hdlr/data? via iterate evNames()
 //   . global states (like global_var) via eg ObjAnywhere
 //   * easily bind & auto broadcast (like real dominos)
 //     * auto shape in different scenario
