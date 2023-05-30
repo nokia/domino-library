@@ -47,7 +47,7 @@ inline char* timestamp()
     auto now_tt = system_clock::to_time_t(now_tp);
     strftime(buf, sizeof(buf), "%j/%T.", localtime(&now_tt));
     sprintf(buf + sizeof(buf) - 4, "%03u",
-        unsigned(duration_cast<milliseconds>(now_tp.time_since_epoch()).count() % 1000));
+        unsigned(duration_cast<milliseconds>(now_tp.time_since_epoch()).count() % 1000));  // can microseconds also
     return buf;
 }
 }  // namespace

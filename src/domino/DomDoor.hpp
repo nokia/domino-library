@@ -8,6 +8,13 @@
 //   . INTEGRATE many dominos in a cloud (cross-process) to 1 DomDoor (in 1 process)
 //   . HIDE details of how to communicate among dominos
 //   . REUSE EvName as searching key
+// !!! little benefit, rm it ???
+//   * more complex than expect, eg
+//     . forbid 1 ev on 2 dom (eg /a/b/c exists, /a/b not, then mount Dom on /a/b)
+//     . forbid 1 dom as 2 subtree (eg dom on /a/b & /a/c)
+//   * Eg other process use IM to sync data
+//     . then need not SyncDom but hdlr on real Dom
+//     . so DomDoor still needed???
 // - Usage:
 //   . get most matchable domino by EvName
 //   . store different dominos in 1 (EvName) tree, each domino covers 1 branch (no overlap)
