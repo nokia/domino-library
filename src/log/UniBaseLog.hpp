@@ -41,13 +41,13 @@ const char ULN_DEFAULT[] = "DEFAULT";
 // ***********************************************************************************************
 inline char* timestamp()
 {
-    static char buf[] = "ddd/HH:MM:SS.mmm";  // ddd is days/year
+    static char buf[] = "ddd/HH:MM:SS.123456";  // ddd is days/year
 
     auto now_tp = system_clock::now();
     auto now_tt = system_clock::to_time_t(now_tp);
     strftime(buf, sizeof(buf), "%j/%T.", localtime(&now_tt));
-    sprintf(buf + sizeof(buf) - 4, "%03u",
-        unsigned(duration_cast<milliseconds>(now_tp.time_since_epoch()).count() % 1000));  // can microseconds also
+    sprintf(buf + sizeof(buf) - 7, "%06u",
+        unsigned(duration_cast<microseconds>(now_tp.time_since_epoch()).count() % 1'000'000));  // can milliseconds
     return buf;
 }
 }  // namespace
