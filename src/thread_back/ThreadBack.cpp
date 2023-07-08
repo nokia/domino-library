@@ -17,8 +17,8 @@ size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
     size_t nHandled = 0;
     for (auto&& it = allThreads_.begin(); it != allThreads_.end();)
     {
-        future_status status;
-        if ((status = it->first.wait_for(0s)) == future_status::ready)
+        future_status status = it->first.wait_for(0s);
+        if (status == future_status::ready)
         {
             it->second(it->first.get());
             it = allThreads_.erase(it);

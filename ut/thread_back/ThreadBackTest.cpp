@@ -87,12 +87,12 @@ TEST_F(ThreadBackTest, entryFnRet_toBackFn)
             // MT_ThreadEntryFN
             [idxThread]() -> bool
             {
-                return idxThread % 5 != 0;
+                return idxThread % 5 != 0;  // ret true / false
             },
             // ThreadBackFN
             [idxThread](bool aRet)
             {
-                EXPECT_EQ(idxThread % 5 != 0, aRet);  // req
+                EXPECT_EQ(idxThread % 5 != 0, aRet);  // req: check true & false
             }
         );
     }
