@@ -44,7 +44,7 @@ struct ThreadBackTest : public Test, public UniLog
 //                                     |                      |
 //                                     |<.....................| future<>
 //    ThreadBack::hdlFinishedThreads() |
-//                            |
+//                                     |
 TEST_F(ThreadBackTest, GOLD_backFn_in_mainThread)
 {
     atomic<thread::id> threadID(this_thread::get_id());
@@ -137,7 +137,7 @@ TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
         this_thread::yield();
     }
 
-    canEnd = true;  // 1st thread keep running till now
+    canEnd = true;  // 1st thread keep running while 2nd is done
     while (ThreadBack::hdlFinishedThreads() == 0)
     {
         DBG("2nd thread done, wait 1st done...")
