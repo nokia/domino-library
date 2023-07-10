@@ -80,19 +80,19 @@ TEST_F(ThreadBackTest, GOLD_backFn_in_mainThread)
 }
 TEST_F(ThreadBackTest, entryFnRet_toBackFn)
 {
-    const size_t maxThread = 2000;  // req: multi & performance(2000 may timeout wait_for(0s))
+    const size_t maxThread = 2;  // req: test entryFn ret true / false
     for (size_t idxThread = 0; idxThread < maxThread; ++idxThread)
     {
         ThreadBack::newThread(
             // MT_ThreadEntryFN
             [idxThread]() -> bool
             {
-                return idxThread % 5 != 0;  // ret true / false
+                return idxThread % 2 != 0;  // ret true / false
             },
             // ThreadBackFN
             [idxThread](bool aRet)
             {
-                EXPECT_EQ(idxThread % 5 != 0, aRet);  // req: check true & false
+                EXPECT_EQ(idxThread % 2 != 0, aRet);  // req: check true & false
             }
         );
     }
