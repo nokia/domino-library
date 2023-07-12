@@ -45,42 +45,42 @@ struct ThreadBackTest : public Test, public UniLog
 //                                     |<.....................| future<>
 //    ThreadBack::hdlFinishedThreads() |
 //                                     |
-TEST_F(ThreadBackTest, GOLD_backFn_in_mainThread)
+TEST_F(ThreadBackTest, GOLD_entryFn_inNewThread_thenBackFn_inMainThread)
 {
-    atomic<thread::id> threadID(this_thread::get_id());
-    DBG("main thread id=" << threadID);
+    atomic<thread::id> mt_threadID(this_thread::get_id());
+    DBG("main thread id=" << mt_threadID);
     ThreadBack::newThread(
         // MT_ThreadEntryFN
-        [&threadID]() -> bool
+        [&mt_threadID]() -> bool
         {
-            threadID = this_thread::get_id();
-            cout << "MT_ThreadEntryFN(): thread id=" << threadID << endl;
+            mt_threadID = this_thread::get_id();
+            cout << "MT_ThreadEntryFN(): thread id=" << mt_threadID << endl;
             return true;
         },
         // ThreadBackFN
-        [&threadID, this](bool)
+        [&mt_threadID, this](bool)
         {
-            threadID = this_thread::get_id();
-            DBG("ThreadBackFN thread id=" << threadID);
+            mt_threadID = this_thread::get_id();
+            DBG("ThreadBackFN thread id=" << mt_threadID);
         }
     );
 
-    while (this_thread::get_id() == threadID)            // req: MT_ThreadEntryFN() in new thread
+    while (this_thread::get_id() == mt_threadID)  // req: run MT_ThreadEntryFN() in new thread
     {
-        DBG("new thread not start yet, wait... threadID=" << threadID);
+        DBG("new thread not start yet, wait... mt_threadID=" << mt_threadID);
         this_thread::yield();
     }
 
     while (ThreadBack::hdlFinishedThreads() == 0)
     {
-        DBG("new thread not end yet, wait... threadID=" << threadID)
+        DBG("new thread not end yet, wait... mt_threadID=" << mt_threadID)
         this_thread::yield();
     }
-    EXPECT_EQ(threadID, this_thread::get_id());          // req: ThreadBackFN() in main thread
+    EXPECT_EQ(mt_threadID, this_thread::get_id());  // req: run ThreadBackFN() in main thread afterwards
 }
-TEST_F(ThreadBackTest, entryFnRet_toBackFn)
+TEST_F(ThreadBackTest, GOLD_entryFnResult_toBackFn)
 {
-    const size_t maxThread = 2;  // req: test entryFn ret true / false
+    const size_t maxThread = 2;  // req: test entryFn result true(succ) / false(fail)
     for (size_t idxThread = 0; idxThread < maxThread; ++idxThread)
     {
         ThreadBack::newThread(
@@ -110,13 +110,12 @@ TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
         // MT_ThreadEntryFN
         [&canEnd]() -> bool
         {
-            while (not canEnd) this_thread::yield();  // not end until instruction
+            while (not canEnd)
+                this_thread::yield();  // not end until instruction
             return true;
         },
         // ThreadBackFN
-        [](bool)
-        {
-        }
+        [](bool) {}
     );
 
     ThreadBack::newThread(
@@ -126,9 +125,7 @@ TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
             return false;  // quick end
         },
         // ThreadBackFN
-        [](bool)
-        {
-        }
+        [](bool) {}
     );
 
     while (ThreadBack::hdlFinishedThreads() == 0)

@@ -23,22 +23,21 @@
 // - VALUE/why:
 //   * keep all logic in main thread / single thread (simple, eg no lock/deadlock, no complex logic)
 //     . while time-consuming tasks in other threads
-//   . simple & natural
-//     * use std::future to msg from other thread back to main thread
-//     * most info in main thread, eg allThreads_, easy handle ThreadBackFN() by diff ways
-//   . cross platform
-//
-// - Req:
-//   * ThreadBackFN() in main thread
-//   . support diff MainWaker
-//     . in-time callback when new thread over (by MainWaker::threadOver())
+// - REQ:
+//   * run MT_ThreadEntryFN() in new thread by ThreadBack::newThread()
+//   * run ThreadBackFN() in main thread after MT_ThreadEntryFN() done by ThreadBack::hdlFinishedThreads()
+//   * MT_ThreadEntryFN()'s result as ThreadBackFN()'s para so succ(true) or fail(false)
+//   . cross platform:
+//     . std::async
+//     . std::future (to msg from other thread back to main thread)
+//   . most info in main thread, eg allThreads_, easy handle ThreadBackFN() by diff ways
 //   . not integrated with MsgSelf
 //     . aovid complicate MsgSelf which include back to main(), priority FIFO, withdraw msg
 //     . avoid block main thread
 //     . avoid complicate ThreadBack (focus on 1 think: ThreadBackFN in main thread)
-//   . can work with MsgSelf
+//     . can work with MsgSelf
 //
-// - support exception: NO, since
+// - support exception: NO!!! since
 //   . dom lib branches inc 77% (Dec,2022), unnecessary complex
 //
 // - support multi-thread
@@ -92,4 +91,5 @@ private:
 // ..........  .........   .......................................................................
 // 2022-10-23  CSZ       1)create
 // 2022-11-15  CSZ       - simpler & MT safe
+// 2023-07-12  CSZ       - copilot compare
 // ***********************************************************************************************
