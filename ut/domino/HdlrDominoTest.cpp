@@ -20,7 +20,7 @@ struct HdlrDominoTest : public UtInitObjAnywhere
     MOCK_METHOD(void, hdlr2, ());
 
     // -------------------------------------------------------------------------------------------
-    FromMainFN fromMainFN_;
+    PongMainFN pongMainFN_;
     MsgCB hdlr0_ = [this](){ this->hdlr0(); };
     MsgCB hdlr1_ = [this](){ this->hdlr1(); };
     MsgCB hdlr2_ = [this](){ this->hdlr2(); };
@@ -205,7 +205,7 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlrOnRoad_noCallback)
 {
     // not auto-cb but manually
     auto msgSelf = make_shared<MsgSelf>(
-        [this](const FromMainFN& aFromMainFN){ this->fromMainFN_ = aFromMainFN; }, this->uniLogName());
+        [this](const PongMainFN& aPongMainFN){ this->pongMainFN_ = aPongMainFN; }, this->uniLogName());
     PARA_DOM->setMsgSelf(msgSelf);
 
     PARA_DOM->multiHdlrByAliasEv("e0", this->hdlr0_, "e");
@@ -216,13 +216,13 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlrOnRoad_noCallback)
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1());
-    this->fromMainFN_();                          // manual trigger on road cb
+    this->pongMainFN_();                          // manual trigger on road cb
 }
 TYPED_TEST_P(NofreeHdlrDominoTest, rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigger)
 {
     // not auto-cb but manually
     auto msgSelf = make_shared<MsgSelf>(
-        [this](const FromMainFN& aFromMainFN){ this->fromMainFN_ = aFromMainFN; }, this->uniLogName());
+        [this](const PongMainFN& aPongMainFN){ this->pongMainFN_ = aPongMainFN; }, this->uniLogName());
     PARA_DOM->setMsgSelf(msgSelf);
 
     PARA_DOM->setHdlr("event", this->hdlr0_);
@@ -239,18 +239,18 @@ TYPED_TEST_P(NofreeHdlrDominoTest, rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigg
     PARA_DOM->setHdlr("event", this->hdlr0_);     // re-add hdlr
 
     EXPECT_CALL(*this, hdlr0()).Times(0);         // req: no cb since rm-ed
-    this->fromMainFN_();
+    this->pongMainFN_();
 
     PARA_DOM->setState({{"event", true}});
     ASSERT_TRUE(msgSelf->hasMsg());
     EXPECT_CALL(*this, hdlr0());                  // req: new cb
-    this->fromMainFN_();
+    this->pongMainFN_();
 }
 TYPED_TEST_P(NofreeHdlrDominoTest, hdlrOnRoad_thenRmDom_noCrash_noLeak)
 {
     // not auto-cb but manually
     auto msgSelf = make_shared<MsgSelf>(
-        [this](const FromMainFN& aFromMainFN){ this->fromMainFN_ = aFromMainFN; }, this->uniLogName());
+        [this](const PongMainFN& aPongMainFN){ this->pongMainFN_ = aPongMainFN; }, this->uniLogName());
     PARA_DOM->setMsgSelf(msgSelf);
 
     PARA_DOM->setHdlr("event", this->hdlr0_);
@@ -259,7 +259,7 @@ TYPED_TEST_P(NofreeHdlrDominoTest, hdlrOnRoad_thenRmDom_noCrash_noLeak)
 
     ObjAnywhere::set<TypeParam>(nullptr, *this);  // rm dom
     EXPECT_CALL(*this, hdlr0()).Times(0);         // req: no cb
-    this->fromMainFN_();
+    this->pongMainFN_();
 }
 
 #define FORCE_CALL

@@ -54,7 +54,7 @@ struct UtInitObjAnywhere : public UniLog, public Test
         ObjAnywhere::init(*this);
 
         ObjAnywhere::set(make_shared<MsgSelf>(
-            [](const FromMainFN& aHandleAllMsgFn){ aHandleAllMsgFn(); }, uniLogName()), *this);
+            [](const PongMainFN& aHandleAllMsgFn){ aHandleAllMsgFn(); }, uniLogName()), *this);
 
         ObjAnywhere::set(make_shared<Domino>         (uniLogName()), *this);
         ObjAnywhere::set(make_shared<MinDatDom>      (uniLogName()), *this);

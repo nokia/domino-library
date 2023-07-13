@@ -20,8 +20,8 @@ struct PriDominoTest : public UtInitObjAnywhere
 
     // -------------------------------------------------------------------------------------------
     shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(
-        [this](const FromMainFN& aFromMainFN){ fromMainFN_ = aFromMainFN; }, uniLogName());
-    FromMainFN fromMainFN_;
+        [this](const PongMainFN& aPongMainFN){ pongMainFN_ = aPongMainFN; }, uniLogName());
+    PongMainFN pongMainFN_;
 
     MsgCB d1EventHdlr_ = [&](){ hdlrIDs_.push(1); };
     MsgCB d2EventHdlr_ = [&](){ hdlrIDs_.push(2); };
@@ -85,7 +85,7 @@ TYPED_TEST_P(PriDominoTest, GOLD_setPriority_thenPriorityFifoCallback)
     PARA_DOM->setState({{"e4", false}});
     PARA_DOM->setState({{"e4", true}});
 
-    if (this->msgSelf_->hasMsg()) this->fromMainFN_();
+    if (this->msgSelf_->hasMsg()) this->pongMainFN_();
     if (this->hdlrIDs_.size() == 6) EXPECT_EQ(queue<int>({5, 4, 2, 1, 3, 4}), this->hdlrIDs_);
     else EXPECT_EQ(queue<int>({5, 4, 2, 1, 3}), this->hdlrIDs_);  // auto-rm-hdlr dom
 }

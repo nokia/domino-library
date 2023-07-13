@@ -9,9 +9,9 @@
 namespace RLib
 {
 // ***********************************************************************************************
-MsgSelf::MsgSelf(const ToMainFN& aToMainFN, const UniLogName& aUniLogName)
+MsgSelf::MsgSelf(const PingMainFN& aPingMainFN, const UniLogName& aUniLogName)
     : UniLog(aUniLogName)
-    , toMainFN_(aToMainFN)
+    , pingMainFN_(aPingMainFN)
 {}
 
 // ***********************************************************************************************
@@ -39,28 +39,27 @@ void MsgSelf::handleAllMsg(const shared_ptr<bool> aValidMsgSelf)
 // ***********************************************************************************************
 bool MsgSelf::handleOneMsg()
 {
-    for (auto&& priority = EMsgPri_MAX-1; priority >=EMsgPri_MIN ; priority--)
+    for (auto msgPri = EMsgPri_MAX-1; msgPri >=EMsgPri_MIN ; msgPri--)
     {
-        auto&& oneQueue = msgQueues_[priority];
+        auto&& oneQueue = msgQueues_[msgPri];
         if (oneQueue.empty())
             continue;
 
-        auto&& cb = oneQueue.front();
-        cb();  // not support cb=nullptr
+        oneQueue.front()();  // run 1st MsgCB; newMsg() prevent nullptr in msgQueues_
         oneQueue.pop();
         --nMsg_;
 
-        if (not isLowPri(EMsgPriority(priority)))
+        if (not isLowPri(EMsgPriority(msgPri)))
             return true;
         if (hasMsg())
-            toMainFN_([this, isValid = isValid_]() mutable { handleAllMsg(isValid); });
+            pingMainFN_([this, isValid = isValid_]() mutable { handleAllMsg(isValid); });
         return false;  // 1 low msg per loopReq so queue with eg IM CB, syscom, etc. (lower)
     }
     return false;
 }
 
 // ***********************************************************************************************
-void MsgSelf::newMsg(const MsgCB& aMsgCB, const EMsgPriority aPriority)
+void MsgSelf::newMsg(const MsgCB& aMsgCB, const EMsgPriority aMsgPri)
 {
     if (aMsgCB == nullptr)
     {
@@ -68,11 +67,11 @@ void MsgSelf::newMsg(const MsgCB& aMsgCB, const EMsgPriority aPriority)
         return;
     }
 
-    msgQueues_[aPriority].push(aMsgCB);
+    msgQueues_[aMsgPri].push(aMsgCB);
     ++nMsg_;
     if (nMsg_ > 1)
         return;
 
-    toMainFN_([this, isValid = isValid_]() mutable { handleAllMsg(isValid); });
+    pingMainFN_([this, isValid = isValid_]() mutable { handleAllMsg(isValid); });
 }
 }  // namespace

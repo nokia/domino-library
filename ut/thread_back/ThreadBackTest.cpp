@@ -146,8 +146,8 @@ TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
 // ***********************************************************************************************
 TEST_F(ThreadBackTest, canWithMsgSelf)
 {
-    FromMainFN handleAllMsg;
-    MsgSelf msgSelf([&handleAllMsg](const FromMainFN& aFromMainFN){ handleAllMsg = aFromMainFN; }, uniLogName());
+    PongMainFN handleAllMsg;
+    MsgSelf msgSelf([&handleAllMsg](const PongMainFN& aPongMainFN){ handleAllMsg = aPongMainFN; }, uniLogName());
     queue<size_t> order;
     for (size_t idxThread = EMsgPri_MIN; idxThread < EMsgPri_MAX; idxThread++)
     {

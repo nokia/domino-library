@@ -5,9 +5,9 @@
  */
 // ***********************************************************************************************
 // - Issue/why: not callback directly but wait current function return to main() then callback
+//   . avoid loop callbacks, but exe after all executing/in-stack func returned
 //   * avoid logic surprise when immediate callback [MUST-HAVE!]
-//   . avoid deep/loop callbacks, but exe after all executing/in-stack func returned
-//   * priority FIFO msg (eg "abort" is higher priority event)
+//   * priority FIFO msg (eg "abort" is higher priority)
 //   . single thread (in main thread)
 //   * support diff cb mechanism (async, IM, syscom, etc)
 //   . can withdraw on-road MsgCB (eg HdlrDomino.rmHdlr())
@@ -15,7 +15,8 @@
 // - how:
 //   . newMsg(): send msgHdlr into msgQueues_ (all info are in msgHdlr so func<void()> is enough)
 //   . handleAllMsg(): call all msgHdlr in msgQueues_, priority then FIFO
-// - core: msgQueues_
+// - core: msgQueues_[priority][FIFO]
+//   . msgQueues_ is a 2D array, 1st dim is priority, 2nd dim is FIFO
 // - which way?    speed                   UT                           code
 //   . async task  may slow if async busy  no but direct-CB instead     simple
 //   . IM          may ensure speed        no but direct-CB instead     Im, ActiveBtsL, StatusMo
@@ -53,14 +54,14 @@ using MsgCB        = function<void()>;
 using WeakMsgCB    = weak_ptr<MsgCB>;
 using SharedMsgCB  = shared_ptr<MsgCB>;
 
-using FromMainFN   = function<void()>;
-using ToMainFN     = function<void(const FromMainFN&)>;
+using PongMainFN   = function<void()>;                   // tap to main()
+using PingMainFN   = function<void(const PongMainFN&)>;  // tap from main()
 
 // ***********************************************************************************************
 class MsgSelf : public UniLog
 {
 public:
-    MsgSelf(const ToMainFN&, const UniLogName& = ULN_DEFAULT);
+    MsgSelf(const PingMainFN&, const UniLogName& = ULN_DEFAULT);
     ~MsgSelf();
     const shared_ptr<bool> getValid() const { return isValid_; }
 
@@ -78,7 +79,7 @@ private:
     queue<MsgCB> msgQueues_[EMsgPri_MAX];
 
     shared_ptr<bool> isValid_ = make_shared<bool>(true);  // MsgSelf is still valid?
-    ToMainFN         toMainFN_;
+    PingMainFN       pingMainFN_;
     size_t           nMsg_ = 0;
 };
 }  // namespace
@@ -101,4 +102,5 @@ private:
 //                         . support both MsgCB & WeakMsgCB(by lambda)
 // 2022-12-02  CSZ       - simple & natural
 // 2022-12-31  CSZ       - not support MsgCB=nullptr
+// 2023-07-13  CSZ       - copilot compare
 // ***********************************************************************************************

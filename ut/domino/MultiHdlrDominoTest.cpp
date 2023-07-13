@@ -21,7 +21,7 @@ struct MultiHdlrDominoTest : public UtInitObjAnywhere
     MOCK_METHOD(void, hdlr2, ());
 
     // -------------------------------------------------------------------------------------------
-    FromMainFN fromMainFN_;
+    PongMainFN pongMainFN_;
     MsgCB hdlr0_ = [this](){ this->hdlr0(); };
     MsgCB hdlr1_ = [this](){ this->hdlr1(); };
     MsgCB hdlr2_ = [this](){ this->hdlr2(); };
@@ -246,7 +246,7 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, rmHdlrOnRoad)
 {
     // not auto-cb but manually
     auto msgSelf = make_shared<MsgSelf>(
-        [this](const FromMainFN& aFromMainFN){ this->fromMainFN_ = aFromMainFN; }, this->uniLogName());
+        [this](const PongMainFN& aPongMainFN){ this->pongMainFN_ = aPongMainFN; }, this->uniLogName());
     PARA_DOM->setMsgSelf(msgSelf);
 
     PARA_DOM->setHdlr("event", this->hdlr0_);
@@ -260,7 +260,7 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, rmHdlrOnRoad)
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2()).Times(0);
-    if (msgSelf->hasMsg()) this->fromMainFN_();                   // manual trigger on road cb
+    if (msgSelf->hasMsg()) this->pongMainFN_();                   // manual trigger on road cb
 
     PARA_DOM->setState({{"event", false}});
     PARA_DOM->setState({{"event", true}});                        // retrigger
@@ -268,7 +268,7 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, rmHdlrOnRoad)
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2()).Times(0);
-    if (msgSelf->hasMsg()) this->fromMainFN_();                   // manual trigger on road cb
+    if (msgSelf->hasMsg()) this->pongMainFN_();                   // manual trigger on road cb
 }
 // ***********************************************************************************************
 // rm invalid
