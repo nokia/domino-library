@@ -39,21 +39,24 @@ void MsgSelf::handleAllMsg(const shared_ptr<bool> aValidMsgSelf)
 // ***********************************************************************************************
 bool MsgSelf::handleOneMsg()
 {
-    for (auto msgPri = EMsgPri_MAX-1; msgPri >=EMsgPri_MIN ; msgPri--)
+    for (auto msgPri = EMsgPri_MAX-1; msgPri >= EMsgPri_MIN ; msgPri--)
     {
         auto&& oneQueue = msgQueues_[msgPri];
         if (oneQueue.empty())
             continue;
 
-        oneQueue.front()();  // run 1st MsgCB; newMsg() prevent nullptr in msgQueues_
+        oneQueue.front()();  // run 1st MsgCB; newMsg() prevent nullptr into msgQueues_
         oneQueue.pop();
         --nMsg_;
 
-        if (not isLowPri(EMsgPriority(msgPri)))
-            return true;
-        if (hasMsg())
+        if (not hasMsg())
+            return false;
+        if (isLowPri(EMsgPriority(msgPri)))
+        {
             pingMainFN_([this, isValid = isValid_]() mutable { handleAllMsg(isValid); });
-        return false;  // 1 low msg per loopReq so queue with eg IM CB, syscom, etc. (lower)
+            return false;  // 1 low msg per loopReq so queue with eg IM CB, syscom, etc. (lower)
+        }
+        return true;
     }
     return false;
 }
