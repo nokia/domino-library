@@ -76,9 +76,12 @@ TEST_F(MsgSelfTest, dupSendMsg)
 TEST_F(MsgSelfTest, sendInvalidMsg_noCrash)
 {
     EXPECT_CALL(*this, pingMain(_)).WillOnce(SaveArg<0>(&pongMainFN_));
-    msgSelf_->newMsg(d1MsgHdlr_);                 // valid cb
-    msgSelf_->newMsg(MsgCB());                    // invalid cb
+    msgSelf_->newMsg(d1MsgHdlr_);  // valid cb to get pongMainFN_
     pongMainFN_();
+    EXPECT_EQ(queue<int>({1}), hdlrIDs_);
+
+    msgSelf_->newMsg(MsgCB());  // req: invalid cb
+    pongMainFN_();  // req: no crash (& inc cov of empty queue)
     EXPECT_EQ(queue<int>({1}), hdlrIDs_);
 }
 TEST_F(MsgSelfTest, GOLD_loopback_handleAll_butOneByOneLowPri)
