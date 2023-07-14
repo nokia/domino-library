@@ -24,8 +24,8 @@
 //   . syscom      may ensure speed        ?                            ?
 //   . (conclusion: async for product, direct-CB for UT)
 // - why MsgCB instead of WeakMsgCB in msgQueues_?
-//   . most users want MsgSelf store their cb (naturally)
-//   . while only a few want to be able to withdraw cb in msgQueues_ (eg HdlrDomino)
+//   . most users want MsgSelf (instead of themselves) to store cb (naturally; so MsgCB is better)
+//   . while only a few want to be able to withdraw cb in msgQueues_ (eg HdlrDomino; so WeakMsgCB is better)
 // ***********************************************************************************************
 #ifndef MSG_SELF_HPP_
 #define MSG_SELF_HPP_
