@@ -17,11 +17,15 @@
 //   . handleAllMsg(): call all msgHdlr in msgQueues_, priority then FIFO
 // - core: msgQueues_[priority][FIFO]
 //   . msgQueues_ is a 2D array, 1st dim is priority, 2nd dim is FIFO
+//
 // - which way?    speed                   UT                           code
 //   . async task  may slow if async busy  no but direct-CB instead     simple
 //   . IM          may ensure speed        no but direct-CB instead     Im, ActiveBtsL, StatusMo
 //   . syscom      may ensure speed        ?                            ?
 //   . (conclusion: async for product, direct-CB for UT)
+// - why MsgCB instead of WeakMsgCB in msgQueues_?
+//   . most users want MsgSelf store their cb (naturally)
+//   . while only a few want to be able to withdraw cb in msgQueues_ (eg HdlrDomino)
 // ***********************************************************************************************
 #ifndef MSG_SELF_HPP_
 #define MSG_SELF_HPP_
