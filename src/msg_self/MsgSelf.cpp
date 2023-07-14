@@ -29,8 +29,6 @@ void MsgSelf::handleAllMsg(const shared_ptr<bool> aValidMsgSelf)
 
     if (*aValidMsgSelf)  // impossible aValidMsgSelf==nullptr since 022-Mar-11
     {
-        if (not hasMsg())
-            return;
         while (handleOneMsg());  // handleOneMsg() may create new high priority msg(s)
     }
 }
