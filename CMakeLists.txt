@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION  3.12)
 
 # ------------------------------------------------------------------------------------------------
-set(UT  ut_exe)
-project(${UT}  CXX)  # as early as possible, eg must before CMAKE_CXX_FLAGS
+project(ut_exe  CXX)  # as early as possible, eg must before CMAKE_CXX_FLAGS
 
 if(COV)
     message("!!! coverage enabled")
@@ -27,12 +26,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED  TRUE)
 set(CMAKE_CXX_EXTENSIONS  OFF)
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fno-exceptions")  # inc branch coverage
 
-add_executable(${UT})
+add_executable(ut_exe)
 
 add_subdirectory(src)
 add_subdirectory(ut)
 
-target_link_libraries(${UT}  PRIVATE
+target_link_libraries(ut_exe  PRIVATE
   ${LIB_DOMINO_NAME}
   ${LIB_UT_NAME}
   gtest_main
@@ -40,10 +39,9 @@ target_link_libraries(${UT}  PRIVATE
 
 # ------------------------------------------------------------------------------------------------
 # make run-ut_exe
-set(RUN_UT  run)
-add_custom_target(${RUN_UT}
-  COMMAND  ./${UT} --gtest_brief=0
-  DEPENDS  ${UT}
+add_custom_target(run
+  COMMAND  ./ut_exe --gtest_brief=0
+  DEPENDS  ut_exe
 )
 
 # simplify "make help"
