@@ -20,17 +20,14 @@ if(COV)
     add_compile_definitions(SMART_LOG)
 else()
     set(CMAKE_CXX_STANDARD  14)  # low c++ version for wide usage
-
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O1")  # fastest build+ut
-
     add_compile_definitions(WITH_HID_LOG)
 endif()
 set(CMAKE_CXX_STANDARD_REQUIRED  TRUE)
 set(CMAKE_CXX_EXTENSIONS  OFF)
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fno-exceptions")  # inc branch coverage
 
-file(WRITE  ${CMAKE_CURRENT_BINARY_DIR}/null.cpp  "")
-add_executable(${UT}  "${CMAKE_CURRENT_BINARY_DIR}/null.cpp")  # cmake cannot w/o cpp
+add_executable(${UT})
 
 add_subdirectory(src)
 add_subdirectory(ut)
