@@ -31,8 +31,8 @@ add_subdirectory(src)
 add_subdirectory(ut)
 
 target_link_libraries(ut_exe  PRIVATE
-  ${LIB_DOMINO_NAME}
-  ${LIB_UT_NAME}
+  lib_domino
+  lib_ut
   gtest_main
 )
 

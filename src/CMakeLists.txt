@@ -1,22 +1,19 @@
-# make DominoLib: so users can call this CMakeLists.txt in their own project
-# ------------------------------------------------------------------------------------------------
-message("\n*** cmake DominoLib ***")
+message("\n*** cmake lib_domino: so users can call this CMakeLists.txt in their own project ***")
 # src
-set(LIB_DOMINO_NAME  DominoLib  CACHE INTERNAL "")  # global var
-file(GLOB  LIB_SRC_LIST
+file(GLOB  list_src
   "${CMAKE_CURRENT_SOURCE_DIR}/*/*.cpp"
 )
-add_library(${LIB_DOMINO_NAME}  ${LIB_SRC_LIST})
+add_library(lib_domino  ${list_src})
 
 # include
-file(GLOB  INC_DIR_LIST
+file(GLOB  list_include
   "${CMAKE_CURRENT_SOURCE_DIR}/*"
 )
-list(FILTER  INC_DIR_LIST  EXCLUDE  REGEX  ".*CMakeLists.*")
-target_include_directories(${LIB_DOMINO_NAME}  PUBLIC
-  ${INC_DIR_LIST}
+list(FILTER  list_include  EXCLUDE  REGEX  ".*CMakeLists.*")
+target_include_directories(lib_domino  PUBLIC
+  ${list_include}
 )
 
-target_link_libraries(${LIB_DOMINO_NAME} PUBLIC
+target_link_libraries(lib_domino PUBLIC
   pthread
 )
