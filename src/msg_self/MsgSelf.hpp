@@ -17,6 +17,7 @@
 //   . handleAllMsg(): call all msgHdlr in msgQueues_, priority then FIFO
 // - core: msgQueues_[priority][FIFO]
 //   . msgQueues_ is a 2D array, 1st dim is priority, 2nd dim is FIFO
+//   . perf better than priority_queue that need search & insert for newMsg()
 //
 // - which way?    speed                   UT                           code
 //   . async task  may slow if async busy  no but direct-CB instead     simple
@@ -54,7 +55,7 @@ enum EMsgPriority : unsigned char
     EMsgPri_MAX
 };
 
-using MsgCB        = function<void()>;
+using MsgCB        = function<void()>;  // !!! MsgCB shall NEVER throw exception!!!
 using WeakMsgCB    = weak_ptr<MsgCB>;
 using SharedMsgCB  = shared_ptr<MsgCB>;
 

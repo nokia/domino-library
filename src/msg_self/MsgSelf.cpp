@@ -35,6 +35,8 @@ void MsgSelf::handleAllMsg(const shared_ptr<bool> aValidMsgSelf)
 }
 
 // ***********************************************************************************************
+// - performance optimization need 5 lines code, with a little benfit in most cases
+//   . so giveup until real need
 bool MsgSelf::handleOneMsg()
 {
     for (auto msgPri = EMsgPri_MAX-1; msgPri >= EMsgPri_MIN ; msgPri--)
