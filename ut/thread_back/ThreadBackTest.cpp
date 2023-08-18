@@ -143,16 +143,6 @@ TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
         this_thread::yield();
     }
 }
-TEST_F(ThreadBackTest, asyncFail_noException_toBackFnWithFalse)
-{
-    ThreadBack::invalidNewThread(
-        [](bool aRet)
-        {
-            EXPECT_FALSE(aRet);  // req: async failed -> ret=false always
-        }
-    );
-    ThreadBack::hdlFinishedThreads();
-}
 
 #define CAN_WITH_MSGSELF
 // ***********************************************************************************************
@@ -183,6 +173,24 @@ TEST_F(ThreadBackTest, canWithMsgSelf)
     }
     handleAllMsg();
     EXPECT_EQ(queue<size_t>({2,1,0}), order);  // req: priority FIFO
+}
+
+#define ABNORMAL
+// ***********************************************************************************************
+TEST_F(ThreadBackTest, asyncFail_noException_toBackFnWithFalse)
+{
+    ThreadBack::invalidNewThread(
+        [](bool aRet)
+        {
+            EXPECT_FALSE(aRet);  // req: async failed -> ret=false always
+        }
+    );
+    ThreadBack::hdlFinishedThreads();
+}
+TEST_F(ThreadBackTest, emptyThreadList_ok)
+{
+    size_t nHandled = ThreadBack::hdlFinishedThreads();
+    EXPECT_EQ(0u, nHandled);
 }
 
 }  // namespace

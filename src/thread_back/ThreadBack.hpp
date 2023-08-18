@@ -36,9 +36,13 @@
 //     . avoid block main thread
 //     . avoid complicate ThreadBack (focus on 1 think: ThreadBackFN in main thread)
 //     . can work with MsgSelf
+//   . eg newThread() must be called in main thread (or at least 1 same thread), no defense code to protect
+//   . newThread()'s aEntry & aBack shall not be nullptr (std::async also not check fn=nullptr)
 //
 // - support exception: NO!!! since
 //   . dom lib branches inc 77% (Dec,2022), unnecessary complex
+//   . eg ThreadBack & MsgSelf, user's callback func shall not throw exception, it's easy
+//     for user to achieve & leave RLib simple/focus
 //
 // - support multi-thread
 //   . MT_/mt_ prefix: yes
@@ -61,6 +65,8 @@
 //       . can reduce about half iterations with 15 more LOC
 //       . atomic is lightweight & fast than mutex
 //       * since little benefit, decide rm it
+//   * why RLib doesn't support exception?
+//     . sharply inc coverage: prove exception inc complexity much
 // ***********************************************************************************************
 #pragma once
 
@@ -113,4 +119,5 @@ public:
 // 2022-11-15  CSZ       - simpler & MT safe
 // 2023-07-12  CSZ       - copilot compare
 // 2023-08-17  CSZ       - handle async() fail
+// 2023-08-18  CSZ       - rm mt_nFinishedThread_
 // ***********************************************************************************************

@@ -33,9 +33,10 @@ size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
 }
 
 // ***********************************************************************************************
-void ThreadBack::newThread(const MT_ThreadEntryFN& mt_aEntry, const ThreadBackFN& aBack, UniLog& oneLog)
+void ThreadBack::newThread(const MT_ThreadEntryFN& mt_aEntryFn, const ThreadBackFN& aBackFn, UniLog& oneLog)
 {
-    allThreads_.emplace_back(async(launch::async, mt_aEntry), aBack);  // save future<> & aBack()
+    allThreads_.emplace_back(async(launch::async, mt_aEntryFn), aBackFn);  // save future<> & aBackFn()
+    HID("valid=" << allThreads_.back().first.valid());
 }
 
 // ***********************************************************************************************
