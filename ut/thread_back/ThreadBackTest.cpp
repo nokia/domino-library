@@ -31,7 +31,6 @@ struct ThreadBackTest : public Test, public UniLog
     ~ThreadBackTest()
     {
         EXPECT_EQ(0, ThreadBack::nThread());          // req: handle all
-        EXPECT_EQ(0, ThreadBack::nFinishedThread());  // req: handle all
         GTEST_LOG_FAIL
     }
 };

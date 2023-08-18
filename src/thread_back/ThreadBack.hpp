@@ -53,6 +53,14 @@
 //   . thread pool to avoid cost of creating/destroying thread?
 //     . then eg future.wait_for() can't be used, may high-risk to self-impl
 //     . ThreadBack is used for time-cost task, thread create/destroy should be too small to care
+//   * hdlFinishedThreads()'s wait_for() each thread, may spend too long?
+//     . ThreadBack is to use for time-consuming tasks
+//     * should be not too many threads exist simultaneously
+//     * so should not spend too long (wait till new req appears)
+//     . mt_nFinishedThread_:
+//       . can reduce about half iterations with ~10 more LOC
+//       . atomic is lightweight & fast than mutex
+//       * since little benefit, decide rm it
 // ***********************************************************************************************
 #pragma once
 
@@ -80,13 +88,11 @@ public:
     static void newThread(const MT_ThreadEntryFN&, const ThreadBackFN&, UniLog& = UniLog::defaultUniLog());
     static size_t hdlFinishedThreads(UniLog& = UniLog::defaultUniLog());
 
-    static size_t nFinishedThread() { return mt_nFinishedThread_; }
     static size_t nThread() { return allThreads_.size(); }
 
 private:
     // -------------------------------------------------------------------------------------------
     static StoreThreadBack allThreads_;
-    static atomic<size_t>  mt_nFinishedThread_;
 
 
     // -------------------------------------------------------------------------------------------
@@ -95,7 +101,6 @@ public:
     static void invalidNewThread(const ThreadBackFN& aBack)
     {
         allThreads_.emplace_back(future<bool>(), aBack);  // invalid future
-        ++mt_nFinishedThread_;
     }
 #endif
 };
