@@ -17,10 +17,12 @@ size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
     size_t nHandled = 0;
     for (auto&& it = allThreads_.begin(); it != allThreads_.end();)
     {
-        future_status status = it->first.wait_for(0s);
-        if (status == future_status::ready)
+        // safer to check valid here than newThread(), eg bug after newThread()
+        const bool threadOver = (not it->first.valid()) || (it->first.wait_for(0s) == future_status::ready);
+        HID("(ThreadBack) nHandled=" << nHandled << ", valid=" << it->first.valid());
+        if (threadOver)
         {
-            it->second(it->first.get());  // callback
+            it->second(it->first.valid() && it->first.get());  // callback
             it = allThreads_.erase(it);
             ++nHandled;
             if (--mt_nFinishedThread_ == 0)  // faster return
@@ -28,7 +30,6 @@ size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
         }
         else
             ++it;
-        HID("(ThreadBack) nHandled=" << nHandled << ", status=" << static_cast<int>(status));
     }
     return nHandled;  // though mt_nFinishedThread_ may > 0, to avoid dead-loop, & limit-duty
 }

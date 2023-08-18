@@ -10,8 +10,11 @@
 #include <unistd.h>
 
 #include "MsgSelf.hpp"
-#include "ThreadBack.hpp"
 #include "UniLog.hpp"
+
+#define THREAD_BACK_TEST
+#include "ThreadBack.hpp"
+#undef THREAD_BACK_TEST
 
 using namespace testing;
 
@@ -140,6 +143,16 @@ TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
         DBG("2nd thread done, wait 1st done...")
         this_thread::yield();
     }
+}
+TEST_F(ThreadBackTest, asyncFail_noException_toBackFnWithFalse)
+{
+    ThreadBack::invalidNewThread(
+        [](bool aRet)
+        {
+            EXPECT_FALSE(aRet);  // req: async failed -> ret=false always
+        }
+    );
+    ThreadBack::hdlFinishedThreads();
 }
 
 #define CAN_WITH_MSGSELF

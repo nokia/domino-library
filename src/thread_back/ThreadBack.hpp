@@ -50,6 +50,9 @@
 //     . most func/variable are in main-thread, so w/o this prefix
 //   . must save future<>
 //     . otherwise the thread looks like serialized with main thread
+//   . thread pool to avoid cost of creating/destroying thread?
+//     . then eg future.wait_for() can't be used, may high-risk to self-impl
+//     . ThreadBack is used for time-cost task, thread create/destroy should be too small to care
 // ***********************************************************************************************
 #pragma once
 
@@ -64,6 +67,7 @@ using namespace std;
 namespace RLib
 {
 // ***********************************************************************************************
+// !!! ThreadBack NOT support MT_ThreadEntryFN & ThreadBackFN throw exception!!!
 using MT_ThreadEntryFN  = function<bool()>;      // succ ret true, otherwise false
 using ThreadBackFN      = function<void(bool)>;  // entry ret as para
 using StoreThreadBack   = list<pair<future<bool>, ThreadBackFN> >;
@@ -83,6 +87,17 @@ private:
     // -------------------------------------------------------------------------------------------
     static StoreThreadBack allThreads_;
     static atomic<size_t>  mt_nFinishedThread_;
+
+
+    // -------------------------------------------------------------------------------------------
+#ifdef THREAD_BACK_TEST  // UT only
+public:
+    static void invalidNewThread(const ThreadBackFN& aBack)
+    {
+        allThreads_.emplace_back(future<bool>(), aBack);  // invalid future
+        ++mt_nFinishedThread_;
+    }
+#endif
 };
 
 }  // namespace
@@ -92,4 +107,5 @@ private:
 // 2022-10-23  CSZ       1)create
 // 2022-11-15  CSZ       - simpler & MT safe
 // 2023-07-12  CSZ       - copilot compare
+// 2023-08-17  CSZ       - handle async() fail
 // ***********************************************************************************************
