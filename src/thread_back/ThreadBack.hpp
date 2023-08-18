@@ -58,7 +58,7 @@
 //     * should be not too many threads exist simultaneously
 //     * so should not spend too long (wait till new req appears)
 //     . mt_nFinishedThread_:
-//       . can reduce about half iterations with ~10 more LOC
+//       . can reduce about half iterations with 15 more LOC
 //       . atomic is lightweight & fast than mutex
 //       * since little benefit, decide rm it
 // ***********************************************************************************************
