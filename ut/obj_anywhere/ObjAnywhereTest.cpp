@@ -86,10 +86,15 @@ TEST_F(ObjAnywhereTest, destructBySetNull)
 {
     bool isDestructed;
     ObjAnywhere::init(*this);
+
     ObjAnywhere::set(make_shared<TestObj>(isDestructed), *this);
     ObjAnywhere::set(shared_ptr<TestObj>(), *this);  // set null
     EXPECT_TRUE(isDestructed);  // req: destruct correctly
     EXPECT_FALSE(ObjAnywhere::get<TestObj>(*this));  // req: destruct TestObj
+
+    ObjAnywhere::set(shared_ptr<TestObj>(), *this);  // req: rm unexist
+    EXPECT_EQ(0u, ObjAnywhere::nObj());
+
     ObjAnywhere::deinit(*this);
 }
 
@@ -125,5 +130,6 @@ TEST_F(ObjAnywhereTest, ignore_dup_init)
 TEST_F(ObjAnywhereTest, default_is_deinit)
 {
     EXPECT_FALSE(ObjAnywhere::isInit());
+    EXPECT_EQ(0u, ObjAnywhere::nObj());
 }
 }  // namespace

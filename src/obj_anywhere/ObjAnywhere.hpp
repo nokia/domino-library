@@ -46,6 +46,7 @@ public:
     static void init(UniLog& = UniLog::defaultUniLog());    // init objStore_
     static void deinit(UniLog& = UniLog::defaultUniLog());  // rm objStore_
     static bool isInit() { return objStore_ != nullptr; }   // init objStore_?
+    static size_t nObj() { return objStore_ ? objStore_->size() : 0; }
 
     // -------------------------------------------------------------------------------------------
     // - save aObjType into objStore_
@@ -69,14 +70,14 @@ template<typename aObjType>
 shared_ptr<aObjType> ObjAnywhere::get(UniLog& oneLog)
 {
     if (not isInit())
-        return shared_ptr<aObjType>();
+        return nullptr;
 
     auto&& found = objStore_->find(typeid(aObjType).hash_code());
     if (found != objStore_->end())
         return static_pointer_cast<aObjType>(found->second);
 
     INF("(ObjAnywhere) !!! Failed, unavailable obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
-    return shared_ptr<aObjType>();
+    return nullptr;
 }
 
 // ***********************************************************************************************
@@ -85,7 +86,7 @@ void ObjAnywhere::set(shared_ptr<aObjType> aSharedObj, UniLog& oneLog)
 {
     if (not isInit())
     {
-        WRN("(ObjAnywhere) !!! Failed, ObjAnywhere is not initialized yet.");
+        WRN("(ObjAnywhere) !!! Failed, pls call ObjAnywhere::init() beforehand.");
         return;
     }
 
