@@ -82,19 +82,19 @@ TEST_F(UNI_LOG_TEST, GOLD_usr_of_class_and_func)
     {
         ClassUsr classUsr(logName_);
         const auto len_1 = UNI_LOG::logLen(logName_);
-        EXPECT_GT(len_1, 0);                   // req: can log
+        ASSERT_GT(len_1, 0);                   // req: can log
 
         ClassUsr classUsr_2(logName_);
         const auto len_2 = UNI_LOG::logLen(logName_);
-        EXPECT_GT(len_2, len_1);               // req: can log more in same log
+        ASSERT_GT(len_2, len_1);               // req: can log more in same log
 
         funcUsr(classUsr);                     // req: classUsr can call func & log into same smartlog
         const auto len_3 = UNI_LOG::logLen(logName_);
-        EXPECT_GT(len_3, len_2);               // req: can log more in same log
+        ASSERT_GT(len_3, len_2);               // req: can log more in same log
 
         funcUsr(classUsr_2);                   // req: classUsr_2 can call func & log into same smartlog
         const auto len_4 = UNI_LOG::logLen(logName_);
-        EXPECT_GT(len_4, len_3);               // req: can log more in same log
+        ASSERT_GT(len_4, len_3);               // req: can log more in same log
 
         if (Test::HasFailure()) classUsr.needLog();
     }
@@ -105,15 +105,15 @@ TEST_F(UNI_LOG_TEST, low_couple_objects)
 {
     auto classUsr = make_shared<ClassUsr>((logName_));
     const auto len_1 = UNI_LOG::logLen(logName_);
-    EXPECT_GT(len_1, 0);                       // req: can log
+    ASSERT_GT(len_1, 0);                       // req: can log
 
     auto classUsr_2 = ClassUsr(logName_);
     const auto len_2 = UNI_LOG::logLen(logName_);
-    EXPECT_GT(len_2, len_1);                   // req: can log
+    ASSERT_GT(len_2, len_1);                   // req: can log
 
     classUsr.reset();
     const auto len_3 = UNI_LOG::logLen(logName_);
-    EXPECT_GT(len_3, len_2);                   // req: ClassUsr-destructed shall not crash/impact ClassUsr's log
+    ASSERT_GT(len_3, len_2);                   // req: ClassUsr-destructed shall not crash/impact ClassUsr's log
 
     if (Test::HasFailure()) classUsr_2.needLog();
 }
@@ -121,24 +121,24 @@ TEST_F(UNI_LOG_TEST, low_couple_between_copies)
 {
     auto classUsr = make_shared<ClassUsr>((logName_));
     const auto len_1 = UNI_LOG::logLen(logName_);
-    EXPECT_GT(len_1, 0);                       // req: can log
+    ASSERT_GT(len_1, 0);                       // req: can log
 
     auto copy = *classUsr;
     const auto len_2 = UNI_LOG::logLen(logName_);
-    EXPECT_GT(len_2, len_1);                   // req: log still there
+    ASSERT_GT(len_2, len_1);                   // req: log still there
 
     classUsr.reset();
     const auto len_3 = UNI_LOG::logLen(logName_);
-    EXPECT_GT(len_3, len_2);                   // req: ClassUsr-destructed shall not crash/impact copy's logging
+    ASSERT_GT(len_3, len_2);                   // req: ClassUsr-destructed shall not crash/impact copy's logging
 
     auto mv = move(copy);
-    EXPECT_TRUE(mv.mvCalled_);
+    ASSERT_TRUE(mv.mvCalled_);
     const auto len_4 = UNI_LOG::logLen(logName_);
-    EXPECT_GT(len_4, len_3);                   // req: log support mv construct
+    ASSERT_GT(len_4, len_3);                   // req: log support mv construct
 
     copy.oneLog() << "ClassUsr's mv actually call UNI_LOG's cp by compiler" << endl;
     const auto len_5 = UNI_LOG::logLen(logName_);
-    EXPECT_GT(len_5, len_4);                   // req: copy's log must works well
+    ASSERT_GT(len_5, len_4);                   // req: copy's log must works well
 
     // req: UNI_LOG not support assignemt, copy is enough
 
@@ -148,17 +148,17 @@ TEST_F(UNI_LOG_TEST, low_couple_callbackFunc)
 {
     auto classUsr = make_shared<ClassUsr>((logName_));
     const auto len_1 = UNI_LOG::logLen(logName_);
-    EXPECT_GT(len_1, 0);                       // req: can log
+    ASSERT_GT(len_1, 0);                       // req: can log
 
     function<void()> cb = [oneLog = *classUsr]() mutable { INF("hello world, I'm a callback func"); };
     const auto len_2 = UNI_LOG::logLen(logName_);
-    EXPECT_GT(len_2, len_1);                   // req: log still there (more log since no move-construct of ClassUsr)
+    ASSERT_GT(len_2, len_1);                   // req: log still there (more log since no move-construct of ClassUsr)
 
     /*if (Test::HasFailure())*/ classUsr->needLog();
     classUsr.reset();
     cb();
     const auto len_3 = UNI_LOG::logLen(logName_);
-    EXPECT_GT(len_3, len_2);                   // req: can log
+    ASSERT_GT(len_3, len_2);                   // req: can log
 }
 
 // ***********************************************************************************************
@@ -167,25 +167,25 @@ TEST_F(UNI_LOG_TEST, no_explicit_CellLog_like_legacy)
     const auto len_1 = UNI_LOG::logLen();
     ClassUsr classUsr;                                // no explicit UNI_LOG
     const auto len_2 = UNI_LOG::logLen();
-    EXPECT_GE(len_2, len_1);                          // req: can log
-    EXPECT_EQ(ULN_DEFAULT, classUsr.uniLogName());    // req: default
+    ASSERT_GE(len_2, len_1);                          // req: can log
+    ASSERT_EQ(ULN_DEFAULT, classUsr.uniLogName());    // req: default
 
     ClassUsr classUsr_2;                              // dup no explicit UNI_LOG
     const auto len_3 = UNI_LOG::logLen();
-    EXPECT_GE(len_3, len_2);                          // req: can log
-    EXPECT_EQ(ULN_DEFAULT, classUsr_2.uniLogName());  // req: default
+    ASSERT_GE(len_3, len_2);                          // req: can log
+    ASSERT_EQ(ULN_DEFAULT, classUsr_2.uniLogName());  // req: default
 
     funcUsr();                                        // no explicit UNI_LOG
     const auto len_4 = UNI_LOG::logLen();
-    EXPECT_GE(len_4, len_3);                          // req: can log
+    ASSERT_GE(len_4, len_3);                          // req: can log
 
     ClassUseDefaultLog nonCell;                       // class not based on UNI_LOG
     const auto len_5 = UNI_LOG::logLen();
-    EXPECT_GE(len_5, len_4);                          // req: can log
+    ASSERT_GE(len_5, len_4);                          // req: can log
 
     funcUseDefaultLog();                              // func w/o UNI_LOG para
     const auto len_6 = UNI_LOG::logLen();
-    EXPECT_GE(len_6, len_5);                          // req: can log
+    ASSERT_GE(len_6, len_5);                          // req: can log
 
     if (Test::HasFailure()) UNI_LOG::defaultUniLog_->needLog();
 }
@@ -195,7 +195,7 @@ TEST_F(UNI_LOG_TEST, GOLD_const_usr)
 {
     const ClassUsr classUsr(logName_);
     const auto len_1 = UNI_LOG::logLen(logName_);
-    EXPECT_GT(len_1, 0);  // req: can log
+    ASSERT_GT(len_1, 0);  // req: can log
 }
 
 }  // namespace

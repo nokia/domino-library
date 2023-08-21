@@ -40,11 +40,7 @@ public:
     void needLog() { smartLog_->needLog(); }  // flag to dump
     const UniLogName& uniLogName() const { return uniLogName_; }
 
-    static UniSmartLog& defaultUniLog();  // usage like legacy
-    // for ut
-    static size_t logLen(const UniLogName& = ULN_DEFAULT);
-    static size_t nLog() { return logStore_.size(); }
-    static void reset();  // for ut case clean at the end
+    static UniSmartLog& defaultUniLog();  // usage as if global cout
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -54,6 +50,14 @@ private:
     static LogStore logStore_;
 public:
     static shared_ptr<UniSmartLog> defaultUniLog_;
+
+
+    // -------------------------------------------------------------------------------------------
+    // for ut
+public:
+    static size_t logLen(const UniLogName& = ULN_DEFAULT);
+    static size_t nLog() { return logStore_.size(); }
+    static void reset();  // for ut case clean at the end
 };
 
 // ***********************************************************************************************
