@@ -32,15 +32,14 @@ using MatcherFN = function<bool(shared_ptr<void>)>;
 class MtQueue
 {
 public:
-    void push(shared_ptr<void> aEle);
+    void mt_push(shared_ptr<void> aEle);
     shared_ptr<void> mt_pop();
-    shared_ptr<void> fetch(MatcherFN aMatcher);
+    shared_ptr<void> mt_fetch(const MatcherFN&);
 
-    size_t size();
+    size_t mt_size();
 
 private:
     list<shared_ptr<void> > queue_;
-
     mutex mutex_;
 };
 }  // namespace

@@ -24,7 +24,7 @@ struct MtQueueTest : public Test, public UniLog
     {
         for (int i = 0; i < aSteps; i++)
         {
-            mtQueue_.push(make_shared<int>(aStartNum + i));
+            mtQueue_.mt_push(make_shared<int>(aStartNum + i));
             if (i == 0 || i == aSteps/2) usleep(1u);  // give chance to other threads, at least 2
         }
     }
@@ -96,7 +96,7 @@ TEST_F(MtQueueTest, GOLD_fetchSpecified_multiThreadSafe)
     int nEmptyQueue = 0;
     for (int i = 0; i < 2;)
     {
-        auto value = static_pointer_cast<int>(mtQueue_.fetch(
+        auto value = static_pointer_cast<int>(mtQueue_.mt_fetch(
             [](shared_ptr<void> aEle) { return *static_pointer_cast<int>(aEle) % steps == steps -1; }));
         if (not value)
         {
@@ -109,22 +109,22 @@ TEST_F(MtQueueTest, GOLD_fetchSpecified_multiThreadSafe)
         if (*value < steps)
         {
             EXPECT_EQ(steps -1, *value);       // req: fetch under multi-thread
-            EXPECT_FALSE(mtQueue_.fetch(
+            EXPECT_FALSE(mtQueue_.mt_fetch(
                 [](shared_ptr<void> aEle) { return *static_pointer_cast<int>(aEle) == steps -1; }));      // req: rm
         }
         else
         {
             EXPECT_EQ(steps * 2 - 1, *value);  // req: fetch under multi-thread
-            EXPECT_FALSE(mtQueue_.fetch(
+            EXPECT_FALSE(mtQueue_.mt_fetch(
                 [](shared_ptr<void> aEle) { return *static_pointer_cast<int>(aEle) == steps * 2 -1; }));  // req: rm
         }
     }
-    EXPECT_EQ(size_t(steps * 2 - 2), mtQueue_.size());
+    EXPECT_EQ(size_t(steps * 2 - 2), mtQueue_.mt_size());
     INF("nEmptyQ=" << nEmptyQueue)
 }
 TEST_F(MtQueueTest, GOLD_fetch_null)
 {
-    EXPECT_FALSE(mtQueue_.fetch([](shared_ptr<void>) { return true; }));
+    EXPECT_FALSE(mtQueue_.mt_fetch([](shared_ptr<void>) { return true; }));
 }
 
 #define DESTRUCT
@@ -140,7 +140,7 @@ TEST_F(MtQueueTest, GOLD_destructCorrectly)
     bool isDestructed;
     {
         MtQueue mtQ;
-        mtQ.push(make_shared<TestObj>(isDestructed));
+        mtQ.mt_push(make_shared<TestObj>(isDestructed));
         EXPECT_FALSE(isDestructed);
     }
     EXPECT_TRUE(isDestructed);       // req: destruct correctly

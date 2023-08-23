@@ -4,16 +4,18 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
+#include <algorithm>
 #include "MtQueue.hpp"
 
-namespace RLib {
+namespace RLib
+{
 // ***********************************************************************************************
 shared_ptr<void> MtQueue::mt_pop()
 {
     lock_guard<mutex> guard(mutex_);
 
-    if (queue_.size() == 0)
-        return shared_ptr<void>();
+    if (queue_.empty())
+        return nullptr;
 
     auto ele = queue_.front();
     queue_.pop_front();
@@ -21,35 +23,27 @@ shared_ptr<void> MtQueue::mt_pop()
 }
 
 // ***********************************************************************************************
-shared_ptr<void> MtQueue::fetch(MatcherFN aMatcher)
+shared_ptr<void> MtQueue::mt_fetch(const MatcherFN& aMatcherFN)
 {
     lock_guard<mutex> guard(mutex_);
 
-    for (auto&& it = queue_.begin(); it != queue_.end();)
-    {
-        auto ele = *it;
-        if (not aMatcher(ele))
-        {
-            ++it;
-            continue;
-        }
+    auto ele = std::find_if(queue_.begin(), queue_.end(), aMatcherFN);
+    if (ele == queue_.end())
+        return nullptr;
 
-        queue_.erase(it);
-        return ele;
-    }
-
-    return nullptr;
+    queue_.erase(ele);
+    return *ele;
 }
 
 // ***********************************************************************************************
-void MtQueue::push(shared_ptr<void> aEle)
+void MtQueue::mt_push(shared_ptr<void> aEle)
 {
     lock_guard<mutex> guard(mutex_);
     queue_.push_back(aEle);
 }
 
 // ***********************************************************************************************
-size_t MtQueue::size()
+size_t MtQueue::mt_size()
 {
     lock_guard<mutex> guard(mutex_);
     return queue_.size();
