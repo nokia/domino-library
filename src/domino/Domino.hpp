@@ -69,7 +69,7 @@ public:
     enum
     {
         N_EVENT_STATE      = 2,
-        D_EVENT_FAILED_RET = static_cast<size_t>(-1),
+        D_EVENT_FAILED_RET = static_cast<Event>(-1),
     };
 
     // -------------------------------------------------------------------------------------------

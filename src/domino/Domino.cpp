@@ -15,18 +15,15 @@ const Domino::EvName Domino::invalidEvName("Invalid Ev/EvName");
 void Domino::deduceState(const Event aEv)
 {
     for (auto&& prevEvent : prev_[true][aEv])
-    {
-        if (states_.at(prevEvent) != true)
+        if (! states_[prevEvent])  // no exception from [] than at()
             return;
-    }
     for (auto&& prevEvent : prev_[false][aEv])
-    {
-        if (states_.at(prevEvent) != false)
+        if (states_[prevEvent])
             return;
-    }
 
     pureSetState(aEv, true);
-    for (auto&& nextEvent : next_[true][aEv]) deduceState(nextEvent);
+    for (auto&& nextEvent : next_[true][aEv])
+        deduceState(nextEvent);
 }
 
 // ***********************************************************************************************
@@ -46,6 +43,8 @@ Domino::Event Domino::newEvent(const EvName& aEvName)
         return event;
 
     event = states_.size();
+    //if (event == D_EVENT_FAILED_RET)  return event;  // hard to appear; hard to UT
+
     HID("(Domino) Succeed, EvName=" << aEvName << ", event id=" << event);
     events_.emplace(aEvName, event);
     evNames_.push_back(aEvName);
@@ -97,11 +96,11 @@ void Domino::setState(const SimuEvents& aSimuEvents)
 {
     sthChanged_ = false;
 
-    for (auto&& itSim : aSimuEvents) pureSetState(newEvent(itSim.first), itSim.second);
     for (auto&& itSim : aSimuEvents)
-    {
-        for (auto&& nextEvent : next_[itSim.second][events_[itSim.first]]) deduceState(nextEvent);
-    }
+        pureSetState(newEvent(itSim.first), itSim.second);
+    for (auto&& itSim : aSimuEvents)
+        for (auto&& nextEvent : next_[itSim.second][events_[itSim.first]])
+            deduceState(nextEvent);
 
     if (!sthChanged_)
         DBG("(Domino) nothing changed for all nEvent=" << aSimuEvents.size());
