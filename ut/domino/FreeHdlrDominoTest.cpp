@@ -44,12 +44,12 @@ TYPED_TEST_SUITE_P(FreeMultiHdlrDominoTest);
 // ***********************************************************************************************
 TYPED_TEST_P(FreeHdlrDominoTest, GOLD_setFlag_thenGetIt)
 {
-    EXPECT_FALSE(PARA_DOM->isRepeatHdlr(Domino::D_EVENT_FAILED_RET));  // invalid event
+    EXPECT_FALSE(PARA_DOM->isRepeatHdlr(Domino::D_EVENT_FAILED_RET)) << "REQ: invalid event" << endl;
 
     auto e1 = PARA_DOM->newEvent("e1");  // not exist in flag bitmap
     auto e2 = PARA_DOM->repeatedHdlr("e2");  // explicit set to bitmap
-    EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e1));  // req: default flag
-    EXPECT_TRUE (PARA_DOM->isRepeatHdlr(e2));  // req: get=set
+    EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e1)) << "REQ: default flag" << endl;
+    EXPECT_TRUE (PARA_DOM->isRepeatHdlr(e2)) << "REQ: get=set" << endl;
 }
 
 #define AUTO_FREE
@@ -57,7 +57,7 @@ TYPED_TEST_P(FreeHdlrDominoTest, GOLD_setFlag_thenGetIt)
 TYPED_TEST_P(FreeHdlrDominoTest, GOLD_afterCallback_autoRmHdlr)
 {
     auto e1 = PARA_DOM->setHdlr("e1", this->h1_);
-    EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e1));  // req: default false (most hdlr used once)
+    EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e1)) << "REQ: default false (most hdlr used once)" << endl;
 
     PARA_DOM->setState({{"e1", true}});
     if (this->msgSelf_->hasMsg()) this->pongMainFN_();
@@ -66,7 +66,7 @@ TYPED_TEST_P(FreeHdlrDominoTest, GOLD_afterCallback_autoRmHdlr)
     PARA_DOM->setState({{"e1", false}});
     PARA_DOM->setState({{"e1", true}});
     if (this->msgSelf_->hasMsg()) this->pongMainFN_() ;
-    EXPECT_EQ(multiset<int>({1}), this->hdlrIDs_);  // req: no more cb since auto-rm
+    EXPECT_EQ(multiset<int>({1}), this->hdlrIDs_) << "REQ: no more cb since auto-rm" << endl;
 }
 TYPED_TEST_P(FreeHdlrDominoTest, afterCallback_autoRmHdlr_aliasMultiHdlr)
 {
@@ -80,7 +80,7 @@ TYPED_TEST_P(FreeHdlrDominoTest, afterCallback_autoRmHdlr_aliasMultiHdlr)
     PARA_DOM->setState({{"e1", false}});
     PARA_DOM->setState({{"e1", true}});
     if (this->msgSelf_->hasMsg()) this->pongMainFN_() ;
-    EXPECT_EQ(multiset<int>({3}), this->hdlrIDs_);  // req: no more cb since auto-rm
+    EXPECT_EQ(multiset<int>({3}), this->hdlrIDs_) << "REQ: no more cb since auto-rm" << endl;
 }
 TYPED_TEST_P(FreeMultiHdlrDominoTest, afterCallback_autoRmHdlr_multiHdlr)
 {
@@ -97,19 +97,19 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, afterCallback_autoRmHdlr_multiHdlr)
     PARA_DOM->setState({{"e1", false}});
     PARA_DOM->setState({{"e1", true}});
     if (this->msgSelf_->hasMsg()) this->pongMainFN_() ;
-    EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_);  // req: no more cb since auto-rm
+    EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_) << "REQ: no more cb since auto-rm" << endl;
 
     // re-add hdlr
     PARA_DOM->multiHdlrByAliasEv("alias e1", this->h6_, "e1");
     PARA_DOM->multiHdlrOnSameEv("e1", this->h5_, "h2_");
     PARA_DOM->setHdlr("e1", this->h4_);  // reverse order to inc coverage
     if (this->msgSelf_->hasMsg()) this->pongMainFN_() ;
-    EXPECT_EQ(multiset<int>({1, 2, 3, 4, 5, 6}), this->hdlrIDs_);  // req: re-add ok
+    EXPECT_EQ(multiset<int>({1, 2, 3, 4, 5, 6}), this->hdlrIDs_) << "REQ: re-add ok" << endl;
 
     PARA_DOM->setState({{"e1", false}});
     PARA_DOM->setState({{"e1", true}});
     if (this->msgSelf_->hasMsg()) this->pongMainFN_() ;
-    EXPECT_EQ(multiset<int>({1, 2, 3, 4, 5, 6}), this->hdlrIDs_);  // req: no more cb since auto-rm
+    EXPECT_EQ(multiset<int>({1, 2, 3, 4, 5, 6}), this->hdlrIDs_) << "REQ: no more cb since auto-rm" << endl;
 }
 TYPED_TEST_P(FreeMultiHdlrDominoTest, afterCallback_notRmHdlr)
 {
@@ -123,12 +123,12 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, afterCallback_notRmHdlr)
 
     PARA_DOM->setState({{"e1", true}});
     if (this->msgSelf_->hasMsg()) this->pongMainFN_();  // 1st cb
-    EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_);  // req: not auto-rm
+    EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_) << "REQ: not auto-rm" << endl;
 
     PARA_DOM->setState({{"e1", false}, {"alias e1", false}});  // SameEv simpler than AliasEv
     PARA_DOM->setState({{"e1", true}});
     if (this->msgSelf_->hasMsg()) this->pongMainFN_();  // 2nd cb
-    EXPECT_EQ(multiset<int>({1, 2, 3, 1, 2, 3}), this->hdlrIDs_);  // req: not auto-rm
+    EXPECT_EQ(multiset<int>({1, 2, 3, 1, 2, 3}), this->hdlrIDs_) << "REQ: not auto-rm" << endl;
 
     // re-add hdlr
     PARA_DOM->setHdlr("e1", this->h4_);
@@ -138,7 +138,7 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, afterCallback_notRmHdlr)
     PARA_DOM->setState({{"e1", false}, {"alias e1", false}});
     PARA_DOM->setState({{"e1", true}});
     if (this->msgSelf_->hasMsg()) this->pongMainFN_() ;
-    EXPECT_EQ(multiset<int>({1, 2, 3, 1, 2, 3, 1, 2, 3}), this->hdlrIDs_);  // req: re-add nok
+    EXPECT_EQ(multiset<int>({1, 2, 3, 1, 2, 3, 1, 2, 3}), this->hdlrIDs_) << "REQ: re-add nok" << endl;
 }
 TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_disorderAutoRm_ok)
 {

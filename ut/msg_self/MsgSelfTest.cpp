@@ -45,18 +45,18 @@ struct MsgSelfTest : public Test, public UniLog
 // ***********************************************************************************************
 TEST_F(MsgSelfTest, GOLD_sendMsg)
 {
-    EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM));  // req: init states
+    EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM)) << "REQ: init states" << endl;
     EXPECT_FALSE(msgSelf_->hasMsg());
 
     EXPECT_CALL(*this, pingMain(_)).WillOnce(SaveArg<0>(&pongMainFN_));  // req: newMsg->pingMain that eg send msg to self
     msgSelf_->newMsg(d1MsgHdlr_);
     EXPECT_EQ(1u, msgSelf_->nMsg(EMsgPri_NORM));
     EXPECT_TRUE(msgSelf_->hasMsg());
-    EXPECT_EQ(queue<int>(), hdlrIDs_);            // req: not immediate call d1MsgHdlr_ but wait msg-to-self
+    EXPECT_EQ(queue<int>(), hdlrIDs_) << "REQ: not immediate call d1MsgHdlr_ but wait msg-to-self" << endl;
 
     EXPECT_CALL(*this, pingMain(_)).Times(0);     // req: no more no call
     pongMainFN_();                                // simulate eg msg-to-self received, then call pongMainFN_()
-    EXPECT_EQ(queue<int>({1}), hdlrIDs_);         // req: call d1MsgHdlr_
+    EXPECT_EQ(queue<int>({1}), hdlrIDs_) << "REQ: call d1MsgHdlr_" << endl;
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM));
     EXPECT_FALSE(msgSelf_->hasMsg());
 }
@@ -100,9 +100,9 @@ TEST_F(MsgSelfTest, GOLD_loopback_handleAll_butOneByOneLowPri)
 
     EXPECT_CALL(*this, pingMain(_)).WillOnce(SaveArg<0>(&pongMainFN_));
     pongMainFN_();
-    EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM));  // req: all normal
-    EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_HIGH));  // req: all high
-    EXPECT_EQ(2u, msgSelf_->nMsg(EMsgPri_LOW));   // req: 1/loopback()
+    EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM)) << "REQ: all normal" << endl;
+    EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_HIGH)) << "REQ: all high" << endl;
+    EXPECT_EQ(2u, msgSelf_->nMsg(EMsgPri_LOW))  << "REQ: 1/loopback()" << endl;
 
     EXPECT_CALL(*this, pingMain(_)).WillOnce(SaveArg<0>(&pongMainFN_));
     pongMainFN_();

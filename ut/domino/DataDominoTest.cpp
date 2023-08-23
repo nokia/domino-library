@@ -27,36 +27,36 @@ const string XPATH_BW =
 TYPED_TEST_P(DataDominoTest, GOLD_setValue_thenGetIt)
 {
     auto valGet = getValue<TypeParam, size_t>(*PARA_DOM, XPATH_BW);  // req: any type data (1st=size_t)
-    EXPECT_EQ(0, valGet);  // req: default value for unexisted event
+    EXPECT_EQ(0, valGet) << "REQ: for nonexistent event, getValue() shall return default value." << endl;
 
     size_t initValue = 50000;
     setValue<TypeParam, size_t>(*PARA_DOM, XPATH_BW, initValue);
     valGet = getValue<TypeParam, size_t>(*PARA_DOM, XPATH_BW);
-    EXPECT_EQ(initValue, valGet);  // req: get = set
+    EXPECT_EQ(initValue, valGet) << "REQ: get = set" << endl;
 
     size_t newValue = 10000;
     setValue<TypeParam, size_t>(*PARA_DOM, XPATH_BW, newValue);
     valGet = getValue<TypeParam, size_t>(*PARA_DOM, XPATH_BW);
-    EXPECT_EQ(newValue, valGet);   // req: newGet = newSet
+    EXPECT_EQ(newValue, valGet) << "REQ: new get = new set" << endl;
 }
 TYPED_TEST_P(DataDominoTest, setShared_thenGetIt_thenRmIt)
 {
-    EXPECT_EQ(nullptr, PARA_DOM->getShared("ev0"));  // req: get null since “ev0" not exist"
+    EXPECT_EQ(nullptr, PARA_DOM->getShared("ev0")) << "REQ: get null since ev0 not exist" << endl;
 
     PARA_DOM->replaceShared("ev0", make_shared<string>("ev0's data"));  // req: any type data (2nd=string)
     auto sharedString = static_pointer_cast<string>(PARA_DOM->getShared("ev0"));
     ASSERT_NE(nullptr, sharedString);
-    EXPECT_EQ("ev0's data", *sharedString);  // req: get = set
+    EXPECT_EQ("ev0's data", *sharedString) << "REQ: get = set" << endl;
 
     *sharedString = "ev0's updated data";
-    EXPECT_EQ("ev0's updated data", (getValue<TypeParam, string>(*PARA_DOM, "ev0")));  // req: get=update
+    EXPECT_EQ("ev0's updated data", (getValue<TypeParam, string>(*PARA_DOM, "ev0"))) << "REQ: get=update" << endl;
 
     PARA_DOM->replaceShared("ev0", make_shared<string>("replace ev0's data"));
-    EXPECT_EQ("replace ev0's data", (getValue<TypeParam, string>(*PARA_DOM, "ev0")));  // req: get replaced
-    EXPECT_NE(sharedString, static_pointer_cast<string>(PARA_DOM->getShared("ev0")));  // req: replace != old
+    EXPECT_EQ("replace ev0's data", (getValue<TypeParam, string>(*PARA_DOM, "ev0"))) << "REQ: get replaced" << endl;
+    EXPECT_NE(sharedString, static_pointer_cast<string>(PARA_DOM->getShared("ev0"))) << "REQ: replace != old" << endl;
 
     PARA_DOM->replaceShared("ev0");  // req: rm data
-    EXPECT_EQ(nullptr, PARA_DOM->getShared("ev0"));  // req: get null
+    EXPECT_EQ(nullptr, PARA_DOM->getShared("ev0")) << "REQ: get null" << endl;
 }
 
 #define DESTRUCT
@@ -68,7 +68,7 @@ TYPED_TEST_P(DataDominoTest, desruct_data)
     EXPECT_NE(0, weak.use_count());
 
     PARA_DOM->replaceShared("ev0", make_shared<char>('B'));
-    EXPECT_EQ(0, weak.use_count());  // req: old is rm
+    EXPECT_EQ(0, weak.use_count()) << "REQ: old is rm-ed" << endl;
 
     weak = PARA_DOM->getShared("ev0");
     ObjAnywhere::deinit(*this);  // req: rm all
@@ -98,11 +98,11 @@ TYPED_TEST_P(DataDominoTest, nonConstInterface_shall_createUnExistEvent_withStat
 {
     // DataDomino::
     PARA_DOM->getShared("e1");
-    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1"));  // req: no Event
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1")) << "REQ: nonexistent" << endl;
     EXPECT_FALSE(PARA_DOM->state("e1"));
 
-    PARA_DOM->replaceShared("e2", make_shared<int>(0));  // req: any type data (5th=int)
-    EXPECT_NE(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e2"));  // req: new Event
+    PARA_DOM->replaceShared("e2", make_shared<int>(0));  // REQ: any type data (5th=int)
+    EXPECT_NE(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e2")) << "REQ: new Event" << endl;
     EXPECT_FALSE(PARA_DOM->state("e2"));
 }
 

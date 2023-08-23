@@ -25,12 +25,12 @@ struct ThreadBackTest : public Test, public UniLog
 {
     ThreadBackTest() : UniLog(UnitTest::GetInstance()->current_test_info()->name())
     {
-        EXPECT_EQ(0, ThreadBack::nThread());  // req: clean env
+        EXPECT_EQ(0, ThreadBack::nThread()) << "REQ: clean env" << endl;
     }
 
     ~ThreadBackTest()
     {
-        EXPECT_EQ(0, ThreadBack::nThread());          // req: handle all
+        EXPECT_EQ(0, ThreadBack::nThread()) << "REQ: handle all" << endl;
         GTEST_LOG_FAIL
     }
 };
@@ -78,7 +78,7 @@ TEST_F(ThreadBackTest, GOLD_entryFn_inNewThread_thenBackFn_inMainThread)
         DBG("new thread not end yet, wait... mt_threadID=" << mt_threadID)
         this_thread::yield();
     }
-    EXPECT_EQ(mt_threadID, this_thread::get_id());  // req: run ThreadBackFN() in main thread afterwards
+    EXPECT_EQ(mt_threadID, this_thread::get_id()) << "REQ: run ThreadBackFN() in main thread afterwards" << endl;
 }
 TEST_F(ThreadBackTest, GOLD_entryFnResult_toBackFn)
 {
@@ -94,7 +94,7 @@ TEST_F(ThreadBackTest, GOLD_entryFnResult_toBackFn)
             // ThreadBackFN
             [idxThread](bool aRet)
             {
-                EXPECT_EQ(idxThread % 2 != 0, aRet);  // req: check true & false
+                EXPECT_EQ(idxThread % 2 != 0, aRet) << "REQ: check true & false" << endl;
             }
         );
     }
@@ -172,7 +172,7 @@ TEST_F(ThreadBackTest, canWithMsgSelf)
         DBG("nHandled=" << nHandled);
     }
     handleAllMsg();
-    EXPECT_EQ(queue<size_t>({2,1,0}), order);  // req: priority FIFO
+    EXPECT_EQ(queue<size_t>({2,1,0}), order) << "REQ: priority FIFO" << endl;
 }
 
 #define ABNORMAL
@@ -182,7 +182,7 @@ TEST_F(ThreadBackTest, asyncFail_noException_toBackFnWithFalse)
     ThreadBack::invalidNewThread(
         [](bool aRet)
         {
-            EXPECT_FALSE(aRet);  // req: async failed -> ret=false always
+            EXPECT_FALSE(aRet) << "REQ: async failed -> ret=false always" << endl;
         }
     );
     ThreadBack::hdlFinishedThreads();
