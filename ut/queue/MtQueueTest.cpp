@@ -81,6 +81,10 @@ TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
     }
     INF("switch to thread_1=" << nToThread_1 << ", switch to thread_2=" << nToThread_2
         << ", nPop_1=" << startNum_1 << ", nPop_2=" << startNum_2 - steps << ", nEmptyQ=" << nEmptyQueue)
+
+
+    thread_1.wait();
+    thread_2.wait();
 }
 
 #define FETCH
@@ -120,7 +124,10 @@ TEST_F(MtQueueTest, GOLD_fetchSpecified_multiThreadSafe)
         }
     }
     EXPECT_EQ(size_t(steps * 2 - 2), mtQueue_.mt_size());
-    INF("nEmptyQ=" << nEmptyQueue)
+    INF("nEmptyQ=" << nEmptyQueue);
+
+    thread_1.wait();
+    thread_2.wait();
 }
 TEST_F(MtQueueTest, GOLD_fetch_null)
 {
