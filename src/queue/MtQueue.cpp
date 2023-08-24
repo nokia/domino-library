@@ -27,12 +27,13 @@ shared_ptr<void> MtQueue::mt_fetch(const MatcherFN& aMatcherFN)
 {
     lock_guard<mutex> guard(mutex_);
 
-    auto ele = std::find_if(queue_.begin(), queue_.end(), aMatcherFN);
-    if (ele == queue_.end())
+    auto it = std::find_if(queue_.begin(), queue_.end(), aMatcherFN);
+    if (it == queue_.end())
         return nullptr;
 
-    queue_.erase(ele);
-    return *ele;
+    auto ele = *it;  // ensure erase(it) not destruct shared_ptr!!!
+    queue_.erase(it);
+    return ele;
 }
 
 // ***********************************************************************************************
