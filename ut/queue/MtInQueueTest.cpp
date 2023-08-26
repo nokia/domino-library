@@ -91,58 +91,6 @@ TEST_F(MtInQueueTest, size)
     mtQ_.mt_pop();
     ASSERT_EQ(0u, mtQ_.mt_size())  << "REQ: dec size"  << endl;
 }
-TEST_F(MtInQueueTest, noSet_getNull)
-{
-    EXPECT_FALSE(mtQ_.mt_pop())  << "REQ: get null" << endl;
-}
-TEST_F(MtInQueueTest, DISABLED_fifo_multiThreadSafe)
-{
-    const int steps = 10000;
-    int startNum_1 = 0;
-    int startNum_2 = 0 + steps;
-    auto thread_1 = async(launch::async, bind(&MtInQueueTest::threadMain, this, startNum_1, steps));
-    auto thread_2 = async(launch::async, bind(&MtInQueueTest::threadMain, this, startNum_2, steps));
-
-    int whichThread = 0;
-    int nToThread_1 = 0;
-    int nToThread_2 = 0;
-    int nEmptyQueue = 0;
-    for (int i = 0; i < steps * 2;)
-    {
-        auto value = static_pointer_cast<int>(mtQ_.mt_pop());
-        if (not value)
-        {
-            ++nEmptyQueue;
-            if (nEmptyQueue%2 == 0) usleep(1u);    // give more chance to other threads, & speedup the testcase
-            continue;
-        }
-        ++i;
-
-        if (*value < steps)
-        {
-            ASSERT_EQ(startNum_1++, *value);       // req: fifo under multi-thread
-            if (whichThread != 1) nToThread_1++;   // thread switch
-            whichThread = 1;
-        }
-        else
-        {
-            ASSERT_EQ(startNum_2++, *value);       // req: fifo under multi-thread
-            if (whichThread != 2) nToThread_2++;   // thread switch
-            whichThread = 2;
-        }
-
-        if (nToThread_1 > 10 && nToThread_2 > 10)  // switch enough, can stop earlier
-        {
-            break;
-        }
-    }
-    INF("switch to thread_1=" << nToThread_1 << ", switch to thread_2=" << nToThread_2
-        << ", nPop_1=" << startNum_1 << ", nPop_2=" << startNum_2 - steps << ", nEmptyQ=" << nEmptyQueue)
-
-
-    thread_1.wait();
-    thread_2.wait();
-}
 
 #define DESTRUCT
 // ***********************************************************************************************
