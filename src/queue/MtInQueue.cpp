@@ -12,13 +12,17 @@ namespace RLib
 // ***********************************************************************************************
 shared_ptr<void> MtInQueue::mt_pop()
 {
-    lock_guard<mutex> guard(mutex_);
+    if (cache_.empty())
+    {
+        lock_guard<mutex> guard(mutex_);
+        cache_.swap(queue_);
+    }
 
-    if (queue_.empty())
+    if (cache_.empty())
         return nullptr;
 
-    auto ele = queue_.front();
-    queue_.pop();
+    auto ele = cache_.front();
+    cache_.pop();
     return ele;
 }
 
@@ -33,7 +37,7 @@ void MtInQueue::mt_push(shared_ptr<void> aEle)
 size_t MtInQueue::mt_size()
 {
     lock_guard<mutex> guard(mutex_);
-    return queue_.size();
+    return queue_.size() + cache_.size();
 }
 }  // namespace
 

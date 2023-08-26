@@ -40,6 +40,8 @@ public:
 private:
     queue<shared_ptr<void> > queue_;
     mutex mutex_;
+
+    queue<shared_ptr<void> > cache_;
 };
 }  // namespace
 // ***********************************************************************************************
