@@ -23,20 +23,6 @@ shared_ptr<void> MtInQueue::mt_pop()
 }
 
 // ***********************************************************************************************
-shared_ptr<void> MtInQueue::mt_fetch(const MatcherFN& aMatcherFN)
-{
-    lock_guard<mutex> guard(mutex_);
-
-    auto it = std::find_if(queue_.begin(), queue_.end(), aMatcherFN);
-    if (it == queue_.end())
-        return nullptr;
-
-    auto ele = *it;  // ensure erase(it) not destruct shared_ptr!!!
-    queue_.erase(it);
-    return ele;
-}
-
-// ***********************************************************************************************
 void MtInQueue::mt_push(shared_ptr<void> aEle)
 {
     lock_guard<mutex> guard(mutex_);

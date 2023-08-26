@@ -9,9 +9,9 @@
 //   . can store any type data
 //   . high performance by pop-cache
 // - why:
-//   . eg netconf client,
-//     . rpc reply & notification are all in the queue (multi-thread in)
-//     . main thread can get & handle from the queue (multi-thread out)
+//   . multi-thread msg into MtInQueue, main thread read & handle (so call Mt"In"Queue)
+//   . req to "Out"Queue is not clear: seems main thread can send directly w/o block or via ThreadBack
+//   . fetch() is not common, let class simple (eg std::queue than list)
 // - core:
 //   . queue_
 // ***********************************************************************************************
@@ -34,7 +34,6 @@ class MtInQueue
 public:
     void mt_push(shared_ptr<void> aEle);
     shared_ptr<void> mt_pop();
-    shared_ptr<void> mt_fetch(const MatcherFN&);
 
     size_t mt_size();
 

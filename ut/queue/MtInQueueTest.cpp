@@ -87,53 +87,6 @@ TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
     thread_2.wait();
 }
 
-#define FETCH
-// ***********************************************************************************************
-TEST_F(MtQueueTest, GOLD_fetchSpecified_multiThreadSafe)
-{
-    const int steps = 10;
-    int startNum_1 = 0;
-    int startNum_2 = 0 + steps;
-    auto thread_1 = async(launch::async, bind(&MtQueueTest::threadMain, this, startNum_1, steps));
-    auto thread_2 = async(launch::async, bind(&MtQueueTest::threadMain, this, startNum_2, steps));
-
-    int nEmptyQueue = 0;
-    for (int i = 0; i < 2;)
-    {
-        auto value = static_pointer_cast<int>(mtQueue_.mt_fetch(
-            [](shared_ptr<void> aEle) { return *static_pointer_cast<int>(aEle) % steps == steps -1; }));
-        if (not value)
-        {
-            ++nEmptyQueue;
-            if (nEmptyQueue%2 == 0) usleep(1u);    // give more chance to other threads, & speedup the testcase
-            continue;
-        }
-        ++i;
-
-        if (*value < steps)
-        {
-            EXPECT_EQ(steps -1, *value);       // req: fetch under multi-thread
-            EXPECT_FALSE(mtQueue_.mt_fetch(
-                [](shared_ptr<void> aEle) { return *static_pointer_cast<int>(aEle) == steps -1; }));      // req: rm
-        }
-        else
-        {
-            EXPECT_EQ(steps * 2 - 1, *value);  // req: fetch under multi-thread
-            EXPECT_FALSE(mtQueue_.mt_fetch(
-                [](shared_ptr<void> aEle) { return *static_pointer_cast<int>(aEle) == steps * 2 -1; }));  // req: rm
-        }
-    }
-    EXPECT_EQ(size_t(steps * 2 - 2), mtQueue_.mt_size());
-    INF("nEmptyQ=" << nEmptyQueue);
-
-    thread_1.wait();
-    thread_2.wait();
-}
-TEST_F(MtQueueTest, GOLD_fetch_null)
-{
-    EXPECT_FALSE(mtQueue_.mt_fetch([](shared_ptr<void>) { return true; }));
-}
-
 #define DESTRUCT
 // ***********************************************************************************************
 struct TestObj
