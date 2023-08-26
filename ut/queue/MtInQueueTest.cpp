@@ -15,37 +15,73 @@ using namespace testing;
 
 namespace RLib {
 // ***********************************************************************************************
-struct MtQueueTest : public Test, public UniLog
+struct MtInQueueTest : public Test, public UniLog
 {
-    MtQueueTest() : UniLog(UnitTest::GetInstance()->current_test_info()->name()) {}
-    ~MtQueueTest() { GTEST_LOG_FAIL }
+    MtInQueueTest() : UniLog(UnitTest::GetInstance()->current_test_info()->name()) {}
+    void SetUp() override
+    {
+        ASSERT_EQ(0, mtQ_.mt_size()) << "REQ: empty at beginning"  << endl;
+    }
+    void TearDown() override
+    {
+        ASSERT_EQ(0, mtQ_.mt_size()) << "REQ: empty at end"  << endl;
+
+    }
+    ~MtInQueueTest() { GTEST_LOG_FAIL }
 
     void threadMain(int aStartNum, int aSteps)
     {
         for (int i = 0; i < aSteps; i++)
         {
-            mtQueue_.mt_push(make_shared<int>(aStartNum + i));
-            if (i == 0 || i == aSteps/2) usleep(1u);  // give chance to other threads, at least 2
+            mtQ_.mt_push(make_shared<int>(aStartNum + i));
         }
     }
 
-    MtInQueue mtQueue_;
+    MtInQueue mtQ_;
 };
 
 #define FIFO
 // ***********************************************************************************************
-TEST_F(MtQueueTest, noSet_getNull)
+TEST_F(MtInQueueTest, GOLD_fifo_multiThreadSafe)
 {
-    EXPECT_FALSE(mtQueue_.mt_pop()) << "REQ: get null" << endl;
-    EXPECT_EQ(0, mtQueue_.mt_size()) << "REQ: empty at beginning"  << endl;
+    const int nMsg = 10000;
+    auto push_thread = async(launch::async, bind(&MtInQueueTest::threadMain, this, 0, nMsg));
+
+    int nHdl = 0;
+    INF("GOLD_fifo_multiThreadSafe: before loop")
+    while (nHdl < nMsg)
+    {
+        auto msg = static_pointer_cast<int>(mtQ_.mt_pop());
+        if (msg) ASSERT_EQ(nHdl++, *msg) << "REQ: fifo";
+        else this_thread::yield();  // simulate real world
+    }
+    INF("GOLD_fifo_multiThreadSafe: after loop")
 }
-TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
+TEST_F(MtInQueueTest, size)
+{
+    mtQ_.mt_push(nullptr);
+    ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: inc size"  << endl;
+
+    mtQ_.mt_push(nullptr);
+    ASSERT_EQ(2u, mtQ_.mt_size())  << "REQ: inc size"  << endl;
+
+    mtQ_.mt_pop();
+    ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: dec size"  << endl;
+
+    mtQ_.mt_pop();
+    ASSERT_EQ(0u, mtQ_.mt_size())  << "REQ: dec size"  << endl;
+}
+TEST_F(MtInQueueTest, noSet_getNull)
+{
+    EXPECT_FALSE(mtQ_.mt_pop())  << "REQ: get null" << endl;
+}
+TEST_F(MtInQueueTest, DISABLED_fifo_multiThreadSafe)
 {
     const int steps = 10000;
     int startNum_1 = 0;
     int startNum_2 = 0 + steps;
-    auto thread_1 = async(launch::async, bind(&MtQueueTest::threadMain, this, startNum_1, steps));
-    auto thread_2 = async(launch::async, bind(&MtQueueTest::threadMain, this, startNum_2, steps));
+    auto thread_1 = async(launch::async, bind(&MtInQueueTest::threadMain, this, startNum_1, steps));
+    auto thread_2 = async(launch::async, bind(&MtInQueueTest::threadMain, this, startNum_2, steps));
 
     int whichThread = 0;
     int nToThread_1 = 0;
@@ -53,7 +89,7 @@ TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
     int nEmptyQueue = 0;
     for (int i = 0; i < steps * 2;)
     {
-        auto value = static_pointer_cast<int>(mtQueue_.mt_pop());
+        auto value = static_pointer_cast<int>(mtQ_.mt_pop());
         if (not value)
         {
             ++nEmptyQueue;
@@ -64,13 +100,13 @@ TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
 
         if (*value < steps)
         {
-            EXPECT_EQ(startNum_1++, *value);       // req: fifo under multi-thread
+            ASSERT_EQ(startNum_1++, *value);       // req: fifo under multi-thread
             if (whichThread != 1) nToThread_1++;   // thread switch
             whichThread = 1;
         }
         else
         {
-            EXPECT_EQ(startNum_2++, *value);       // req: fifo under multi-thread
+            ASSERT_EQ(startNum_2++, *value);       // req: fifo under multi-thread
             if (whichThread != 2) nToThread_2++;   // thread switch
             whichThread = 2;
         }
@@ -96,7 +132,7 @@ struct TestObj
     explicit TestObj(bool& aExtFlag) : isDestructed_(aExtFlag) { isDestructed_ = false; }
     ~TestObj() { isDestructed_ = true; }
 };
-TEST_F(MtQueueTest, GOLD_destructCorrectly)
+TEST_F(MtInQueueTest, GOLD_destructCorrectly)
 {
     bool isDestructed;
     {

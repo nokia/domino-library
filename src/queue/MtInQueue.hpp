@@ -9,7 +9,7 @@
 //   . can store any type data
 //   . high performance by pop-cache
 // - why:
-//   . multi-thread msg into MtInQueue, main thread read & handle (so call Mt"In"Queue)
+//   . multi-thread msg into MtInQueue, main thread read & handle (so call "In"Queue)
 //   . req to "Out"Queue is not clear: seems main thread can send directly w/o block or via ThreadBack
 //   . fetch() is not common, let class simple (eg std::queue than list)
 // - core:
