@@ -5,12 +5,12 @@
  */
 // ***********************************************************************************************
 #include <algorithm>
-#include "MtQueue.hpp"
+#include "MtInQueue.hpp"
 
 namespace RLib
 {
 // ***********************************************************************************************
-shared_ptr<void> MtQueue::mt_pop()
+shared_ptr<void> MtInQueue::mt_pop()
 {
     lock_guard<mutex> guard(mutex_);
 
@@ -23,7 +23,7 @@ shared_ptr<void> MtQueue::mt_pop()
 }
 
 // ***********************************************************************************************
-shared_ptr<void> MtQueue::mt_fetch(const MatcherFN& aMatcherFN)
+shared_ptr<void> MtInQueue::mt_fetch(const MatcherFN& aMatcherFN)
 {
     lock_guard<mutex> guard(mutex_);
 
@@ -37,14 +37,14 @@ shared_ptr<void> MtQueue::mt_fetch(const MatcherFN& aMatcherFN)
 }
 
 // ***********************************************************************************************
-void MtQueue::mt_push(shared_ptr<void> aEle)
+void MtInQueue::mt_push(shared_ptr<void> aEle)
 {
     lock_guard<mutex> guard(mutex_);
     queue_.push_back(aEle);
 }
 
 // ***********************************************************************************************
-size_t MtQueue::mt_size()
+size_t MtInQueue::mt_size()
 {
     lock_guard<mutex> guard(mutex_);
     return queue_.size();

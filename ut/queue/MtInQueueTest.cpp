@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 #include "UniLog.hpp"
-#include "MtQueue.hpp"
+#include "MtInQueue.hpp"
 
 using namespace testing;
 
@@ -29,7 +29,7 @@ struct MtQueueTest : public Test, public UniLog
         }
     }
 
-    MtQueue mtQueue_;
+    MtInQueue mtQueue_;
 };
 
 #define FIFO
@@ -146,7 +146,7 @@ TEST_F(MtQueueTest, GOLD_destructCorrectly)
 {
     bool isDestructed;
     {
-        MtQueue mtQ;
+        MtInQueue mtQ;
         mtQ.mt_push(make_shared<TestObj>(isDestructed));
         EXPECT_FALSE(isDestructed);
     }

@@ -7,7 +7,7 @@
 // - what:
 //   * multi-thread-safe queue - FIFO
 //   . can store any type data
-//   . can find & fetch 1 element in the (middle of) the queue
+//   . high performance by pop-cache
 // - why:
 //   . eg netconf client,
 //     . rpc reply & notification are all in the queue (multi-thread in)
@@ -29,7 +29,7 @@ namespace RLib
 using MatcherFN = function<bool(shared_ptr<void>)>;
 
 // ***********************************************************************************************
-class MtQueue
+class MtInQueue
 {
 public:
     void mt_push(shared_ptr<void> aEle);
@@ -46,8 +46,9 @@ private:
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
-// 2022-02-18  CSZ       - create
+// 2022-02-18  CSZ       1)create
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2022-11-23  CSZ       - rm since no need
 // 2023-08-23  CSZ       - re-add since potential need
+// 2023-08024  CSZ       2)MtQueue -> MtInQueue
 // ***********************************************************************************************
