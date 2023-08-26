@@ -18,9 +18,9 @@
 #pragma once
 
 #include <functional>
-#include <list>
 #include <memory>
 #include <mutex>
+#include <queue>
 
 using namespace std;
 
@@ -38,7 +38,7 @@ public:
     size_t mt_size();
 
 private:
-    list<shared_ptr<void> > queue_;
+    queue<shared_ptr<void> > queue_;
     mutex mutex_;
 };
 }  // namespace

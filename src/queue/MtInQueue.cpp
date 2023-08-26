@@ -18,7 +18,7 @@ shared_ptr<void> MtInQueue::mt_pop()
         return nullptr;
 
     auto ele = queue_.front();
-    queue_.pop_front();
+    queue_.pop();
     return ele;
 }
 
@@ -26,7 +26,7 @@ shared_ptr<void> MtInQueue::mt_pop()
 void MtInQueue::mt_push(shared_ptr<void> aEle)
 {
     lock_guard<mutex> guard(mutex_);
-    queue_.push_back(aEle);
+    queue_.push(aEle);
 }
 
 // ***********************************************************************************************

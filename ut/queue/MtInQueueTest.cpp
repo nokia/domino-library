@@ -36,7 +36,8 @@ struct MtQueueTest : public Test, public UniLog
 // ***********************************************************************************************
 TEST_F(MtQueueTest, noSet_getNull)
 {
-    EXPECT_FALSE(mtQueue_.mt_pop());   // req: get null
+    EXPECT_FALSE(mtQueue_.mt_pop()) << "REQ: get null" << endl;
+    EXPECT_EQ(0, mtQueue_.mt_size()) << "REQ: empty at beginning"  << endl;
 }
 TEST_F(MtQueueTest, GOLD_fifo_multiThreadSafe)
 {
