@@ -14,12 +14,14 @@ shared_ptr<void> MtInQueue::mt_pop()
 {
     if (cache_.empty())
     {
-        lock_guard<mutex> guard(mutex_);
+        unique_lock<mutex> guard(mutex_, try_to_lock);  // avoid block main thread
+        if (! guard.owns_lock())  // avoid block main thread
+            return nullptr;
+        if (queue_.empty())
+            return nullptr;
         cache_.swap(queue_);
     }
-
-    if (cache_.empty())
-        return nullptr;
+    // unlocked
 
     auto ele = cache_.front();
     cache_.pop();

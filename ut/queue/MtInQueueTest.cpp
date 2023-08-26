@@ -9,7 +9,10 @@
 #include <unistd.h>
 
 #include "UniLog.hpp"
+
+#define MT_IN_Q_TEST
 #include "MtInQueue.hpp"
+#undef MT_IN_Q_TEST
 
 using namespace testing;
 
@@ -37,6 +40,7 @@ struct MtInQueueTest : public Test, public UniLog
         }
     }
 
+    // -------------------------------------------------------------------------------------------
     MtInQueue mtQ_;
 };
 
@@ -55,7 +59,23 @@ TEST_F(MtInQueueTest, GOLD_fifo_multiThreadSafe)
         if (msg) ASSERT_EQ(nHdl++, *msg) << "REQ: fifo";
         else this_thread::yield();  // simulate real world
     }
-    INF("GOLD_fifo_multiThreadSafe: after loop")
+    INF("REQ: loop cost 2610us now, previously no cache & lock cost 4422us")
+}
+TEST_F(MtInQueueTest, GOLD_nonBlock_pop)
+{
+    ASSERT_FALSE(mtQ_.mt_pop()) << "REQ: can pop empty" << endl;
+
+    mtQ_.mt_push(make_shared<string>("1st"));
+    mtQ_.mt_push(make_shared<string>("2nd"));
+    mtQ_.backdoor().lock();
+    ASSERT_FALSE(mtQ_.mt_pop()) << "REQ: not blocked" << endl;
+
+    mtQ_.backdoor().unlock();
+    ASSERT_EQ("1st", *static_pointer_cast<string>(mtQ_.mt_pop())) << "REQ: can pop";
+
+    mtQ_.backdoor().lock();
+    ASSERT_EQ("2nd", *static_pointer_cast<string>(mtQ_.mt_pop())) << "REQ: can pop from cache" << endl;
+    mtQ_.backdoor().unlock();
 }
 TEST_F(MtInQueueTest, size)
 {
