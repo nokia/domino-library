@@ -21,7 +21,7 @@
 #include <functional>
 #include <memory>
 #include <mutex>
-#include <queue>
+#include <deque>
 
 using namespace std;
 
@@ -41,9 +41,9 @@ public:
 
     // -------------------------------------------------------------------------------------------
 private:
-    queue<shared_ptr<void> > queue_;
+    deque<shared_ptr<void> > queue_;  // unlimited ele; most suitable container
     mutex mutex_;
-    queue<shared_ptr<void> > cache_;
+    deque<shared_ptr<void> > cache_;
 
     // -------------------------------------------------------------------------------------------
 #ifdef MT_IN_Q_TEST  // UT only

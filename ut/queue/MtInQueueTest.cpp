@@ -59,7 +59,7 @@ TEST_F(MtInQueueTest, GOLD_fifo_multiThreadSafe)
         if (msg) ASSERT_EQ(nHdl++, *msg) << "REQ: fifo";
         else this_thread::yield();  // simulate real world
     }
-    INF("REQ: loop cost 2610us now, previously no cache & lock cost 4422us")
+    INF("REQ: loop cost 2372us now, previously no cache & lock cost 4422us")
 }
 TEST_F(MtInQueueTest, GOLD_nonBlock_pop)
 {
@@ -104,7 +104,7 @@ TEST_F(MtInQueueTest, GOLD_destructCorrectly)
 {
     bool isDestructed;
     mtQ_.mt_push(make_shared<TestObj>(isDestructed));
-    EXPECT_FALSE(isDestructed);
+    ASSERT_FALSE(isDestructed);
 
     mtQ_.mt_clear();
     ASSERT_TRUE(isDestructed) << "REQ: destruct correctly" << endl;
@@ -117,4 +117,4 @@ TEST_F(MtInQueueTest, clear)
     mtQ_.mt_push(nullptr);
     ASSERT_EQ(2u, mtQ_.mt_clear()) << "REQ: clear all" << endl;
 }
-}
+}  // namespace

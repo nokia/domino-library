@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-#include <algorithm>
 #include "MtInQueue.hpp"
 
 namespace RLib
@@ -14,13 +13,13 @@ size_t MtInQueue::mt_clear()
 {
     lock_guard<mutex> guard(mutex_);
 
-    auto queueSwap = queue<shared_ptr<void> >();
-    cache_.swap(queueSwap);
+    const auto sizeQueue = queue_.size();
+    queue_.clear();
 
-    auto cacheSwap = queue<shared_ptr<void> >();
-    queue_.swap(cacheSwap);
+    const auto sizeCache = cache_.size();
+    cache_.clear();
 
-    return queueSwap.size() + cacheSwap.size();
+    return sizeQueue + sizeCache;
 }
 
 // ***********************************************************************************************
@@ -38,7 +37,7 @@ shared_ptr<void> MtInQueue::pop()
     // unlocked
 
     auto ele = cache_.front();
-    cache_.pop();
+    cache_.pop_front();
     return ele;
 }
 
@@ -46,7 +45,7 @@ shared_ptr<void> MtInQueue::pop()
 void MtInQueue::mt_push(shared_ptr<void> aEle)
 {
     lock_guard<mutex> guard(mutex_);
-    queue_.push(aEle);
+    queue_.push_back(aEle);
 }
 
 // ***********************************************************************************************
