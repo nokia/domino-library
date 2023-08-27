@@ -10,7 +10,21 @@
 namespace RLib
 {
 // ***********************************************************************************************
-shared_ptr<void> MtInQueue::mt_pop()
+size_t MtInQueue::mt_clear()
+{
+    lock_guard<mutex> guard(mutex_);
+
+    auto queueSwap = queue<shared_ptr<void> >();
+    cache_.swap(queueSwap);
+
+    auto cacheSwap = queue<shared_ptr<void> >();
+    queue_.swap(cacheSwap);
+
+    return queueSwap.size() + cacheSwap.size();
+}
+
+// ***********************************************************************************************
+shared_ptr<void> MtInQueue::pop()
 {
     if (cache_.empty())
     {
@@ -19,7 +33,7 @@ shared_ptr<void> MtInQueue::mt_pop()
             return nullptr;
         if (queue_.empty())
             return nullptr;
-        cache_.swap(queue_);
+        cache_.swap(queue_);  // fast & for at most ele
     }
     // unlocked
 

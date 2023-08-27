@@ -55,7 +55,7 @@ TEST_F(MtInQueueTest, GOLD_fifo_multiThreadSafe)
     INF("GOLD_fifo_multiThreadSafe: before loop")
     while (nHdl < nMsg)
     {
-        auto msg = static_pointer_cast<int>(mtQ_.mt_pop());
+        auto msg = static_pointer_cast<int>(mtQ_.pop());
         if (msg) ASSERT_EQ(nHdl++, *msg) << "REQ: fifo";
         else this_thread::yield();  // simulate real world
     }
@@ -63,18 +63,18 @@ TEST_F(MtInQueueTest, GOLD_fifo_multiThreadSafe)
 }
 TEST_F(MtInQueueTest, GOLD_nonBlock_pop)
 {
-    ASSERT_FALSE(mtQ_.mt_pop()) << "REQ: can pop empty" << endl;
+    ASSERT_FALSE(mtQ_.pop()) << "REQ: can pop empty" << endl;
 
     mtQ_.mt_push(make_shared<string>("1st"));
     mtQ_.mt_push(make_shared<string>("2nd"));
     mtQ_.backdoor().lock();
-    ASSERT_FALSE(mtQ_.mt_pop()) << "REQ: not blocked" << endl;
+    ASSERT_FALSE(mtQ_.pop()) << "REQ: not blocked" << endl;
 
     mtQ_.backdoor().unlock();
-    ASSERT_EQ("1st", *static_pointer_cast<string>(mtQ_.mt_pop())) << "REQ: can pop";
+    ASSERT_EQ("1st", *static_pointer_cast<string>(mtQ_.pop())) << "REQ: can pop";
 
     mtQ_.backdoor().lock();
-    ASSERT_EQ("2nd", *static_pointer_cast<string>(mtQ_.mt_pop())) << "REQ: can pop from cache" << endl;
+    ASSERT_EQ("2nd", *static_pointer_cast<string>(mtQ_.pop())) << "REQ: can pop from cache" << endl;
     mtQ_.backdoor().unlock();
 }
 TEST_F(MtInQueueTest, size)
@@ -85,10 +85,10 @@ TEST_F(MtInQueueTest, size)
     mtQ_.mt_push(nullptr);
     ASSERT_EQ(2u, mtQ_.mt_size())  << "REQ: inc size"  << endl;
 
-    mtQ_.mt_pop();
+    mtQ_.pop();
     ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: dec size"  << endl;
 
-    mtQ_.mt_pop();
+    mtQ_.pop();
     ASSERT_EQ(0u, mtQ_.mt_size())  << "REQ: dec size"  << endl;
 }
 
@@ -103,11 +103,10 @@ struct TestObj
 TEST_F(MtInQueueTest, GOLD_destructCorrectly)
 {
     bool isDestructed;
-    {
-        MtInQueue mtQ;
-        mtQ.mt_push(make_shared<TestObj>(isDestructed));
-        EXPECT_FALSE(isDestructed);
-    }
-    EXPECT_TRUE(isDestructed);       // req: destruct correctly
+    mtQ_.mt_push(make_shared<TestObj>(isDestructed));
+    EXPECT_FALSE(isDestructed);
+
+    ASSERT_EQ(1u, mtQ_.mt_clear()) << "REQ: clear all" << endl;
+    ASSERT_TRUE(isDestructed) << "REQ: destruct correctly" << endl;
 }
 }

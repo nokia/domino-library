@@ -12,7 +12,7 @@
 //   . multi-thread msg into MtInQueue, main thread read & handle (so call "In"Queue)
 //   . req to "Out"Queue is not clear: seems main thread can send directly w/o block or via ThreadBack
 //   . fetch() is not common, let class simple (eg std::queue than list)
-//   . cache_: if mt_push() heavily, cache_ avoid ~all mutex from mt_pop()
+//   . cache_: if mt_push() heavily, cache_ avoid ~all mutex from pop()
 // - core:
 //   . queue_
 // ***********************************************************************************************
@@ -34,15 +34,15 @@ class MtInQueue
 {
 public:
     void mt_push(shared_ptr<void> aEle);
-    shared_ptr<void> mt_pop();
+    shared_ptr<void> pop();  // shall access in main thread ONLY!!! high performance
 
     size_t mt_size();
+    size_t mt_clear();
 
     // -------------------------------------------------------------------------------------------
 private:
     queue<shared_ptr<void> > queue_;
     mutex mutex_;
-
     queue<shared_ptr<void> > cache_;
 
     // -------------------------------------------------------------------------------------------
