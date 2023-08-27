@@ -106,7 +106,15 @@ TEST_F(MtInQueueTest, GOLD_destructCorrectly)
     mtQ_.mt_push(make_shared<TestObj>(isDestructed));
     EXPECT_FALSE(isDestructed);
 
-    ASSERT_EQ(1u, mtQ_.mt_clear()) << "REQ: clear all" << endl;
+    mtQ_.mt_clear();
     ASSERT_TRUE(isDestructed) << "REQ: destruct correctly" << endl;
+}
+TEST_F(MtInQueueTest, clear)
+{
+    mtQ_.mt_push(nullptr);
+    mtQ_.mt_push(nullptr);
+    mtQ_.pop();
+    mtQ_.mt_push(nullptr);
+    ASSERT_EQ(2u, mtQ_.mt_clear()) << "REQ: clear all" << endl;
 }
 }
