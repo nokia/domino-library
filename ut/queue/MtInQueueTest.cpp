@@ -55,7 +55,7 @@ TEST_F(MtInQueueTest, GOLD_fifo_multiThreadSafe)
     INF("GOLD_fifo_multiThreadSafe: before loop")
     while (nHdl < nMsg)
     {
-        auto msg = (mtQ_.pop<int>());
+        auto msg = mtQ_.pop<int>();
         if (msg) ASSERT_EQ(nHdl++, *msg) << "REQ: fifo";
         else this_thread::yield();  // simulate real world
     }
