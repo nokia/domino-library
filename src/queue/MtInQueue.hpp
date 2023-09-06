@@ -34,7 +34,9 @@ class MtInQueue
 {
 public:
     void mt_push(shared_ptr<void> aEle);
-    shared_ptr<void> pop();  // shall access in main thread ONLY!!! high performance
+
+    template<class aEleType = void>  // convenient usr
+    shared_ptr<aEleType> pop();      // shall access in main thread ONLY!!! high performance
 
     size_t mt_size();
     size_t mt_clear();
@@ -51,6 +53,26 @@ public:
     mutex& backdoor() { return mutex_; }
 #endif
 };
+
+// ***********************************************************************************************
+template<class aEleType>
+shared_ptr<aEleType> MtInQueue::pop()
+{
+    if (cache_.empty())
+    {
+        unique_lock<mutex> guard(mutex_, try_to_lock);  // avoid block main thread
+        if (! guard.owns_lock())  // avoid block main thread
+            return nullptr;
+        if (queue_.empty())
+            return nullptr;
+        cache_.swap(queue_);  // fast & for at most ele
+    }
+    // unlocked
+
+    auto ele = cache_.front();
+    cache_.pop_front();
+    return static_pointer_cast<aEleType>(ele);
+}
 }  // namespace
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description

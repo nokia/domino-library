@@ -23,25 +23,6 @@ size_t MtInQueue::mt_clear()
 }
 
 // ***********************************************************************************************
-shared_ptr<void> MtInQueue::pop()
-{
-    if (cache_.empty())
-    {
-        unique_lock<mutex> guard(mutex_, try_to_lock);  // avoid block main thread
-        if (! guard.owns_lock())  // avoid block main thread
-            return nullptr;
-        if (queue_.empty())
-            return nullptr;
-        cache_.swap(queue_);  // fast & for at most ele
-    }
-    // unlocked
-
-    auto ele = cache_.front();
-    cache_.pop_front();
-    return ele;
-}
-
-// ***********************************************************************************************
 void MtInQueue::mt_push(shared_ptr<void> aEle)
 {
     lock_guard<mutex> guard(mutex_);

@@ -55,7 +55,7 @@ TEST_F(MtInQueueTest, GOLD_fifo_multiThreadSafe)
     INF("GOLD_fifo_multiThreadSafe: before loop")
     while (nHdl < nMsg)
     {
-        auto msg = static_pointer_cast<int>(mtQ_.pop());
+        auto msg = (mtQ_.pop<int>());
         if (msg) ASSERT_EQ(nHdl++, *msg) << "REQ: fifo";
         else this_thread::yield();  // simulate real world
     }
@@ -71,10 +71,10 @@ TEST_F(MtInQueueTest, GOLD_nonBlock_pop)
     ASSERT_FALSE(mtQ_.pop()) << "REQ: not blocked" << endl;
 
     mtQ_.backdoor().unlock();
-    ASSERT_EQ("1st", *static_pointer_cast<string>(mtQ_.pop())) << "REQ: can pop";
+    ASSERT_EQ("1st", *(mtQ_.pop<string>())) << "REQ: can pop";
 
     mtQ_.backdoor().lock();
-    ASSERT_EQ("2nd", *static_pointer_cast<string>(mtQ_.pop())) << "REQ: can pop from cache" << endl;
+    ASSERT_EQ("2nd", *(mtQ_.pop<string>())) << "REQ: can pop from cache" << endl;
     mtQ_.backdoor().unlock();
 }
 TEST_F(MtInQueueTest, size)
