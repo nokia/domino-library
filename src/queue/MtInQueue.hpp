@@ -72,5 +72,6 @@ void MtInQueue::mt_push(shared_ptr<aEleType> aEle)
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2022-11-23  CSZ       - rm since no need
 // 2023-08-23  CSZ       - re-add since potential need
-// 2023-08024  CSZ       2)MtQueue -> MtInQueue
+// 2023-08-24  CSZ       2)MtQueue -> MtInQueue
+// 2023-09-08  CSZ       - store Ele with its hash_code
 // ***********************************************************************************************
