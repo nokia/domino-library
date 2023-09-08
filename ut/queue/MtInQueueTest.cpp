@@ -63,12 +63,12 @@ TEST_F(MtInQueueTest, GOLD_fifo_multiThreadSafe)
 }
 TEST_F(MtInQueueTest, GOLD_nonBlock_pop)
 {
-    ASSERT_FALSE(mtQ_.pop()) << "REQ: can pop empty" << endl;
+    ASSERT_FALSE(mtQ_.pop<void>()) << "REQ: can pop empty" << endl;
 
     mtQ_.mt_push(make_shared<string>("1st"));
     mtQ_.mt_push(make_shared<string>("2nd"));
     mtQ_.backdoor().lock();
-    ASSERT_FALSE(mtQ_.pop()) << "REQ: not blocked" << endl;
+    ASSERT_FALSE(mtQ_.pop<void>()) << "REQ: not blocked" << endl;
 
     mtQ_.backdoor().unlock();
     ASSERT_EQ("1st", *(mtQ_.pop<string>())) << "REQ: can pop";
@@ -79,10 +79,10 @@ TEST_F(MtInQueueTest, GOLD_nonBlock_pop)
 }
 TEST_F(MtInQueueTest, size)
 {
-    mtQ_.mt_push(nullptr);
+    mtQ_.mt_push<void>(nullptr);
     ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: inc size"  << endl;
 
-    mtQ_.mt_push(nullptr);
+    mtQ_.mt_push<void>(nullptr);
     ASSERT_EQ(2u, mtQ_.mt_size())  << "REQ: inc size"  << endl;
 
     mtQ_.pop();
@@ -111,10 +111,10 @@ TEST_F(MtInQueueTest, GOLD_destructCorrectly)
 }
 TEST_F(MtInQueueTest, clear)
 {
-    mtQ_.mt_push(nullptr);
-    mtQ_.mt_push(nullptr);
+    mtQ_.mt_push<void>(nullptr);
+    mtQ_.mt_push<void>(nullptr);
     mtQ_.pop();
-    mtQ_.mt_push(nullptr);
+    mtQ_.mt_push<void>(nullptr);
     ASSERT_EQ(2u, mtQ_.mt_clear()) << "REQ: clear all" << endl;
 }
 }  // namespace

@@ -23,17 +23,28 @@ size_t MtInQueue::mt_clear()
 }
 
 // ***********************************************************************************************
-void MtInQueue::mt_push(shared_ptr<void> aEle)
-{
-    lock_guard<mutex> guard(mutex_);
-    queue_.push_back(aEle);
-}
-
-// ***********************************************************************************************
 size_t MtInQueue::mt_size()
 {
     lock_guard<mutex> guard(mutex_);
     return queue_.size() + cache_.size();
 }
-}  // namespace
 
+// ***********************************************************************************************
+ElePair MtInQueue::pop()
+{
+    if (cache_.empty())
+    {
+        unique_lock<mutex> guard(mutex_, try_to_lock);  // avoid block main thread
+        if (! guard.owns_lock())  // avoid block main thread
+            return ElePair(nullptr, typeid(void).hash_code());
+        if (queue_.empty())
+            return ElePair(nullptr, typeid(void).hash_code());
+        cache_.swap(queue_);  // fast & for at most ele
+    }
+    // unlocked
+
+    auto elePair = cache_.front();
+    cache_.pop_front();
+    return elePair;
+}
+}  // namespace

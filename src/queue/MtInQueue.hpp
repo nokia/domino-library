@@ -18,34 +18,37 @@
 // ***********************************************************************************************
 #pragma once
 
+#include <deque>
 #include <functional>
 #include <memory>
 #include <mutex>
-#include <deque>
+#include <utility>
 
 using namespace std;
 
 namespace RLib
 {
 using MatcherFN = function<bool(shared_ptr<void>)>;
+using ElePair   = pair<shared_ptr<void>, size_t>;  // ele & its typeid.hash_code
 
 // ***********************************************************************************************
 class MtInQueue
 {
 public:
-    void mt_push(shared_ptr<void> aEle);
-
-    template<class aEleType = void>  // convenient usr
-    shared_ptr<aEleType> pop();      // shall access in main thread ONLY!!! high performance
-
     size_t mt_size();
     size_t mt_clear();
 
+    template<class aEleType> void mt_push(shared_ptr<aEleType> aEle);
+
+    // shall access in main thread ONLY!!! high performance
+    ElePair pop();
+    template<class aEleType> shared_ptr<aEleType> pop() { return static_pointer_cast<aEleType>(pop().first); }
+
     // -------------------------------------------------------------------------------------------
 private:
-    deque<shared_ptr<void> > queue_;  // unlimited ele; most suitable container
+    deque<ElePair> queue_;  // unlimited ele; most suitable container
     mutex mutex_;
-    deque<shared_ptr<void> > cache_;
+    deque<ElePair> cache_;
 
     // -------------------------------------------------------------------------------------------
 #ifdef MT_IN_Q_TEST  // UT only
@@ -56,22 +59,10 @@ public:
 
 // ***********************************************************************************************
 template<class aEleType>
-shared_ptr<aEleType> MtInQueue::pop()
+void MtInQueue::mt_push(shared_ptr<aEleType> aEle)
 {
-    if (cache_.empty())
-    {
-        unique_lock<mutex> guard(mutex_, try_to_lock);  // avoid block main thread
-        if (! guard.owns_lock())  // avoid block main thread
-            return nullptr;
-        if (queue_.empty())
-            return nullptr;
-        cache_.swap(queue_);  // fast & for at most ele
-    }
-    // unlocked
-
-    auto ele = cache_.front();
-    cache_.pop_front();
-    return static_pointer_cast<aEleType>(ele);
+    lock_guard<mutex> guard(mutex_);
+    queue_.push_back(ElePair(aEle, typeid(aEle).hash_code()));
 }
 }  // namespace
 // ***********************************************************************************************
