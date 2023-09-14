@@ -34,10 +34,10 @@
 //   . eg newThread() must be called in main thread (or at least 1 same thread), no defense code to protect
 //   . newThread()'s aEntry shall not be nullptr (std::async also not check fn=nullptr)
 //     . same for aBack (since eg async() failed via aRet=false)
-//   * integrate with MsgSelf since all "msg" shall queue in MsgSelf
-//     . aovid complicate MsgSelf: ThreadBack provides 1 func to fill aBack into MsgSelf
+//   * align with MsgSelf since all "msg" shall queue in MsgSelf
+//     . aovid complex MsgSelf: ThreadBack provides 1 func to fill aBack into MsgSelf
+//     . avoid complex ThreadBack
 //     . avoid block main thread
-//     . avoid complicate ThreadBack
 //
 // - support exception: NO!!! since
 //   . dom lib branches inc 77% (Dec,2022), unnecessary complex
@@ -123,4 +123,5 @@ public:
 // 2023-07-12  CSZ       - copilot compare
 // 2023-08-17  CSZ       - handle async() fail
 // 2023-08-18  CSZ       - rm mt_nFinishedThread_
+// 2023-09-14  CSZ       2)align with MsgSelf
 // ***********************************************************************************************

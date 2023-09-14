@@ -146,11 +146,6 @@ TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
 
 #define CAN_WITH_MSGSELF
 // ***********************************************************************************************
-void back(queue<size_t>& aOrder, size_t aPri, bool aRet)
-{
-    EXPECT_FALSE(aRet);
-    aOrder.push(aPri);
-}
 TEST_F(ThreadBackTest, canWithMsgSelf)
 {
     PongMainFN handleAllMsg;
@@ -161,11 +156,10 @@ TEST_F(ThreadBackTest, canWithMsgSelf)
         },
         uniLogName()
     );
+
     queue<size_t> order;
-    ThreadBackFN backFn[3];
     for (size_t idxThread = EMsgPri_MIN; idxThread < EMsgPri_MAX; idxThread++)
     {
-        backFn[idxThread] = bind(&back, ref(order), idxThread, placeholders::_1);
         ThreadBack::newThread(
             // MT_ThreadEntryFN
             []() -> bool
@@ -174,9 +168,13 @@ TEST_F(ThreadBackTest, canWithMsgSelf)
             },
             // ThreadBackFN
             ThreadBack::viaMsgSelf(
-                backFn[idxThread],
+                [&order, idxThread](bool aRet)
+                {
+                    EXPECT_FALSE(aRet);
+                    order.push(idxThread);
+                },
                 msgSelf,
-                (EMsgPriority)idxThread
+                EMsgPriority(idxThread)
             )
         );
     }
