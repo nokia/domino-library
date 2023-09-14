@@ -97,6 +97,7 @@ public:
 
     static size_t nThread() { return allThreads_.size(); }
 
+    // wrap ThreadBackFN to queue in MsgSelf
     static ThreadBackFN viaMsgSelf(const ThreadBackFN&, shared_ptr<MsgSelf>, EMsgPriority aPri = EMsgPri_NORM);
 
 private:

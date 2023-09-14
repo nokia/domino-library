@@ -162,10 +162,7 @@ TEST_F(ThreadBackTest, canWithMsgSelf)
     {
         ThreadBack::newThread(
             // MT_ThreadEntryFN
-            []() -> bool
-            {
-                return false;
-            },
+            []() -> bool { return false; },
             // ThreadBackFN
             ThreadBack::viaMsgSelf(
                 [&order, idxThread](bool aRet)
@@ -179,11 +176,13 @@ TEST_F(ThreadBackTest, canWithMsgSelf)
         );
     }
 
-    for (size_t nHandled = 0; nHandled < EMsgPri_MAX; nHandled += ThreadBack::hdlFinishedThreads())  // all BackFN()
+    // wait all threads done
+    for (size_t nHandled = 0; nHandled < EMsgPri_MAX; nHandled += ThreadBack::hdlFinishedThreads())
     {
         DBG("nHandled=" << nHandled);
     }
-    handleAllMsg();
+
+    handleAllMsg();  // call MsgSelf
     EXPECT_EQ(queue<size_t>({2,1,0}), order) << "REQ: priority FIFO" << endl;
 }
 

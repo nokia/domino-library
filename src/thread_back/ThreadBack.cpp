@@ -46,7 +46,7 @@ ThreadBackFN ThreadBack::viaMsgSelf(const ThreadBackFN& aBackFn, shared_ptr<MsgS
 {
     return [aBackFn, aMsgSelf, aPri](bool aRet)  // must cp aBackFn since lambda run later in diff lifecycle
     {
-        aMsgSelf->newMsg(bind(aBackFn, aRet), aPri);
+        aMsgSelf->newMsg(bind(aBackFn, aRet), aPri);  // wrap aBackFn to queue in MsgSelf
     };
 }
 
