@@ -59,8 +59,8 @@ using MsgCB        = function<void()>;  // !!! MsgCB shall NEVER throw exception
 using WeakMsgCB    = weak_ptr<MsgCB>;
 using SharedMsgCB  = shared_ptr<MsgCB>;
 
-using PongMainFN   = function<void()>;                   // tap to main()
-using PingMainFN   = function<void(const PongMainFN&)>;  // tap from main()
+using PongMainFN   = function<void()>;                   // tap from main()
+using PingMainFN   = function<void(const PongMainFN&)>;  // tap to main()
 
 // ***********************************************************************************************
 class MsgSelf : public UniLog

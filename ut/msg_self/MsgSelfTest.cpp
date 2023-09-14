@@ -24,7 +24,10 @@ struct MsgSelfTest : public Test, public UniLog
     MOCK_METHOD(void, pingMain, (const PongMainFN&));  // simulate pingMain() which may send msg to self
 
     // -------------------------------------------------------------------------------------------
-    shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(bind(&MsgSelfTest::pingMain, this, placeholders::_1), uniLogName());
+    shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(
+        [&](const PongMainFN& aPongFn){ this->pingMain(aPongFn); },
+        uniLogName()
+    );
     PongMainFN pongMainFN_;
 
     MsgCB d1MsgHdlr_ = [&](){ hdlrIDs_.push(1); };
@@ -169,7 +172,7 @@ TEST_F(MsgSelfTest, destructMsgSelf_noCallback_noMemLeak)  // mem leak is checke
 {
     EXPECT_CALL(*this, pingMain(_)).WillOnce(SaveArg<0>(&pongMainFN_));
     EXPECT_CALL(*this, d6MsgHdlr()).Times(0);              // req: no call
-    msgSelf_->newMsg(bind(&MsgSelfTest::d6MsgHdlr, this));
+    msgSelf_->newMsg([&](){ this->d6MsgHdlr(); });
     EXPECT_EQ(1u, msgSelf_->nMsg(EMsgPri_NORM));
     msgSelf_.reset();                                      // rm msgSelf
 }

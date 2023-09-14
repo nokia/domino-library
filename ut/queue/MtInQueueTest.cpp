@@ -49,7 +49,7 @@ struct MtInQueueTest : public Test, public UniLog
 TEST_F(MtInQueueTest, GOLD_fifo_multiThreadSafe)
 {
     const int nMsg = 10000;
-    auto push_thread = async(launch::async, bind(&MtInQueueTest::threadMain, this, 0, nMsg));
+    auto push_thread = async(launch::async, [=](){ this->threadMain(0, nMsg); });
 
     int nHdl = 0;
     INF("GOLD_fifo_multiThreadSafe: before loop")

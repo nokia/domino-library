@@ -181,7 +181,7 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_multiCallbackOnRoad_noCrash_noMulti
 TYPED_TEST_P(FreeHdlrDominoTest, BugFix_noMemLeak_whenRmMsgSelf)  // checked by CI valgrind
 {
     EXPECT_CALL(*this, h7()).Times(0);
-    PARA_DOM->setHdlr("e1", bind(&FreeHdlrDominoTest<TypeParam>::h7, this));
+    PARA_DOM->setHdlr("e1", [&](){ this->h7(); });
     PARA_DOM->setState({{"e1", true}});
     ASSERT_TRUE(this->msgSelf_->hasMsg());
     this->msgSelf_.reset();  // req: no mem leak when rm MsgSelf with h7 in msg queue
@@ -189,7 +189,7 @@ TYPED_TEST_P(FreeHdlrDominoTest, BugFix_noMemLeak_whenRmMsgSelf)  // checked by 
 TYPED_TEST_P(FreeHdlrDominoTest, BugFix_noCrash_whenRmDom)
 {
     EXPECT_CALL(*this, h7()).Times(0);
-    PARA_DOM->setHdlr("e1", bind(&FreeHdlrDominoTest<TypeParam>::h7, this));
+    PARA_DOM->setHdlr("e1", [&](){ this->h7(); });
     PARA_DOM->setState({{"e1", true}});
     ASSERT_TRUE(this->msgSelf_->hasMsg());
     ObjAnywhere::set<TypeParam>(nullptr, *this);  // req: no mem leak when rm MsgSelf with h7 in msg queue
