@@ -13,7 +13,7 @@
 #include "UniLog.hpp"
 
 #define THREAD_BACK_TEST
-#include "ThreadBack.hpp"
+#include "ThreadBackViaMsgSelf.hpp"
 #undef THREAD_BACK_TEST
 
 using namespace testing;
@@ -164,7 +164,7 @@ TEST_F(ThreadBackTest, canWithMsgSelf)
             // MT_ThreadEntryFN
             []() -> bool { return false; },
             // ThreadBackFN
-            ThreadBack::viaMsgSelf(
+            viaMsgSelf(
                 [&order, idxThread](bool aRet)
                 {
                     EXPECT_FALSE(aRet);

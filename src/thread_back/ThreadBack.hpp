@@ -36,7 +36,7 @@
 //     . same for aBack (since eg async() failed via aRet=false)
 //   * align with MsgSelf since all "msg" shall queue in MsgSelf
 //     . aovid complex MsgSelf: ThreadBack provides 1 func to fill aBack into MsgSelf
-//     . avoid complex ThreadBack
+//     . avoid complex ThreadBack (viaMsgSelf() in new hpp)
 //     . avoid block main thread
 //
 // - support exception: NO!!! since
@@ -74,7 +74,6 @@
 #include <future>
 #include <list>
 
-#include "MsgSelf.hpp"
 #include "UniLog.hpp"
 
 using namespace std;
@@ -96,9 +95,6 @@ public:
     static size_t hdlFinishedThreads(UniLog& = UniLog::defaultUniLog());
 
     static size_t nThread() { return allThreads_.size(); }
-
-    // wrap ThreadBackFN to queue in MsgSelf
-    static ThreadBackFN viaMsgSelf(const ThreadBackFN&, shared_ptr<MsgSelf>, EMsgPriority aPri = EMsgPri_NORM);
 
 private:
     // -------------------------------------------------------------------------------------------

@@ -42,15 +42,6 @@ void ThreadBack::newThread(const MT_ThreadEntryFN& mt_aEntryFn, const ThreadBack
 }
 
 // ***********************************************************************************************
-ThreadBackFN ThreadBack::viaMsgSelf(const ThreadBackFN& aBackFn, shared_ptr<MsgSelf> aMsgSelf, EMsgPriority aPri)
-{
-    return [aBackFn, aMsgSelf, aPri](bool aRet)  // must cp aBackFn since lambda run later in diff lifecycle
-    {
-        aMsgSelf->newMsg(bind(aBackFn, aRet), aPri);  // wrap aBackFn to queue in MsgSelf
-    };
-}
-
-// ***********************************************************************************************
 StoreThreadBack ThreadBack::allThreads_;
 
 }  // namespace

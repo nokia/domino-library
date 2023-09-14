@@ -35,14 +35,14 @@ using ElePair   = pair<shared_ptr<void>, size_t>;  // ele & its typeid.hash_code
 class MtInQueue
 {
 public:
-    size_t mt_size();
-    size_t mt_clear();
-
     template<class aEleType> void mt_push(shared_ptr<aEleType> aEle);
 
     // shall access in main thread ONLY!!! high performance
     ElePair pop();
     template<class aEleType> shared_ptr<aEleType> pop() { return static_pointer_cast<aEleType>(pop().first); }
+
+    size_t mt_size();
+    size_t mt_clear();
 
     // -------------------------------------------------------------------------------------------
 private:
