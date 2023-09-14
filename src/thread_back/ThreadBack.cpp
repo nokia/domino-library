@@ -3,6 +3,7 @@
  * Licensed under the BSD 3 Clause license
  * SPDX-License-Identifier: BSD-3-Clause
  */
+#include <functional>
 #include <future>
 #include <iostream>
 #include <memory>
@@ -20,7 +21,7 @@ size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
         // safer to check valid here than in newThread(), eg bug after newThread()
         auto&& threadFut = it->first;
         const bool threadOver = ! threadFut.valid() || (threadFut.wait_for(0s) == future_status::ready);
-        HID("(ThreadBack) nHandled=" << nHandled << ", valid=" << threadFut.valid());
+        HID("(ThreadBack) nHandled=" << nHandled << ", valid=" << threadFut.valid() << ", backFn=" << &(it->second));
         if (threadOver)
         {
             it->second(threadFut.valid() && threadFut.get());  // callback
@@ -37,7 +38,17 @@ size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
 void ThreadBack::newThread(const MT_ThreadEntryFN& mt_aEntryFn, const ThreadBackFN& aBackFn, UniLog& oneLog)
 {
     allThreads_.emplace_back(async(launch::async, mt_aEntryFn), aBackFn);  // save future<> & aBackFn()
-    HID("valid=" << allThreads_.back().first.valid());
+    HID("valid=" << allThreads_.back().first.valid() << ", backFn=" << &(allThreads_.back().second));
+}
+
+// ***********************************************************************************************
+ThreadBackFN ThreadBack::viaMsgSelf(const ThreadBackFN& aBackFn, shared_ptr<MsgSelf> aMsgSelf, EMsgPriority aPri)
+{
+    return [&aBackFn, aMsgSelf, aPri](bool aRet)
+    {
+cerr<<"aBackFn="<<&aBackFn<<endl;
+        aMsgSelf->newMsg(bind(aBackFn, aRet), aPri);
+    };
 }
 
 // ***********************************************************************************************

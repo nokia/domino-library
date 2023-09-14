@@ -31,13 +31,13 @@
 //     . std::async
 //     . std::future (to msg from other thread back to main thread)
 //   . most info in main thread, eg allThreads_, easy handle ThreadBackFN() by diff ways
-//   . not integrated with MsgSelf
-//     . aovid complicate MsgSelf which include back to main(), priority FIFO, withdraw msg
-//     . avoid block main thread
-//     . avoid complicate ThreadBack (focus on 1 think: ThreadBackFN in main thread)
-//     . can work with MsgSelf
 //   . eg newThread() must be called in main thread (or at least 1 same thread), no defense code to protect
-//   . newThread()'s aEntry & aBack shall not be nullptr (std::async also not check fn=nullptr)
+//   . newThread()'s aEntry shall not be nullptr (std::async also not check fn=nullptr)
+//     . same for aBack (since eg async() failed via aRet=false)
+//   * integrate with MsgSelf since all "msg" shall queue in MsgSelf
+//     . aovid complicate MsgSelf: ThreadBack provides 1 func to fill aBack into MsgSelf
+//     . avoid block main thread
+//     . avoid complicate ThreadBack
 //
 // - support exception: NO!!! since
 //   . dom lib branches inc 77% (Dec,2022), unnecessary complex
@@ -74,6 +74,7 @@
 #include <future>
 #include <list>
 
+#include "MsgSelf.hpp"
 #include "UniLog.hpp"
 
 using namespace std;
@@ -95,6 +96,8 @@ public:
     static size_t hdlFinishedThreads(UniLog& = UniLog::defaultUniLog());
 
     static size_t nThread() { return allThreads_.size(); }
+
+    static ThreadBackFN viaMsgSelf(const ThreadBackFN&, shared_ptr<MsgSelf>, EMsgPriority aPri = EMsgPri_NORM);
 
 private:
     // -------------------------------------------------------------------------------------------

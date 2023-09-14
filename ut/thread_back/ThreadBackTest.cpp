@@ -146,13 +146,26 @@ TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
 
 #define CAN_WITH_MSGSELF
 // ***********************************************************************************************
+void back(queue<size_t>& aOrder, size_t aPri, bool aRet)
+{
+    EXPECT_FALSE(aRet);
+    aOrder.push(aPri);
+}
 TEST_F(ThreadBackTest, canWithMsgSelf)
 {
     PongMainFN handleAllMsg;
-    MsgSelf msgSelf([&handleAllMsg](const PongMainFN& aPongMainFN){ handleAllMsg = aPongMainFN; }, uniLogName());
+    auto msgSelf = make_shared<MsgSelf>(
+        [&handleAllMsg](const PongMainFN& aPongMainFN)
+        {
+            handleAllMsg = aPongMainFN;
+        },
+        uniLogName()
+    );
     queue<size_t> order;
+    ThreadBackFN backFn[3];
     for (size_t idxThread = EMsgPri_MIN; idxThread < EMsgPri_MAX; idxThread++)
     {
+        backFn[idxThread] = bind(&back, ref(order), idxThread, placeholders::_1);
         ThreadBack::newThread(
             // MT_ThreadEntryFN
             []() -> bool
@@ -160,10 +173,11 @@ TEST_F(ThreadBackTest, canWithMsgSelf)
                 return false;
             },
             // ThreadBackFN
-            [idxThread, &order, &msgSelf](bool)
-            {
-                msgSelf.newMsg([&order, idxThread](){ order.push(idxThread); }, (EMsgPriority)idxThread);  // req
-            }
+            ThreadBack::viaMsgSelf(
+                backFn[idxThread],
+                msgSelf,
+                (EMsgPriority)idxThread
+            )
         );
     }
 
