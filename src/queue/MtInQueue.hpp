@@ -62,7 +62,7 @@ template<class aEleType>
 void MtInQueue::mt_push(shared_ptr<aEleType> aEle)
 {
     lock_guard<mutex> guard(mutex_);
-    queue_.push_back(ElePair(aEle, typeid(aEle).hash_code()));
+    queue_.push_back(ElePair(aEle, typeid(aEleType).hash_code()));
 }
 }  // namespace
 // ***********************************************************************************************

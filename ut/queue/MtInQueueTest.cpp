@@ -6,6 +6,7 @@
 // ***********************************************************************************************
 #include <future>
 #include <gtest/gtest.h>
+#include <map>
 #include <queue>
 #include <unistd.h>
 
@@ -127,7 +128,7 @@ TEST_F(MtInQueueTest, clear)
 
 #define WITH_MSG_SELF
 // ***********************************************************************************************
-TEST_F(MtInQueueTest, GOLD_with_domino)
+TEST_F(MtInQueueTest, GOLD_with_Domino)
 {
     mtQ_.mt_push(make_shared<string>("a"));
     mtQ_.mt_push(make_shared<int>(2));
@@ -144,6 +145,40 @@ TEST_F(MtInQueueTest, GOLD_with_domino)
         dom_->setPriority(ev_str, EMsgPriority(pri));
         dom_->setHdlr(ev_str, [&order, pri](){ order.push(pri); });
         dom_->setState({{ev_str, true}});  // to MsgSelf
+    }
+    pongMainFN_();  // call MsgSelf
+    EXPECT_EQ(queue<size_t>({2,1,0}), order) << "REQ: priority FIFO" << endl;
+}
+TEST_F(MtInQueueTest, GOLD_with_MsgSelf)
+{
+    queue<size_t> order;
+
+    // setup msg handler table
+    unordered_map<size_t, function<void(shared_ptr<void>)>> msgHdlrs;
+    msgHdlrs[typeid(string).hash_code()] = [this, &order](shared_ptr<void> aMsg)
+    {
+        this->msgSelf_->newMsg([aMsg, &order](){ order.push(0u); }, EMsgPri_LOW);
+    };
+    msgHdlrs[typeid(int).hash_code()] = [this, &order](shared_ptr<void> aMsg)
+    {
+        this->msgSelf_->newMsg([aMsg, &order](){ order.push(1u); }, EMsgPri_NORM);
+    };
+    msgHdlrs[typeid(float).hash_code()] = [this, &order](shared_ptr<void> aMsg)
+    {
+        this->msgSelf_->newMsg([aMsg, &order](){ order.push(2u); }, EMsgPri_HIGH);
+    };
+
+    // push
+    mtQ_.mt_push(make_shared<string>("a"));
+    mtQ_.mt_push(make_shared<int>(2));
+    mtQ_.mt_push(make_shared<float>(3.0));
+
+    // pop
+    for (size_t i = 0; i < 3; i++)
+    {
+        auto elePair = mtQ_.pop();
+        if (elePair.first == nullptr) break;
+        msgHdlrs[elePair.second](elePair.first);
     }
     pongMainFN_();  // call MsgSelf
     EXPECT_EQ(queue<size_t>({2,1,0}), order) << "REQ: priority FIFO" << endl;
