@@ -6,12 +6,12 @@
 // ***********************************************************************************************
 #include <future>
 #include <gtest/gtest.h>
-#include <map>
 #include <queue>
 #include <unistd.h>
+#include <unordered_map>
 
+#include "MsgSelf.hpp"
 #include "UniLog.hpp"
-#include "UtInitObjAnywhere.hpp"
 
 #define MT_IN_Q_TEST
 #include "MtInQueue.hpp"
@@ -21,9 +21,9 @@ using namespace testing;
 
 namespace RLib {
 // ***********************************************************************************************
-struct MtInQueueTest : public UtInitObjAnywhere
+struct MtInQueueTest : public Test, public UniLog
 {
-    MtInQueueTest() { ObjAnywhere::get<MaxNofreeDom>(*this)->setMsgSelf(msgSelf_); }
+    MtInQueueTest() : UniLog(UnitTest::GetInstance()->current_test_info()->name()) {}
     void SetUp() override
     {
         ASSERT_EQ(0, mtQ_.mt_size()) << "REQ: empty at beginning"  << endl;
@@ -33,6 +33,7 @@ struct MtInQueueTest : public UtInitObjAnywhere
         ASSERT_EQ(0, mtQ_.mt_size()) << "REQ: empty at end"  << endl;
 
     }
+    ~MtInQueueTest() { GTEST_LOG_FAIL }
 
     void threadMain(int aStartNum, int aSteps)
     {
@@ -49,7 +50,6 @@ struct MtInQueueTest : public UtInitObjAnywhere
     shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(
         [this](const PongMainFN& aPongMainFN){ pongMainFN_ = aPongMainFN; }, uniLogName());
     PongMainFN pongMainFN_;
-    shared_ptr<MaxNofreeDom> dom_ = ObjAnywhere::get<MaxNofreeDom>(*this);
 };
 
 #define FIFO
@@ -128,27 +128,6 @@ TEST_F(MtInQueueTest, clear)
 
 #define WITH_MSG_SELF
 // ***********************************************************************************************
-TEST_F(MtInQueueTest, GOLD_with_Domino)
-{
-    mtQ_.mt_push(make_shared<string>("a"));
-    mtQ_.mt_push(make_shared<int>(2));
-    mtQ_.mt_push(make_shared<float>(3.0));
-
-    queue<size_t> order;
-    for (size_t pri = EMsgPri_MIN; pri < EMsgPri_MAX; pri++)
-    {
-        auto elePair = mtQ_.pop();
-        if (elePair.first == nullptr) break;
-
-        const auto ev_str = to_string(elePair.second);
-        dom_->replaceShared(ev_str, elePair.first);
-        dom_->setPriority(ev_str, EMsgPriority(pri));
-        dom_->setHdlr(ev_str, [&order, pri](){ order.push(pri); });
-        dom_->setState({{ev_str, true}});  // to MsgSelf
-    }
-    pongMainFN_();  // call MsgSelf
-    EXPECT_EQ(queue<size_t>({2,1,0}), order) << "REQ: priority FIFO" << endl;
-}
 TEST_F(MtInQueueTest, GOLD_with_MsgSelf)
 {
     queue<size_t> order;
@@ -157,15 +136,34 @@ TEST_F(MtInQueueTest, GOLD_with_MsgSelf)
     unordered_map<size_t, function<void(shared_ptr<void>)>> msgHdlrs;
     msgHdlrs[typeid(string).hash_code()] = [this, &order](shared_ptr<void> aMsg)
     {
-        this->msgSelf_->newMsg([aMsg, &order](){ order.push(0u); }, EMsgPri_LOW);
+        this->msgSelf_->newMsg(
+            [aMsg, &order]()
+            {
+                order.push(0u);
+                EXPECT_EQ("a", *static_pointer_cast<string>(aMsg))  << "REQ: correct msg" << endl;
+            },
+            EMsgPri_LOW
+        );
     };
     msgHdlrs[typeid(int).hash_code()] = [this, &order](shared_ptr<void> aMsg)
     {
-        this->msgSelf_->newMsg([aMsg, &order](){ order.push(1u); }, EMsgPri_NORM);
+        this->msgSelf_->newMsg(
+            [aMsg, &order]()
+            {
+                order.push(1u);
+                EXPECT_EQ(2, *static_pointer_cast<int>(aMsg))  << "REQ: correct msg" << endl;
+            },
+            EMsgPri_NORM);
     };
     msgHdlrs[typeid(float).hash_code()] = [this, &order](shared_ptr<void> aMsg)
     {
-        this->msgSelf_->newMsg([aMsg, &order](){ order.push(2u); }, EMsgPri_HIGH);
+        this->msgSelf_->newMsg(
+            [aMsg, &order]()
+            {
+                order.push(2u);
+                EXPECT_NEAR(3.0, *static_pointer_cast<float>(aMsg), 0.1)  << "REQ: correct msg" << endl;
+            },
+            EMsgPri_HIGH);
     };
 
     // push
