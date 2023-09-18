@@ -47,4 +47,17 @@ ElePair MtInQueue::pop()
     cache_.pop_front();
     return elePair;
 }
+
+// ***********************************************************************************************
+void MtInQueue::wait()
+{
+    if (! cache_.empty())
+        return;
+
+    std::unique_lock<mutex> lock(mutex_);
+    while (queue_.empty())
+        condition_.wait(lock);
+    cache_.swap(queue_);
+}
+
 }  // namespace

@@ -18,6 +18,7 @@
 // ***********************************************************************************************
 #pragma once
 
+#include <condition_variable>
 #include <deque>
 #include <functional>
 #include <memory>
@@ -40,6 +41,7 @@ public:
     // shall access in main thread ONLY!!! high performance
     ElePair pop();
     template<class aEleType> shared_ptr<aEleType> pop() { return static_pointer_cast<aEleType>(pop().first); }
+    void wait();
 
     size_t mt_size();
     size_t mt_clear();
@@ -48,6 +50,7 @@ public:
 private:
     deque<ElePair> queue_;  // unlimited ele; most suitable container
     mutex mutex_;
+    condition_variable condition_;
     deque<ElePair> cache_;
 
     // -------------------------------------------------------------------------------------------
@@ -61,9 +64,13 @@ public:
 template<class aEleType>
 void MtInQueue::mt_push(shared_ptr<aEleType> aEle)
 {
-    lock_guard<mutex> guard(mutex_);
-    queue_.push_back(ElePair(aEle, typeid(aEleType).hash_code()));
+    {
+        lock_guard<mutex> guard(mutex_);
+        queue_.push_back(ElePair(aEle, typeid(aEleType).hash_code()));
+    }
+    condition_.notify_one();
 }
+
 }  // namespace
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description

@@ -40,6 +40,7 @@ struct MtInQueueTest : public Test, public UniLog
         for (int i = 0; i < aSteps; i++)
         {
             mtQ_.mt_push(make_shared<int>(aStartNum + i));
+            this_thread::sleep_for(1us);  // simulate real world
         }
     }
 
@@ -65,7 +66,7 @@ TEST_F(MtInQueueTest, GOLD_fifo_multiThreadSafe)
     {
         auto msg = mtQ_.pop<int>();
         if (msg) ASSERT_EQ(nHdl++, *msg) << "REQ: fifo";
-        else this_thread::yield();  // simulate real world
+        else mtQ_.wait();  // REQ: less CPU than this_thread::yield()
     }
     INF("REQ: loop cost 2372us now, previously no cache & lock cost 4422us")
 }
