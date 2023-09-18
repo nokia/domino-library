@@ -27,13 +27,14 @@
 //   * run MT_ThreadEntryFN() in new thread by ThreadBack::newThread()
 //   * run ThreadBackFN() in main thread after MT_ThreadEntryFN() done by ThreadBack::hdlFinishedThreads()
 //   * MT_ThreadEntryFN()'s result as ThreadBackFN()'s para so succ(true) or fail(false)
+//   . eg newThread() must be called in main thread (or at least 1 same thread), no defense code to protect
+//   . MT_ThreadEntryFN() shall not be nullptr (std::async also not check nullptr)
+//     . same for ThreadBackFN() (since eg async() failed via aRet=false)
+//   . MT_ThreadEntryFN & ThreadBackFN shall NOT throw exception
 //   . cross platform:
 //     . std::async
 //     . std::future (to msg from other thread back to main thread)
 //   . most info in main thread, eg allThreads_, easy handle ThreadBackFN() by diff ways
-//   . eg newThread() must be called in main thread (or at least 1 same thread), no defense code to protect
-//   . newThread()'s aEntry shall not be nullptr (std::async also not check fn=nullptr)
-//     . same for aBack (since eg async() failed via aRet=false)
 //   * align with MsgSelf since all "msg" shall queue in MsgSelf
 //     . aovid complex MsgSelf: ThreadBack provides 1 func to fill aBack into MsgSelf
 //     . avoid complex ThreadBack (viaMsgSelf() in new hpp)
@@ -81,7 +82,6 @@ using namespace std;
 namespace RLib
 {
 // ***********************************************************************************************
-// !!! ThreadBack NOT support MT_ThreadEntryFN & ThreadBackFN throw exception!!!
 using MT_ThreadEntryFN  = function<bool()>;      // succ ret true, otherwise false
 using ThreadBackFN      = function<void(bool)>;  // entry ret as para
 using StoreThreadBack   = list<pair<future<bool>, ThreadBackFN> >;
@@ -90,7 +90,6 @@ using StoreThreadBack   = list<pair<future<bool>, ThreadBackFN> >;
 class ThreadBack
 {
 public:
-    // MT_ThreadEntryFN & ThreadBackFN shall NOT throw, otherwise ThreadBack abnormal!!!
     static void newThread(const MT_ThreadEntryFN&, const ThreadBackFN&, UniLog& = UniLog::defaultUniLog());
     static size_t hdlFinishedThreads(UniLog& = UniLog::defaultUniLog());
 
