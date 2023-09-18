@@ -36,15 +36,6 @@ struct MtInQueueTest : public Test, public UniLog
     }
     ~MtInQueueTest() { GTEST_LOG_FAIL }
 
-    void threadMain(int aStartNum, int aSteps)
-    {
-        for (int i = 0; i < aSteps; i++)
-        {
-            mtQ_.mt_push(make_shared<int>(aStartNum + i));
-            this_thread::sleep_for(1us);  // simulate real world
-        }
-    }
-
     // -------------------------------------------------------------------------------------------
     MtInQueue mtQ_;
 
@@ -59,17 +50,44 @@ struct MtInQueueTest : public Test, public UniLog
 TEST_F(MtInQueueTest, GOLD_fifo_multiThreadSafe)
 {
     const int nMsg = 10000;
-    auto push_thread = async(launch::async, [=](){ this->threadMain(0, nMsg); });
+    auto push_thread = async(launch::async, [&nMsg, this]()
+    {
+        for (int i = 0; i < nMsg; i++)
+        {
+            this->mtQ_.mt_push(make_shared<int>(i));
+            this_thread::sleep_for(1us);  // simulate real world (low-frequent msg)
+        }
+    });
 
     int nHdl = 0;
-    INF("GOLD_fifo_multiThreadSafe: before loop")
     while (nHdl < nMsg)
     {
         auto msg = mtQ_.pop<int>();
         if (msg) ASSERT_EQ(nHdl++, *msg) << "REQ: fifo";
         else mtQ_.wait();  // REQ: less CPU than this_thread::yield()
     }
-    INF("REQ: loop cost 2372us now, previously no cache & lock cost 4422us")
+    INF("REQ(sleep 1us/push): e2e user=0.371s->0.148s, sys=0.402s->0.197s")
+}
+TEST_F(MtInQueueTest, GOLD_surgePush_performance)
+{
+    const int nMsg = 10000;
+    auto push_thread = async(launch::async, [&nMsg, this]()
+    {
+        for (int i = 0; i < nMsg; i++)
+        {
+            this->mtQ_.mt_push(make_shared<int>(i));  // surge push
+        }
+    });
+
+    int nHdl = 0;
+    INF("before loop")
+    while (nHdl < nMsg)
+    {
+        auto msg = mtQ_.pop<int>();
+        if (msg) ASSERT_EQ(nHdl++, *msg) << "REQ: fifo";
+        else this_thread::yield();  // REQ: test cache_ performance
+    }
+    INF("REQ: loop cost 2576us now, previously no cache & lock cost 4422us")
 }
 TEST_F(MtInQueueTest, GOLD_nonBlock_pop)
 {
@@ -87,7 +105,7 @@ TEST_F(MtInQueueTest, GOLD_nonBlock_pop)
     ASSERT_EQ("2nd", *(mtQ_.pop<string>())) << "REQ: can pop from cache" << endl;
     mtQ_.backdoor().unlock();
 }
-TEST_F(MtInQueueTest, size)
+TEST_F(MtInQueueTest, size_and_wait)
 {
     mtQ_.mt_push<void>(nullptr);
     ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: inc size"  << endl;
@@ -99,7 +117,7 @@ TEST_F(MtInQueueTest, size)
     ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: dec size"  << endl;
 
     mtQ_.wait();
-    ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: wait() ret immediately"  << endl;
+    ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: wait() ret immediately since cache_ not empty"  << endl;
 
     mtQ_.pop();
     ASSERT_EQ(0u, mtQ_.mt_size())  << "REQ: dec size"  << endl;
