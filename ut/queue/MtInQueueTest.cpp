@@ -107,19 +107,21 @@ TEST_F(MtInQueueTest, GOLD_nonBlock_pop)
 }
 TEST_F(MtInQueueTest, size_and_wait)
 {
-    mtQ_.mt_push<void>(nullptr);
+    mtQ_.mt_push<int>(make_shared<int>(1));
     ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: inc size"  << endl;
 
-    mtQ_.mt_push<void>(nullptr);
+    mtQ_.mt_push<int>(make_shared<int>(2));
     ASSERT_EQ(2u, mtQ_.mt_size())  << "REQ: inc size"  << endl;
 
-    mtQ_.pop();
+    EXPECT_EQ(1, *(mtQ_.pop<int>())) << "REQ: fifo";
     ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: dec size"  << endl;
 
+    mtQ_.mt_push<int>(make_shared<int>(3));
     mtQ_.wait();
-    ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: wait() ret immediately since cache_ not empty"  << endl;
+    ASSERT_EQ(2u, mtQ_.mt_size())  << "REQ: wait() ret immediately since cache_ not empty"  << endl;
 
-    mtQ_.pop();
+    EXPECT_EQ(2, *(mtQ_.pop<int>())) << "REQ: keep fifo after wait()";
+    EXPECT_EQ(3, *(mtQ_.pop<int>())) << "REQ: keep fifo after wait()";
     ASSERT_EQ(0u, mtQ_.mt_size())  << "REQ: dec size"  << endl;
 }
 
