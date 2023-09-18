@@ -81,4 +81,5 @@ void MtInQueue::mt_push(shared_ptr<aEleType> aEle)
 // 2023-08-23  CSZ       - re-add since potential need
 // 2023-08-24  CSZ       2)MtQueue -> MtInQueue
 // 2023-09-08  CSZ       - store Ele with its hash_code
+// 2023-09-18  CSZ       - support main thread wait() instead of keeping pop()
 // ***********************************************************************************************
