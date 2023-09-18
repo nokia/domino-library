@@ -7,6 +7,7 @@
 #include <future>
 #include <gtest/gtest.h>
 #include <queue>
+#include <thread>
 #include <unistd.h>
 #include <unordered_map>
 
