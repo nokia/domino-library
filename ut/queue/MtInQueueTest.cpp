@@ -98,6 +98,9 @@ TEST_F(MtInQueueTest, size)
     mtQ_.pop();
     ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: dec size"  << endl;
 
+    mtQ_.wait();
+    ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: wait() ret immediately"  << endl;
+
     mtQ_.pop();
     ASSERT_EQ(0u, mtQ_.mt_size())  << "REQ: dec size"  << endl;
 }
