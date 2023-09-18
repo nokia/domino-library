@@ -34,6 +34,8 @@ public:
 protected:
     void triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event) override;
     using aDominoType::effect;
+
+    // -------------------------------------------------------------------------------------------
 private:
     vector<bool> isRepeatHdlr_;  // bitmap & dyn expand, [event]=t/f
 public:

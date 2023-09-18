@@ -6,6 +6,7 @@
 // ***********************************************************************************************
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <queue>
 #include <thread>
 #include <unistd.h>
 

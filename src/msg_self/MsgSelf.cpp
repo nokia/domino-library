@@ -46,7 +46,7 @@ bool MsgSelf::handleOneMsg()
             continue;
 
         oneQueue.front()();  // run 1st MsgCB; newMsg() prevent nullptr into msgQueues_
-        oneQueue.pop();
+        oneQueue.pop_front();
         --nMsg_;
 
         if (not hasMsg())
@@ -70,7 +70,7 @@ void MsgSelf::newMsg(const MsgCB& aMsgCB, const EMsgPriority aMsgPri)
         return;
     }
 
-    msgQueues_[aMsgPri].push(aMsgCB);
+    msgQueues_[aMsgPri].push_back(aMsgCB);
     ++nMsg_;
 
     if (nMsg_ == 1)  // ist MsgCB

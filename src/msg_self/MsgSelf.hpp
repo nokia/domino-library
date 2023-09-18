@@ -33,7 +33,7 @@
 
 #include <functional>
 #include <memory>  // shared_ptr<>
-#include <queue>
+#include <deque>
 
 #include "UniLog.hpp"
 
@@ -81,7 +81,7 @@ private:
     bool handleOneMsg();
 
     // -------------------------------------------------------------------------------------------
-    queue<MsgCB> msgQueues_[EMsgPri_MAX];
+    deque<MsgCB> msgQueues_[EMsgPri_MAX];
 
     shared_ptr<bool> isValid_ = make_shared<bool>(true);  // MsgSelf is still valid?
     PingMainFN       pingMainFN_;
