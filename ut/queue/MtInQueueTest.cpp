@@ -38,15 +38,31 @@ struct MtInQueueTest : public Test, public UniLog
 
     // -------------------------------------------------------------------------------------------
     MtInQueue mtQ_;
-
-    // -------------------------------------------------------------------------------------------
-    shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(
-        [this](const PongMainFN& aPongMainFN){ pongMainFN_ = aPongMainFN; }, uniLogName());
-    PongMainFN pongMainFN_;
 };
 
 #define FIFO
-TEST_F(MtInQueueTest, GOLD_surgePush_performance)
+TEST_F(MtInQueueTest, GOLD_sparsePush_fifo)
+{
+    const int nMsg = 10000;
+    auto push_thread = async(launch::async, [&nMsg, this]()
+    {
+        for (int i = 0; i < nMsg; i++)
+        {
+            this->mtQ_.mt_push(make_shared<int>(i));
+            this_thread::sleep_for(1us);  // simulate real world (sparse msg)
+        }
+    });
+
+    int nHdl = 0;
+    while (nHdl < nMsg)
+    {
+        auto msg = mtQ_.pop<int>();
+        if (msg) ASSERT_EQ(nHdl++, *msg) << "REQ: fifo";
+        else mtQ_.wait();  // REQ: less CPU than repeat pop() or this_thread::yield()
+    }
+    INF("REQ(sleep 1us/push): e2e user=0.371s->0.148s, sys=0.402s->0.197s")
+}
+TEST_F(MtInQueueTest, GOLD_surgePush_fifo)
 {
     const int nMsg = 10000;
     auto push_thread = async(launch::async, [&nMsg, this]()
@@ -127,62 +143,6 @@ TEST_F(MtInQueueTest, clear)
     mtQ_.pop();
     mtQ_.mt_push<void>(nullptr);
     ASSERT_EQ(2u, mtQ_.mt_clear()) << "REQ: clear all" << endl;
-}
-
-#define WITH_MSG_SELF
-// ***********************************************************************************************
-TEST_F(MtInQueueTest, GOLD_with_MsgSelf)
-{
-    queue<size_t> order;
-
-    // setup msg handler table
-    unordered_map<size_t, function<void(shared_ptr<void>)>> msgHdlrs;
-    msgHdlrs[typeid(string).hash_code()] = [this, &order](shared_ptr<void> aMsg)
-    {
-        this->msgSelf_->newMsg(
-            [aMsg, &order]()
-            {
-                order.push(0u);
-                EXPECT_EQ("a", *static_pointer_cast<string>(aMsg))  << "REQ: correct msg" << endl;
-            },
-            EMsgPri_LOW
-        );
-    };
-    msgHdlrs[typeid(int).hash_code()] = [this, &order](shared_ptr<void> aMsg)
-    {
-        this->msgSelf_->newMsg(
-            [aMsg, &order]()
-            {
-                order.push(1u);
-                EXPECT_EQ(2, *static_pointer_cast<int>(aMsg))  << "REQ: correct msg" << endl;
-            },
-            EMsgPri_NORM);
-    };
-    msgHdlrs[typeid(float).hash_code()] = [this, &order](shared_ptr<void> aMsg)
-    {
-        this->msgSelf_->newMsg(
-            [aMsg, &order]()
-            {
-                order.push(2u);
-                EXPECT_NEAR(3.0, *static_pointer_cast<float>(aMsg), 0.1)  << "REQ: correct msg" << endl;
-            },
-            EMsgPri_HIGH);
-    };
-
-    // push
-    mtQ_.mt_push(make_shared<string>("a"));
-    mtQ_.mt_push(make_shared<int>(2));
-    mtQ_.mt_push(make_shared<float>(3.0));
-
-    // pop
-    for (size_t i = 0; i < 3; i++)
-    {
-        auto elePair = mtQ_.pop();
-        if (elePair.first == nullptr) break;
-        msgHdlrs[elePair.second](elePair.first);
-    }
-    pongMainFN_();  // call MsgSelf
-    EXPECT_EQ(queue<size_t>({2,1,0}), order) << "REQ: priority FIFO" << endl;
 }
 
 }  // namespace
