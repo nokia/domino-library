@@ -64,7 +64,7 @@ TEST_F(MtInQueueTest, GOLD_fifo_multiThreadSafe)
     {
         auto msg = mtQ_.pop<int>();
         if (msg) ASSERT_EQ(nHdl++, *msg) << "REQ: fifo";
-        else mtQ_.wait();  // REQ: less CPU than this_thread::yield()
+        else mtQ_.wait();  // REQ: less CPU than repeat pop() or this_thread::yield()
     }
     INF("REQ(sleep 1us/push): e2e user=0.371s->0.148s, sys=0.402s->0.197s")
 }

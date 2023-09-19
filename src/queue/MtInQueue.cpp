@@ -56,7 +56,7 @@ void MtInQueue::wait()
 
     std::unique_lock<mutex> lock(mutex_);
     while (queue_.empty())
-        condition_.wait(lock);
+        g_cvMainThread.wait(lock);
     cache_.swap(queue_);
 }
 

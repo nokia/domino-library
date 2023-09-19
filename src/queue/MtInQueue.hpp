@@ -18,12 +18,13 @@
 // ***********************************************************************************************
 #pragma once
 
-#include <condition_variable>
 #include <deque>
 #include <functional>
 #include <memory>
 #include <mutex>
 #include <utility>
+
+#include "cv_main.hpp"
 
 using namespace std;
 
@@ -50,7 +51,6 @@ public:
 private:
     deque<ElePair> queue_;  // unlimited ele; most suitable container
     mutex mutex_;
-    condition_variable condition_;
     deque<ElePair> cache_;
 
     // -------------------------------------------------------------------------------------------
@@ -68,7 +68,7 @@ void MtInQueue::mt_push(shared_ptr<aEleType> aEle)
         lock_guard<mutex> guard(mutex_);
         queue_.push_back(ElePair(aEle, typeid(aEleType).hash_code()));
     }
-    condition_.notify_one();
+    g_cvMainThread.notify_all();  // since multi-mutex on this cv?
 }
 
 }  // namespace
