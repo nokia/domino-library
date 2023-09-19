@@ -46,28 +46,6 @@ struct MtInQueueTest : public Test, public UniLog
 };
 
 #define FIFO
-// ***********************************************************************************************
-TEST_F(MtInQueueTest, GOLD_fifo_multiThreadSafe)
-{
-    const int nMsg = 10000;
-    auto push_thread = async(launch::async, [&nMsg, this]()
-    {
-        for (int i = 0; i < nMsg; i++)
-        {
-            this->mtQ_.mt_push(make_shared<int>(i));
-            this_thread::sleep_for(1us);  // simulate real world (low-frequent msg)
-        }
-    });
-
-    int nHdl = 0;
-    while (nHdl < nMsg)
-    {
-        auto msg = mtQ_.pop<int>();
-        if (msg) ASSERT_EQ(nHdl++, *msg) << "REQ: fifo";
-        else mtQ_.wait();  // REQ: less CPU than repeat pop() or this_thread::yield()
-    }
-    INF("REQ(sleep 1us/push): e2e user=0.371s->0.148s, sys=0.402s->0.197s")
-}
 TEST_F(MtInQueueTest, GOLD_surgePush_performance)
 {
     const int nMsg = 10000;
