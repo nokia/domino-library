@@ -6,17 +6,15 @@
 // ***********************************************************************************************
 #include <future>
 #include <gtest/gtest.h>
-#include <queue>
+#include <set>
 #include <thread>
 #include <unistd.h>
 #include <unordered_map>
 
 #include "MsgSelf.hpp"
-#include "UniLog.hpp"
-
-#define MT_IN_Q_TEST
 #include "MtInQueue.hpp"
-#undef MT_IN_Q_TEST
+#include "ThreadBackViaMsgSelf.hpp"
+#include "UniLog.hpp"
 
 using namespace testing;
 
@@ -28,16 +26,19 @@ struct CvMainThreadTest : public Test, public UniLog
     void SetUp() override
     {
         ASSERT_EQ(0, mtQ_.mt_size()) << "REQ: empty at beginning"  << endl;
+        ASSERT_EQ(0, mtQ2_.mt_size()) << "REQ: empty at beginning"  << endl;
     }
     void TearDown() override
     {
         ASSERT_EQ(0, mtQ_.mt_size()) << "REQ: empty at end"  << endl;
+        ASSERT_EQ(0, mtQ2_.mt_size()) << "REQ: empty at end"  << endl;
 
     }
     ~CvMainThreadTest() { GTEST_LOG_FAIL }
 
     // -------------------------------------------------------------------------------------------
     MtInQueue mtQ_;
+    MtInQueue mtQ2_;  // simulate diff resource
 
     // -------------------------------------------------------------------------------------------
     shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(
@@ -47,58 +48,94 @@ struct CvMainThreadTest : public Test, public UniLog
 
 #define WITH_MSG_SELF
 // ***********************************************************************************************
-TEST_F(CvMainThreadTest, GOLD_with_MsgSelf)
+TEST_F(CvMainThreadTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simulate real world
 {
-    queue<size_t> order;
+    set<string> cb_info;
 
-    // setup msg handler table
+    // setup msg handler table for mtQ_
     unordered_map<size_t, function<void(shared_ptr<void>)>> msgHdlrs;
-    msgHdlrs[typeid(string).hash_code()] = [this, &order](shared_ptr<void> aMsg)
+    msgHdlrs[typeid(string).hash_code()] = [this, &cb_info](shared_ptr<void> aMsg)
     {
-        this->msgSelf_->newMsg(
-            [aMsg, &order]()
+        msgSelf_->newMsg(
+            [aMsg, &cb_info]()
             {
-                order.push(0u);
-                EXPECT_EQ("a", *static_pointer_cast<string>(aMsg))  << "REQ: correct msg" << endl;
-            },
-            EMsgPri_LOW
+                EXPECT_EQ("a", *static_pointer_cast<string>(aMsg));
+                cb_info.emplace("REQ: a's Q hdlr via MsgSelf");
+            }
         );
     };
-    msgHdlrs[typeid(int).hash_code()] = [this, &order](shared_ptr<void> aMsg)
+    msgHdlrs[typeid(int).hash_code()] = [this, &cb_info](shared_ptr<void> aMsg)
     {
-        this->msgSelf_->newMsg(
-            [aMsg, &order]()
+        msgSelf_->newMsg(
+            [aMsg, &cb_info]()
             {
-                order.push(1u);
-                EXPECT_EQ(2, *static_pointer_cast<int>(aMsg))  << "REQ: correct msg" << endl;
-            },
-            EMsgPri_NORM);
-    };
-    msgHdlrs[typeid(float).hash_code()] = [this, &order](shared_ptr<void> aMsg)
-    {
-        this->msgSelf_->newMsg(
-            [aMsg, &order]()
-            {
-                order.push(2u);
-                EXPECT_NEAR(3.0, *static_pointer_cast<float>(aMsg), 0.1)  << "REQ: correct msg" << endl;
-            },
-            EMsgPri_HIGH);
+                EXPECT_EQ(2, *static_pointer_cast<int>(aMsg));
+                cb_info.emplace("REQ: 2's Q hdlr via MsgSelf");
+            }
+        );
     };
 
     // push
-    mtQ_.mt_push(make_shared<string>("a"));
-    mtQ_.mt_push(make_shared<int>(2));
-    mtQ_.mt_push(make_shared<float>(3.0));
+    ThreadBack::newThread(
+        // entryFn
+        [this]() -> bool
+        {
+            mtQ_.mt_push(make_shared<string>("a"));
+            return true;
+        },
+        // backFn
+        viaMsgSelf(
+            [this, &cb_info](bool aRet)
+            {
+                EXPECT_TRUE(aRet) << "entryFn succ" << endl;
+                cb_info.emplace("REQ: a's backFn via MsgSelf");
+            },
+            msgSelf_
+        )
+    );
+    ThreadBack::newThread(
+        // entryFn
+        [this]() -> bool
+        {
+            mtQ2_.mt_push(make_shared<int>(2));
+            return true;
+        },
+        // backFn
+        viaMsgSelf(
+            [this, &cb_info](bool aRet)
+            {
+                EXPECT_TRUE(aRet) << "entryFn succ" << endl;
+                cb_info.emplace("REQ: 2's backFn via MsgSelf");
+            },
+            msgSelf_
+        )
+    );
 
-    // pop
-    for (size_t i = 0; i < 3; i++)
+    // simulate main()
+    const set<string> expect = {"REQ: a's Q hdlr via MsgSelf", "REQ: a's backFn via MsgSelf",
+        "REQ: 2's Q hdlr via MsgSelf", "REQ: 2's backFn via MsgSelf"};
+    while (expect != cb_info)
     {
-        auto elePair = mtQ_.pop();
-        if (elePair.first == nullptr) break;
-        msgHdlrs[elePair.second](elePair.first);
+        // handle all done Thread
+        ThreadBack::hdlFinishedThreads();
+
+        // handle all existing in mtQ_
+        for (;;)
+        {
+            auto elePair = mtQ_.pop();
+            if (elePair.first == nullptr) break;
+            msgHdlrs[elePair.second](elePair.first);
+        }
+        // handle all existing in mtQ2_
+        for (;;)
+        {
+            auto elePair = mtQ2_.pop();
+            if (elePair.first == nullptr) break;
+            msgHdlrs[elePair.second](elePair.first);
+        }
+
+        pongMainFN_();  // handle all existing in MsgSelf
     }
-    pongMainFN_();  // call MsgSelf
-    EXPECT_EQ(queue<size_t>({2,1,0}), order) << "REQ: priority FIFO" << endl;
 }
 
 }  // namespace

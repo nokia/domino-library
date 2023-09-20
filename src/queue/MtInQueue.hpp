@@ -18,6 +18,7 @@
 // ***********************************************************************************************
 #pragma once
 
+#include <chrono>
 #include <deque>
 #include <functional>
 #include <memory>
@@ -42,7 +43,7 @@ public:
     // shall access in main thread ONLY!!! high performance
     ElePair pop();
     template<class aEleType> shared_ptr<aEleType> pop() { return static_pointer_cast<aEleType>(pop().first); }
-    void wait();
+    template <class Rep, class Period> void wait_for(const chrono::duration<Rep, Period>&);
 
     size_t mt_size();
     size_t mt_clear();
@@ -68,7 +69,23 @@ void MtInQueue::mt_push(shared_ptr<aEleType> aEle)
         lock_guard<mutex> guard(mutex_);
         queue_.push_back(ElePair(aEle, typeid(aEleType).hash_code()));
     }
-    g_cvMainThread.notify_all();  // since multi-mutex on this cv?
+    g_cvMainThread.notify_one();
+}
+
+// ***********************************************************************************************
+template <class Rep, class Period>
+void MtInQueue::wait_for(const chrono::duration<Rep,Period>& aRelTime)
+{
+    if (! cache_.empty())
+        return;
+
+    std::unique_lock<mutex> guard(mutex_, try_to_lock);
+    if (! guard.owns_lock())  // avoid block main thread
+        return;
+    if (queue_.empty())
+        if (g_cvMainThread.wait_for(guard, aRelTime) == cv_status::timeout)  // block main thread at most aRelTime
+            return;
+    cache_.swap(queue_);
 }
 
 }  // namespace
