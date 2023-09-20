@@ -79,12 +79,15 @@ void MtInQueue::wait_for(const chrono::duration<Rep,Period>& aRelTime)
     if (! cache_.empty())
         return;
 
+    /*
     std::unique_lock<mutex> guard(mutex_, try_to_lock);
     if (! guard.owns_lock())  // avoid block main thread
         return;
     if (queue_.empty())
         if (g_cvMainThread.wait_for(guard, aRelTime) == cv_status::timeout)  // block main thread at most aRelTime
             return;
+    */
+std::unique_lock<mutex> guard(mutex_);
     cache_.swap(queue_);
 }
 
