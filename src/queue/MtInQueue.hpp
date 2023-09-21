@@ -18,7 +18,6 @@
 // ***********************************************************************************************
 #pragma once
 
-#include <chrono>
 #include <deque>
 #include <functional>
 #include <memory>
@@ -31,28 +30,32 @@ using namespace std;
 
 namespace RLib
 {
-using MatcherFN = function<bool(shared_ptr<void>)>;
-using ElePair   = pair<shared_ptr<void>, size_t>;  // ele & its typeid.hash_code
+using ElePair       = pair<shared_ptr<void>, size_t>;  // ele & its typeid.hash_code
+using MT_WakeMainFN = function<void(void)>;  // must MT safety
 
 // ***********************************************************************************************
 class MtInQueue
 {
 public:
+    MtInQueue(const MT_WakeMainFN& aFn = nullptr) : mt_wakeMainFn_(aFn) {}  // can't change mt_wakeMainFn_ -> MT safe
+
     template<class aEleType> void mt_push(shared_ptr<aEleType> aEle);
 
-    // shall access in main thread ONLY!!! high performance
-    ElePair pop();
+    // shall access in main thread ONLY!!!
+    ElePair pop();  // high performance
     template<class aEleType> shared_ptr<aEleType> pop() { return static_pointer_cast<aEleType>(pop().first); }
-    template <class Rep, class Period> void wait_for(const chrono::duration<Rep, Period>&);
+
+    void mt_wakeMainFn() { if (mt_wakeMainFn_ != nullptr) mt_wakeMainFn_(); }
 
     size_t mt_size();
     size_t mt_clear();
 
-    // -------------------------------------------------------------------------------------------
 private:
+    // -------------------------------------------------------------------------------------------
     deque<ElePair> queue_;  // unlimited ele; most suitable container
-    mutex mutex_;
     deque<ElePair> cache_;
+    mutex mutex_;
+    MT_WakeMainFN mt_wakeMainFn_;
 
     // -------------------------------------------------------------------------------------------
 #ifdef MT_IN_Q_TEST  // UT only
@@ -68,27 +71,8 @@ void MtInQueue::mt_push(shared_ptr<aEleType> aEle)
     {
         lock_guard<mutex> guard(mutex_);
         queue_.push_back(ElePair(aEle, typeid(aEleType).hash_code()));
-    }
-    g_cvMainThread.notify_one();
-}
-
-// ***********************************************************************************************
-template <class Rep, class Period>
-void MtInQueue::wait_for(const chrono::duration<Rep,Period>& aRelTime)
-{
-    if (! cache_.empty())
-        return;
-
-    /*
-    std::unique_lock<mutex> guard(mutex_, try_to_lock);
-    if (! guard.owns_lock())  // avoid block main thread
-        return;
-    if (queue_.empty())
-        if (g_cvMainThread.wait_for(guard, aRelTime) == cv_status::timeout)  // block main thread at most aRelTime
-            return;
-    */
-std::unique_lock<mutex> guard(mutex_);
-    cache_.swap(queue_);
+    }  // unlock then mt_wakeMainFn()
+    mt_wakeMainFn();
 }
 
 }  // namespace

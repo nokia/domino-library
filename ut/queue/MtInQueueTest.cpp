@@ -57,7 +57,7 @@ TEST_F(MtInQueueTest, GOLD_sparsePush_fifo)
     {
         auto msg = mtQ_.pop<int>();
         if (msg) ASSERT_EQ(nHdl++, *msg) << "REQ: fifo";
-        else mtQ_.wait_for(1s);  // REQ: less CPU than repeat pop() or this_thread::yield()
+        else mtQ_.mt_wakeMainFn();  // REQ: less CPU than repeat pop() or this_thread::yield()
     }
     INF("REQ(sleep 1us/push): e2e user=0.371s->0.148s, sys=0.402s->0.197s")
 }
@@ -110,7 +110,7 @@ TEST_F(MtInQueueTest, size_and_wait)
     ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: dec size"  << endl;
 
     mtQ_.mt_push<int>(make_shared<int>(3));
-    mtQ_.wait_for(1s);
+    mtQ_.mt_wakeMainFn();
     ASSERT_EQ(2u, mtQ_.mt_size())  << "REQ: wait_for() ret immediately since cache_ not empty"  << endl;
 
     EXPECT_EQ(2, *(mtQ_.pop<int>())) << "REQ: keep fifo after wait_for()";
