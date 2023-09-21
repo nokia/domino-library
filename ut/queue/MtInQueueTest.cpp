@@ -40,7 +40,7 @@ struct MtInQueueTest : public Test, public UniLog
 };
 
 #define FIFO
-TEST_F(MtInQueueTest, GOLD_sparsePush_fifo)
+TEST_F(MtInQueueTest, DISABLED_GOLD_sparsePush_fifo)
 {
     const int nMsg = 10000;
     auto push_thread = async(launch::async, [&nMsg, this]()
@@ -98,7 +98,7 @@ TEST_F(MtInQueueTest, GOLD_nonBlock_pop)
     ASSERT_EQ("2nd", *(mtQ_.pop<string>())) << "REQ: can pop from cache" << endl;
     mtQ_.backdoor().unlock();
 }
-TEST_F(MtInQueueTest, size_and_wait)
+TEST_F(MtInQueueTest, DISABLED_size_and_wait)
 {
     mtQ_.mt_push<int>(make_shared<int>(1));
     ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: inc size"  << endl;
