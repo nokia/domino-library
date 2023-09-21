@@ -43,7 +43,7 @@ public:
     ElePair pop();  // high performance
     template<class aEleType> shared_ptr<aEleType> pop() { return static_pointer_cast<aEleType>(pop().first); }
 
-    void mt_wakeMainFn() { if (mt_wakeMainFn_ != nullptr) mt_wakeMainFn_(); }
+    void mt_wakeMainFn() { if (mt_wakeMainFn_) mt_wakeMainFn_(); }
 
     size_t mt_size();
     size_t mt_clear();

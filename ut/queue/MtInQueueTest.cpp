@@ -45,6 +45,14 @@ struct MtInQueueTest : public Test, public UniLog
 };
 
 #define FIFO
+TEST_F(MtInQueueTest, GOLD_simple_fifo_without_waker)
+{
+    MtInQueue mtQ;
+    mtQ.mt_push<int>(make_shared<int>(1));
+    mtQ.mt_push<int>(make_shared<int>(2));
+    EXPECT_EQ(1, *(mtQ.pop<int>())) << "REQ: fifo";
+    EXPECT_EQ(2, *(mtQ.pop<int>())) << "REQ: fifo";
+}
 TEST_F(MtInQueueTest, GOLD_sparsePush_fifo)
 {
     const int nMsg = 10000;
