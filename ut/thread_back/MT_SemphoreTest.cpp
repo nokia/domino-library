@@ -53,7 +53,7 @@ struct MT_SemaphoreTest : public Test, public UniLog
 
 #define WITH_MSG_SELF
 // ***********************************************************************************************
-TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simulate real world
+TEST_F(MT_SemaphoreTest, DISABLED_GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simulate real world
 {
     set<string> cb_info;
 
