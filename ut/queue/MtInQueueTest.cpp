@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 #include "MsgSelf.hpp"
+#include "MT_Semaphore.hpp"
 #include "UniLog.hpp"
 
 #define MT_IN_Q_TEST
@@ -23,7 +24,10 @@ namespace RLib {
 // ***********************************************************************************************
 struct MtInQueueTest : public Test, public UniLog
 {
-    MtInQueueTest() : UniLog(UnitTest::GetInstance()->current_test_info()->name()) {}
+    MtInQueueTest()
+        : UniLog(UnitTest::GetInstance()->current_test_info()->name())
+        , mtQ_([this]{ mt_waker_.mt_notify(); })
+    {}
     void SetUp() override
     {
         ASSERT_EQ(0, mtQ_.mt_size()) << "REQ: empty at beginning"  << endl;
@@ -37,6 +41,7 @@ struct MtInQueueTest : public Test, public UniLog
 
     // -------------------------------------------------------------------------------------------
     MtInQueue mtQ_;
+    MT_Semaphore mt_waker_;
 };
 
 #define FIFO
@@ -98,7 +103,7 @@ TEST_F(MtInQueueTest, GOLD_nonBlock_pop)
     ASSERT_EQ("2nd", *(mtQ_.pop<string>())) << "REQ: can pop from cache" << endl;
     mtQ_.backdoor().unlock();
 }
-TEST_F(MtInQueueTest, DISABLED_size_and_wait)
+TEST_F(MtInQueueTest, size_and_wait)
 {
     mtQ_.mt_push<int>(make_shared<int>(1));
     ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: inc size"  << endl;
@@ -110,8 +115,8 @@ TEST_F(MtInQueueTest, DISABLED_size_and_wait)
     ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: dec size"  << endl;
 
     mtQ_.mt_push<int>(make_shared<int>(3));
-    mtQ_.mt_wakeMainFn();
-    ASSERT_EQ(2u, mtQ_.mt_size())  << "REQ: wait_for() ret immediately since cache_ not empty"  << endl;
+    mt_waker_.mt_wait();
+    ASSERT_EQ(2u, mtQ_.mt_size())  << "REQ: wait() ret immediately since mtQ_ not empty"  << endl;
 
     EXPECT_EQ(2, *(mtQ_.pop<int>())) << "REQ: keep fifo after wait_for()";
     EXPECT_EQ(3, *(mtQ_.pop<int>())) << "REQ: keep fifo after wait_for()";

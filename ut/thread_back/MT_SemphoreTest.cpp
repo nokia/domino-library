@@ -12,10 +12,10 @@
 #include <unordered_map>
 
 #include "MsgSelf.hpp"
+#include "MT_Semaphore.hpp"
 #include "MtInQueue.hpp"
 #include "ThreadBackViaMsgSelf.hpp"
 #include "UniLog.hpp"
-#include "MT_Semaphore.hpp"
 
 using namespace testing;
 
@@ -25,8 +25,8 @@ struct MT_SemaphoreTest : public Test, public UniLog
 {
     MT_SemaphoreTest()
         : UniLog(UnitTest::GetInstance()->current_test_info()->name())
-        , mtQ_([this]{ mtWaker_.mt_notify(); })
-        , mtQ2_([this]{ mtWaker_.mt_notify(); })
+        , mtQ_([this]{ mt_waker_.mt_notify(); })
+        , mtQ2_([this]{ mt_waker_.mt_notify(); })
     {}
     void SetUp() override
     {
@@ -42,7 +42,7 @@ struct MT_SemaphoreTest : public Test, public UniLog
     ~MT_SemaphoreTest() { GTEST_LOG_FAIL }
 
     // -------------------------------------------------------------------------------------------
-    MT_Semaphore mtWaker_;
+    MT_Semaphore mt_waker_;
     MtInQueue mtQ_;
     MtInQueue mtQ2_;  // simulate diff resource
 
@@ -145,7 +145,7 @@ TEST_F(MT_SemaphoreTest, DISABLED_GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  
 cerr<<__LINE__<<", n="<<cb_info.size()<<endl;
         if (expect == cb_info)
             return;
-        mtWaker_.mt_wait();
+        mt_waker_.mt_wait();
 cerr<<__LINE__<<", n="<<cb_info.size()<<endl;
     }
 }
