@@ -45,7 +45,7 @@ struct MtInQueueTest : public Test, public UniLog
 };
 
 #define FIFO
-TEST_F(MtInQueueTest, DISABLED_GOLD_sparsePush_fifo)
+TEST_F(MtInQueueTest, GOLD_sparsePush_fifo)
 {
     const int nMsg = 10000;
     auto push_thread = async(launch::async, [&nMsg, this]()
@@ -62,9 +62,9 @@ TEST_F(MtInQueueTest, DISABLED_GOLD_sparsePush_fifo)
     {
         auto msg = mtQ_.pop<int>();
         if (msg) ASSERT_EQ(nHdl++, *msg) << "REQ: fifo";
-        else mtQ_.mt_wakeMainFn();  // REQ: less CPU than repeat pop() or this_thread::yield()
+        else mt_waker_.mt_wait();  // REQ: less CPU than repeat pop() or this_thread::yield()
     }
-    INF("REQ(sleep 1us/push): e2e user=0.371s->0.148s, sys=0.402s->0.197s")
+    INF("REQ(sleep 1us/push): e2e user=0.354s->0.123s, sys=0.412s->0.159s")
 }
 TEST_F(MtInQueueTest, GOLD_surgePush_fifo)
 {
@@ -103,16 +103,20 @@ TEST_F(MtInQueueTest, GOLD_nonBlock_pop)
     ASSERT_EQ("2nd", *(mtQ_.pop<string>())) << "REQ: can pop from cache" << endl;
     mtQ_.backdoor().unlock();
 }
-TEST_F(MtInQueueTest, size_and_wait)
+TEST_F(MtInQueueTest, size_and_nowait)
 {
     mtQ_.mt_push<int>(make_shared<int>(1));
     ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: inc size"  << endl;
+    mt_waker_.mt_wait();
+    ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: wait() ret immediately since mtQ_ not empty"  << endl;
 
     mtQ_.mt_push<int>(make_shared<int>(2));
     ASSERT_EQ(2u, mtQ_.mt_size())  << "REQ: inc size"  << endl;
 
     EXPECT_EQ(1, *(mtQ_.pop<int>())) << "REQ: fifo";
     ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: dec size"  << endl;
+    mt_waker_.mt_wait();
+    ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: wait() ret immediately since mtQ_ not empty"  << endl;
 
     mtQ_.mt_push<int>(make_shared<int>(3));
     mt_waker_.mt_wait();

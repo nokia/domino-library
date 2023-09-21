@@ -32,7 +32,7 @@ public:
     {
         int count = 0;
         if (sem_getvalue(&sem_, &count) == 0)  // succ
-            if (count > 0)  // avoid count overflow
+            if (count > 10)  // >0 to avoid count overflow; >10 to avoid sem_post() is wasted by eg try_lock fail
                 return;
         sem_post(&sem_);
     }
