@@ -26,17 +26,14 @@ struct MT_SemaphoreTest : public Test, public UniLog
     MT_SemaphoreTest()
         : UniLog(UnitTest::GetInstance()->current_test_info()->name())
         , mtQ_([this]{ mt_waker_.mt_notify(); })
-        , mtQ2_([this]{ mt_waker_.mt_notify(); })
     {}
     void SetUp() override
     {
         ASSERT_EQ(0, mtQ_.mt_size()) << "REQ: empty at beginning"  << endl;
-        ASSERT_EQ(0, mtQ2_.mt_size()) << "REQ: empty at beginning"  << endl;
     }
     void TearDown() override
     {
         ASSERT_EQ(0, mtQ_.mt_size()) << "REQ: empty at end"  << endl;
-        ASSERT_EQ(0, mtQ2_.mt_size()) << "REQ: empty at end"  << endl;
 
     }
     ~MT_SemaphoreTest() { GTEST_LOG_FAIL }
@@ -44,14 +41,13 @@ struct MT_SemaphoreTest : public Test, public UniLog
     // -------------------------------------------------------------------------------------------
     MT_Semaphore mt_waker_;
     MtInQueue mtQ_;
-    MtInQueue mtQ2_;  // simulate diff resource
 
     shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(
         [this](const PongMainFN& aPongMainFN){ pongMainFN_ = aPongMainFN; }, uniLogName());
     PongMainFN pongMainFN_;
 };
 
-#define WITH_MSG_SELF
+#define INTEGRATION
 // ***********************************************************************************************
 TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simulate real world
 {
@@ -86,7 +82,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         [this]
         {
             mtQ_.mt_push(make_shared<string>("a"));
-            mt_waker_.mt_notify();
+            mt_waker_.mt_notify();  // REQ: can notify (or rely on sem's timeout)
             return true;
         },
         // backFn
@@ -103,7 +99,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         // entryFn
         [this]
         {
-            mtQ2_.mt_push(make_shared<int>(2));
+            mtQ_.mt_push(make_shared<int>(2));
             mt_waker_.mt_notify();
             return true;
         },
@@ -121,7 +117,6 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     // simulate main()
     const set<string> expect = {"REQ: a's Q hdlr via MsgSelf", "REQ: a's backFn via MsgSelf",
         "REQ: 2's Q hdlr via MsgSelf", "REQ: 2's backFn via MsgSelf"};
-    while (expect != cb_info)
     for (;;)
     {
         // handle all done Thread
@@ -134,21 +129,12 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
             if (elePair.first == nullptr) break;
             msgHdlrs[elePair.second](elePair.first);
         }
-        // handle all existing in mtQ2_
-        for (;;)
-        {
-            auto elePair = mtQ2_.pop();
-            if (elePair.first == nullptr) break;
-            msgHdlrs[elePair.second](elePair.first);
-        }
 
         pongMainFN_();  // handle all existing in MsgSelf
 
-cerr<<__LINE__<<", n="<<cb_info.size()<<endl;
         if (expect == cb_info)
             return;
         mt_waker_.mt_wait();
-cerr<<__LINE__<<", n="<<cb_info.size()<<endl;
     }
 }
 
