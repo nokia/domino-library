@@ -28,14 +28,14 @@ using namespace std;
 
 namespace RLib
 {
-using ElePair       = pair<shared_ptr<void>, size_t>;  // ele & its typeid.hash_code
-using MT_WakeMainFN = function<void(void)>;  // must MT safety
+using ElePair = pair<shared_ptr<void>, size_t>;  // ele & its typeid.hash_code
 
 // ***********************************************************************************************
 class MtInQueue
 {
 public:
-    MtInQueue(const MT_WakeMainFN& aFn = nullptr) : mt_wakeMainFn_(aFn) {}  // can't change mt_wakeMainFn_ -> MT safe
+    // can't change mt_wakeMainFn_ -> MT safe
+    MtInQueue(const function<void(void)>& aFn = nullptr) : mt_wakeMainFn_(aFn) {}
 
     template<class aEleType> void mt_push(shared_ptr<aEleType> aEle);
 
@@ -53,7 +53,7 @@ private:
     deque<ElePair> queue_;  // unlimited ele; most suitable container
     deque<ElePair> cache_;
     mutex mutex_;
-    MT_WakeMainFN mt_wakeMainFn_;
+    function<void(void)> mt_wakeMainFn_;  // must be MT safety
 
     // -------------------------------------------------------------------------------------------
 #ifdef MT_IN_Q_TEST  // UT only

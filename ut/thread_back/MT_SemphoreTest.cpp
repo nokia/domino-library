@@ -53,7 +53,7 @@ struct MT_SemaphoreTest : public Test, public UniLog
 
 #define WITH_MSG_SELF
 // ***********************************************************************************************
-TEST_F(MT_SemaphoreTest, DISABLED_GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simulate real world
+TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simulate real world
 {
     set<string> cb_info;
 
@@ -62,7 +62,7 @@ TEST_F(MT_SemaphoreTest, DISABLED_GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  
     msgHdlrs[typeid(string).hash_code()] = [this, &cb_info](shared_ptr<void> aMsg)
     {
         msgSelf_->newMsg(
-            [aMsg, &cb_info]()
+            [aMsg, &cb_info]
             {
                 EXPECT_EQ("a", *static_pointer_cast<string>(aMsg));
                 cb_info.emplace("REQ: a's Q hdlr via MsgSelf");
@@ -72,7 +72,7 @@ TEST_F(MT_SemaphoreTest, DISABLED_GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  
     msgHdlrs[typeid(int).hash_code()] = [this, &cb_info](shared_ptr<void> aMsg)
     {
         msgSelf_->newMsg(
-            [aMsg, &cb_info]()
+            [aMsg, &cb_info]
             {
                 EXPECT_EQ(2, *static_pointer_cast<int>(aMsg));
                 cb_info.emplace("REQ: 2's Q hdlr via MsgSelf");
@@ -83,9 +83,10 @@ TEST_F(MT_SemaphoreTest, DISABLED_GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  
     // push
     ThreadBack::newThread(
         // entryFn
-        [this]() -> bool
+        [this]
         {
             mtQ_.mt_push(make_shared<string>("a"));
+            mt_waker_.mt_notify();
             return true;
         },
         // backFn
@@ -100,9 +101,10 @@ TEST_F(MT_SemaphoreTest, DISABLED_GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  
     );
     ThreadBack::newThread(
         // entryFn
-        [this]() -> bool
+        [this]
         {
             mtQ2_.mt_push(make_shared<int>(2));
+            mt_waker_.mt_notify();
             return true;
         },
         // backFn
