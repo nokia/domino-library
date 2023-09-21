@@ -24,8 +24,6 @@
 #include <mutex>
 #include <utility>
 
-#include "cv_main.hpp"
-
 using namespace std;
 
 namespace RLib
