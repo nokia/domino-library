@@ -57,7 +57,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     unordered_map<size_t, function<void(shared_ptr<void>)>> msgHdlrs;
     msgHdlrs[typeid(string).hash_code()] = [this, &cb_info](shared_ptr<void> aMsg)
     {
-        msgSelf_->newMsg(
+        msgSelf_->newMsg(  // REQ: via MsgSelf
             [aMsg, &cb_info]
             {
                 EXPECT_EQ("a", *static_pointer_cast<string>(aMsg));
@@ -86,7 +86,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
             return true;
         },
         // backFn
-        viaMsgSelf(
+        viaMsgSelf(  // REQ: via MsgSelf
             [this, &cb_info](bool aRet)
             {
                 EXPECT_TRUE(aRet) << "entryFn succ" << endl;
@@ -136,6 +136,17 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
             return;
         mt_waker_.mt_wait();
     }
+}
+
+// ***********************************************************************************************
+TEST_F(MT_SemaphoreTest, GOLD_timer_wakeup)
+{
+    ThreadBack::newThread(
+        []{ return true; }, // entryFn; no wakeup
+        [](bool){} // backFn
+    );
+    mt_waker_.mt_wait();
+    EXPECT_EQ(1u, ThreadBack::hdlFinishedThreads()) << "REQ: MT_Semaphore's timer shall wakeup its mt_wait()";
 }
 
 }  // namespace

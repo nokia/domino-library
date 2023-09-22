@@ -48,7 +48,7 @@ private:
 };
 
 // ***********************************************************************************************
-template<typename Rep = int, typename Period = ratio<1, 1000> >
+template<typename Rep, typename Period>
 MT_Semaphore::MT_Semaphore(const duration<Rep, Period>& aTimeout)
     : mt_stopTimer_(false)
     , timerFut_(async(launch::async, [aTimeout, this]
