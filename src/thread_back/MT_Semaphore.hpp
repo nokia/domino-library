@@ -19,6 +19,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <future>
 #include <semaphore.h>
 #include <thread>
 
@@ -31,36 +32,12 @@ namespace RLib
 class MT_Semaphore
 {
 public:
-    template<typename Rep = int, typename Period = ratio<1, 1000>>
-    MT_Semaphore(const duration<Rep, Period>& aTimeout = 10ms)
-        : mt_stopTimer_(false)
-        , timerFut_(async(launch::async, [aTimeout, this]
-        {
-            while (! mt_stopTimer_.load())
-            {
-                this_thread::sleep_for(aTimeout);
-                mt_notify();
-            }
-        }))
-    {
-        sem_init(&sem_, 0, 0);  // 2nd para: intra-process; 3rd: init value
-    }
-    ~MT_Semaphore()
-    {
-        mt_stopTimer_.store(true);
-        timerFut_.get();
-        sem_destroy(&sem_);  // must sfter timer thread stopped
-    }
+    template<typename Rep = int, typename Period = ratio<1, 1000> >
+    MT_Semaphore(const duration<Rep, Period>& aTimeout = 10ms);
+    ~MT_Semaphore();
 
     void mt_wait() { sem_wait(&sem_); }
-    void mt_notify()
-    {
-        int count = 0;
-        if (sem_getvalue(&sem_, &count) == 0)  // succ
-            if (count > 0)  // >0 to avoid count overflow; >10 to avoid sem_post() is wasted by eg try_lock fail
-                return;
-        sem_post(&sem_);
-    }
+    void mt_notify();
 
     // -------------------------------------------------------------------------------------------
 private:
@@ -70,9 +47,26 @@ private:
     future<void> timerFut_;
 };
 
+// ***********************************************************************************************
+template<typename Rep = int, typename Period = ratio<1, 1000> >
+MT_Semaphore::MT_Semaphore(const duration<Rep, Period>& aTimeout)
+    : mt_stopTimer_(false)
+    , timerFut_(async(launch::async, [aTimeout, this]
+    {
+        while (! mt_stopTimer_.load())
+        {
+            this_thread::sleep_for(aTimeout);
+            mt_notify();
+        }
+    }))
+{
+    sem_init(&sem_, 0, 0);  // 2nd para: intra-process; 3rd: init value
+}
+
 }  // namespace
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2023-09-20  CSZ       1)create
+// 2023-09-21  CSZ       - timer
 // ***********************************************************************************************
