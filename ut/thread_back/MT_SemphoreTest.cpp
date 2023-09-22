@@ -100,7 +100,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         [this]
         {
             mtQ_.mt_push(make_shared<int>(2));
-            mt_waker_.mt_notify();
+            //mt_waker_.mt_notify();  // REQ: rely on sem's timeout
             return true;
         },
         // backFn
