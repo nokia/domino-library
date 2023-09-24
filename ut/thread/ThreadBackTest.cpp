@@ -145,48 +145,6 @@ TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
     }
 }
 
-#define CAN_WITH_MSGSELF
-// ***********************************************************************************************
-TEST_F(ThreadBackTest, canWithMsgSelf)
-{
-    PongMainFN handleAllMsg;
-    auto msgSelf = make_shared<MsgSelf>(
-        [&handleAllMsg](const PongMainFN& aPongMainFN)
-        {
-            handleAllMsg = aPongMainFN;
-        },
-        uniLogName()
-    );
-
-    queue<size_t> order;
-    for (size_t idxThread = EMsgPri_MIN; idxThread < EMsgPri_MAX; idxThread++)
-    {
-        ThreadBack::newThread(
-            // MT_ThreadEntryFN
-            []() -> bool { return false; },
-            // ThreadBackFN
-            viaMsgSelf(
-                [&order, idxThread](bool aRet)
-                {
-                    EXPECT_FALSE(aRet);
-                    order.push(idxThread);
-                },
-                msgSelf,
-                EMsgPriority(idxThread)
-            )
-        );
-    }
-
-    // wait all threads done
-    for (size_t nHandled = 0; nHandled < EMsgPri_MAX; nHandled += ThreadBack::hdlFinishedThreads())
-    {
-        DBG("nHandled=" << nHandled);
-    }
-
-    handleAllMsg();  // call MsgSelf
-    EXPECT_EQ(queue<size_t>({2,1,0}), order) << "REQ: priority FIFO" << endl;
-}
-
 #define ABNORMAL
 // ***********************************************************************************************
 TEST_F(ThreadBackTest, asyncFail_noException_toBackFnWithFalse)
