@@ -20,7 +20,8 @@
 
 using namespace testing;
 
-namespace RLib {
+namespace RLib
+{
 // ***********************************************************************************************
 struct MtInQueueTest : public Test, public UniLog
 {
@@ -45,6 +46,7 @@ struct MtInQueueTest : public Test, public UniLog
 };
 
 #define FIFO
+// ***********************************************************************************************
 TEST_F(MtInQueueTest, GOLD_simple_fifo_without_waker)
 {
     MtInQueue mtQ;

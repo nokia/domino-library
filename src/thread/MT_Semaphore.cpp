@@ -13,18 +13,18 @@ namespace RLib
 MT_Semaphore::~MT_Semaphore()
 {
     mt_stopTimer_.store(true);
-    timerFut_.get();
-    sem_destroy(&sem_);  // must sfter timer thread stopped
+    mt_timerFut_.get();
+    sem_destroy(&mt_sem_);  // must sfter timer thread stopped
 }
 
 // ***********************************************************************************************
 void MT_Semaphore::mt_notify()
 {
     int count = 0;
-    if (sem_getvalue(&sem_, &count) == 0)  // succ
+    if (sem_getvalue(&mt_sem_, &count) == 0)  // succ
         if (count > 0)  // >0 to avoid count overflow; >10 to avoid sem_post() is wasted by eg try_lock fail
             return;
-    sem_post(&sem_);
+    sem_post(&mt_sem_);
 }
 
 }  // namespace

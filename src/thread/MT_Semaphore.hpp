@@ -11,9 +11,9 @@
 //     . std::latch/etc need c++20, too high vs semaphore (POSIX)
 //     * sem_wait() doesn't miss afterwards sem_post()
 //   * support timeout to prevent missing sem_post() that may hang main thread
-// - MT safety: YES (since all sem_*() are mt safety)
+// - MT safety: YES (since all mt_sem_*() are mt safety)
 // - core:
-//   . sem_
+//   . mt_sem_
 // ***********************************************************************************************
 #pragma once
 
@@ -36,22 +36,22 @@ public:
     MT_Semaphore(const duration<Rep, Period>& aTimeout = 10ms);
     ~MT_Semaphore();
 
-    void mt_wait() { sem_wait(&sem_); }
+    void mt_wait() { sem_wait(&mt_sem_); }
     void mt_notify();
 
     // -------------------------------------------------------------------------------------------
 private:
-    sem_t sem_;
+    sem_t mt_sem_;
 
     atomic<bool> mt_stopTimer_;
-    future<void> timerFut_;
+    future<void> mt_timerFut_;
 };
 
 // ***********************************************************************************************
 template<typename Rep, typename Period>
 MT_Semaphore::MT_Semaphore(const duration<Rep, Period>& aTimeout)
     : mt_stopTimer_(false)
-    , timerFut_(async(launch::async, [aTimeout, this]
+    , mt_timerFut_(async(launch::async, [aTimeout, this]
     {
         while (! mt_stopTimer_.load())
         {
@@ -60,7 +60,7 @@ MT_Semaphore::MT_Semaphore(const duration<Rep, Period>& aTimeout)
         }
     }))
 {
-    sem_init(&sem_, 0, 0);  // 2nd para: intra-process; 3rd: init value
+    sem_init(&mt_sem_, 0, 0);  // 2nd para: intra-process; 3rd: init value
 }
 
 }  // namespace
