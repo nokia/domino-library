@@ -28,7 +28,9 @@ using namespace std;
 
 namespace RLib
 {
-using ElePair = pair<shared_ptr<void>, size_t>;  // ele & its typeid.hash_code
+// ele & its typeid.hash_code
+// - hash_code is size_t (simplest) vs type_info (complex class, & need more mem)
+using ElePair = pair<shared_ptr<void>, size_t>;
 
 // ***********************************************************************************************
 class MtInQueue

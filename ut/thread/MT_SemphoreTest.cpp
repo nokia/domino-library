@@ -126,7 +126,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         for (;;)
         {
             auto elePair = mtQ_.pop();
-            if (elePair.first == nullptr) break;
+            if (elePair.first == nullptr) break;  // handle next eg MsgSelf queue
             msgHdlrs[elePair.second](elePair.first);
         }
 
