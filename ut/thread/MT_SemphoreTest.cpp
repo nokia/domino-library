@@ -33,13 +33,9 @@ struct MT_SemaphoreTest : public Test, public UniLog
     }
     void TearDown() override
     {
-        EXPECT_EQ(0, mtQ_.mt_size()) << "REQ: empty at end"  << endl;
+        ASSERT_EQ(0, mtQ_.mt_size()) << "REQ: empty at end"  << endl;
     }
-    ~MT_SemaphoreTest()
-    {
-        mtQ_.mt_clear();  // not impact other case
-        GTEST_LOG_FAIL
-    }
+    ~MT_SemaphoreTest() { GTEST_LOG_FAIL }
 
     // -------------------------------------------------------------------------------------------
     MT_Semaphore mt_waker_;

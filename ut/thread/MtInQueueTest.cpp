@@ -35,13 +35,9 @@ struct MtInQueueTest : public Test, public UniLog
     }
     void TearDown() override
     {
-        EXPECT_EQ(0, mtQ_.mt_size()) << "REQ: empty at end"  << endl;
+        ASSERT_EQ(0, mtQ_.mt_size()) << "REQ: empty at end"  << endl;
     }
-    ~MtInQueueTest()
-    {
-        mtQ_.mt_clear();  // not impact other case
-        GTEST_LOG_FAIL
-    }
+    ~MtInQueueTest() { GTEST_LOG_FAIL }
 
     // -------------------------------------------------------------------------------------------
     MtInQueue mtQ_;
