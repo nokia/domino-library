@@ -36,26 +36,26 @@ using ElePair = pair<shared_ptr<void>, size_t>;
 class MtInQueue
 {
 public:
-    // can't change mt_wakeMainFn_ -> MT safe
-    MtInQueue(const function<void(void)>& aFn = nullptr) : mt_wakeMainFn_(aFn) {}
+    // can't change mt_notifyFn_ -> MT safe
+    MtInQueue(const function<void(void)>& aNotifyFn = nullptr) : mt_notifyFn_(aNotifyFn) {}
 
     template<class aEleType> void mt_push(shared_ptr<aEleType> aEle);
 
-    // shall access in main thread ONLY!!!
+    // shall be called in main thread ONLY!!!
     ElePair pop();  // high performance
     template<class aEleType> shared_ptr<aEleType> pop() { return static_pointer_cast<aEleType>(pop().first); }
-
-    void mt_wakeMainFn() { if (mt_wakeMainFn_) mt_wakeMainFn_(); }
 
     size_t mt_size();
     size_t mt_clear();
 
 private:
+    void mt_notifyFn() { if (mt_notifyFn_) mt_notifyFn_(); }
+
     // -------------------------------------------------------------------------------------------
     deque<ElePair> queue_;  // unlimited ele; most suitable container
     deque<ElePair> cache_;
     mutex mutex_;
-    function<void(void)> mt_wakeMainFn_;  // must be MT safety
+    function<void(void)> mt_notifyFn_;  // must be MT safety
 
     // -------------------------------------------------------------------------------------------
 #ifdef MT_IN_Q_TEST  // UT only
@@ -71,8 +71,8 @@ void MtInQueue::mt_push(shared_ptr<aEleType> aEle)
     {
         lock_guard<mutex> guard(mutex_);
         queue_.push_back(ElePair(aEle, typeid(aEleType).hash_code()));
-    }  // unlock then mt_wakeMainFn()
-    mt_wakeMainFn();
+    }  // unlock then mt_notifyFn()
+    mt_notifyFn();
 }
 
 }  // namespace

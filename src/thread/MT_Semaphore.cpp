@@ -22,7 +22,7 @@ void MT_Semaphore::mt_notify()
 {
     int count = 0;
     if (sem_getvalue(&mt_sem_, &count) == 0)  // succ
-        if (count > 0)  // >0 to avoid count overflow; >10 to avoid sem_post() is wasted by eg try_lock fail
+        if (count > 0)  // >0 to avoid count overflow; mt_timerFut_ ensure no lost
             return;
     sem_post(&mt_sem_);
 }
