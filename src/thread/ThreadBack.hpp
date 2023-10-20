@@ -31,6 +31,9 @@
 //   . MT_ThreadEntryFN() shall not be nullptr (std::async also not check nullptr)
 //     . same for ThreadBackFN() (since eg async() failed via aRet=false)
 //   . MT_ThreadEntryFN & ThreadBackFN shall NOT throw exception
+//     . they can try-catch all exception & leave RLib simple/focus
+//     . exception is bug to be fixed than pretected
+//     . dom lib branches inc 77% (Dec,2022), unnecessary complex
 //   . cross platform:
 //     . std::async
 //     . std::future (to msg from other thread back to main thread)
@@ -39,11 +42,6 @@
 //     . aovid complex MsgSelf: ThreadBack provides 1 func to fill aBack into MsgSelf
 //     . avoid complex ThreadBack (viaMsgSelf() in new hpp)
 //     . avoid block main thread
-//
-// - support exception: NO!!! since
-//   . dom lib branches inc 77% (Dec,2022), unnecessary complex
-//   . eg ThreadBack & MsgSelf, user's callback func shall not throw exception, it's easy
-//     for user to achieve & leave RLib simple/focus
 //
 // - support multi-thread
 //   . MT_/mt_ prefix: yes
@@ -66,8 +64,6 @@
 //       . can reduce about half iterations with 15 more LOC
 //       . atomic is lightweight & fast than mutex
 //       * since little benefit, decide rm it
-//   * why RLib doesn't support exception?
-//     . sharply inc coverage: prove exception inc complexity much
 // ***********************************************************************************************
 #pragma once
 
