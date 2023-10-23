@@ -5,7 +5,7 @@
  */
 // ***********************************************************************************************
 // - why/REQ:
-//   * let main thread mt_wait() other thread's input (eg from ThreadBack, MtInQueue)
+//   * let main thread mt_wait() other thread's input (eg from MsgSelf, ThreadBack, MtInQueue)
 //   * let other thread mt_notify() to wakeup main thread from mt_wait()
 //   . base on semaphore that is simple enough
 //     . std::latch/etc need c++20, too high vs semaphore (POSIX)
@@ -38,6 +38,16 @@ public:
 
     void mt_wait() { sem_wait(&mt_sem_); }
     void mt_notify();
+
+    auto mt_notifyAtEnd(auto&& aFn)
+    {
+        return [aFn, this](auto&&... aArgs) -> decltype(aFn(aArgs...))
+        {
+            auto&& ret = aFn(forward<decltype(aArgs)>(aArgs)...);
+            mt_notify();
+            return ret;
+        };
+    }
 
     // -------------------------------------------------------------------------------------------
 private:

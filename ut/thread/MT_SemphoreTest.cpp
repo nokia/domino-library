@@ -78,12 +78,11 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     // push
     ThreadBack::newThread(
         // entryFn
-        [this]
+        mt_waker_.mt_notifyAtEnd([this]  // REQ: can notify (or rely on sem's timeout)
         {
             mtQ_.mt_push(make_shared<string>("a"));
-            mt_waker_.mt_notify();  // REQ: can notify (or rely on sem's timeout)
             return true;
-        },
+        }),
         // backFn
         viaMsgSelf(  // REQ: via MsgSelf
             [this, &cb_info](bool aRet)
