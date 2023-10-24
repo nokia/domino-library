@@ -35,11 +35,13 @@ public:
     template<typename Rep = int, typename Period = ratio<1, 1000> >
     MT_Semaphore(const duration<Rep, Period>& aTimeout = 10ms);
     ~MT_Semaphore();
+    MT_Semaphore(const MT_Semaphore&) = delete;
+    MT_Semaphore& operator=(const MT_Semaphore&) = delete;
 
     void mt_wait() { sem_wait(&mt_sem_); }
     void mt_notify();
 
-    auto mt_notifyAtEnd(auto&& aFn)
+    auto mt_notifyAtEnd(auto&& aFn)  // grammer asks in hpp only
     {
         return [aFn, this](auto&&... aArgs)
         {
