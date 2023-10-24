@@ -41,7 +41,7 @@ public:
 
     auto mt_notifyAtEnd(auto&& aFn)
     {
-        return [aFn, this](auto&&... aArgs) -> decltype(aFn(aArgs...))
+        return [aFn, this](auto&&... aArgs)
         {
             auto&& ret = aFn(forward<decltype(aArgs)>(aArgs)...);
             mt_notify();
