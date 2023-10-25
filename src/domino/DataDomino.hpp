@@ -14,6 +14,8 @@
 #include <unordered_map>
 #include <memory>  // make_shared
 
+#include "UniLog.hpp"
+
 using namespace std;
 
 namespace RLib

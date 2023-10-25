@@ -10,6 +10,8 @@
 // ***********************************************************************************************
 #pragma once
 
+#include "UniLog.hpp"
+
 using namespace std;
 
 namespace RLib

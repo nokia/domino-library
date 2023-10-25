@@ -8,6 +8,7 @@
 #include <iostream>
 #include <memory>
 
+#include "mt_notify.hpp"
 #include "ThreadBack.hpp"
 
 namespace RLib
@@ -37,7 +38,18 @@ size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
 // ***********************************************************************************************
 void ThreadBack::newThread(const MT_ThreadEntryFN& mt_aEntryFn, const ThreadBackFN& aBackFn, UniLog& oneLog)
 {
-    allThreads_.emplace_back(async(launch::async, mt_aEntryFn), aBackFn);  // save future<> & aBackFn()
+    allThreads_.emplace_back(  // save future<> & aBackFn()
+        async(
+            launch::async,
+            [mt_aEntryFn]()  // must cp than ref, otherwise dead loop
+            {
+                const bool ret = mt_aEntryFn();
+                mt_notify();
+                return ret;
+            }
+        ),
+        aBackFn
+    );
     HID("valid=" << allThreads_.back().first.valid() << ", backFn=" << &(allThreads_.back().second));
 }
 

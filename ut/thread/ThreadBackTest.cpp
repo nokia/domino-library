@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 #include "MsgSelf.hpp"
+#include "mt_notify.hpp"
 #include "UniLog.hpp"
 
 #define THREAD_BACK_TEST
@@ -48,7 +49,7 @@ struct ThreadBackTest : public Test, public UniLog
 //                                     |<.....................| future<>
 //    ThreadBack::hdlFinishedThreads() |
 //                                     |
-TEST_F(ThreadBackTest, GOLD_entryFn_inNewThread_thenBackFn_inMainThread)
+TEST_F(ThreadBackTest, GOLD_entryFn_inNewThread_thenBackFn_inMainThread_withSemaphore)
 {
     atomic<thread::id> mt_threadID(this_thread::get_id());
     DBG("main thread id=" << mt_threadID);
@@ -56,6 +57,7 @@ TEST_F(ThreadBackTest, GOLD_entryFn_inNewThread_thenBackFn_inMainThread)
         // MT_ThreadEntryFN
         [&mt_threadID]() -> bool
         {
+            EXPECT_NE(this_thread::get_id(), mt_threadID) << "REQ: in new thread";
             mt_threadID = this_thread::get_id();
             cout << "MT_ThreadEntryFN(): thread id=" << mt_threadID << endl;
             return true;
@@ -63,25 +65,25 @@ TEST_F(ThreadBackTest, GOLD_entryFn_inNewThread_thenBackFn_inMainThread)
         // ThreadBackFN
         [&mt_threadID, this](bool)
         {
+            EXPECT_NE(this_thread::get_id(), mt_threadID) << "REQ: in diff thread";
             mt_threadID = this_thread::get_id();
             DBG("ThreadBackFN thread id=" << mt_threadID);
         }
     );
 
-    while (this_thread::get_id() == mt_threadID)  // req: run MT_ThreadEntryFN() in new thread
+    while (true)
     {
-        DBG("new thread not start yet, wait... mt_threadID=" << mt_threadID);
-        this_thread::yield();
+        if (ThreadBack::hdlFinishedThreads() == 0)
+        {
+            DBG("new thread not end yet, wait... mt_threadID=" << mt_threadID)
+            g_sem.mt_wait();  // REQ: semaphore is more efficient than keep hdlFinishedThreads()
+            continue;
+        }
+        EXPECT_EQ(mt_threadID, this_thread::get_id()) << "REQ: run ThreadBackFN() in main thread afterwards" << endl;
+        return;
     }
-
-    while (ThreadBack::hdlFinishedThreads() == 0)
-    {
-        DBG("new thread not end yet, wait... mt_threadID=" << mt_threadID)
-        this_thread::yield();
-    }
-    EXPECT_EQ(mt_threadID, this_thread::get_id()) << "REQ: run ThreadBackFN() in main thread afterwards" << endl;
 }
-TEST_F(ThreadBackTest, GOLD_entryFnResult_toBackFn)
+TEST_F(ThreadBackTest, GOLD_entryFnResult_toBackFn_withoutSem)
 {
     const size_t maxThread = 2;  // req: test entryFn result true(succ) / false(fail)
     for (size_t idxThread = 0; idxThread < maxThread; ++idxThread)

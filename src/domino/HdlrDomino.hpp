@@ -25,6 +25,7 @@
 
 #include "MsgSelf.hpp"
 #include "ObjAnywhere.hpp"
+#include "UniLog.hpp"
 
 namespace RLib
 {

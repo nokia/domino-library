@@ -20,6 +20,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "UniLog.hpp"
+
 namespace RLib
 {
 // ***********************************************************************************************

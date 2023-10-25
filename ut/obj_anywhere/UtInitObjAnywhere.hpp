@@ -12,7 +12,10 @@
 #include <gtest/gtest.h>
 #include <memory>  // shared_ptr
 
+#include "MsgSelf.hpp"
+#include "ObjAnywhere.hpp"
 #include "UniLog.hpp"
+
 #include "Domino.hpp"
 #include "DataDomino.hpp"
 #include "WbasicDatDom.hpp"
@@ -20,8 +23,6 @@
 #include "MultiHdlrDomino.hpp"
 #include "PriDomino.hpp"
 #include "FreeHdlrDomino.hpp"
-#include "MsgSelf.hpp"
-#include "ObjAnywhere.hpp"
 
 // ***********************************************************************************************
 // UT req: combined domino shall pass all UT
@@ -73,5 +74,6 @@ struct UtInitObjAnywhere : public UniLog, public Test
         GTEST_LOG_FAIL
     }
 };
+
 }  // namespace
 #endif  // SWM_UT_INIT_SVC_CLOUD_HPP_

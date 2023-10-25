@@ -14,6 +14,7 @@
 #define PRI_DOMINO_HPP_
 
 #include <unordered_map>
+#include "UniLog.hpp"
 
 namespace RLib
 {
