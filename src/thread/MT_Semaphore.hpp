@@ -47,8 +47,11 @@ public:
 cerr<<__LINE__<<' '<<__FILE__<<endl;
         return [aFn, this](auto&&... aArgs)
         {
+cerr<<__LINE__<<' '<<__FILE__<<endl;
             auto&& ret = aFn(forward<decltype(aArgs)>(aArgs)...);
+cerr<<__LINE__<<' '<<__FILE__<<endl;
             mt_notify();
+cerr<<__LINE__<<' '<<__FILE__<<endl;
             return ret;
         };
     }
