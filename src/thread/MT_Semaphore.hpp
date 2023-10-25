@@ -42,20 +42,6 @@ public:
     void mt_wait() { sem_wait(&mt_sem_); }
     void mt_notify();
 
-    auto mt_notifyAtEnd(auto&& aFn)  // grammer asks in hpp only
-    {
-cerr<<__LINE__<<' '<<__FILE__<<endl;
-        return [aFn, this](auto&&... aArgs)
-        {
-cerr<<__LINE__<<' '<<__FILE__<<endl;
-            auto&& ret = aFn(forward<decltype(aArgs)>(aArgs)...);
-cerr<<__LINE__<<' '<<__FILE__<<endl;
-            mt_notify();
-cerr<<__LINE__<<' '<<__FILE__<<endl;
-            return ret;
-        };
-    }
-
     // -------------------------------------------------------------------------------------------
 private:
     sem_t mt_sem_;

@@ -80,11 +80,12 @@ cerr<<__LINE__<<' '<<__FILE__<<endl;
     // push
     ThreadBack::newThread(
         // entryFn
-        mt_waker_.mt_notifyAtEnd([this]  // REQ: can notify (or rely on sem's timeout)
+        [this]
         {
             mtQ_.mt_push(make_shared<string>("a"));
+            mt_waker_.mt_notify();  // REQ: can notify
             return true;
-        }),
+        },
         // backFn
         viaMsgSelf(  // REQ: via MsgSelf
             [this, &cb_info](bool aRet)
@@ -100,7 +101,7 @@ cerr<<__LINE__<<' '<<__FILE__<<endl;
         [this]
         {
             mtQ_.mt_push(make_shared<int>(2));
-            //mt_waker_.mt_notify();  // REQ: rely on sem's timeout
+            //mt_waker_.mt_notify();  // REQ: no mt_notify() but rely on sem's timeout
             return true;
         },
         // backFn
