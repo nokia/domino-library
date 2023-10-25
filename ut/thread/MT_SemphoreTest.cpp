@@ -118,21 +118,27 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     for (;;)
     {
         // handle all done Thread
+cerr<<__LINE__<<' '<<__func__<<endl;
         ThreadBack::hdlFinishedThreads();
 
         // handle all existing in mtQ_
         for (;;)
         {
+cerr<<__LINE__<<' '<<__func__<<endl;
             auto elePair = mtQ_.pop();
             if (elePair.first == nullptr) break;  // handle next eg MsgSelf queue
+cerr<<__LINE__<<' '<<__func__<<endl;
             msgHdlrs[elePair.second](elePair.first);
         }
 
+cerr<<__LINE__<<' '<<__func__<<endl;
         pongMainFN_();  // handle all existing in MsgSelf
 
         if (expect == cb_info)
             return;
+cerr<<__LINE__<<' '<<__func__<<endl;
         mt_waker_.mt_wait();
+cerr<<__LINE__<<' '<<__func__<<endl;
     }
 }
 
