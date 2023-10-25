@@ -22,6 +22,7 @@
 #include <future>
 #include <semaphore.h>
 #include <thread>
+#include <iostream>
 
 using namespace std;
 using namespace std::chrono;
@@ -43,6 +44,7 @@ public:
 
     auto mt_notifyAtEnd(auto&& aFn)  // grammer asks in hpp only
     {
+cerr<<__LINE__<<' '<<__FILE__<<endl;
         return [aFn, this](auto&&... aArgs)
         {
             auto&& ret = aFn(forward<decltype(aArgs)>(aArgs)...);

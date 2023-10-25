@@ -56,6 +56,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     unordered_map<size_t, function<void(shared_ptr<void>)>> msgHdlrs;
     msgHdlrs[typeid(string).hash_code()] = [this, &cb_info](shared_ptr<void> aMsg)
     {
+cerr<<__LINE__<<' '<<__FILE__<<endl;
         msgSelf_->newMsg(  // REQ: via MsgSelf
             [aMsg, &cb_info]
             {
@@ -66,6 +67,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     };
     msgHdlrs[typeid(int).hash_code()] = [this, &cb_info](shared_ptr<void> aMsg)
     {
+cerr<<__LINE__<<' '<<__FILE__<<endl;
         msgSelf_->newMsg(
             [aMsg, &cb_info]
             {
@@ -118,7 +120,6 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     for (;;)
     {
         // handle all done Thread
-cerr<<__LINE__<<' '<<__func__<<endl;
         ThreadBack::hdlFinishedThreads();
 
         // handle all existing in mtQ_
