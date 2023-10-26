@@ -211,7 +211,7 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlrOnRoad_noCallback)
     PARA_DOM->multiHdlrByAliasEv("e0", this->hdlr0_, "e");
     PARA_DOM->multiHdlrByAliasEv("e1", this->hdlr1_, "e");
     PARA_DOM->setState({{"e", true}});  // cb on road
-    EXPECT_TRUE(msgSelf->hasMsg());
+    EXPECT_TRUE(msgSelf->nMsg());
     EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("e0")) << "REQ: rm hdlr on-road" << endl;
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
@@ -242,7 +242,7 @@ TYPED_TEST_P(NofreeHdlrDominoTest, rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigg
     this->pongMainFN_();
 
     PARA_DOM->setState({{"event", true}});
-    ASSERT_TRUE(msgSelf->hasMsg());
+    ASSERT_TRUE(msgSelf->nMsg());
     EXPECT_CALL(*this, hdlr0());  // REQ: new cb
     this->pongMainFN_();
 }

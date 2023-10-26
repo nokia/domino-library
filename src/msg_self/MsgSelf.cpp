@@ -29,7 +29,7 @@ void MsgSelf::handleAllMsg(const shared_ptr<bool> aValidMsgSelf)
 
     if (*aValidMsgSelf)  // impossible aValidMsgSelf==nullptr since 022-Mar-11
     {
-        // if (not hasMsg()) return;  // rare nMsg_==0 when PongMainFN()
+        // if (not nMsg()) return;  // rare nMsg_==0 when PongMainFN()
         while (handleOneMsg());  // handleOneMsg() may create new high priority msg(s)
     }
 }
@@ -49,7 +49,7 @@ bool MsgSelf::handleOneMsg()
         oneQueue.pop_front();
         --nMsg_;
 
-        if (not hasMsg())
+        if (not nMsg())
             return false;    // no more to continue
         if (isLowPri(EMsgPriority(msgPri)))
         {

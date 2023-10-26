@@ -49,19 +49,19 @@ struct MsgSelfTest : public Test, public UniLog
 TEST_F(MsgSelfTest, GOLD_sendMsg)
 {
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM)) << "REQ: init states" << endl;
-    EXPECT_FALSE(msgSelf_->hasMsg());
+    EXPECT_FALSE(msgSelf_->nMsg());
 
     EXPECT_CALL(*this, pingMain(_)).WillOnce(SaveArg<0>(&pongMainFN_));  // req: newMsg->pingMain that eg send msg to self
     msgSelf_->newMsg(d1MsgHdlr_);
     EXPECT_EQ(1u, msgSelf_->nMsg(EMsgPri_NORM));
-    EXPECT_TRUE(msgSelf_->hasMsg());
+    EXPECT_TRUE(msgSelf_->nMsg());
     EXPECT_EQ(queue<int>(), hdlrIDs_) << "REQ: not immediate call d1MsgHdlr_ but wait msg-to-self" << endl;
 
     EXPECT_CALL(*this, pingMain(_)).Times(0);     // req: no more no call
     pongMainFN_();                                // simulate eg msg-to-self received, then call pongMainFN_()
     EXPECT_EQ(queue<int>({1}), hdlrIDs_) << "REQ: call d1MsgHdlr_" << endl;
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM));
-    EXPECT_FALSE(msgSelf_->hasMsg());
+    EXPECT_FALSE(msgSelf_->nMsg());
 }
 TEST_F(MsgSelfTest, dupSendMsg)
 {

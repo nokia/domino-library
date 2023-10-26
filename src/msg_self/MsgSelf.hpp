@@ -74,7 +74,7 @@ public:
     const shared_ptr<bool> getValid() const { return isValid_; }
 
     void   newMsg(const MsgCB&, const EMsgPriority = EMsgPri_NORM);  // can't withdraw CB but easier usage
-    bool   hasMsg() const { return nMsg_; }
+    size_t nMsg() const { return nMsg_; }
     size_t nMsg(const EMsgPriority aPriority) const { return msgQueues_[aPriority].size(); }
 
     static bool isLowPri(const EMsgPriority aPri) { return aPri < EMsgPri_NORM; }
@@ -87,7 +87,7 @@ private:
     deque<MsgCB> msgQueues_[EMsgPri_MAX];
 
     shared_ptr<bool> isValid_ = make_shared<bool>(true);  // MsgSelf is still valid?
-    PingMainFN       pingMainFN_;
+    PingMainFN       pingMainFN_ = nullptr;
     size_t           nMsg_ = 0;
 };
 }  // namespace
