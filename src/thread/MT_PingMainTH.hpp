@@ -5,7 +5,7 @@
  */
 // ***********************************************************************************************
 // - Why/VALUE:
-//   . help eg MsgSelf, ThreadBack, MtInQueue to wakeup main thread's mt_wait()
+//   . help eg MsgSelf, ThreadBack, MtInQueue to wakeup main thread by mt_pingMainTH()
 //     . simpler than para to constructing above class(es)
 //   . can base on MT_Semaphore
 //     . can be empty so no wakeup at all

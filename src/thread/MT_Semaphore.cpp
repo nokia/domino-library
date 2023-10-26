@@ -23,7 +23,7 @@ void MT_Semaphore::mt_notify()
 }
 
 // ***********************************************************************************************
-void MT_Semaphore::mt_wait(const size_t aSec, const size_t aMsec)
+void MT_Semaphore::mt_timedwait(const size_t aSec, const size_t aMsec)
 {
     timespec ts;
     if (clock_gettime(CLOCK_REALTIME, &ts) == -1)

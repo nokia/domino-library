@@ -76,7 +76,7 @@ TEST_F(ThreadBackTest, GOLD_entryFn_inNewThread_thenBackFn_inMainThread_withSema
         if (ThreadBack::hdlFinishedThreads() == 0)
         {
             DBG("new thread not end yet, wait... mt_threadID=" << mt_threadID)
-            g_sem.mt_wait();  // REQ: semaphore is more efficient than keep hdlFinishedThreads()
+            g_sem.mt_timedwait();  // REQ: semaphore is more efficient than keep hdlFinishedThreads()
             continue;
         }
         EXPECT_EQ(mt_threadID, this_thread::get_id()) << "REQ: run ThreadBackFN() in main thread afterwards" << endl;

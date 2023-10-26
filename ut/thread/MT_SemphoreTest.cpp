@@ -142,7 +142,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
             return;
 
         INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mtQ_.mt_size() << ", nTh=" << ThreadBack::nThread());
-        mt_waker_.mt_wait();
+        mt_waker_.mt_timedwait();
     }
 }
 
@@ -153,8 +153,8 @@ TEST_F(MT_SemaphoreTest, GOLD_timer_wakeup)
         []{ return true; }, // entryFn; no wakeup
         [](bool){} // backFn
     );
-    mt_waker_.mt_wait();
-    EXPECT_EQ(1u, ThreadBack::hdlFinishedThreads()) << "REQ: MT_Semaphore's timer shall wakeup its mt_wait()";
+    mt_waker_.mt_timedwait();
+    EXPECT_EQ(1u, ThreadBack::hdlFinishedThreads()) << "REQ: MT_Semaphore's timer shall wakeup its mt_timedwait()";
 }
 
 }  // namespace
