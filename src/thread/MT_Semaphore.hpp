@@ -17,14 +17,9 @@
 // ***********************************************************************************************
 #pragma once
 
-#include <atomic>
-#include <chrono>
-#include <future>
 #include <semaphore.h>
-#include <thread>
 
 using namespace std;
-using namespace std::chrono;
 
 namespace RLib
 {
@@ -32,43 +27,24 @@ namespace RLib
 class MT_Semaphore
 {
 public:
-    template<typename Rep = int, typename Period = ratio<1, 1000> >
-    MT_Semaphore(const duration<Rep, Period>& aTimeout = 10ms);
-    ~MT_Semaphore();
+    MT_Semaphore()  { sem_init(&mt_sem_, 0, 0); }  // 2nd para: intra-process; 3rd: init value
+    ~MT_Semaphore() { sem_destroy(&mt_sem_); }
     MT_Semaphore(const MT_Semaphore&) = delete;
     MT_Semaphore& operator=(const MT_Semaphore&) = delete;
 
-    void mt_wait() { sem_wait(&mt_sem_); }
+    void mt_wait(const size_t aSec = 0, const size_t aMsec = 10);
     void mt_notify();
 
     // -------------------------------------------------------------------------------------------
 private:
     sem_t mt_sem_;
-
-    atomic<bool> mt_stopTimer_;
-    future<void> mt_timerFut_;
 };
-
-// ***********************************************************************************************
-template<typename Rep, typename Period>
-MT_Semaphore::MT_Semaphore(const duration<Rep, Period>& aTimeout)
-    : mt_stopTimer_(false)
-    , mt_timerFut_(async(launch::async, [aTimeout, this]
-    {
-        while (! mt_stopTimer_.load())
-        {
-            this_thread::sleep_for(aTimeout);
-            mt_notify();
-        }
-    }))
-{
-    sem_init(&mt_sem_, 0, 0);  // 2nd para: intra-process; 3rd: init value
-}
 
 }  // namespace
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2023-09-20  CSZ       1)create
-// 2023-09-21  CSZ       - timer
+// 2023-09-21  CSZ       - timer based on ThreadBack
+// 2023-10-26  CSZ       - timer based on sem_timedwait()
 // ***********************************************************************************************

@@ -3,20 +3,15 @@
  * Licensed under the BSD 3 Clause license
  * SPDX-License-Identifier: BSD-3-Clause
  */
+#include <cerrno>
+#include <time.h>
+
 #include "MT_Semaphore.hpp"
 
 using namespace std;
 
 namespace RLib
 {
-// ***********************************************************************************************
-MT_Semaphore::~MT_Semaphore()
-{
-    mt_stopTimer_.store(true);
-    mt_timerFut_.get();
-    sem_destroy(&mt_sem_);  // must sfter timer thread stopped
-}
-
 // ***********************************************************************************************
 void MT_Semaphore::mt_notify()
 {
@@ -25,6 +20,19 @@ void MT_Semaphore::mt_notify()
         if (count > 0)  // >0 to avoid count overflow; mt_timerFut_ ensure no lost
             return;
     sem_post(&mt_sem_);
+}
+
+// ***********************************************************************************************
+void MT_Semaphore::mt_wait(const size_t aSec, const size_t aMsec)
+{
+    timespec ts;
+    if (clock_gettime(CLOCK_REALTIME, &ts) == -1)
+        return;
+    ts.tv_sec += aSec;
+    ts.tv_nsec += aMsec * 1000'000;
+
+    while (sem_timedwait(&mt_sem_, &ts) == -1 && errno == EINTR)
+        continue;  // restart if interrupted by handler
 }
 
 }  // namespace
