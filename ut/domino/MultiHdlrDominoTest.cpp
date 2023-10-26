@@ -21,7 +21,7 @@ struct MultiHdlrDominoTest : public UtInitObjAnywhere
     MOCK_METHOD(void, hdlr2, ());
 
     // -------------------------------------------------------------------------------------------
-    PongMainFN pongMainFN_;
+    PongMainFN pongMainFN_ = nullptr;
     MsgCB hdlr0_ = [this](){ this->hdlr0(); };
     MsgCB hdlr1_ = [this](){ this->hdlr1(); };
     MsgCB hdlr2_ = [this](){ this->hdlr2(); };

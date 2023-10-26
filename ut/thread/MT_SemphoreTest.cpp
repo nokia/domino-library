@@ -43,7 +43,7 @@ struct MT_SemaphoreTest : public Test, public UniLog
 
     shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(
         [this](const PongMainFN& aPongMainFN){ pongMainFN_ = aPongMainFN; }, uniLogName());
-    PongMainFN pongMainFN_;
+    PongMainFN pongMainFN_ = nullptr;
 };
 
 #define INTEGRATION
@@ -134,7 +134,8 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         }
 
         INF("nMsg=" << msgSelf_->nMsg(EMsgPri_NORM) << ", nQ=" << mtQ_.mt_size() << ", nTh=" << ThreadBack::nThread());
-        pongMainFN_();  // handle all existing in MsgSelf
+        if (pongMainFN_)    // possible nullptr
+            pongMainFN_();  // handle all existing in MsgSelf
 
         INF("nMsg=" << msgSelf_->nMsg(EMsgPri_NORM) << ", nQ=" << mtQ_.mt_size() << ", nTh=" << ThreadBack::nThread());
         if (expect == cb_info)

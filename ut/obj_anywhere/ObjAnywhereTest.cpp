@@ -8,7 +8,6 @@
 #include <memory>  // for shared_ptr
 
 #include "UniLog.hpp"
-#include "MsgSelf.hpp"
 #include "ObjAnywhere.hpp"
 
 using namespace testing;

@@ -21,7 +21,7 @@ struct FreeHdlrDominoTest : public UtInitObjAnywhere
     // -------------------------------------------------------------------------------------------
     shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(
         [this](const PongMainFN& aPongMainFN){ pongMainFN_ = aPongMainFN; }, uniLogName());
-    PongMainFN pongMainFN_;
+    PongMainFN pongMainFN_ = nullptr;
 
     MsgCB h1_ = [this](){ hdlrIDs_.insert(1); };
     MsgCB h2_ = [this](){ hdlrIDs_.insert(2); };

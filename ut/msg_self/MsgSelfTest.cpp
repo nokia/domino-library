@@ -28,7 +28,7 @@ struct MsgSelfTest : public Test, public UniLog
         [&](const PongMainFN& aPongFn){ this->pingMain(aPongFn); },
         uniLogName()
     );
-    PongMainFN pongMainFN_;
+    PongMainFN pongMainFN_ = nullptr;
 
     MsgCB d1MsgHdlr_ = [&](){ hdlrIDs_.push(1); };
     MsgCB d2MsgHdlr_ = [&](){ hdlrIDs_.push(2); };

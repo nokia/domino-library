@@ -20,7 +20,7 @@ struct HdlrDominoTest : public UtInitObjAnywhere
     MOCK_METHOD(void, hdlr2, ());
 
     // -------------------------------------------------------------------------------------------
-    PongMainFN pongMainFN_;
+    PongMainFN pongMainFN_ = nullptr;
     MsgCB hdlr0_ = [this](){ this->hdlr0(); };
     MsgCB hdlr1_ = [this](){ this->hdlr1(); };
     MsgCB hdlr2_ = [this](){ this->hdlr2(); };
@@ -210,13 +210,13 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlrOnRoad_noCallback)
 
     PARA_DOM->multiHdlrByAliasEv("e0", this->hdlr0_, "e");
     PARA_DOM->multiHdlrByAliasEv("e1", this->hdlr1_, "e");
-    PARA_DOM->setState({{"e", true}});            // cb on road
+    PARA_DOM->setState({{"e", true}});  // cb on road
     EXPECT_TRUE(msgSelf->hasMsg());
     EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("e0")) << "REQ: rm hdlr on-road" << endl;
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1());
-    this->pongMainFN_();                          // manual trigger on road cb
+    this->pongMainFN_();  // manual trigger on road cb
 }
 TYPED_TEST_P(NofreeHdlrDominoTest, rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigger)
 {

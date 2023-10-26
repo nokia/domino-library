@@ -21,7 +21,7 @@ struct PriDominoTest : public UtInitObjAnywhere
     // -------------------------------------------------------------------------------------------
     shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(
         [this](const PongMainFN& aPongMainFN){ pongMainFN_ = aPongMainFN; }, uniLogName());
-    PongMainFN pongMainFN_;
+    PongMainFN pongMainFN_ = nullptr;
 
     MsgCB d1EventHdlr_ = [&](){ hdlrIDs_.push(1); };
     MsgCB d2EventHdlr_ = [&](){ hdlrIDs_.push(2); };
