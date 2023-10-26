@@ -56,7 +56,6 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     unordered_map<size_t, function<void(shared_ptr<void>)>> msgHdlrs;
     msgHdlrs[typeid(string).hash_code()] = [this, &cb_info](shared_ptr<void> aMsg)
     {
-cerr<<__LINE__<<' '<<__FILE__<<endl;
         msgSelf_->newMsg(  // REQ: via MsgSelf
             [aMsg, &cb_info]
             {
@@ -67,7 +66,6 @@ cerr<<__LINE__<<' '<<__FILE__<<endl;
     };
     msgHdlrs[typeid(int).hash_code()] = [this, &cb_info](shared_ptr<void> aMsg)
     {
-cerr<<__LINE__<<' '<<__FILE__<<endl;
         msgSelf_->newMsg(
             [aMsg, &cb_info]
             {
@@ -126,21 +124,16 @@ cerr<<__LINE__<<' '<<__FILE__<<endl;
         // handle all existing in mtQ_
         for (;;)
         {
-cerr<<__LINE__<<"!!! nMsg="<<msgSelf_->nMsg(EMsgPri_NORM)<<", "<<__func__<<endl;
             auto elePair = mtQ_.pop();
             if (elePair.first == nullptr) break;  // handle next eg MsgSelf queue
-cerr<<__LINE__<<"!!! nMsg="<<msgSelf_->nMsg(EMsgPri_NORM)<<", "<<__func__<<endl;
             msgHdlrs[elePair.second](elePair.first);
         }
 
-cerr<<__LINE__<<"!!! nMsg="<<msgSelf_->nMsg(EMsgPri_NORM)<<", "<<__func__<<endl;
         pongMainFN_();  // handle all existing in MsgSelf
 
         if (expect == cb_info)
             return;
-cerr<<__LINE__<<"!!! nMsg="<<msgSelf_->nMsg(EMsgPri_NORM)<<", "<<__func__<<endl;
         mt_waker_.mt_wait();
-cerr<<__LINE__<<"!!! nMsg="<<msgSelf_->nMsg(EMsgPri_NORM)<<", "<<__func__<<endl;
     }
 }
 
