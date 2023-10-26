@@ -119,25 +119,28 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     for (;;)
     {
         // handle all done Thread
-        INF("nMsg=" << msgSelf_->nMsg(EMsgPri_NORM) << ", nQ=" << mtQ_.mt_size());
+        INF("nMsg=" << msgSelf_->nMsg(EMsgPri_NORM) << ", nQ=" << mtQ_.mt_size() << ", nTh=" << ThreadBack::nThread());
         ThreadBack::hdlFinishedThreads();
 
         // handle all existing in mtQ_
         for (;;)
         {
-            INF("nMsg=" << msgSelf_->nMsg(EMsgPri_NORM) << ", nQ=" << mtQ_.mt_size());
+            INF("nMsg=" << msgSelf_->nMsg(EMsgPri_NORM) << ", nQ=" << mtQ_.mt_size() << ", nTh=" << ThreadBack::nThread());
             auto elePair = mtQ_.pop();
             if (elePair.first == nullptr) break;  // handle next eg MsgSelf queue
 
-            INF("nMsg=" << msgSelf_->nMsg(EMsgPri_NORM) << ", nQ=" << mtQ_.mt_size());
+            INF("nMsg=" << msgSelf_->nMsg(EMsgPri_NORM) << ", nQ=" << mtQ_.mt_size() << ", nTh=" << ThreadBack::nThread());
             msgHdlrs[elePair.second](elePair.first);
         }
 
-        INF("nMsg=" << msgSelf_->nMsg(EMsgPri_NORM) << ", nQ=" << mtQ_.mt_size());
+        INF("nMsg=" << msgSelf_->nMsg(EMsgPri_NORM) << ", nQ=" << mtQ_.mt_size() << ", nTh=" << ThreadBack::nThread());
         pongMainFN_();  // handle all existing in MsgSelf
 
+        INF("nMsg=" << msgSelf_->nMsg(EMsgPri_NORM) << ", nQ=" << mtQ_.mt_size() << ", nTh=" << ThreadBack::nThread());
         if (expect == cb_info)
             return;
+
+        INF("nMsg=" << msgSelf_->nMsg(EMsgPri_NORM) << ", nQ=" << mtQ_.mt_size() << ", nTh=" << ThreadBack::nThread());
         mt_waker_.mt_wait();
     }
 }
