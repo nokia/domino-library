@@ -26,7 +26,6 @@ struct MtInQueueTest : public Test, public UniLog
 {
     MtInQueueTest()
         : UniLog(UnitTest::GetInstance()->current_test_info()->name())
-        , mtQ_([this]{ mt_waker_.mt_notify(); })
     {}
     void SetUp() override
     {

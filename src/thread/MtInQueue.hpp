@@ -24,6 +24,8 @@
 #include <mutex>
 #include <utility>
 
+#include "MT_PingMainTH.hpp"
+
 using namespace std;
 
 namespace RLib
@@ -36,9 +38,6 @@ using ElePair = pair<shared_ptr<void>, size_t>;
 class MtInQueue
 {
 public:
-    // can't change mt_notifyFn_ -> MT safe
-    MtInQueue(const function<void(void)>& aNotifyFn = nullptr) : mt_notifyFn_(aNotifyFn) {}
-
     template<class aEleType> void mt_push(shared_ptr<aEleType> aEle);
 
     // shall be called in main thread ONLY!!!
@@ -49,13 +48,10 @@ public:
     size_t mt_clear();
 
 private:
-    void mt_notifyFn() { if (mt_notifyFn_) mt_notifyFn_(); }
-
     // -------------------------------------------------------------------------------------------
     deque<ElePair> queue_;  // unlimited ele; most suitable container
     deque<ElePair> cache_;
     mutex mutex_;
-    function<void(void)> mt_notifyFn_;  // must be MT safety
 
     // -------------------------------------------------------------------------------------------
 #ifdef MT_IN_Q_TEST  // UT only
@@ -72,7 +68,7 @@ void MtInQueue::mt_push(shared_ptr<aEleType> aEle)
         lock_guard<mutex> guard(mutex_);
         queue_.push_back(ElePair(aEle, typeid(aEleType).hash_code()));
     }  // unlock then mt_notifyFn()
-    mt_notifyFn();
+    mt_pingMainTH();
 }
 
 }  // namespace
@@ -86,4 +82,5 @@ void MtInQueue::mt_push(shared_ptr<aEleType> aEle)
 // 2023-08-24  CSZ       2)MtQueue -> MtInQueue
 // 2023-09-08  CSZ       - store Ele with its hash_code
 // 2023-09-18  CSZ       - support main thread wait() instead of keeping pop()
+// 2023-10-26  CSZ       - replace mt_notifyFn_() by mt_pingMainTH()
 // ***********************************************************************************************

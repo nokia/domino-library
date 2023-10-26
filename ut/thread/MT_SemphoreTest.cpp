@@ -12,7 +12,7 @@
 #include <unordered_map>
 
 #include "MsgSelf.hpp"
-#include "MT_Semaphore.hpp"
+#include "MT_PingMainTH.hpp"
 #include "MtInQueue.hpp"
 #include "ThreadBackViaMsgSelf.hpp"
 #include "UniLog.hpp"
@@ -25,7 +25,6 @@ struct MT_SemaphoreTest : public Test, public UniLog
 {
     MT_SemaphoreTest()
         : UniLog(UnitTest::GetInstance()->current_test_info()->name())
-        , mtQ_([this]{ mt_waker_.mt_notify(); })
     {}
     void SetUp() override
     {
@@ -38,7 +37,6 @@ struct MT_SemaphoreTest : public Test, public UniLog
     ~MT_SemaphoreTest() { GTEST_LOG_FAIL }
 
     // -------------------------------------------------------------------------------------------
-    MT_Semaphore mt_waker_;
     MtInQueue mtQ_;
 
     shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(
@@ -81,7 +79,6 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         [this]
         {
             mtQ_.mt_push(make_shared<string>("a"));
-            mt_waker_.mt_notify();  // REQ: can notify
             return true;
         },
         // backFn
@@ -99,7 +96,6 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         [this]
         {
             mtQ_.mt_push(make_shared<int>(2));
-            //mt_waker_.mt_notify();  // REQ: no mt_notify() but rely on sem's timeout
             return true;
         },
         // backFn
@@ -142,7 +138,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
             return;
 
         INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mtQ_.mt_size() << ", nTh=" << ThreadBack::nThread());
-        mt_waker_.mt_timedwait();
+        g_sem.mt_timedwait();
     }
 }
 
@@ -153,7 +149,7 @@ TEST_F(MT_SemaphoreTest, GOLD_timer_wakeup)
         []{ return true; }, // entryFn; no wakeup
         [](bool){} // backFn
     );
-    mt_waker_.mt_timedwait();
+    g_sem.mt_timedwait();
     EXPECT_EQ(1u, ThreadBack::hdlFinishedThreads()) << "REQ: MT_Semaphore's timer shall wakeup its mt_timedwait()";
 }
 
