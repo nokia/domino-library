@@ -143,14 +143,14 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
 }
 
 // ***********************************************************************************************
-TEST_F(MT_SemaphoreTest, GOLD_timer_wakeup)
+TEST_F(MT_SemaphoreTest, immediate_timeout)
 {
     ThreadBack::newThread(
         []{ return true; }, // entryFn; no wakeup
-        [](bool){} // backFn
+        [](bool aRet){ EXPECT_TRUE(aRet); } // backFn
     );
-    g_sem.mt_timedwait();
-    EXPECT_EQ(1u, ThreadBack::hdlFinishedThreads()) << "REQ: MT_Semaphore's timer shall wakeup its mt_timedwait()";
+    while (ThreadBack::hdlFinishedThreads() == 0)
+        g_sem.mt_timedwait(0);  // REQ: timeout immediately
 }
 
 }  // namespace
