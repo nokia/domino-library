@@ -22,7 +22,6 @@
 #include <future>
 #include <semaphore.h>
 #include <thread>
-#include <iostream>
 
 using namespace std;
 using namespace std::chrono;
