@@ -119,16 +119,21 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     for (;;)
     {
         // handle all done Thread
+        INF("nMsg=" << msgSelf_->nMsg(EMsgPri_NORM) << ", nQ=" << mtQ_.mt_size());
         ThreadBack::hdlFinishedThreads();
 
         // handle all existing in mtQ_
         for (;;)
         {
+            INF("nMsg=" << msgSelf_->nMsg(EMsgPri_NORM) << ", nQ=" << mtQ_.mt_size());
             auto elePair = mtQ_.pop();
             if (elePair.first == nullptr) break;  // handle next eg MsgSelf queue
+
+            INF("nMsg=" << msgSelf_->nMsg(EMsgPri_NORM) << ", nQ=" << mtQ_.mt_size());
             msgHdlrs[elePair.second](elePair.first);
         }
 
+        INF("nMsg=" << msgSelf_->nMsg(EMsgPri_NORM) << ", nQ=" << mtQ_.mt_size());
         pongMainFN_();  // handle all existing in MsgSelf
 
         if (expect == cb_info)
