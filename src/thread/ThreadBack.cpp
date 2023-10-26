@@ -8,8 +8,8 @@
 #include <iostream>
 #include <memory>
 
-#include "mt_notify.hpp"
 #include "ThreadBack.hpp"
+#include "MT_PingMainTH.hpp"
 
 namespace RLib
 {
@@ -44,7 +44,7 @@ void ThreadBack::newThread(const MT_ThreadEntryFN& mt_aEntryFn, const ThreadBack
             [mt_aEntryFn]()  // must cp than ref, otherwise dead loop
             {
                 const bool ret = mt_aEntryFn();
-                mt_notify();
+                mt_pingMainTH();
                 return ret;
             }
         ),

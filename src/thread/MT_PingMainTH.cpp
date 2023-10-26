@@ -3,7 +3,7 @@
  * Licensed under the BSD 3 Clause license
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#include "mt_notify.hpp"
+#include "MT_PingMainTH.hpp"
 
 namespace RLib
 {

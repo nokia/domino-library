@@ -73,7 +73,7 @@ void MsgSelf::newMsg(const MsgCB& aMsgCB, const EMsgPriority aMsgPri)
     msgQueues_[aMsgPri].push_back(aMsgCB);
     ++nMsg_;
 
-    if (nMsg_ == 1)  // ist MsgCB
+    if (nMsg_ == 1)  // 1st MsgCB
         pingMainFN_([this, isValid = isValid_]() mutable { handleAllMsg(isValid); });
 }
 }  // namespace

@@ -113,7 +113,7 @@ public:
 // 2022-10-23  CSZ       1)create
 // 2022-11-15  CSZ       - simpler & MT safe
 // 2023-07-12  CSZ       - copilot compare
-// 2023-10-25  CSZ       - can mt_notify() at the end of a thread
+// 2023-10-25  CSZ       - can mt_pingMainTH() at the end of a thread
 // 2023-08-17  CSZ       - handle async() fail
 // 2023-08-18  CSZ       - rm mt_nFinishedThread_
 // 2023-09-14  CSZ       2)align with MsgSelf

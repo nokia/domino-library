@@ -11,7 +11,7 @@
 #include <unistd.h>
 
 #include "MsgSelf.hpp"
-#include "mt_notify.hpp"
+#include "MT_PingMainTH.hpp"
 #include "UniLog.hpp"
 
 #define THREAD_BACK_TEST
