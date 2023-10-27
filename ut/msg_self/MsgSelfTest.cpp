@@ -154,15 +154,17 @@ TEST_F(MsgSelfTest, destructMsgSelf_noCallback_noMemLeak_noCrash)  // mem leak i
 // ***********************************************************************************************
 TEST_F(MsgSelfTest, wait_notify)
 {
-    auto now = high_resolution_clock::now();
+    auto start = high_resolution_clock::now();
     msgSelf_->newMsg(d1MsgHdlr_);
     g_sem.mt_timedwait();  // REQ: 1 msg will wakeup mt_timedwait()
-    auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - now);
-    EXPECT_LT(dur.count(), 100) << "REQ: newMsg() shall notify";
+    auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - start);
+    EXPECT_LT(dur.count(), 100) << "REQ: newMsg() shall notify instead of timeout";
 
     msgSelf_->newMsg(d1MsgHdlr_);
     msgSelf_->newMsg(d1MsgHdlr_);  // req: dup
     g_sem.mt_timedwait();  // REQ: multi-msg will wakeup mt_timedwait()
+    dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - start - dur);
+    EXPECT_LT(dur.count(), 100) << "REQ: newMsg() shall notify instead of timeout";
 
     msgSelf_->handleAllMsg(msgSelf_->getValid());  // clean msg queue
 }
