@@ -150,7 +150,7 @@ TEST_F(MT_SemaphoreTest, immediate_timeout)
         [](bool aRet){ EXPECT_TRUE(aRet); } // backFn
     );
     while (ThreadBack::hdlFinishedThreads() == 0)
-        g_sem.mt_timedwait(0, 0);  // REQ: timeout immediately
+        g_sem.mt_timedwait(0, 0);  // REQ: can timeout immediately
 }
 
 }  // namespace

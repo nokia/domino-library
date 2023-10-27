@@ -76,11 +76,11 @@ public:
     void   newMsg(const MsgCB&, const EMsgPriority = EMsgPri_NORM);  // can't withdraw CB but easier usage
     size_t nMsg() const { return nMsg_; }
     size_t nMsg(const EMsgPriority aPriority) const { return msgQueues_[aPriority].size(); }
+    void   handleAllMsg(const shared_ptr<bool> aValidMsgSelf = make_shared<bool>(true));
 
     static bool isLowPri(const EMsgPriority aPri) { return aPri < EMsgPri_NORM; }
 
 private:
-    void handleAllMsg(const shared_ptr<bool> aValidMsgSelf = make_shared<bool>(true));
     bool handleOneMsg();
 
     // -------------------------------------------------------------------------------------------
@@ -111,4 +111,5 @@ private:
 // 2022-12-02  CSZ       - simple & natural
 // 2022-12-31  CSZ       - not support MsgCB=nullptr
 // 2023-07-13  CSZ       - copilot compare
+// 2023-10-27  CSZ       - replace pingMainFN_() by mt_pingMainTH()
 // ***********************************************************************************************

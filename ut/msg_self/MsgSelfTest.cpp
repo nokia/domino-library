@@ -51,14 +51,13 @@ TEST_F(MsgSelfTest, GOLD_sendMsg)
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM)) << "REQ: init states" << endl;
     EXPECT_FALSE(msgSelf_->nMsg());
 
-    EXPECT_CALL(*this, pingMain(_)).WillOnce(SaveArg<0>(&pongMainFN_));  // req: newMsg->pingMain that eg send msg to self
     msgSelf_->newMsg(d1MsgHdlr_);
     EXPECT_EQ(1u, msgSelf_->nMsg(EMsgPri_NORM));
     EXPECT_TRUE(msgSelf_->nMsg());
     EXPECT_EQ(queue<int>(), hdlrIDs_) << "REQ: not immediate call d1MsgHdlr_ but wait msg-to-self" << endl;
 
-    EXPECT_CALL(*this, pingMain(_)).Times(0);     // req: no more no call
-    pongMainFN_();                                // simulate eg msg-to-self received, then call pongMainFN_()
+    EXPECT_CALL(*this, pingMain(_)).Times(0);      // req: no more no call
+    msgSelf_->handleAllMsg(msgSelf_->getValid());  // simulate main() callback
     EXPECT_EQ(queue<int>({1}), hdlrIDs_) << "REQ: call d1MsgHdlr_" << endl;
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM));
     EXPECT_FALSE(msgSelf_->nMsg());
@@ -72,7 +71,7 @@ TEST_F(MsgSelfTest, dupSendMsg)
     EXPECT_EQ(queue<int>(), hdlrIDs_);
 
     EXPECT_CALL(*this, pingMain(_)).Times(0);
-    pongMainFN_();
+    msgSelf_->handleAllMsg(msgSelf_->getValid());
     EXPECT_EQ(queue<int>({1, 1}), hdlrIDs_);      // req: call all
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM));
 }
@@ -80,11 +79,11 @@ TEST_F(MsgSelfTest, sendInvalidMsg_noCrash)
 {
     EXPECT_CALL(*this, pingMain(_)).WillOnce(SaveArg<0>(&pongMainFN_));
     msgSelf_->newMsg(d1MsgHdlr_);  // valid cb to get pongMainFN_
-    pongMainFN_();
+    msgSelf_->handleAllMsg(msgSelf_->getValid());
     EXPECT_EQ(queue<int>({1}), hdlrIDs_);
 
     msgSelf_->newMsg(MsgCB());  // req: invalid cb
-    pongMainFN_();  // req: no crash (& inc cov of empty queue)
+    msgSelf_->handleAllMsg(msgSelf_->getValid());  // req: no crash (& inc cov of empty queue)
     EXPECT_EQ(queue<int>({1}), hdlrIDs_);
 }
 TEST_F(MsgSelfTest, GOLD_loopback_handleAll_butOneByOneLowPri)
@@ -102,21 +101,21 @@ TEST_F(MsgSelfTest, GOLD_loopback_handleAll_butOneByOneLowPri)
     EXPECT_EQ(3u, msgSelf_->nMsg(EMsgPri_LOW));
 
     EXPECT_CALL(*this, pingMain(_)).WillOnce(SaveArg<0>(&pongMainFN_));
-    pongMainFN_();
+    msgSelf_->handleAllMsg(msgSelf_->getValid());
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM)) << "REQ: all normal" << endl;
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_HIGH)) << "REQ: all high" << endl;
     EXPECT_EQ(2u, msgSelf_->nMsg(EMsgPri_LOW))  << "REQ: 1/loopback()" << endl;
 
     EXPECT_CALL(*this, pingMain(_)).WillOnce(SaveArg<0>(&pongMainFN_));
-    pongMainFN_();
+    msgSelf_->handleAllMsg(msgSelf_->getValid());
     EXPECT_EQ(1u, msgSelf_->nMsg(EMsgPri_LOW));
 
     EXPECT_CALL(*this, pingMain(_)).Times(0);     // req: last low need not trigger pingMain()
-    pongMainFN_();
+    msgSelf_->handleAllMsg(msgSelf_->getValid());
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_LOW));
 
     EXPECT_CALL(*this, pingMain(_)).Times(0);     // req: no msg shall not trigger pingMain()
-    pongMainFN_();
+    msgSelf_->handleAllMsg(msgSelf_->getValid());
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_LOW));
 }
 
@@ -127,7 +126,7 @@ TEST_F(MsgSelfTest, GOLD_highPriority_first)
     EXPECT_CALL(*this, pingMain(_)).WillOnce(SaveArg<0>(&pongMainFN_));
     msgSelf_->newMsg(d1MsgHdlr_);
     msgSelf_->newMsg(d2MsgHdlr_, EMsgPri_HIGH);
-    pongMainFN_();
+    msgSelf_->handleAllMsg(msgSelf_->getValid());
 
     EXPECT_EQ(queue<int>({2, 1}), hdlrIDs_);
 }
@@ -138,7 +137,7 @@ TEST_F(MsgSelfTest, GOLD_samePriority_fifo)
     msgSelf_->newMsg(d2MsgHdlr_, EMsgPri_HIGH);
     msgSelf_->newMsg(d3MsgHdlr_);
     msgSelf_->newMsg(d4MsgHdlr_, EMsgPri_HIGH);
-    pongMainFN_();
+    msgSelf_->handleAllMsg(msgSelf_->getValid());
 
     EXPECT_EQ(queue<int>({2, 4, 1, 3}), hdlrIDs_);
 }
@@ -149,31 +148,21 @@ TEST_F(MsgSelfTest, newHighPri_first)
     msgSelf_->newMsg(d5MsgHdlr_, EMsgPri_HIGH);
     msgSelf_->newMsg(d3MsgHdlr_);
     msgSelf_->newMsg(d4MsgHdlr_, EMsgPri_HIGH);
-    pongMainFN_();
+    msgSelf_->handleAllMsg(msgSelf_->getValid());
 
     EXPECT_EQ(queue<int>({5, 4, 2, 1, 3}), hdlrIDs_);
 }
 
 #define DESTRUCT_MSGSELF
-// ***********************************************************************************************
-TEST_F(MsgSelfTest, invalidMsgSelf_pongMainFNShallNotCrash)
+TEST_F(MsgSelfTest, destructMsgSelf_noCallback_noMemLeak_noCrash)  // mem leak is checked by valgrind upon UT
 {
-    EXPECT_CALL(*this, pingMain(_)).WillOnce(SaveArg<0>(&pongMainFN_));
-    msgSelf_->newMsg(d1MsgHdlr_);
-    auto valid = msgSelf_->getValid();
-
-    EXPECT_EQ(1, msgSelf_.use_count());
-    msgSelf_.reset();                                      // rm msgSelf
-    EXPECT_FALSE(*valid);
-
-    pongMainFN_();                                         // req: no crash
-}
-TEST_F(MsgSelfTest, destructMsgSelf_noCallback_noMemLeak)  // mem leak is checked by valgrind upon UT
-{
-    EXPECT_CALL(*this, pingMain(_)).WillOnce(SaveArg<0>(&pongMainFN_));
-    EXPECT_CALL(*this, d6MsgHdlr()).Times(0);              // req: no call
+    EXPECT_CALL(*this, d6MsgHdlr()).Times(0);  // req: no call
     msgSelf_->newMsg([&](){ this->d6MsgHdlr(); });
     EXPECT_EQ(1u, msgSelf_->nMsg(EMsgPri_NORM));
-    msgSelf_.reset();                                      // rm msgSelf
+
+    auto valid = msgSelf_->getValid();
+    msgSelf_.reset();  // rm msgSelf
+    msgSelf_->handleAllMsg(valid);  // req: no crash
 }
+
 }  // namespace
