@@ -10,6 +10,7 @@
 #include <queue>
 
 #include "MsgSelf.hpp"
+#include "MT_PingMainTH.hpp"
 
 using namespace testing;
 
@@ -22,11 +23,7 @@ struct MsgSelfTest : public Test, public UniLog
     ~MsgSelfTest() { GTEST_LOG_FAIL }
 
     // -------------------------------------------------------------------------------------------
-    shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(
-        [&](const PongMainFN& aPongFn){ this->pingMain(aPongFn); },
-        uniLogName()
-    );
-    MOCK_METHOD(void, pingMain, (const PongMainFN&));
+    shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(uniLogName());
 
     MsgCB d1MsgHdlr_ = [&](){ hdlrIDs_.push(1); };
     MsgCB d2MsgHdlr_ = [&](){ hdlrIDs_.push(2); };
@@ -47,14 +44,13 @@ struct MsgSelfTest : public Test, public UniLog
 TEST_F(MsgSelfTest, GOLD_sendMsg)
 {
     EXPECT_EQ(0u, msgSelf_->nMsg()) << "REQ: init states" << endl;
-    EXPECT_FALSE(msgSelf_->nMsg());
 
     msgSelf_->newMsg(d1MsgHdlr_);
     EXPECT_EQ(1u, msgSelf_->nMsg(EMsgPri_NORM));
     EXPECT_EQ(1u, msgSelf_->nMsg());
     EXPECT_EQ(queue<int>(), hdlrIDs_) << "REQ: not immediate call d1MsgHdlr_ but wait msg-to-self" << endl;
 
-    EXPECT_CALL(*this, pingMain(_)).Times(0);      // req: no more no call
+    g_sem.mt_timedwait();  // REQ: msg will wakeup mt_timedwait()
     msgSelf_->handleAllMsg(msgSelf_->getValid());  // simulate main() callback
     EXPECT_EQ(queue<int>({1}), hdlrIDs_) << "REQ: call d1MsgHdlr_" << endl;
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM));
@@ -67,7 +63,6 @@ TEST_F(MsgSelfTest, dupSendMsg)
     EXPECT_EQ(2u, msgSelf_->nMsg(EMsgPri_NORM));
     EXPECT_EQ(queue<int>(), hdlrIDs_);
 
-    EXPECT_CALL(*this, pingMain(_)).Times(0);
     msgSelf_->handleAllMsg(msgSelf_->getValid());
     EXPECT_EQ(queue<int>({1, 1}), hdlrIDs_);      // req: call all
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM));
@@ -103,11 +98,9 @@ TEST_F(MsgSelfTest, GOLD_loopback_handleAll_butOneByOneLowPri)
     msgSelf_->handleAllMsg(msgSelf_->getValid());
     EXPECT_EQ(1u, msgSelf_->nMsg(EMsgPri_LOW));
 
-    EXPECT_CALL(*this, pingMain(_)).Times(0);     // req: last low need not trigger pingMain()
     msgSelf_->handleAllMsg(msgSelf_->getValid());
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_LOW));
 
-    EXPECT_CALL(*this, pingMain(_)).Times(0);     // req: no msg shall not trigger pingMain()
     msgSelf_->handleAllMsg(msgSelf_->getValid());
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_LOW));
 }

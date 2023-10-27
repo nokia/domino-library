@@ -20,7 +20,6 @@ struct HdlrDominoTest : public UtInitObjAnywhere
     MOCK_METHOD(void, hdlr2, ());
 
     // -------------------------------------------------------------------------------------------
-    PongMainFN pongMainFN_ = nullptr;
     MsgCB hdlr0_ = [this](){ this->hdlr0(); };
     MsgCB hdlr1_ = [this](){ this->hdlr1(); };
     MsgCB hdlr2_ = [this](){ this->hdlr2(); };
@@ -41,22 +40,27 @@ TYPED_TEST_P(HdlrDominoTest, GOLD_add_and_call)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);  // req: add hdlr
     EXPECT_CALL(*this, hdlr0());
-    PARA_DOM->setState({{"event", true}});     // req: F->T trigger the call
+    PARA_DOM->setState({{"event", true}});  // req: F->T trigger the call
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     EXPECT_CALL(*this, hdlr1()).Times(0);  // REQ: T->T no call (only F->T is trigger)
     PARA_DOM->setState({{"event", true}});
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     EXPECT_CALL(*this, hdlr1()).Times(0);  // REQ: T->F no call
     PARA_DOM->setState({{"event", false}});
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     EXPECT_CALL(*this, hdlr1()).Times(0);  // REQ: F->F no call
     PARA_DOM->setState({{"event", false}});
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(HdlrDominoTest, immediate_call)
 {
     PARA_DOM->setState({{"event", true}});
     EXPECT_CALL(*this, hdlr0());
     PARA_DOM->setHdlr("event", this->hdlr0_);  // req: immediate call since already T from default (always=F)
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(NofreeHdlrDominoTest, UC_reTrigger_reCall)
 {
@@ -65,6 +69,7 @@ TYPED_TEST_P(NofreeHdlrDominoTest, UC_reTrigger_reCall)
     PARA_DOM->setState({{"event", true}});     // 1st trigger
     PARA_DOM->setState({{"event", false}});
     PARA_DOM->setState({{"event", true}});     // 2nd trigger
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 
 #define CHAIN
@@ -78,6 +83,7 @@ TYPED_TEST_P(HdlrDominoTest, GOLD_trigger_chain_call)
 
     EXPECT_CALL(*this, hdlr0());  // REQ: upstream trigger downstream call
     PARA_DOM->setState({{"prev", true}});
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(HdlrDominoTest, immediate_chain_call)
 {
@@ -85,6 +91,7 @@ TYPED_TEST_P(HdlrDominoTest, immediate_chain_call)
     PARA_DOM->setState({{"prev", true}});
     EXPECT_CALL(*this, hdlr0());  // REQ: immediate call
     PARA_DOM->setPrev("event", {{"prev", true}});
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(NofreeHdlrDominoTest, GOLD_trigger_chain_many_calls)
 {
@@ -96,32 +103,38 @@ TYPED_TEST_P(NofreeHdlrDominoTest, GOLD_trigger_chain_many_calls)
     EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2());
     PARA_DOM->setState({{"e0", true}});     // T->T->T, req: trigger all calls
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1()).Times(0);
     EXPECT_CALL(*this, hdlr2()).Times(0);
     PARA_DOM->setState({{"e2", false}});    // T,T,TF, req: not trigger any
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1()).Times(0);
     EXPECT_CALL(*this, hdlr2()).Times(0);
     PARA_DOM->setState({{"e0", false}});    // FT,T,F
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1()).Times(0);
     EXPECT_CALL(*this, hdlr2());
     PARA_DOM->setState({{"e0", true}});     // FT->T->FT, req: trigger only FT
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(HdlrDominoTest, wrongOrderPrev_wrongCallback)
 {
     EXPECT_CALL(*this, hdlr0()).Times(0);  // REQ: no callback
     PARA_DOM->setHdlr("event with simu prev setting", this->hdlr0_);
     PARA_DOM->setPrev("event with simu prev setting", {{"prev1", true}, {"prev2", false}});  // simu prev
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     EXPECT_CALL(*this, hdlr0());  // REQ: wrong callback
     PARA_DOM->setHdlr("event with wrong prev setting", this->hdlr0_);
     PARA_DOM->setPrev("event with wrong prev setting", {{"prev2", false}});  // wrong order
     PARA_DOM->setPrev("event with wrong prev setting", {{"prev1", true}});
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 
 #define MULTI_HDLR  // multi hdlr by alias event
@@ -134,6 +147,7 @@ TYPED_TEST_P(HdlrDominoTest, multiHdlr_onOneEvent_nok)
     EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1()).Times(0);
     PARA_DOM->setState({{"event", true}});
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(HdlrDominoTest, GOLD_multiHdlr_onDiffEvent_ok)
 {
@@ -145,6 +159,7 @@ TYPED_TEST_P(HdlrDominoTest, GOLD_multiHdlr_onDiffEvent_ok)
     EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2());
     PARA_DOM->setState({{"event", true}});
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(HdlrDominoTest, multiHdlr_onOneAliasEvent_nok)
 {
@@ -156,6 +171,7 @@ TYPED_TEST_P(HdlrDominoTest, multiHdlr_onOneAliasEvent_nok)
     EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2()).Times(0);
     PARA_DOM->setState({{"event", true}});
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(HdlrDominoTest, BugFix_invalidHdlr_noCrash)
 {
@@ -169,9 +185,11 @@ TYPED_TEST_P(HdlrDominoTest, BugFix_invalidHdlr_noCrash)
 
     EXPECT_CALL(*this, hdlr0());  // REQ: can add hdlr upon null
     PARA_DOM->setHdlr("e1", this->hdlr0_);
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     EXPECT_CALL(*this, hdlr1());  // REQ: can add hdlr upon null
     PARA_DOM->multiHdlrByAliasEv("alias e1", this->hdlr1_, "e1");
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 
 #define RM_HDLR
@@ -185,6 +203,7 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlr_thenNoCallback)
 
     EXPECT_CALL(*this, hdlr0()).Times(0);  // REQ: no call since rm
     PARA_DOM->setState({{"event", true}});
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(HdlrDominoTest, rmHdlr_fail)
 {
@@ -204,8 +223,7 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlr_fail)
 TYPED_TEST_P(HdlrDominoTest, rmHdlrOnRoad_noCallback)
 {
     // not auto-cb but manually
-    auto msgSelf = make_shared<MsgSelf>(
-        [this](const PongMainFN& aPongMainFN){ this->pongMainFN_ = aPongMainFN; }, this->uniLogName());
+    auto msgSelf = make_shared<MsgSelf>(this->uniLogName());
     PARA_DOM->setMsgSelf(msgSelf);
 
     PARA_DOM->multiHdlrByAliasEv("e0", this->hdlr0_, "e");
@@ -221,8 +239,7 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlrOnRoad_noCallback)
 TYPED_TEST_P(NofreeHdlrDominoTest, rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigger)
 {
     // not auto-cb but manually
-    auto msgSelf = make_shared<MsgSelf>(
-        [this](const PongMainFN& aPongMainFN){ this->pongMainFN_ = aPongMainFN; }, this->uniLogName());
+    auto msgSelf = make_shared<MsgSelf>(this->uniLogName());
     PARA_DOM->setMsgSelf(msgSelf);
 
     PARA_DOM->setHdlr("event", this->hdlr0_);
@@ -249,8 +266,7 @@ TYPED_TEST_P(NofreeHdlrDominoTest, rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigg
 TYPED_TEST_P(NofreeHdlrDominoTest, hdlrOnRoad_thenRmDom_noCrash_noLeak)
 {
     // not auto-cb but manually
-    auto msgSelf = make_shared<MsgSelf>(
-        [this](const PongMainFN& aPongMainFN){ this->pongMainFN_ = aPongMainFN; }, this->uniLogName());
+    auto msgSelf = make_shared<MsgSelf>(this->uniLogName());
     PARA_DOM->setMsgSelf(msgSelf);
 
     PARA_DOM->setHdlr("event", this->hdlr0_);
@@ -270,23 +286,28 @@ TYPED_TEST_P(HdlrDominoTest, GOLD_force_call)
 {
     EXPECT_CALL(*this, hdlr0()).Times(0);  // REQ: no call
     PARA_DOM->forceAllHdlr("e1");
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     PARA_DOM->setHdlr("e1", this->hdlr0_);
     EXPECT_CALL(*this, hdlr0());  // REQ: force call
     PARA_DOM->forceAllHdlr("e1");
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(NofreeHdlrDominoTest, repeat_force_call)
 {
     PARA_DOM->setHdlr("e1", this->hdlr0_);
     EXPECT_CALL(*this, hdlr0());
     PARA_DOM->forceAllHdlr("e1");
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     EXPECT_CALL(*this, hdlr0());  // REQ: repeat force call
     PARA_DOM->forceAllHdlr("e1");
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     EXPECT_CALL(*this, hdlr0()).Times(0);  // REQ: no call
     PARA_DOM->rmOneHdlrOK("e1");
     PARA_DOM->forceAllHdlr("e1");
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 
 #define N_HDLR

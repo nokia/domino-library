@@ -19,9 +19,7 @@ struct FreeHdlrDominoTest : public UtInitObjAnywhere
     FreeHdlrDominoTest() { ObjAnywhere::get<aParaDom>(*this)->setMsgSelf(msgSelf_); }
 
     // -------------------------------------------------------------------------------------------
-    shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(
-        [this](const PongMainFN& aPongMainFN){ pongMainFN_ = aPongMainFN; }, uniLogName());
-    PongMainFN pongMainFN_ = nullptr;
+    shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(uniLogName());
 
     MsgCB h1_ = [this](){ hdlrIDs_.insert(1); };
     MsgCB h2_ = [this](){ hdlrIDs_.insert(2); };

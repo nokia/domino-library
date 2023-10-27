@@ -5,13 +5,13 @@
  */
 // ***********************************************************************************************
 #include "MsgSelf.hpp"
+#include "MT_PingMainTH.hpp"
 
 namespace RLib
 {
 // ***********************************************************************************************
-MsgSelf::MsgSelf(const PingMainFN& aPingMainFN, const UniLogName& aUniLogName)
+MsgSelf::MsgSelf(const UniLogName& aUniLogName)
     : UniLog(aUniLogName)
-    , pingMainFN_(aPingMainFN)
 {}
 
 // ***********************************************************************************************
@@ -53,7 +53,7 @@ bool MsgSelf::handleOneMsg()
             return false;    // no more to continue
         if (isLowPri(EMsgPriority(msgPri)))
         {
-            pingMainFN_([this, isValid = isValid_]() mutable { handleAllMsg(isValid); });
+            mt_pingMainTH();
             return false;    // not continue for low priority until next ping-pong
         }
         return true;
@@ -73,7 +73,6 @@ void MsgSelf::newMsg(const MsgCB& aMsgCB, const EMsgPriority aMsgPri)
     msgQueues_[aMsgPri].push_back(aMsgCB);
     ++nMsg_;
 
-    if (nMsg_ == 1)  // 1st MsgCB
-        pingMainFN_([this, isValid = isValid_]() mutable { handleAllMsg(isValid); });
+    mt_pingMainTH();
 }
 }  // namespace

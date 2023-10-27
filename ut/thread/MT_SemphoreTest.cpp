@@ -39,9 +39,7 @@ struct MT_SemaphoreTest : public Test, public UniLog
     // -------------------------------------------------------------------------------------------
     MtInQueue mtQ_;
 
-    shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(
-        [this](const PongMainFN& aPongMainFN){ pongMainFN_ = aPongMainFN; }, uniLogName());
-    PongMainFN pongMainFN_ = nullptr;
+    shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(uniLogName());
 };
 
 #define INTEGRATION

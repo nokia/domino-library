@@ -62,14 +62,11 @@ using MsgCB        = function<void()>;
 using WeakMsgCB    = weak_ptr<MsgCB>;
 using SharedMsgCB  = shared_ptr<MsgCB>;
 
-using PongMainFN   = function<void()>;                   // tap from main()
-using PingMainFN   = function<void(const PongMainFN&)>;  // tap to main()
-
 // ***********************************************************************************************
 class MsgSelf : public UniLog
 {
 public:
-    MsgSelf(const PingMainFN&, const UniLogName& = ULN_DEFAULT);
+    MsgSelf(const UniLogName& = ULN_DEFAULT);
     ~MsgSelf();
     const shared_ptr<bool> getValid() const { return isValid_; }
 
@@ -87,7 +84,6 @@ private:
     deque<MsgCB> msgQueues_[EMsgPri_MAX];
 
     shared_ptr<bool> isValid_ = make_shared<bool>(true);  // MsgSelf is still valid?
-    PingMainFN       pingMainFN_ = nullptr;
     size_t           nMsg_ = 0;
 };
 }  // namespace

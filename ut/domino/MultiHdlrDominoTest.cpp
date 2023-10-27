@@ -21,7 +21,6 @@ struct MultiHdlrDominoTest : public UtInitObjAnywhere
     MOCK_METHOD(void, hdlr2, ());
 
     // -------------------------------------------------------------------------------------------
-    PongMainFN pongMainFN_ = nullptr;
     MsgCB hdlr0_ = [this](){ this->hdlr0(); };
     MsgCB hdlr1_ = [this](){ this->hdlr1(); };
     MsgCB hdlr2_ = [this](){ this->hdlr2(); };
@@ -48,6 +47,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, GOLD_multiAddHdlr_ok)
     EXPECT_CALL(*this, hdlr1());  // req: multi-hdlr
     EXPECT_CALL(*this, hdlr2());  // req: multi-hdlr
     PARA_DOM->setState({{"event", true}});
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(MultiHdlrDominoTest, aloneAddHdlr_ok)
 {
@@ -55,6 +55,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, aloneAddHdlr_ok)
 
     EXPECT_CALL(*this, hdlr1());
     PARA_DOM->setState({{"event", true}});
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(MultiHdlrDominoTest, multiAddHdlr_bySameHdlrName_nok)
 {
@@ -63,6 +64,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, multiAddHdlr_bySameHdlrName_nok)
     EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2()).Times(0);
     PARA_DOM->setState({{"event", true}});
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 // ***********************************************************************************************
 // special call hdlr
@@ -72,6 +74,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, immediateCallback_ok)
     EXPECT_CALL(*this, hdlr1());
     PARA_DOM->setState({{"event", true}});
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr1_, "this->hdlr1_");  // req: immediate call
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(NofreeMultiHdlrDominoTest, repeatCallback_ok)
 {
@@ -81,11 +84,13 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, repeatCallback_ok)
     EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1());
     PARA_DOM->setState({{"event", true}});  // req: samultaneous call
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     PARA_DOM->setState({{"event", false}});
     EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1());
     PARA_DOM->setState({{"event", true}});  // req: repeat call
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(MultiHdlrDominoTest, BugFix_invalidHdlr_noCrash)
 {
@@ -103,6 +108,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, BugFix_invalidHdlr_noCrash)
     EXPECT_CALL(*this, hdlr0());  // req: can add hdlr
     EXPECT_CALL(*this, hdlr1());  // req: can add hdlr
     PARA_DOM->setState({{"e1", true}});
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 
 #define CHAIN
@@ -120,6 +126,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, chain_callbackAllHdlr)
     EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2());
     PARA_DOM->setState({{"prev", true}});
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(MultiHdlrDominoTest, newChain_immediateCallbackAll)
 {
@@ -132,6 +139,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, newChain_immediateCallbackAll)
     EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2());
     PARA_DOM->setPrev("event", {{"prev", true}});  // new chain
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(MultiHdlrDominoTest, newChain_dupSatisfy_callbackOnce)
 {
@@ -142,9 +150,11 @@ TYPED_TEST_P(MultiHdlrDominoTest, newChain_dupSatisfy_callbackOnce)
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr1_, "this->hdlr1_");
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr2_, "this->hdlr2_");
     PARA_DOM->setState({{"event", true}});         // 1st satisfy
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     PARA_DOM->setState({{"prev", true}});
     PARA_DOM->setPrev("event", {{"prev", true}});  // 2nd satisfy
+    EXPECT_EQ(0u, MSG_SELF->nMsg());
 }
 TYPED_TEST_P(MultiHdlrDominoTest, chain_sameHdlrOnDiffEvent_callbackEach)
 {
@@ -161,6 +171,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, chain_sameHdlrOnDiffEvent_callbackEach)
     EXPECT_CALL(*this, hdlr1()).Times(2);
     EXPECT_CALL(*this, hdlr2()).Times(2);
     PARA_DOM->setState({{"prev prev", true}});
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(MultiHdlrDominoTest, multiPrev_onlyAllSatisfy_thenCallback)
 {
@@ -172,14 +183,17 @@ TYPED_TEST_P(MultiHdlrDominoTest, multiPrev_onlyAllSatisfy_thenCallback)
     PARA_DOM->multiHdlrOnSameEv("event1", this->hdlr0_, "hn0_2");
     PARA_DOM->setPrev("event1", {{"prev1", true}});
     PARA_DOM->setPrev("event1", {{"prev2", false}});
+    EXPECT_EQ(0u, MSG_SELF->nMsg());
 
     PARA_DOM->setHdlr("event2", this->hdlr1_);
     PARA_DOM->multiHdlrOnSameEv("event2", this->hdlr1_, "hn1_1");
     PARA_DOM->multiHdlrOnSameEv("event2", this->hdlr1_, "hn1_2");
     PARA_DOM->setPrev("event2", {{"prev1", true}});
     PARA_DOM->setPrev("event2", {{"prev2", true}});
+    EXPECT_EQ(0u, MSG_SELF->nMsg());
 
     PARA_DOM->setState({{"prev1", true}, {"prev2", true}});
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 
 #define RM_HDLR
@@ -195,6 +209,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, rmHdlr_byHdlrName)
     EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1()).Times(0);
     PARA_DOM->setState({{"event", true}});
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     EXPECT_FALSE(PARA_DOM->rmOneHdlrOK("event", "this->hdlr1_")) << "REQ: rm unexist hdlr" << endl;
     EXPECT_FALSE(PARA_DOM->rmOneHdlrOK("unexist ev", "this->hdlr1_")) << "REQ: rm unexist ev" << endl;
@@ -208,6 +223,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, rmLegacyHdlr_byNoHdlrName)
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1());
     PARA_DOM->setState({{"event", true}});
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 // - easier than name-by-name rm
 // - HdlrDom need not since only 1 hdlr, simpler
@@ -221,6 +237,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, rmHdlr_all)
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1()).Times(0);
     PARA_DOM->setState({{"event", true}});
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(MultiHdlrDominoTest, rmHdlr_subtree)
 {
@@ -245,8 +262,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, rmHdlr_subtree)
 TYPED_TEST_P(NofreeMultiHdlrDominoTest, rmHdlrOnRoad)
 {
     // not auto-cb but manually
-    auto msgSelf = make_shared<MsgSelf>(
-        [this](const PongMainFN& aPongMainFN){ this->pongMainFN_ = aPongMainFN; }, this->uniLogName());
+    auto msgSelf = make_shared<MsgSelf>(this->uniLogName());
     PARA_DOM->setMsgSelf(msgSelf);
 
     PARA_DOM->setHdlr("event", this->hdlr0_);
@@ -260,7 +276,7 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, rmHdlrOnRoad)
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2()).Times(0);
-    msgSelf->handleAllMsg(msgSelf->getValid());  // manual trigger on road cb
+    msgSelf->handleAllMsg(msgSelf->getValid());
 
     PARA_DOM->setState({{"event", false}});
     PARA_DOM->setState({{"event", true}});  // retrigger
@@ -268,7 +284,7 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, rmHdlrOnRoad)
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2()).Times(0);
-    msgSelf->handleAllMsg(msgSelf->getValid());  // manual trigger on road cb
+    msgSelf->handleAllMsg(msgSelf->getValid());
 }
 // ***********************************************************************************************
 // rm invalid
@@ -293,12 +309,14 @@ TYPED_TEST_P(MultiHdlrDominoTest, GOLD_force_call)
     EXPECT_CALL(*this, hdlr0()).Times(0);  // req: no call
     EXPECT_CALL(*this, hdlr1()).Times(0);  // req: no call
     PARA_DOM->forceAllHdlr("e1");
+    EXPECT_EQ(0u, MSG_SELF->nMsg());
 
     PARA_DOM->setHdlr("e1", this->hdlr0_);
     PARA_DOM->multiHdlrOnSameEv("e1", this->hdlr1_, "this->hdlr1_");
     EXPECT_CALL(*this, hdlr0());  // req: force call
     EXPECT_CALL(*this, hdlr1());  // req: force call
     PARA_DOM->forceAllHdlr("e1");
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(NofreeMultiHdlrDominoTest, repeat_force_call)
 {
@@ -307,16 +325,19 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, repeat_force_call)
     EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1());
     PARA_DOM->forceAllHdlr("e1");
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     EXPECT_CALL(*this, hdlr0());  // req: repeat force call
     EXPECT_CALL(*this, hdlr1());  // req: repeat force call
     PARA_DOM->forceAllHdlr("e1");
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     EXPECT_CALL(*this, hdlr0()).Times(0);  // req: no call
     EXPECT_CALL(*this, hdlr1()).Times(0);  // req: no call
     PARA_DOM->rmOneHdlrOK("e1");
     PARA_DOM->rmOneHdlrOK("e1", "this->hdlr1_");
     PARA_DOM->forceAllHdlr("e1");
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 
 #define N_HDLR
