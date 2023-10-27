@@ -222,60 +222,48 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlr_fail)
 // ***********************************************************************************************
 TYPED_TEST_P(HdlrDominoTest, rmHdlrOnRoad_noCallback)
 {
-    // not auto-cb but manually
-    auto msgSelf = make_shared<MsgSelf>(this->uniLogName());
-    PARA_DOM->setMsgSelf(msgSelf);
-
     PARA_DOM->multiHdlrByAliasEv("e0", this->hdlr0_, "e");
     PARA_DOM->multiHdlrByAliasEv("e1", this->hdlr1_, "e");
     PARA_DOM->setState({{"e", true}});  // cb on road
-    EXPECT_TRUE(msgSelf->nMsg());
+    EXPECT_TRUE(MSG_SELF->nMsg());
     EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("e0")) << "REQ: rm hdlr on-road" << endl;
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1());
-    msgSelf->handleAllMsg(msgSelf->getValid());  // manual trigger on road cb
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());  // manual trigger on road cb
 }
 TYPED_TEST_P(NofreeHdlrDominoTest, rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigger)
 {
-    // not auto-cb but manually
-    auto msgSelf = make_shared<MsgSelf>(this->uniLogName());
-    PARA_DOM->setMsgSelf(msgSelf);
-
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->setState({{"event", true}});
-    EXPECT_EQ(1U, msgSelf->nMsg(EMsgPri_NORM));   // 1 cb on road
+    EXPECT_EQ(1U, MSG_SELF->nMsg(EMsgPri_NORM));  // 1 cb on road
 
     PARA_DOM->setState({{"event", false}});
     PARA_DOM->setState({{"event", true}});
-    EXPECT_EQ(2U, msgSelf->nMsg(EMsgPri_NORM));   // 2 cb on road
+    EXPECT_EQ(2U, MSG_SELF->nMsg(EMsgPri_NORM));  // 2 cb on road
 
     EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event")) << "REQ: rm hdlr include all on-road" << endl;
 
-    PARA_DOM->setState({{"event", false}});       // not auto-cb
-    PARA_DOM->setHdlr("event", this->hdlr0_);     // re-add hdlr
+    PARA_DOM->setState({{"event", false}});    // not auto-cb
+    PARA_DOM->setHdlr("event", this->hdlr0_);  // re-add hdlr
 
     EXPECT_CALL(*this, hdlr0()).Times(0);  // REQ: no cb since rm-ed
-    msgSelf->handleAllMsg(msgSelf->getValid());
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     PARA_DOM->setState({{"event", true}});
-    ASSERT_TRUE(msgSelf->nMsg());
+    ASSERT_TRUE(MSG_SELF->nMsg());
     EXPECT_CALL(*this, hdlr0());  // REQ: new cb
-    msgSelf->handleAllMsg(msgSelf->getValid());
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(NofreeHdlrDominoTest, hdlrOnRoad_thenRmDom_noCrash_noLeak)
 {
-    // not auto-cb but manually
-    auto msgSelf = make_shared<MsgSelf>(this->uniLogName());
-    PARA_DOM->setMsgSelf(msgSelf);
-
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->setState({{"event", true}});
-    EXPECT_EQ(1U, msgSelf->nMsg(EMsgPri_NORM));   // 1 cb on road
+    EXPECT_EQ(1U, MSG_SELF->nMsg(EMsgPri_NORM));  // 1 cb on road
 
     ObjAnywhere::set<TypeParam>(nullptr, *this);  // rm dom
     EXPECT_CALL(*this, hdlr0()).Times(0);  // REQ: no cb
-    msgSelf->handleAllMsg(msgSelf->getValid());
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 
 #define FORCE_CALL

@@ -10,7 +10,6 @@
 #include <thread>
 #include <unistd.h>
 
-#include "MsgSelf.hpp"
 #include "MT_PingMainTH.hpp"
 #include "UniLog.hpp"
 

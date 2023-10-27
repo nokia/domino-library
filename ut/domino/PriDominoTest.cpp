@@ -16,11 +16,6 @@ namespace RLib
 template<class aParaDom>
 struct PriDominoTest : public UtInitObjAnywhere
 {
-    PriDominoTest() { ObjAnywhere::get<aParaDom>(*this)->setMsgSelf(msgSelf_); }
-
-    // -------------------------------------------------------------------------------------------
-    shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(uniLogName());
-
     MsgCB d1EventHdlr_ = [&](){ hdlrIDs_.push(1); };
     MsgCB d2EventHdlr_ = [&](){ hdlrIDs_.push(2); };
     MsgCB d3EventHdlr_ = [&](){ hdlrIDs_.push(3); };
@@ -69,21 +64,21 @@ TYPED_TEST_P(PriDominoTest, GOLD_setPriority_thenPriorityFifoCallback)
     PARA_DOM->setHdlr("e1", this->d1EventHdlr_);
 
     PARA_DOM->setState({{"e5", true}});
-    PARA_DOM->setPriority("e5", EMsgPri_HIGH);                    // req: higher firstly, & derived callback
+    PARA_DOM->setPriority("e5", EMsgPri_HIGH);  // req: higher firstly, & derived callback
     PARA_DOM->setHdlr("e5", this->d5EventHdlr_);
 
     PARA_DOM->setState({{"e3", true}});
-    PARA_DOM->setHdlr("e3", this->d3EventHdlr_);                  // req: fifo same priority
+    PARA_DOM->setHdlr("e3", this->d3EventHdlr_);  // req: fifo same priority
 
     PARA_DOM->setState({{"e4", true}});
     PARA_DOM->setPriority("e4", EMsgPri_HIGH);
     PARA_DOM->setHdlr("e4", this->d4EventHdlr_);
 
-    PARA_DOM->setPriority("e4", EMsgPri_NORM);                    // req: new pri effective immediately, but no impact on road
+    PARA_DOM->setPriority("e4", EMsgPri_NORM);  // req: new pri effective immediately, but no impact on road
     PARA_DOM->setState({{"e4", false}});
     PARA_DOM->setState({{"e4", true}});
 
-    this->msgSelf_->handleAllMsg(this->msgSelf_->getValid());
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
     if (this->hdlrIDs_.size() == 6) EXPECT_EQ(queue<int>({5, 4, 2, 1, 3, 4}), this->hdlrIDs_);
     else EXPECT_EQ(queue<int>({5, 4, 2, 1, 3}), this->hdlrIDs_);  // auto-rm-hdlr dom
 }

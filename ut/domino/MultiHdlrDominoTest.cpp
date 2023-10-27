@@ -261,22 +261,18 @@ TYPED_TEST_P(MultiHdlrDominoTest, rmHdlr_subtree)
 // ***********************************************************************************************
 TYPED_TEST_P(NofreeMultiHdlrDominoTest, rmHdlrOnRoad)
 {
-    // not auto-cb but manually
-    auto msgSelf = make_shared<MsgSelf>(this->uniLogName());
-    PARA_DOM->setMsgSelf(msgSelf);
-
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr1_, "this->hdlr1_");
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr2_, "this->hdlr2_");
     PARA_DOM->setState({{"event", true}});  // 3 cb on road
-    EXPECT_TRUE(msgSelf->nMsg());
+    EXPECT_TRUE(MSG_SELF->nMsg());
     EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event")) << "REQ: invalidate HdlrDom" << endl;
     EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event", "this->hdlr2_")) << "REQ: invalidate MultiDom" << endl;
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2()).Times(0);
-    msgSelf->handleAllMsg(msgSelf->getValid());
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     PARA_DOM->setState({{"event", false}});
     PARA_DOM->setState({{"event", true}});  // retrigger
@@ -284,7 +280,7 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, rmHdlrOnRoad)
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2()).Times(0);
-    msgSelf->handleAllMsg(msgSelf->getValid());
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 // ***********************************************************************************************
 // rm invalid
