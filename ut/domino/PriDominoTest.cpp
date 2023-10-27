@@ -85,7 +85,7 @@ TYPED_TEST_P(PriDominoTest, GOLD_setPriority_thenPriorityFifoCallback)
     PARA_DOM->setState({{"e4", false}});
     PARA_DOM->setState({{"e4", true}});
 
-    if (this->msgSelf_->nMsg()) this->pongMainFN_();
+    this->msgSelf_->handleAllMsg(this->msgSelf_->getValid());
     if (this->hdlrIDs_.size() == 6) EXPECT_EQ(queue<int>({5, 4, 2, 1, 3, 4}), this->hdlrIDs_);
     else EXPECT_EQ(queue<int>({5, 4, 2, 1, 3}), this->hdlrIDs_);  // auto-rm-hdlr dom
 }
