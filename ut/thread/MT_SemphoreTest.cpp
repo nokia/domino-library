@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
+#include <chrono>
 #include <future>
 #include <gtest/gtest.h>
 #include <set>
@@ -17,6 +18,7 @@
 #include "ThreadBackViaMsgSelf.hpp"
 #include "UniLog.hpp"
 
+using namespace std::chrono;
 using namespace testing;
 
 namespace RLib {
@@ -140,14 +142,16 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
 }
 
 // ***********************************************************************************************
-TEST_F(MT_SemaphoreTest, immediate_timeout)
+TEST_F(MT_SemaphoreTest, timeout)
 {
-    ThreadBack::newThread(
-        []{ return true; }, // entryFn; no wakeup
-        [](bool aRet){ EXPECT_TRUE(aRet); } // backFn
-    );
-    while (ThreadBack::hdlFinishedThreads() == 0)
-        g_sem.mt_timedwait(0, 0);  // REQ: can timeout immediately
+    g_sem.mt_timedwait();  // REQ: can timeout (& clear previous mt_notify if existed)
+
+    auto now = high_resolution_clock::now();
+    DBG("start");
+    g_sem.mt_timedwait();
+    DBG("end");
+    auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - now);
+    EXPECT_GE(dur.count(), 100) << "REQ: default timeout=100ms";
 }
 
 }  // namespace

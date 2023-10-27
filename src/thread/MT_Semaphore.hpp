@@ -32,7 +32,7 @@ public:
     MT_Semaphore(const MT_Semaphore&) = delete;
     MT_Semaphore& operator=(const MT_Semaphore&) = delete;
 
-    void mt_timedwait(const size_t aSec = 0, const size_t aMsec = 10);
+    void mt_timedwait(const size_t aSec = 0, const size_t aRestNsec = 100'000'000);
     void mt_notify();
 
     // -------------------------------------------------------------------------------------------

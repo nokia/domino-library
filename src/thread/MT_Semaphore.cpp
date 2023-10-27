@@ -23,16 +23,27 @@ void MT_Semaphore::mt_notify()
 }
 
 // ***********************************************************************************************
-void MT_Semaphore::mt_timedwait(const size_t aSec, const size_t aMsec)
+void MT_Semaphore::mt_timedwait(const size_t aSec, const size_t aRestNsec)
 {
     timespec ts;
     if (clock_gettime(CLOCK_REALTIME, &ts) == -1)
         return;
-    ts.tv_sec += aSec;
-    ts.tv_nsec += aMsec * 1000'000;
+    const auto ns = ts.tv_nsec + aRestNsec;
+    ts.tv_sec += (aSec + ns / 1000'000'000);
+    ts.tv_nsec = ns % 1000'000'000;
 
-    while (sem_timedwait(&mt_sem_, &ts) == -1 && errno == EINTR)
-        continue;  // restart if interrupted by handler
+    for (;;)
+    {
+        const auto ret = sem_timedwait(&mt_sem_, &ts);
+        if (ret == 0)  // notified
+            return;
+        else if (errno == ETIMEDOUT)
+            return;
+
+        else if (errno == EINVAL)  // avoid die in mt_timedwait()
+            return;
+        continue;  // restart
+    }  // for
 }
 
 }  // namespace

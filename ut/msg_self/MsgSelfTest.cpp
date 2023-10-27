@@ -50,7 +50,6 @@ TEST_F(MsgSelfTest, GOLD_sendMsg)
     EXPECT_EQ(1u, msgSelf_->nMsg());
     EXPECT_EQ(queue<int>(), hdlrIDs_) << "REQ: not immediate call d1MsgHdlr_ but wait msg-to-self" << endl;
 
-    g_sem.mt_timedwait();  // REQ: msg will wakeup mt_timedwait()
     msgSelf_->handleAllMsg(msgSelf_->getValid());  // simulate main() callback
     EXPECT_EQ(queue<int>({1}), hdlrIDs_) << "REQ: call d1MsgHdlr_" << endl;
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM));
@@ -137,6 +136,7 @@ TEST_F(MsgSelfTest, newHighPri_first)
 }
 
 #define DESTRUCT_MSGSELF
+// ***********************************************************************************************
 TEST_F(MsgSelfTest, destructMsgSelf_noCallback_noMemLeak_noCrash)  // mem leak is checked by valgrind upon UT
 {
     EXPECT_CALL(*this, d6MsgHdlr()).Times(0);  // req: no call
@@ -146,6 +146,20 @@ TEST_F(MsgSelfTest, destructMsgSelf_noCallback_noMemLeak_noCrash)  // mem leak i
     auto valid = msgSelf_->getValid();
     msgSelf_.reset();  // rm msgSelf
     msgSelf_->handleAllMsg(valid);  // req: no crash
+}
+
+#define WAIT_NOTIFY
+// ***********************************************************************************************
+TEST_F(MsgSelfTest, wait_notify)
+{
+    msgSelf_->newMsg(d1MsgHdlr_);
+    g_sem.mt_timedwait();  // REQ: 1 msg will wakeup mt_timedwait()
+
+    msgSelf_->newMsg(d1MsgHdlr_);
+    msgSelf_->newMsg(d1MsgHdlr_);  // req: dup
+    g_sem.mt_timedwait();  // REQ: multi-msg will wakeup mt_timedwait()
+
+    msgSelf_->handleAllMsg(msgSelf_->getValid());  // clean msg queue
 }
 
 }  // namespace
