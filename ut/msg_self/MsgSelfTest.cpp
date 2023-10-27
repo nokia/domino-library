@@ -158,6 +158,7 @@ TEST_F(MsgSelfTest, wait_notify)
     msgSelf_->newMsg(d1MsgHdlr_);
     g_sem.mt_timedwait();  // REQ: 1 msg will wakeup mt_timedwait()
     auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - now);
+    EXPECT_LT(dur.count(), 100) << "REQ: newMsg() shall notify";
 
     msgSelf_->newMsg(d1MsgHdlr_);
     msgSelf_->newMsg(d1MsgHdlr_);  // req: dup

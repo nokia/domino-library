@@ -153,7 +153,7 @@ TEST_F(MT_SemaphoreTest, timeout)
     auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - now);
     EXPECT_GE(dur.count(), 100) << "REQ: default timeout=100ms";
 
-    g_sem.mt_timedwait(0, 1000'000'000);  // REQ: invalid ns>=1000ms, no die
+    g_sem.mt_timedwait(0, size_t(-1));  // REQ: invalid ns>=1000ms, no die
 }
 
 }  // namespace
