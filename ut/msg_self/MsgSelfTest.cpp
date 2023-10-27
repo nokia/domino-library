@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
+#include <chrono>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <memory>  // for shared_ptr
@@ -12,6 +13,7 @@
 #include "MsgSelf.hpp"
 #include "MT_PingMainTH.hpp"
 
+using namespace std::chrono;
 using namespace testing;
 
 namespace RLib
@@ -152,8 +154,10 @@ TEST_F(MsgSelfTest, destructMsgSelf_noCallback_noMemLeak_noCrash)  // mem leak i
 // ***********************************************************************************************
 TEST_F(MsgSelfTest, wait_notify)
 {
+    auto now = high_resolution_clock::now();
     msgSelf_->newMsg(d1MsgHdlr_);
     g_sem.mt_timedwait();  // REQ: 1 msg will wakeup mt_timedwait()
+    auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - now);
 
     msgSelf_->newMsg(d1MsgHdlr_);
     msgSelf_->newMsg(d1MsgHdlr_);  // req: dup
