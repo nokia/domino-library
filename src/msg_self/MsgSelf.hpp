@@ -76,7 +76,7 @@ public:
     void   newMsg(const MsgCB&, const EMsgPriority = EMsgPri_NORM);  // can't withdraw CB but easier usage
     size_t nMsg() const { return nMsg_; }
     size_t nMsg(const EMsgPriority aPriority) const { return msgQueues_[aPriority].size(); }
-    void   handleAllMsg(const shared_ptr<bool> aValidMsgSelf = make_shared<bool>(true));
+    void   handleAllMsg(const shared_ptr<bool> aValidMsgSelf);
 
     static bool isLowPri(const EMsgPriority aPri) { return aPri < EMsgPri_NORM; }
 
