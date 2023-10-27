@@ -216,7 +216,7 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlrOnRoad_noCallback)
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1());
-    this->pongMainFN_();  // manual trigger on road cb
+    msgSelf->handleAllMsg(msgSelf->getValid());  // manual trigger on road cb
 }
 TYPED_TEST_P(NofreeHdlrDominoTest, rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigger)
 {
@@ -239,12 +239,12 @@ TYPED_TEST_P(NofreeHdlrDominoTest, rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigg
     PARA_DOM->setHdlr("event", this->hdlr0_);     // re-add hdlr
 
     EXPECT_CALL(*this, hdlr0()).Times(0);  // REQ: no cb since rm-ed
-    this->pongMainFN_();
+    msgSelf->handleAllMsg(msgSelf->getValid());
 
     PARA_DOM->setState({{"event", true}});
     ASSERT_TRUE(msgSelf->nMsg());
     EXPECT_CALL(*this, hdlr0());  // REQ: new cb
-    this->pongMainFN_();
+    msgSelf->handleAllMsg(msgSelf->getValid());
 }
 TYPED_TEST_P(NofreeHdlrDominoTest, hdlrOnRoad_thenRmDom_noCrash_noLeak)
 {
@@ -259,7 +259,7 @@ TYPED_TEST_P(NofreeHdlrDominoTest, hdlrOnRoad_thenRmDom_noCrash_noLeak)
 
     ObjAnywhere::set<TypeParam>(nullptr, *this);  // rm dom
     EXPECT_CALL(*this, hdlr0()).Times(0);  // REQ: no cb
-    this->pongMainFN_();
+    msgSelf->handleAllMsg(msgSelf->getValid());
 }
 
 #define FORCE_CALL

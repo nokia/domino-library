@@ -130,8 +130,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         }
 
         INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mtQ_.mt_size() << ", nTh=" << ThreadBack::nThread());
-        if (pongMainFN_)    // possible nullptr
-            pongMainFN_();  // handle all existing in MsgSelf
+        msgSelf_->handleAllMsg(msgSelf_->getValid());
 
         INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mtQ_.mt_size() << ", nTh=" << ThreadBack::nThread());
         if (expect == cb_info)
