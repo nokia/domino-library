@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
+#include <chrono>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <queue>
@@ -17,6 +18,7 @@
 #include "ThreadBackViaMsgSelf.hpp"
 #undef THREAD_BACK_TEST
 
+#include <chrono>
 using namespace testing;
 
 namespace RLib
@@ -36,7 +38,7 @@ struct ThreadBackTest : public Test, public UniLog
     }
 };
 
-#define REQ
+#define THREAD_AND_BACK
 // ***********************************************************************************************
 //                               [main thread]
 //                                     |
@@ -162,6 +164,22 @@ TEST_F(ThreadBackTest, emptyThreadList_ok)
 {
     size_t nHandled = ThreadBack::hdlFinishedThreads();
     EXPECT_EQ(0u, nHandled);
+}
+
+#define WAIT_NOTIFY
+// ***********************************************************************************************
+TEST_F(ThreadBackTest, wait_notify)
+{
+    auto start = high_resolution_clock::now();
+    ThreadBack::newThread(
+        [] { return true; },  // entryFn
+        [](bool) {}  // backFn
+    );
+    g_sem.mt_timedwait(0, 500'000'000);  // long timer to ensure thread done beforehand
+    auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - start);
+    EXPECT_LT(dur.count(), 500) << "REQ: entryFn end shall notify g_sem instead of timeout";
+
+    while (ThreadBack::hdlFinishedThreads() == 0);  // clear all threads
 }
 
 }  // namespace

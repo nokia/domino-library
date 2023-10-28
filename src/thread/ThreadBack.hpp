@@ -117,4 +117,5 @@ public:
 // 2023-08-17  CSZ       - handle async() fail
 // 2023-08-18  CSZ       - rm mt_nFinishedThread_
 // 2023-09-14  CSZ       2)align with MsgSelf
+// 2023-10-25  CSZ       - with semaphore's wait-notify
 // ***********************************************************************************************
