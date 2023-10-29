@@ -4,10 +4,19 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
+#include "MT_PingMainTH.hpp"
 #include "MtInQueue.hpp"
 
 namespace RLib
 {
+// ***********************************************************************************************
+MtInQueue::~MtInQueue()
+{
+    const auto nEle = mt_sizeQ();
+    if (nEle)
+        WRN("discard nEle=" << nEle);
+}
+
 // ***********************************************************************************************
 void MtInQueue::handleCacheEle()
 {
@@ -18,7 +27,10 @@ void MtInQueue::handleCacheEle()
 
         auto&& id_hdlr = eleHdlrs_.find(ele_id.second);
         if (id_hdlr == eleHdlrs_.end())
+        {
+            WRN("discard 1 ele(id=" << ele_id.second << ") since lack handler.")
             continue;
+        }
         id_hdlr->second(ele_id.first);
     }  // while
 }
@@ -31,7 +43,10 @@ void MtInQueue::handleAllEle()
     {
         unique_lock<mutex> guard(mutex_, try_to_lock);  // avoid block main thread
         if (! guard.owns_lock())
+        {
+            mt_pingMainTH();  // for possible ele in queue_
             return;
+        }
         cache_.swap(queue_);
     }
     handleCacheEle();

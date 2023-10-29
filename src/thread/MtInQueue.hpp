@@ -25,6 +25,7 @@
 #include <unordered_map>
 
 #include "MT_PingMainTH.hpp"
+#include "UniLog.hpp"
 
 using namespace std;
 
@@ -36,9 +37,11 @@ using ElePair = pair<shared_ptr<void>, size_t>;  // <ele, ID>
 using EleHdlr = function<void(shared_ptr<void>)>;
 
 // ***********************************************************************************************
-class MtInQueue
+class MtInQueue : public UniLog
 {
 public:
+    ~MtInQueue();
+
     template<class aEleType> void mt_push(shared_ptr<aEleType> aEle);
 
     // shall be called in main thread ONLY!!!

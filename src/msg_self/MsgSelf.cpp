@@ -19,7 +19,7 @@ MsgSelf::~MsgSelf()
 {
     *isValid_ = false;
     if (nMsg_)
-        DBG("discard nMsg=" << nMsg_);
+        WRN("discard nMsg=" << nMsg_);
 }
 
 // ***********************************************************************************************

@@ -160,4 +160,28 @@ TEST_F(MtInQueueTest, clear)
     ASSERT_EQ(2u, mtQ_.mt_clear()) << "REQ: clear all" << endl;
 }
 
+#define HDLR
+// ***********************************************************************************************
+// normal covered by MT_SemaphoreTest
+TEST_F(MtInQueueTest, discard_noHdlrEle)
+{
+    mtQ_.mt_push<void>(nullptr);
+    EXPECT_EQ(1u, mtQ_.mt_sizeQ());
+
+    mtQ_.handleAllEle();
+    EXPECT_EQ(0u, mtQ_.mt_sizeQ()) << "REQ: discard ele w/o hdlr - simple & no mem leak";
+}
+TEST_F(MtInQueueTest, handleAllEle_shallnot_blocked)
+{
+    mtQ_.mt_push<void>(nullptr);
+    EXPECT_EQ(1u, mtQ_.mt_sizeQ());
+    mtQ_.backdoor().lock();
+
+    mtQ_.handleAllEle();
+    mtQ_.backdoor().unlock();  // for mt_sizeQ()
+    EXPECT_EQ(1u, mtQ_.mt_sizeQ()) << "REQ: no block";
+
+    mtQ_.mt_clear();
+}
+
 }  // namespace
