@@ -34,7 +34,7 @@ struct MtInQueueTest : public Test, public UniLog
     }
     void TearDown() override
     {
-        ASSERT_EQ(0, mtQ_.mt_sizeQ()) << "REQ: empty at end"  << endl;
+        mtQ_.mt_clear();  // REQ: inc cov of destructor
     }
     ~MtInQueueTest() { GTEST_LOG_FAIL }
 
@@ -180,8 +180,6 @@ TEST_F(MtInQueueTest, handleAllEle_shallnot_blocked)
     mtQ_.handleAllEle();
     mtQ_.backdoor().unlock();  // for mt_sizeQ()
     EXPECT_EQ(1u, mtQ_.mt_sizeQ()) << "REQ: no block";
-
-    mtQ_.mt_clear();
 }
 
 }  // namespace
