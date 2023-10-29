@@ -30,11 +30,11 @@ struct MtInQueueTest : public Test, public UniLog
     {}
     void SetUp() override
     {
-        ASSERT_EQ(0, mtQ_.mt_size()) << "REQ: empty at beginning"  << endl;
+        ASSERT_EQ(0, mtQ_.mt_sizeQ()) << "REQ: empty at beginning"  << endl;
     }
     void TearDown() override
     {
-        ASSERT_EQ(0, mtQ_.mt_size()) << "REQ: empty at end"  << endl;
+        ASSERT_EQ(0, mtQ_.mt_sizeQ()) << "REQ: empty at end"  << endl;
     }
     ~MtInQueueTest() { GTEST_LOG_FAIL }
 
@@ -113,25 +113,25 @@ TEST_F(MtInQueueTest, GOLD_nonBlock_pop)
 TEST_F(MtInQueueTest, size_and_nowait)
 {
     mtQ_.mt_push<int>(make_shared<int>(1));
-    ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: inc size"  << endl;
+    ASSERT_EQ(1u, mtQ_.mt_sizeQ())  << "REQ: inc size"  << endl;
     g_sem.mt_timedwait();
-    ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: wait() ret immediately since mtQ_ not empty"  << endl;
+    ASSERT_EQ(1u, mtQ_.mt_sizeQ())  << "REQ: wait() ret immediately since mtQ_ not empty"  << endl;
 
     mtQ_.mt_push<int>(make_shared<int>(2));
-    ASSERT_EQ(2u, mtQ_.mt_size())  << "REQ: inc size"  << endl;
+    ASSERT_EQ(2u, mtQ_.mt_sizeQ())  << "REQ: inc size"  << endl;
 
     EXPECT_EQ(1, *(mtQ_.pop<int>())) << "REQ: fifo";
-    ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: dec size"  << endl;
+    ASSERT_EQ(1u, mtQ_.mt_sizeQ())  << "REQ: dec size"  << endl;
     g_sem.mt_timedwait();
-    ASSERT_EQ(1u, mtQ_.mt_size())  << "REQ: wait() ret immediately since mtQ_ not empty"  << endl;
+    ASSERT_EQ(1u, mtQ_.mt_sizeQ())  << "REQ: wait() ret immediately since mtQ_ not empty"  << endl;
 
     mtQ_.mt_push<int>(make_shared<int>(3));
     g_sem.mt_timedwait();
-    ASSERT_EQ(2u, mtQ_.mt_size())  << "REQ: wait() ret immediately since mtQ_ not empty"  << endl;
+    ASSERT_EQ(2u, mtQ_.mt_sizeQ())  << "REQ: wait() ret immediately since mtQ_ not empty"  << endl;
 
     EXPECT_EQ(2, *(mtQ_.pop<int>())) << "REQ: keep fifo after wait_for()";
     EXPECT_EQ(3, *(mtQ_.pop<int>())) << "REQ: keep fifo after wait_for()";
-    ASSERT_EQ(0u, mtQ_.mt_size())  << "REQ: dec size"  << endl;
+    ASSERT_EQ(0u, mtQ_.mt_sizeQ())  << "REQ: dec size"  << endl;
 }
 
 #define DESTRUCT

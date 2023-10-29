@@ -160,7 +160,7 @@ TEST_F(MsgSelfTest, wait_notify)
     auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - start);
     EXPECT_LT(dur.count(), 100) << "REQ: newMsg() shall notify instead of timeout";
 
-    msgSelf_->handleAllMsg(msgSelf_->getValid());  // clean msg queue
+    msgSelf_->handleAllMsg(msgSelf_->getValid());  // clear msg queue
 }
 
 }  // namespace

@@ -9,6 +9,35 @@
 namespace RLib
 {
 // ***********************************************************************************************
+void MtInQueue::handleCacheEle()
+{
+    while (! cache_.empty())
+    {
+        auto ele_id = cache_.front();
+        cache_.pop_front();
+
+        auto&& id_hdlr = eleHdlrs_.find(ele_id.second);
+        if (id_hdlr == eleHdlrs_.end())
+            continue;
+        id_hdlr->second(ele_id.first);
+    }  // while
+}
+
+// ***********************************************************************************************
+void MtInQueue::handleAllEle()
+{
+    handleCacheEle();
+
+    {
+        unique_lock<mutex> guard(mutex_, try_to_lock);  // avoid block main thread
+        if (! guard.owns_lock())
+            return;
+        cache_.swap(queue_);
+    }
+    handleCacheEle();
+}
+
+// ***********************************************************************************************
 size_t MtInQueue::mt_clear()
 {
     lock_guard<mutex> guard(mutex_);
@@ -23,7 +52,7 @@ size_t MtInQueue::mt_clear()
 }
 
 // ***********************************************************************************************
-size_t MtInQueue::mt_size()
+size_t MtInQueue::mt_sizeQ()
 {
     lock_guard<mutex> guard(mutex_);
     return queue_.size() + cache_.size();
@@ -35,7 +64,7 @@ ElePair MtInQueue::pop()
     if (cache_.empty())
     {
         unique_lock<mutex> guard(mutex_, try_to_lock);  // avoid block main thread
-        if (! guard.owns_lock())  // avoid block main thread
+        if (! guard.owns_lock())
         {
             mt_pingMainTH();  // since waste this wakeup as not own the lock
             return ElePair(nullptr, typeid(void).hash_code());

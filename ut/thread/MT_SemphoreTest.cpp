@@ -30,11 +30,11 @@ struct MT_SemaphoreTest : public Test, public UniLog
     {}
     void SetUp() override
     {
-        ASSERT_EQ(0, mtQ_.mt_size()) << "REQ: empty at beginning"  << endl;
+        ASSERT_EQ(0, mtQ_.mt_sizeQ()) << "REQ: empty at beginning"  << endl;
     }
     void TearDown() override
     {
-        ASSERT_EQ(0, mtQ_.mt_size()) << "REQ: empty at end"  << endl;
+        ASSERT_EQ(0, mtQ_.mt_sizeQ()) << "REQ: empty at end"  << endl;
     }
     ~MT_SemaphoreTest() { GTEST_LOG_FAIL }
 
@@ -51,8 +51,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     set<string> cb_info;
 
     // setup msg handler table for mtQ_
-    unordered_map<size_t, function<void(shared_ptr<void>)>> msgHdlrs;
-    msgHdlrs[typeid(string).hash_code()] = [this, &cb_info](shared_ptr<void> aMsg)
+    mtQ_.hdlr<string>([this, &cb_info](shared_ptr<void> aMsg)
     {
         msgSelf_->newMsg(  // REQ: via MsgSelf
             [aMsg, &cb_info]
@@ -61,8 +60,8 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
                 cb_info.emplace("REQ: a's Q hdlr via MsgSelf");
             }
         );
-    };
-    msgHdlrs[typeid(int).hash_code()] = [this, &cb_info](shared_ptr<void> aMsg)
+    });
+    mtQ_.hdlr<int>([this, &cb_info](shared_ptr<void> aMsg)
     {
         msgSelf_->newMsg(
             [aMsg, &cb_info]
@@ -71,7 +70,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
                 cb_info.emplace("REQ: 2's Q hdlr via MsgSelf");
             }
         );
-    };
+    });
 
     // push
     ThreadBack::newThread(
@@ -115,28 +114,21 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     for (;;)
     {
         // handle all done Thread
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mtQ_.mt_size() << ", nTh=" << ThreadBack::nThread());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mtQ_.mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
         ThreadBack::hdlFinishedThreads();
 
         // handle all existing in mtQ_
-        for (;;)
-        {
-            INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mtQ_.mt_size() << ", nTh=" << ThreadBack::nThread());
-            auto elePair = mtQ_.pop();
-            if (elePair.first == nullptr) break;  // handle next eg MsgSelf queue
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mtQ_.mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
+        mtQ_.handleAllEle();
 
-            INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mtQ_.mt_size() << ", nTh=" << ThreadBack::nThread());
-            msgHdlrs[elePair.second](elePair.first);
-        }
-
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mtQ_.mt_size() << ", nTh=" << ThreadBack::nThread());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mtQ_.mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
         msgSelf_->handleAllMsg(msgSelf_->getValid());
 
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mtQ_.mt_size() << ", nTh=" << ThreadBack::nThread());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mtQ_.mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
         if (expect == cb_info)
             return;
 
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mtQ_.mt_size() << ", nTh=" << ThreadBack::nThread());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mtQ_.mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
         g_sem.mt_timedwait();
     }
 }

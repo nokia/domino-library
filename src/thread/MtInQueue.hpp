@@ -22,7 +22,7 @@
 #include <functional>
 #include <memory>
 #include <mutex>
-#include <utility>
+#include <unordered_map>
 
 #include "MT_PingMainTH.hpp"
 
@@ -32,7 +32,8 @@ namespace RLib
 {
 // ele & its typeid.hash_code
 // - hash_code is size_t (simplest) vs type_info (unworth to cost storage mem, & complex MtInQueue)
-using ElePair = pair<shared_ptr<void>, size_t>;
+using ElePair = pair<shared_ptr<void>, size_t>;  // <ele, ID>
+using EleHdlr = function<void(shared_ptr<void>)>;
 
 // ***********************************************************************************************
 class MtInQueue
@@ -44,14 +45,23 @@ public:
     ElePair pop();  // high performance
     template<class aEleType> shared_ptr<aEleType> pop() { return static_pointer_cast<aEleType>(pop().first); }
 
-    size_t mt_size();
+    size_t mt_sizeQ();
     size_t mt_clear();
 
+    // shall be called in main thread ONLY!!!
+    template<class aEleType> void hdlr(const EleHdlr&);
+    void handleAllEle();
+    size_t nHdlr() const { return eleHdlrs_.size(); }
+
 private:
+    void handleCacheEle();
+
     // -------------------------------------------------------------------------------------------
     deque<ElePair> queue_;  // unlimited ele; most suitable container
     deque<ElePair> cache_;
     mutex mutex_;
+
+    unordered_map<size_t, EleHdlr> eleHdlrs_;  // <ID, hdlr>
 
     // -------------------------------------------------------------------------------------------
 #ifdef MT_IN_Q_TEST  // UT only
@@ -59,6 +69,13 @@ public:
     mutex& backdoor() { return mutex_; }
 #endif
 };
+
+// ***********************************************************************************************
+template<class aEleType>
+void MtInQueue::hdlr(const EleHdlr& aHdlr)
+{
+    eleHdlrs_[typeid(aEleType).hash_code()] = aHdlr;
+}
 
 // ***********************************************************************************************
 template<class aEleType>
@@ -83,4 +100,5 @@ void MtInQueue::mt_push(shared_ptr<aEleType> aEle)
 // 2023-09-08  CSZ       - store Ele with its hash_code
 // 2023-09-18  CSZ       - support main thread wait() instead of keeping pop()
 // 2023-10-26  CSZ       - replace mt_notifyFn_() by mt_pingMainTH()
+// 2023-10-29  CSZ       - integrate handler
 // ***********************************************************************************************
