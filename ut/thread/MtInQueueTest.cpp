@@ -32,10 +32,6 @@ struct MtInQueueTest : public Test, public UniLog
     {
         ASSERT_EQ(0, mtQ_.mt_sizeQ()) << "REQ: empty at beginning"  << endl;
     }
-    void TearDown() override
-    {
-        mtQ_.mt_clear();  // REQ: inc cov of destructor
-    }
     ~MtInQueueTest() { GTEST_LOG_FAIL }
 
     // -------------------------------------------------------------------------------------------
