@@ -167,13 +167,15 @@ TEST_F(MtInQueueTest, discard_noHdlrEle)
 }
 TEST_F(MtInQueueTest, handleAllEle_shallnot_blocked)
 {
-    mt_getQ().mt_push<void>(nullptr);
-    EXPECT_EQ(1u, mt_getQ().mt_sizeQ());
-    mt_getQ().backdoor().lock();
+    MtInQueue mtQ;  // cov destructor with ele left
 
-    mt_getQ().handleAllEle();
-    mt_getQ().backdoor().unlock();  // for mt_sizeQ()
-    EXPECT_EQ(1u, mt_getQ().mt_sizeQ()) << "REQ: no block";
+    mtQ.mt_push<void>(nullptr);
+    EXPECT_EQ(1u, mtQ.mt_sizeQ());
+    mtQ.backdoor().lock();
+
+    mtQ.handleAllEle();
+    mtQ.backdoor().unlock();  // for mt_sizeQ()
+    EXPECT_EQ(1u, mtQ.mt_sizeQ()) << "REQ: no block";
 }
 TEST_F(MtInQueueTest, shallHandle_bothCacheAndQueue_ifPossible)
 {
