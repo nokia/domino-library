@@ -30,16 +30,9 @@ struct MT_SemaphoreTest : public Test, public UniLog
     {}
     void SetUp() override
     {
-        ASSERT_EQ(0, mtQ_.mt_sizeQ()) << "REQ: empty at beginning"  << endl;
-    }
-    void TearDown() override
-    {
-        ASSERT_EQ(0, mtQ_.mt_sizeQ()) << "REQ: empty at end"  << endl;
+        mt_getQ().mt_clear();  // avoid other case interfere
     }
     ~MT_SemaphoreTest() { GTEST_LOG_FAIL }
-
-    // -------------------------------------------------------------------------------------------
-    MtInQueue mtQ_;
 
     shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(uniLogName());
 };
@@ -50,9 +43,9 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
 {
     set<string> cb_info;
 
-    // setup msg handler table for mtQ_
-    EXPECT_EQ(0u, mtQ_.nHdlr())  << "REQ: init no hdlr";
-    mtQ_.hdlr<string>([this, &cb_info](shared_ptr<void> aMsg)
+    // setup msg handler table for mt_getQ()
+    EXPECT_EQ(0u, mt_getQ().nHdlr())  << "REQ: init no hdlr";
+    mt_getQ().hdlr<string>([this, &cb_info](shared_ptr<void> aMsg)
     {
         msgSelf_->newMsg(  // REQ: via MsgSelf
             [aMsg, &cb_info]
@@ -62,8 +55,8 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
             }
         );
     });
-    EXPECT_EQ(1u, mtQ_.nHdlr())  << "REQ: count hdlr";
-    mtQ_.hdlr<int>([this, &cb_info](shared_ptr<void> aMsg)
+    EXPECT_EQ(1u, mt_getQ().nHdlr())  << "REQ: count hdlr";
+    mt_getQ().hdlr<int>([this, &cb_info](shared_ptr<void> aMsg)
     {
         msgSelf_->newMsg(
             [aMsg, &cb_info]
@@ -73,14 +66,13 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
             }
         );
     });
-    EXPECT_EQ(2u, mtQ_.nHdlr())  << "REQ: count hdlr";
+    EXPECT_EQ(2u, mt_getQ().nHdlr())  << "REQ: count hdlr";
 
     // push
     ThreadBack::newThread(
         // entryFn
-        [this]
-        {
-            mtQ_.mt_push(make_shared<string>("a"));
+        [] {
+            mt_getQ().mt_push(make_shared<string>("a"));
             return true;
         },
         // backFn
@@ -95,9 +87,8 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     );
     ThreadBack::newThread(
         // entryFn
-        [this]
-        {
-            mtQ_.mt_push(make_shared<int>(2));
+        [] {
+            mt_getQ().mt_push(make_shared<int>(2));
             return true;
         },
         // backFn
@@ -117,21 +108,21 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     for (;;)
     {
         // handle all done Thread
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mtQ_.mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
         ThreadBack::hdlFinishedThreads();
 
-        // handle all existing in mtQ_
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mtQ_.mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
-        mtQ_.handleAllEle();
+        // handle all existing in mt_getQ()
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
+        mt_getQ().handleAllEle();
 
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mtQ_.mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
         msgSelf_->handleAllMsg(msgSelf_->getValid());
 
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mtQ_.mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
         if (expect == cb_info)
             return;
 
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mtQ_.mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
         timedwait();
     }
 }

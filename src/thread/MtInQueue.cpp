@@ -65,6 +65,8 @@ size_t MtInQueue::mt_clear()
     const auto sizeCache = cache_.size();
     cache_.clear();
 
+    eleHdlrs_.clear();
+
     return sizeQueue + sizeCache;
 }
 
@@ -95,6 +97,16 @@ ElePair MtInQueue::pop()
     auto elePair = cache_.front();
     cache_.pop_front();
     return elePair;
+}
+
+// ***********************************************************************************************
+MtInQueue& mt_getQ()
+{
+    // - not exist if nobody call this func
+    // - c++14 support MT safe for static var
+    static MtInQueue s_mtQ;
+
+    return s_mtQ;
 }
 
 }  // namespace
