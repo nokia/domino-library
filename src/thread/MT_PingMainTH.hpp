@@ -17,11 +17,24 @@
 
 namespace RLib
 {
-extern MT_Semaphore g_sem;  // can't use ObjAnywhere that is not MT safe
 // ***********************************************************************************************
+// - can't use ObjAnywhere that is not MT safe
+// - REQ: usr shall not use g_sem, otherwise impl change may impact his code
+extern MT_Semaphore g_sem;
+
+// ***********************************************************************************************
+// - REQ: can provide diff impl w/o usr code change
 inline void mt_pingMainTH()
 {
     g_sem.mt_notify();
+}
+
+// ***********************************************************************************************
+// - REQ: can provide diff impl w/o usr code change
+// - no mt_ since only main thread shall call it
+inline void timedwait(const size_t aSec = 0, const size_t aRestNsec = 100'000'000)
+{
+    g_sem.mt_timedwait(aSec, aRestNsec);
 }
 
 }  // namespace

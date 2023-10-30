@@ -65,7 +65,7 @@ TEST_F(MtInQueueTest, GOLD_sparsePush_fifo)
     {
         auto msg = mtQ_.pop<int>();
         if (msg) ASSERT_EQ(nHdl++, *msg) << "REQ: fifo";
-        else g_sem.mt_timedwait();  // REQ: less CPU than repeat pop() or this_thread::yield()
+        else timedwait();  // REQ: less CPU than repeat pop() or this_thread::yield()
     }
     INF("REQ(sleep 1us/push): e2e user=0.354s->0.123s, sys=0.412s->0.159s")
 }
@@ -110,7 +110,7 @@ TEST_F(MtInQueueTest, size_and_nowait)
 {
     mtQ_.mt_push<int>(make_shared<int>(1));
     ASSERT_EQ(1u, mtQ_.mt_sizeQ())  << "REQ: inc size"  << endl;
-    g_sem.mt_timedwait(600);  // ut can't tolerate 10m timer
+    timedwait(600);  // ut can't tolerate 10m timer
     ASSERT_EQ(1u, mtQ_.mt_sizeQ())  << "REQ: wait() ret immediately since mtQ_ not empty"  << endl;
 
     mtQ_.mt_push<int>(make_shared<int>(2));
@@ -118,11 +118,11 @@ TEST_F(MtInQueueTest, size_and_nowait)
 
     EXPECT_EQ(1, *(mtQ_.pop<int>())) << "REQ: fifo";
     ASSERT_EQ(1u, mtQ_.mt_sizeQ())  << "REQ: dec size"  << endl;
-    g_sem.mt_timedwait(600);
+    timedwait(600);
     ASSERT_EQ(1u, mtQ_.mt_sizeQ())  << "REQ: wait() ret immediately since mtQ_ not empty"  << endl;
 
     mtQ_.mt_push<int>(make_shared<int>(3));
-    g_sem.mt_timedwait(600);
+    timedwait(600);
     ASSERT_EQ(2u, mtQ_.mt_sizeQ())  << "REQ: wait() ret immediately since mtQ_ not empty"  << endl;
 
     EXPECT_EQ(2, *(mtQ_.pop<int>())) << "REQ: keep fifo after wait_for()";

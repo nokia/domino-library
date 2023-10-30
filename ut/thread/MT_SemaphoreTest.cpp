@@ -132,23 +132,23 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
             return;
 
         INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mtQ_.mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
-        g_sem.mt_timedwait();
+        timedwait();
     }
 }
 
 // ***********************************************************************************************
 TEST_F(MT_SemaphoreTest, timeout)
 {
-    g_sem.mt_timedwait();  // REQ: can timeout (& clear previous mt_notify if existed)
+    timedwait();  // REQ: can timeout (& clear previous mt_notify if existed)
 
     auto now = high_resolution_clock::now();
     DBG("start");
-    g_sem.mt_timedwait();
+    timedwait();
     DBG("end");
     auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - now);
     EXPECT_GE(dur.count(), 100) << "REQ: default timeout=100ms";
 
-    g_sem.mt_timedwait(0, size_t(-1));  // REQ: invalid ns>=1000ms, no die
+    timedwait(0, size_t(-1));  // REQ: invalid ns>=1000ms, no die
 }
 
 }  // namespace
