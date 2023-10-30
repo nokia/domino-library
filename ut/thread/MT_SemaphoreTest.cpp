@@ -51,6 +51,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     set<string> cb_info;
 
     // setup msg handler table for mtQ_
+    EXPECT_EQ(0u, mtQ_.nHdlr())  << "REQ: init no hdlr";
     mtQ_.hdlr<string>([this, &cb_info](shared_ptr<void> aMsg)
     {
         msgSelf_->newMsg(  // REQ: via MsgSelf
@@ -61,6 +62,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
             }
         );
     });
+    EXPECT_EQ(1u, mtQ_.nHdlr())  << "REQ: count hdlr";
     mtQ_.hdlr<int>([this, &cb_info](shared_ptr<void> aMsg)
     {
         msgSelf_->newMsg(
@@ -71,6 +73,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
             }
         );
     });
+    EXPECT_EQ(2u, mtQ_.nHdlr())  << "REQ: count hdlr";
 
     // push
     ThreadBack::newThread(

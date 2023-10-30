@@ -177,5 +177,25 @@ TEST_F(MtInQueueTest, handleAllEle_shallnot_blocked)
     mtQ_.backdoor().unlock();  // for mt_sizeQ()
     EXPECT_EQ(1u, mtQ_.mt_sizeQ()) << "REQ: no block";
 }
+TEST_F(MtInQueueTest, shallHandle_bothCacheAndQueue_ifPossible)
+{
+    mtQ_.mt_push<void>(nullptr);
+    mtQ_.mt_push<void>(nullptr);
+    mtQ_.pop();  // still 1 ele in cache_
+    mtQ_.mt_push<void>(nullptr);  // and 1 ele in queue_
+    EXPECT_EQ(2u, mtQ_.mt_sizeQ());
+
+    mtQ_.backdoor().lock();
+    EXPECT_EQ(1u, mtQ_.handleAllEle()) << "REQ: shall handle cache_";
+
+    mtQ_.backdoor().unlock();
+    mtQ_.handleAllEle();
+    EXPECT_EQ(0u, mtQ_.mt_sizeQ()) << "REQ: shall handle queue_";
+}
+TEST_F(MtInQueueTest, handle_emptyQ)
+{
+    EXPECT_EQ(0u, mtQ_.mt_sizeQ()) << "REQ: can handle empty Q";
+    mtQ_.handleAllEle();
+}
 
 }  // namespace

@@ -53,11 +53,11 @@ public:
 
     // shall be called in main thread ONLY!!!
     template<class aEleType> void hdlr(const EleHdlr&);
-    void handleAllEle();
+    size_t handleAllEle();
     size_t nHdlr() const { return eleHdlrs_.size(); }
 
 private:
-    void handleCacheEle();
+    size_t handleCacheEle();
 
     // -------------------------------------------------------------------------------------------
     deque<ElePair> queue_;  // unlimited ele; most suitable container

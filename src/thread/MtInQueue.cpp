@@ -18,8 +18,9 @@ MtInQueue::~MtInQueue()
 }
 
 // ***********************************************************************************************
-void MtInQueue::handleCacheEle()
+size_t MtInQueue::handleCacheEle()
 {
+    const auto nEle = cache_.size();
     while (! cache_.empty())
     {
         auto ele_id = cache_.front();
@@ -28,28 +29,29 @@ void MtInQueue::handleCacheEle()
         auto&& id_hdlr = eleHdlrs_.find(ele_id.second);
         if (id_hdlr == eleHdlrs_.end())
         {
-            WRN("discard 1 ele(id=" << ele_id.second << ") since lack handler.")
+            WRN("discard 1 ele(id=" << ele_id.second << ") since no handler.")
             continue;
         }
         id_hdlr->second(ele_id.first);
     }  // while
+    return nEle;
 }
 
 // ***********************************************************************************************
-void MtInQueue::handleAllEle()
+size_t MtInQueue::handleAllEle()
 {
-    handleCacheEle();
+    const auto nEle = handleCacheEle();
 
     {
         unique_lock<mutex> guard(mutex_, try_to_lock);  // avoid block main thread
         if (! guard.owns_lock())
         {
             mt_pingMainTH();  // for possible ele in queue_
-            return;
+            return nEle;
         }
         cache_.swap(queue_);
     }
-    handleCacheEle();
+    return nEle + handleCacheEle();
 }
 
 // ***********************************************************************************************
