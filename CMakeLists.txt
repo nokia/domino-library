@@ -19,8 +19,9 @@ if(COV)
 else()
     set(CMAKE_CXX_STANDARD  14)  # low c++ version for wide usage
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O1")  # fastest build+ut
+    add_compile_definitions(WITH_HID_LOG)
 endif()
-add_compile_definitions(WITH_HID_LOG)
+#add_compile_definitions(WITH_HID_LOG)
 set(CMAKE_CXX_STANDARD_REQUIRED  TRUE)
 set(CMAKE_CXX_EXTENSIONS  OFF)
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fno-exceptions")  # inc branch coverage
