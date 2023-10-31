@@ -28,6 +28,7 @@ void MT_Semaphore::mt_timedwait(const size_t aSec, const size_t aRestNsec)
     timespec ts;
     if (clock_gettime(CLOCK_REALTIME, &ts) == -1)
         return;
+    HID("now.sec=" << ts.tv_sec << "now.ns=" << ts.tv_nsec);  // mt_timedwait(0, 0) can timeout -> inc cov
     const auto ns = ts.tv_nsec + aRestNsec;
     ts.tv_sec += (aSec + ns / 1000'000'000);
     ts.tv_nsec = ns % 1000'000'000;

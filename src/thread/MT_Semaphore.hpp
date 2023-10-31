@@ -19,12 +19,14 @@
 
 #include <semaphore.h>
 
+#include "UniLog.hpp"
+
 using namespace std;
 
 namespace RLib
 {
 // ***********************************************************************************************
-class MT_Semaphore
+class MT_Semaphore : public UniLog
 {
 public:
     MT_Semaphore()  { sem_init(&mt_sem_, 0, 0); }  // 2nd para: intra-process; 3rd: init value
