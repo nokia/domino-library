@@ -94,6 +94,7 @@ void MtInQueue::mt_push(shared_ptr<aEleType> aEle)
 // ***********************************************************************************************
 // - REQ: can provide different impl w/o usr code impact
 // - REQ: MT safe
+//   . can't use ObjAnywhere that is not MT safe
 MtInQueue& mt_getQ();
 
 }  // namespace
