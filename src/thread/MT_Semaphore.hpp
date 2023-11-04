@@ -12,6 +12,7 @@
 //     * sem_wait() doesn't miss afterwards sem_post()
 //   * support timeout to prevent missing sem_post() that may hang main thread
 // - MT safety: YES (since all mt_sem_*() are mt safety)
+//   . can't UniLog that's not MT safe
 // - core:
 //   . mt_sem_
 // ***********************************************************************************************
@@ -19,14 +20,12 @@
 
 #include <semaphore.h>
 
-#include "UniLog.hpp"
-
 using namespace std;
 
 namespace RLib
 {
 // ***********************************************************************************************
-class MT_Semaphore : public UniLog
+class MT_Semaphore
 {
 public:
     MT_Semaphore()  { sem_init(&mt_sem_, 0, 0); }  // 2nd para: intra-process; 3rd: init value

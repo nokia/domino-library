@@ -37,7 +37,7 @@ using ElePair = pair<shared_ptr<void>, size_t>;  // <ele, ID>
 using EleHdlr = function<void(shared_ptr<void>)>;
 
 // ***********************************************************************************************
-class MtInQueue : public UniLog
+class MtInQueue : public UniLog  // mt_ interface can't UniLog that's not MT safe!!!
 {
 public:
     ~MtInQueue();
