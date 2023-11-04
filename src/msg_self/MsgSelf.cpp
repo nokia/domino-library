@@ -25,11 +25,10 @@ MsgSelf::~MsgSelf()
 // ***********************************************************************************************
 void MsgSelf::handleAllMsg(const shared_ptr<bool> aValidMsgSelf)
 {
-    HID("(MsgSelf) How many reference to this MsgSelf? " << aValidMsgSelf.use_count());
-
     if (*aValidMsgSelf)  // impossible aValidMsgSelf==nullptr since 022-Mar-11
     {
-        // if (not nMsg()) return;  // rare nMsg_==0 when PongMainFN()
+        // UniLog also req valid MsgSelf
+        HID("(MsgSelf) How many reference to this MsgSelf? " << aValidMsgSelf.use_count());
         while (handleOneMsg());  // handleOneMsg() may create new high priority msg(s)
     }
 }
