@@ -24,6 +24,7 @@ extern MT_Semaphore g_sem;
 
 // ***********************************************************************************************
 // - REQ: can provide diff impl w/o usr code change
+// - sem is better since can wakeup later wait(), while condition_variable can NOT
 inline void mt_pingMainTH()
 {
     g_sem.mt_notify();
