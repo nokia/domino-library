@@ -16,11 +16,12 @@ if(COV)
     set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  --coverage")  # cmake req before v3.13
 
     add_compile_definitions(SMART_LOG)
+    add_compile_definitions(WITH_HID_LOG)  # more info to debug ci
 else()
     set(CMAKE_CXX_STANDARD  14)  # low c++ version for wide usage
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O1")  # fastest build+ut
+    #add_compile_definitions(WITH_HID_LOG)  # cov no HID; easy to turn-on
 endif()
-add_compile_definitions(WITH_HID_LOG)
 set(CMAKE_CXX_STANDARD_REQUIRED  TRUE)
 set(CMAKE_CXX_EXTENSIONS  OFF)
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fno-exceptions")  # inc branch coverage
