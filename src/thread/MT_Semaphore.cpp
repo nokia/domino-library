@@ -16,10 +16,10 @@ namespace RLib
 void MT_Semaphore::mt_notify()
 {
     int count = 0;
-    if (sem_getvalue(&mt_sem_, &count) == 0)  // succ
-        if (count > 0)  // >0 to avoid count overflow; timeout is deadline
-            return;
-    sem_post(&mt_sem_);  // impossible err according to man page
+    sem_getvalue(&mt_sem_, &count);  // impossible failed according to man page
+    if (count > 0)  // >0 to avoid count overflow; timeout is deadline
+        return;
+    sem_post(&mt_sem_);  // impossible failed according to man page
 }
 
 // ***********************************************************************************************
