@@ -19,11 +19,11 @@ void MT_Semaphore::mt_notify()
     if (sem_getvalue(&mt_sem_, &count) == 0)  // succ
         if (count > 0)  // >0 to avoid count overflow; timeout is deadline
             return;
-    sem_post(&mt_sem_);
+    sem_post(&mt_sem_);  // impossible err according to man page
 }
 
 // ***********************************************************************************************
-void MT_Semaphore::mt_timedwait(const size_t aSec, const size_t aRestNsec)
+void MT_Semaphore::timedwait(const size_t aSec, const size_t aRestNsec)
 {
     timespec ts;
     if (clock_gettime(CLOCK_REALTIME, &ts) == -1)
@@ -40,8 +40,9 @@ void MT_Semaphore::mt_timedwait(const size_t aSec, const size_t aRestNsec)
         else if (errno == ETIMEDOUT)
             return;
 
-        else if (errno == EINVAL)  // avoid die in mt_timedwait()
-            return;
+        // impossible since MT_Semaphore's constructor
+        // else if (errno == EINVAL)  // avoid dead loop
+        //    return;
 
         continue;  // restart
     }  // for

@@ -5,8 +5,8 @@
  */
 // ***********************************************************************************************
 // - why/REQ:
-//   * let main thread mt_timedwait() other thread's input (eg from MsgSelf, ThreadBack, MtInQueue)
-//   * let other thread mt_notify() to wakeup main thread from mt_timedwait()
+//   * let main thread timedwait() other thread's input (eg from MsgSelf, ThreadBack, MtInQueue)
+//   * let other thread mt_notify() to wakeup main thread from timedwait()
 //   . base on semaphore that is simple enough
 //     . std::latch/etc need c++20, too high vs semaphore (POSIX)
 //     * sem_wait() doesn't miss afterwards sem_post()
@@ -33,8 +33,12 @@ public:
     MT_Semaphore(const MT_Semaphore&) = delete;
     MT_Semaphore& operator=(const MT_Semaphore&) = delete;
 
-    void mt_timedwait(const size_t aSec = 0, const size_t aRestNsec = 100'000'000);
     void mt_notify();
+
+    // - no mt_ prefix since main thread use only
+    // - if more threads call it, not guarantee to wakeup all threads but only 1
+    //   . so mt_timedwait() is more complex, will impl if real req appears
+    void timedwait(const size_t aSec = 0, const size_t aRestNsec = 100'000'000);
 
     // -------------------------------------------------------------------------------------------
 private:
