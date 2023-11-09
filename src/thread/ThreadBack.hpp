@@ -78,8 +78,8 @@ using namespace std;
 namespace RLib
 {
 // ***********************************************************************************************
-using MT_ThreadEntryFN  = function<bool()>;      // succ ret true, otherwise false
-using ThreadBackFN      = function<void(bool)>;  // entry ret as para
+using MT_ThreadEntryFN  = function<bool() noexcept>;      // succ ret true, otherwise false
+using ThreadBackFN      = function<void(bool) noexcept>;  // entry ret as para
 using StoreThreadBack   = list<pair<future<bool>, ThreadBackFN> >;
 
 // ***********************************************************************************************

@@ -34,7 +34,7 @@ namespace RLib
 // ele & its typeid.hash_code
 // - hash_code is size_t (simplest) vs type_info (unworth to cost storage mem, & complex MtInQueue)
 using ElePair = pair<shared_ptr<void>, size_t>;  // <ele, ID>
-using EleHdlr = function<void(shared_ptr<void>)>;
+using EleHdlr = function<void(shared_ptr<void>) noexcept>;
 
 // ***********************************************************************************************
 class MtInQueue : public UniLog  // mt_ interface can't UniLog that's not MT safe!!!
