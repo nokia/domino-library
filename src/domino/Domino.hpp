@@ -66,7 +66,7 @@ public:
     using SimuEvents = map<EvName, bool>;  // not unordered-map since most traversal
     using EvNames    = vector<EvName>;
 
-    enum
+    enum : Event
     {
         N_EVENT_STATE      = 2,
         D_EVENT_FAILED_RET = static_cast<Event>(-1),
