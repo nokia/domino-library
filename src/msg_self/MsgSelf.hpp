@@ -55,7 +55,10 @@ enum EMsgPriority : unsigned char
     EMsgPri_MAX
 };
 
-using MsgCB        = function<void() noexcept>;
+// !!! MsgCB shall NEVER throw exception!!!
+// - MsgCB can try-catch all exception
+// - exception is bug to be fixed than pretected
+using MsgCB        = function<void()>;
 using WeakMsgCB    = weak_ptr<MsgCB>;
 using SharedMsgCB  = shared_ptr<MsgCB>;
 
