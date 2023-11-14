@@ -28,7 +28,7 @@ class FreeHdlrDomino : public aDominoType
 public:
     explicit FreeHdlrDomino(const UniLogName& aUniLogName) : aDominoType(aUniLogName) {}
 
-    Domino::Event repeatedHdlr(const Domino::EvName&);
+    Domino::Event repeatedHdlr(const Domino::EvName&, const bool isRepeated = true);  // set false = simple rm
     bool isRepeatHdlr(const Domino::Event) const;
 
 protected:
@@ -44,12 +44,12 @@ public:
 
 // ***********************************************************************************************
 template<class aDominoType>
-Domino::Event FreeHdlrDomino<aDominoType>::repeatedHdlr(const Domino::EvName& aEvName)
+Domino::Event FreeHdlrDomino<aDominoType>::repeatedHdlr(const Domino::EvName& aEvName, const bool isRepeated)
 {
     auto&& event = this->newEvent(aEvName);
     if (event >= isRepeatHdlr_.size())
         isRepeatHdlr_.resize(event + 1);
-    isRepeatHdlr_[event] = true;
+    isRepeatHdlr_[event] = isRepeated;
     return event;
 }
 

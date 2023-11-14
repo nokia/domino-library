@@ -14,9 +14,21 @@
 //   . this will go till end (like domino)
 // - why:
 //   * no rm Ev
-//     . may impact related prev/next Ev, complex & out-control; rm entire Dom is safer
+//     . may impact related prev/next Ev, complex & out-control
+//       . rm entire Dom is safer
+//       . but keep inc Ev is not sustainable, eg swm's dom for version ctrl
+//         * REQ:
+//           * as simple as possible
+//           * de-couple as much as possible
+//         . how:
+//           . newEvent() may alloc fail (throw in diff dom), so has to reuse rm-ed Ev as early as possible
+//         . REQ: each dom can rm its own resource independently as public interface (de-couple)
+//         . REQ: newEvent() not reuse rm-ed Ev until no new Ev, then call RmDom.reuseEv() (simple & safe in most case)
+//         . REQ: RmDom to encapsulate related func
+//         . REQ: RmDom prefers to rmLeaf() Ev only (simple & limited)
+//         . REQ: RmDom can rm branch Ev by nested rmLeaf()
 //     . can rm hdlr & data
-//     . how rm Ev tree's hdlr/data? via iterate evNames()
+//       . how rm Ev tree's hdlr/data? via iterate evNames()
 //   . global states (like global_var) via eg ObjAnywhere
 //   * easily bind & auto broadcast (like real dominos)
 //     * auto shape in different scenario
@@ -219,4 +231,5 @@ private:
 // 2022-03-27  CSZ       - if ut case can test base class, never specify derive
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2023-01-11  CSZ       - search partial EvName
+// 2023-11-14  CSZ       7)rm event
 // ***********************************************************************************************

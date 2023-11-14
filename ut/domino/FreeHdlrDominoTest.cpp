@@ -40,9 +40,13 @@ TYPED_TEST_P(FreeHdlrDominoTest, GOLD_setFlag_thenGetIt)
     EXPECT_FALSE(PARA_DOM->isRepeatHdlr(Domino::D_EVENT_FAILED_RET)) << "REQ: invalid event" << endl;
 
     auto e1 = PARA_DOM->newEvent("e1");  // not exist in flag bitmap
-    auto e2 = PARA_DOM->repeatedHdlr("e2");  // explicit set to bitmap
     EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e1)) << "REQ: default flag" << endl;
-    EXPECT_TRUE (PARA_DOM->isRepeatHdlr(e2)) << "REQ: get=set" << endl;
+
+    auto e2 = PARA_DOM->repeatedHdlr("e2");  // explicit set bitmap to true
+    EXPECT_TRUE(PARA_DOM->isRepeatHdlr(e2)) << "REQ: get=set" << endl;
+
+    PARA_DOM->repeatedHdlr("e2", false);  // explicit set bitmap to false
+    EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e2)) << "REQ: get=set" << endl;
 }
 
 #define AUTO_FREE
