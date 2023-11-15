@@ -34,6 +34,23 @@ Domino::Event Domino::getEventBy(const EvName& aEvName) const
         ? D_EVENT_FAILED_RET
         : it->second;
 }
+// ***********************************************************************************************
+Domino::Event Domino::canRm(const Event aEv) const
+{
+    if (aEv >= states_.size())  // invalid aEv; must check here when MinRmEvDom is used
+        return D_EVENT_FAILED_RET;
+
+    // no leaf
+    auto itEvs = next_[true].find(aEv);
+    if (itEvs == next_[true].cend())   // no leaf in true branch
+        itEvs = next_[false].find(aEv);
+    if (itEvs == next_[false].cend())  // no leaf in false branch
+        return aEv;
+
+    // has leaf
+    HID("!!! rm EN=" << evName(aEv) << " will orphan its leaf EN=" << evName(*(itEvs->second.cbegin())));
+    return *(itEvs->second.cbegin());
+}
 
 // ***********************************************************************************************
 Domino::Event Domino::newEvent(const EvName& aEvName)
@@ -53,6 +70,24 @@ Domino::Event Domino::newEvent(const EvName& aEvName)
 }
 
 // ***********************************************************************************************
+void Domino::pureRmLink(const Event aEv, EvLinks& aMyLinks, EvLinks& aNeighborLinks)
+{
+    auto itMyLinks = aMyLinks.find(aEv);
+    if (itMyLinks == aMyLinks.end())  // not found
+        return;
+
+    for (auto&& peerEv : itMyLinks->second)
+    {
+        auto&& neighborLinks = aNeighborLinks[peerEv];
+        if (neighborLinks.size() == 1)
+            aNeighborLinks.erase(peerEv);  // erase entire
+        else
+            neighborLinks.erase(aEv);      // erase 1
+    }
+    aMyLinks.erase(itMyLinks);
+}
+
+// ***********************************************************************************************
 void Domino::pureSetState(const Event aEv, const bool aNewState)
 {
     if (states_[aEv] != aNewState)
@@ -64,6 +99,25 @@ void Domino::pureSetState(const Event aEv, const bool aNewState)
 
         sthChanged_ = true;
     }
+}
+
+// ***********************************************************************************************
+bool Domino::rmEvOK(const Event aEv)
+{
+    if (aEv >= states_.size())  // invalid aEv
+        return false;
+
+    pureRmLink(aEv, prev_[true],  next_[true]);
+    pureRmLink(aEv, prev_[false], next_[false]);
+    pureRmLink(aEv, next_[true],  prev_[true]);
+    pureRmLink(aEv, next_[false], prev_[false]);
+
+    auto && en = evNames_[aEv];
+    events_.erase(en);
+    en = invalidEvName;
+
+    pureSetState(aEv, false);
+    return true;
 }
 
 // ***********************************************************************************************

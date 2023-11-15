@@ -23,6 +23,7 @@
 #include "MultiHdlrDomino.hpp"
 #include "PriDomino.hpp"
 #include "FreeHdlrDomino.hpp"
+#include "RmEvDom.hpp"
 
 // ***********************************************************************************************
 // UT req: combined domino shall pass all UT
@@ -41,11 +42,12 @@ using MinHdlrDom      = HdlrDomino<Domino>;
 using MinMhdlrDom     = MultiHdlrDomino<MinHdlrDom>;
 using MinPriDom       = PriDomino<MinHdlrDom>;
 using MinFreeDom      = FreeHdlrDomino<MinHdlrDom>;
+using MinRmEvDom      = RmEvDom<Domino>;
 
 // natural order
-using MaxDom = WbasicDatDom<MultiHdlrDomino<DataDomino<FreeHdlrDomino<MinPriDom > > > >;
+using MaxDom = WbasicDatDom<MultiHdlrDomino<DataDomino<FreeHdlrDomino<PriDomino<HdlrDomino<MinRmEvDom> > > > > >;
 // diff order
-using MaxNofreeDom = PriDomino<MultiHdlrDomino<HdlrDomino<MinWbasicDatDom > > >;
+using MaxNofreeDom = RmEvDom<PriDomino<MultiHdlrDomino<HdlrDomino<MinWbasicDatDom> > > >;
 
 // ***********************************************************************************************
 struct UtInitObjAnywhere : public UniLog, public Test
@@ -63,6 +65,7 @@ struct UtInitObjAnywhere : public UniLog, public Test
         ObjAnywhere::set(make_shared<MinMhdlrDom>    (uniLogName()), *this);
         ObjAnywhere::set(make_shared<MinPriDom>      (uniLogName()), *this);
         ObjAnywhere::set(make_shared<MinFreeDom>     (uniLogName()), *this);
+        ObjAnywhere::set(make_shared<MinRmEvDom>     (uniLogName()), *this);
 
         ObjAnywhere::set(make_shared<MaxDom>         (uniLogName()), *this);
         ObjAnywhere::set(make_shared<MaxNofreeDom>   (uniLogName()), *this);

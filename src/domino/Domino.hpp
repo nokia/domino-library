@@ -12,38 +12,7 @@
 //   . each hdlr relies on limited event(s), each event may also rely on some ohter event(s)
 //   . whenever an event occurred, following event(s) can be auto-triggered, so on calling hdlr(s)
 //   . this will go till end (like domino)
-// - why:
-//   * no rm Ev
-//     . may impact related prev/next Ev, complex & out-control
-//       . rm entire Dom is safer
-//       . but keep inc Ev is not sustainable, eg swm's dom for version ctrl
-//         * REQ:
-//           * as simple as possible
-//           * de-couple as much as possible
-//         . how:
-//           . newEvent() may alloc fail (throw in diff dom), so has to reuse rm-ed Ev as early as possible
-//         . REQ: each dom can rm its own resource independently as public interface (de-couple)
-//         . REQ: newEvent() not reuse rm-ed Ev until no new Ev, then call RmDom.reuseEv() (simple & safe in most case)
-//         . REQ: RmDom to encapsulate related func
-//         . REQ: RmDom prefers to rmLeaf() Ev only (simple & limited)
-//         . REQ: RmDom can rm branch Ev by nested rmLeaf()
-//     . can rm hdlr & data
-//       . how rm Ev tree's hdlr/data? via iterate evNames()
-//   . global states (like global_var) via eg ObjAnywhere
-//   * easily bind & auto broadcast (like real dominos)
-//     * auto shape in different scenario
-//   * easily link hdlr with these states & auto callback
-//     . conclusive callback instead of trigger
-//     * can min hdlr's conditions & call as-early-as possible
-//     . easy adapt change since each hdlr/event has limited pre-condition, auto impact others
-//   * light weight (better than IM)
-//   * need not base-derive classes, eg RuAgent/SmodAgent need not derive from BaseAgent
-//     . 1 set hdlrs with unique NDL/precheck/RFM/RB/FB domino set
-//   . evNames()
-//     . to search partial EvName (for eg rm subtree's hdlrs)
-//     . simplest to ret & (let user impl partial/template/etc match)
-//     . safe to ret const (don't defense users' abusing)
-//     . search DomDoor? no untill real req
+// - Q&A: (below; lots)
 // - assmuption:
 //   . each event-hdlr is called only when event state F->T
 //   . repeated event/hdlr is complex, be careful(eg DominoTests.newTriggerViaChain)
@@ -77,6 +46,7 @@ public:
     using EvName     = string;
     using SimuEvents = map<EvName, bool>;  // not unordered-map since most traversal
     using EvNames    = vector<EvName>;
+    using EvLinks    = map<Event, Events>;
 
     enum : Event
     {
@@ -96,6 +66,7 @@ public:
 
     Event    newEvent(const EvName&);
     Event    getEventBy(const EvName&) const;
+    const EvNames& evNames() const { return evNames_; }
 
     bool     state(const EvName& aEvName) const { return state(getEventBy(aEvName)); }
     void     setState(const SimuEvents&);
@@ -103,25 +74,37 @@ public:
     EvName   whyFalse(const EvName&) const;
 
     // -------------------------------------------------------------------------------------------
-    // misc:
-    const EvNames& evNames() const { return evNames_; }
+    // - ret:
+    //   . ev other than aEv: shall rm ret ev before rm aEv, otherwise eg aEv's leaf is orphan (prerequisite)
+    //   . aEv: repeat canRm() till ret=aEv, then can rm aEv (no prerequisite)
+    //   . D_EVENT_FAILED_RET: need not rm (invalid aEv or already removed)
+    // - virtual for each dom to check itself (& trigger base to check)
+    virtual Event canRm(const Event aEv) const;
+
+    // - rm self dom's resource (RISK: aEv's leaf(s) may become orphan!!!)
+    // - virtual for each dom (& trigger base to free its resource)
+    virtual bool rmEvOK(const Event aEv);
+
 protected:
-    const EvName&  evName(const Event aEv) const { return evNames_[aEv]; }  // aEv must valid
-    bool           state(const Event aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
-    virtual void   effect(const Event) {}  // can't const since FreeDom will rm hdlr
+    const EvName& evName(const Event aEv) const { return evNames_[aEv]; }  // aEv must valid
+    bool          state (const Event aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
+    virtual void  effect(const Event) {}  // can't const since FreeDom will rm hdlr
+
 private:
-    void           deduceState(const Event);
-    void           pureSetState(const Event, const bool aNewState);
+    void deduceState(const Event);
+    void pureSetState(const Event, const bool aNewState);
+    void pureRmLink(const Event, EvLinks& aMyLinks, EvLinks& aNeighborLinks);
 
     // -------------------------------------------------------------------------------------------
     vector<bool>                 states_;               // bitmap & dyn expand, [event]=t/f
 
-    map<Event, Events>           prev_[N_EVENT_STATE];  // not unordered-map since most traversal
-    map<Event, Events>           next_[N_EVENT_STATE];  // not unordered-map since most traversal
+    EvLinks                      prev_[N_EVENT_STATE];  // not unordered-map since most traversal
+    EvLinks                      next_[N_EVENT_STATE];  // not unordered-map since most traversal
     unordered_map<EvName, Event> events_;               // [evName]=event
     EvNames                      evNames_;              // [event]=evName for easy debug
     bool                         sthChanged_ = false;   // for debug
 
+public:
     static const EvName          invalidEvName;
 };
 
@@ -139,7 +122,10 @@ private:
 //   . only 1 class(Domino) is for all access
 // - why not throw exception?
 //   . wider usage (eg moam not allow exception)
-//   . same simple code without exception
+//   . simpler code without exception that inc 77% branches (Dec,2022)
+//   . alloc resrc for new Ev may throw exception (from std lib)
+//     . dom try to reuse rm-ed Ev as early as possible to avoid mem-use-up in the most usage
+//     . dom  can't solve mem-use-up so no code to handle exception
 // - why template PriDomino, etc
 //   . easy combine: eg Basic + Pri + Rw or Basic + Rw or Basic + Pri
 //   . direct to get interface of all combined classes (inherit)
@@ -147,9 +133,6 @@ private:
 //   . BasicDomino's debug needs EvNameDomino
 // - why not separate SimuDomino from BasicDomino?
 //   . tight couple at setState()
-// - why not rm(event)
-//   . dangeous: may break deduced path
-//   . not must-have req
 // - why Event:EvName=1:1?
 //   . simplify complex scenario eg rmOneHdlrOK() may relate with multi-hdlr
 //   . simplify interface: EvName only, Event is internal-use only
@@ -166,6 +149,29 @@ private:
 //   . Can buffer last EvName ptr to speedup?
 //     . dangeous: diff func could create EvName at same address in stack
 //     . 021-09-22: all UT, only 41% getEventBy() can benefit by buffer, not worth vs dangeous
+// - why not rm Ev
+//   . may impact related prev/next Ev, complex & out-control
+  //   . dangeous: may break deduced path
+//     . rm entire Dom is safer
+//     . not must-have req
+//     . but keep inc Ev is not sustainable (may use up mem), eg swm's dom for version ctrl
+//       . details in RmEvDomino
+//   . can rm hdlr & data
+// - why global states (like global_var) via eg ObjAnywhere
+//   * easily bind & auto broadcast (like real dominos)
+//     * auto shape in different scenario
+//   * easily link hdlr with these states & auto callback
+//     . conclusive callback instead of trigger
+//     * can min hdlr's conditions & call as-early-as possible
+//     . easy adapt change since each hdlr/event has limited pre-condition, auto impact others
+//   * light weight (better than IM)
+//   * need not base-derive classes, eg RuAgent/SmodAgent need not derive from BaseAgent
+//     . 1 set hdlrs with unique NDL/precheck/RFM/RB/FB domino set
+//   . evNames()
+//     . to search partial EvName (for eg rm subtree's hdlrs)
+//     . simplest to ret & (let user impl partial/template/etc match)
+//     . safe to ret const (don't defense users' abusing)
+//     . search DomDoor? no untill real req
 // - how:
 //   *)trigger
 //     . prefer time-cost events

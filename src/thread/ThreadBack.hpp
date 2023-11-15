@@ -33,7 +33,6 @@
 //   . MT_ThreadEntryFN & ThreadBackFN shall NOT throw exception
 //     . they can try-catch all exception & leave RLib simple/focus
 //     . exception is bug to be fixed than pretected
-//     . dom lib branches inc 77% (Dec,2022), unnecessary complex
 //   . cross platform:
 //     . std::async
 //     . std::future (to msg from other thread back to main thread)
