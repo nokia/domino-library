@@ -34,23 +34,6 @@ Domino::Event Domino::getEventBy(const EvName& aEvName) const
         ? D_EVENT_FAILED_RET
         : it->second;
 }
-// ***********************************************************************************************
-Domino::Event Domino::canRm(const Event aEv) const
-{
-    if (aEv >= states_.size())  // invalid aEv; must check here when MinRmEvDom is used
-        return D_EVENT_FAILED_RET;
-
-    // no leaf
-    auto itEvs = next_[true].find(aEv);
-    if (itEvs == next_[true].cend())   // no leaf in true branch
-        itEvs = next_[false].find(aEv);
-    if (itEvs == next_[false].cend())  // no leaf in false branch
-        return aEv;
-
-    // has leaf
-    HID("!!! rm EN=" << evName(aEv) << " will orphan its leaf EN=" << evName(*(itEvs->second.cbegin())));
-    return *(itEvs->second.cbegin());
-}
 
 // ***********************************************************************************************
 Domino::Event Domino::newEvent(const EvName& aEvName)

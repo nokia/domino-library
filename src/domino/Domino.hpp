@@ -73,14 +73,6 @@ public:
     Event    setPrev(const EvName&, const SimuEvents& aSimuPrevEvents);
     EvName   whyFalse(const EvName&) const;
 
-    // -------------------------------------------------------------------------------------------
-    // - ret:
-    //   . ev other than aEv: shall rm ret ev before rm aEv, otherwise eg aEv's leaf is orphan (prerequisite)
-    //   . aEv: repeat canRm() till ret=aEv, then can rm aEv (no prerequisite)
-    //   . D_EVENT_FAILED_RET: need not rm (invalid aEv or already removed)
-    // - virtual for each dom to check itself (& trigger base to check)
-    virtual Event canRm(const Event aEv) const;
-
     // - rm self dom's resource (RISK: aEv's leaf(s) may become orphan!!!)
     // - virtual for each dom (& trigger base to free its resource)
     virtual bool rmEvOK(const Event aEv);
@@ -151,7 +143,7 @@ public:
 //     . 021-09-22: all UT, only 41% getEventBy() can benefit by buffer, not worth vs dangeous
 // - why not rm Ev
 //   . may impact related prev/next Ev, complex & out-control
-  //   . dangeous: may break deduced path
+//   . dangeous: may break deduced path
 //     . rm entire Dom is safer
 //     . not must-have req
 //     . but keep inc Ev is not sustainable (may use up mem), eg swm's dom for version ctrl
