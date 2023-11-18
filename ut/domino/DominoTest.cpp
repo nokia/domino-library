@@ -212,6 +212,6 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , noID_for_not_exist_EvName
 );
 using AnyDom = Types<Domino, MinDatDom, MinWbasicDatDom, MinHdlrDom, MinMhdlrDom, MinPriDom,
-    MinFreeDom, MaxNofreeDom, MaxDom>;
+    MinFreeDom, MinRmEvDom, MaxNofreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, DominoTest, AnyDom);
 }  // namespace

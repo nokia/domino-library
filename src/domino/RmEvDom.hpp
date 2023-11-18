@@ -48,7 +48,7 @@ bool RmEvDom<aDominoType>::rmEvOK(const Domino::Event aEv)
     if (isRemoved(aEv))  // already removed
         return false;
 
-    if (! aDominoType::rmEvOK(aEv))  // fail
+    if (! aDominoType::rmEvOK(aEv))  // fail eg invalid aEv
         return false;
 
     // rmEvOK() succ; must NOT rely on aDominoType at all since info of aEv is removed

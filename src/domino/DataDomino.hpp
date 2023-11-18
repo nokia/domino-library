@@ -44,6 +44,8 @@ public:
     // - for aDataType w/o default constructor!!!
     virtual void replaceShared(const Domino::EvName&, shared_ptr<void> aSharedData = nullptr);
 
+    bool rmEvOK(const Domino::Event) override;
+
 private:
     // -------------------------------------------------------------------------------------------
     unordered_map<Domino::Event, shared_ptr<void> > dataStore_;  // [event]=shared_ptr<"DataType">
@@ -67,6 +69,16 @@ void DataDomino<aDominoType>::replaceShared(const Domino::EvName& aEvName, share
         dataStore_[this->newEvent(aEvName)] = aSharedData;
 }
 
+// ***********************************************************************************************
+template<typename aDominoType>
+bool DataDomino<aDominoType>::rmEvOK(const Domino::Event aEv)
+{
+    if (! aDominoType::rmEvOK(aEv))  // fail eg invalid aEv or already removed
+        return false;
+
+    dataStore_.erase(aEv);
+    return true;
+}
 
 
 #define EXTEND_INTERFACE_FOR_DATA_DOMINO  // more friendly than min DataDomino interface

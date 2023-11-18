@@ -15,11 +15,13 @@ template<class aParaDom>
 struct RmEvDomTest : public UtInitObjAnywhere
 {
 };
-TYPED_TEST_SUITE_P(RmEvDomTest);
 
-#define RM_LEAF
+#define RM_DOM
 // ***********************************************************************************************
-TYPED_TEST_P(RmEvDomTest, GOLD_rm_leaf)
+template<class aParaDom> using RmDomTest = RmEvDomTest<aParaDom>;
+TYPED_TEST_SUITE_P(RmDomTest);
+
+TYPED_TEST_P(RmDomTest, GOLD_rm_dom_resrc)
 {
     EXPECT_FALSE(PARA_DOM->rmEvOK(Domino::D_EVENT_FAILED_RET)) << "REQ: NOK to rm invalid Ev.";
 
@@ -42,15 +44,44 @@ TYPED_TEST_P(RmEvDomTest, GOLD_rm_leaf)
 
     EXPECT_EQ(Domino::invalidEvName, PARA_DOM->evNames().at(e1)) << "REQ: EN is removed.";
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1")) << "REQ: EN is removed.";
-
-//    PARA_DOM->
 }
 
-// ***********************************************************************************************
-REGISTER_TYPED_TEST_SUITE_P(RmEvDomTest
-    , GOLD_rm_leaf
+REGISTER_TYPED_TEST_SUITE_P(RmDomTest
+    , GOLD_rm_dom_resrc
 );
 using AnyRmDom = Types<MinRmEvDom, MaxNofreeDom, MaxDom>;
-INSTANTIATE_TYPED_TEST_SUITE_P(PARA, RmEvDomTest, AnyRmDom);
+INSTANTIATE_TYPED_TEST_SUITE_P(PARA, RmDomTest, AnyRmDom);
+
+#define RM_DATA_DOM
+// ***********************************************************************************************
+template<class aParaDom> using RmDataDomTest = RmEvDomTest<aParaDom>;
+TYPED_TEST_SUITE_P(RmDataDomTest);
+
+TYPED_TEST_P(RmDataDomTest, GOLD_rm_DataDom_resrc)
+{
+    struct TestData
+    {
+        bool& isDestructed_;
+        explicit TestData(bool& aExtFlag) : isDestructed_(aExtFlag) { isDestructed_ = false; }
+        ~TestData() { isDestructed_ = true; }
+    };
+    bool isDestructed;
+
+    PARA_DOM->replaceShared("ev", make_shared<TestData>(isDestructed));
+    EXPECT_FALSE(isDestructed);
+    const auto ev = PARA_DOM->getEventBy("ev");
+
+    EXPECT_TRUE(PARA_DOM->rmEvOK(ev)) << "REQ: rm succ.";
+    EXPECT_TRUE(isDestructed) << "REQ: data is removed.";
+    EXPECT_EQ(nullptr, PARA_DOM->getShared("ev")) << "REQ: get null after removed." << endl;
+
+    EXPECT_FALSE(PARA_DOM->rmEvOK(ev)) << "REQ: fail to rm invalid.";
+}
+
+REGISTER_TYPED_TEST_SUITE_P(RmDataDomTest
+    , GOLD_rm_DataDom_resrc
+);
+using AnyRmDataDom = Types<MaxNofreeDom, MaxDom>;
+INSTANTIATE_TYPED_TEST_SUITE_P(PARA, RmDataDomTest, AnyRmDataDom);
 
 }  // namespace
