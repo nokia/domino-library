@@ -37,17 +37,19 @@ using namespace testing;
 namespace RLib
 {
 using MinDatDom       = DataDomino<Domino>;
-using MinWbasicDatDom = WbasicDatDom<DataDomino<Domino> >;
+using MinWbasicDatDom = WbasicDatDom<DataDomino<Domino>>;
+
 using MinHdlrDom      = HdlrDomino<Domino>;
-using MinMhdlrDom     = MultiHdlrDomino<HdlrDomino<Domino> >;
-using MinPriDom       = PriDomino<HdlrDomino<Domino> >;
-using MinFreeDom      = FreeHdlrDomino<HdlrDomino<Domino> >;
+using MinMhdlrDom     = MultiHdlrDomino<HdlrDomino<Domino>>;
+using MinPriDom       = PriDomino<HdlrDomino<Domino>>;
+using MinFreeDom      = FreeHdlrDomino<HdlrDomino<Domino>>;
+
 using MinRmEvDom      = RmEvDom<Domino>;
 
 // natural order
-using MaxDom = WbasicDatDom<MultiHdlrDomino<DataDomino<FreeHdlrDomino<PriDomino<HdlrDomino<RmEvDom<Domino> > > > > > >;
+using MaxDom = WbasicDatDom<MultiHdlrDomino<DataDomino<FreeHdlrDomino<PriDomino<HdlrDomino<RmEvDom<Domino>>>>>>>;
 // diff order
-using MaxNofreeDom = RmEvDom<PriDomino<MultiHdlrDomino<HdlrDomino<WbasicDatDom<DataDomino<Domino> > > > > >;
+using MaxNofreeDom = RmEvDom<PriDomino<MultiHdlrDomino<HdlrDomino<WbasicDatDom<DataDomino<Domino>>>>>>;
 
 // ***********************************************************************************************
 struct UtInitObjAnywhere : public UniLog, public Test
