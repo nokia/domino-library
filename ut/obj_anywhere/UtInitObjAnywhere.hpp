@@ -40,7 +40,7 @@ using MinDatDom       = DataDomino<Domino>;
 using MinWbasicDatDom = WbasicDatDom<MinDatDom>;
 using MinHdlrDom      = HdlrDomino<Domino>;
 using MinMhdlrDom     = MultiHdlrDomino<MinHdlrDom>;
-using MinPriDom       = PriDomino<MinHdlrDom>;
+using MinPriDom       = PriDomino<HdlrDomino<Domino> >;
 using MinFreeDom      = FreeHdlrDomino<MinHdlrDom>;
 using MinRmEvDom      = RmEvDom<Domino>;
 
