@@ -84,4 +84,38 @@ REGISTER_TYPED_TEST_SUITE_P(RmDataDomTest
 using AnyRmDataDom = Types<MaxNofreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, RmDataDomTest, AnyRmDataDom);
 
+#define RM_W_DATA_DOM
+// ***********************************************************************************************
+template<class aParaDom> using RmWdatDomTest = RmEvDomTest<aParaDom>;
+TYPED_TEST_SUITE_P(RmWdatDomTest);
+
+TYPED_TEST_P(RmWdatDomTest, GOLD_rm_WdatDom_resrc)
+{
+    struct TestData
+    {
+        bool& isDestructed_;
+        explicit TestData(bool& aExtFlag) : isDestructed_(aExtFlag) { isDestructed_ = false; }
+        ~TestData() { isDestructed_ = true; }
+    };
+    bool isDestructed;
+
+    EXPECT_TRUE(PARA_DOM->wrCtrlOk("ev", true)) << "REQ: test wctrl data.";
+    PARA_DOM->wbasic_replaceShared("ev", make_shared<TestData>(isDestructed));
+    EXPECT_FALSE(isDestructed);
+    const auto ev = PARA_DOM->getEventBy("ev");
+
+    EXPECT_TRUE(PARA_DOM->rmEvOK(ev)) << "REQ: rm succ.";
+    EXPECT_TRUE(isDestructed) << "REQ: data is removed.";
+    EXPECT_EQ(nullptr, PARA_DOM->wbasic_getShared("ev")) << "REQ: get null after removed." << endl;
+    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev")) << "REQ: reset wctrl flag.";
+
+    EXPECT_FALSE(PARA_DOM->rmEvOK(ev)) << "REQ: fail to rm invalid.";
+}
+
+REGISTER_TYPED_TEST_SUITE_P(RmWdatDomTest
+    , GOLD_rm_WdatDom_resrc
+);
+using AnyRmWdatDom = Types<MaxNofreeDom, MaxDom>;
+INSTANTIATE_TYPED_TEST_SUITE_P(PARA, RmWdatDomTest, AnyRmWdatDom);
+
 }  // namespace

@@ -32,6 +32,8 @@ public:
     void replaceShared(const Domino::EvName&, shared_ptr<void> aSharedData = nullptr) override;
     void wbasic_replaceShared(const Domino::EvName&, shared_ptr<void> aSharedData = nullptr);
 
+    bool rmEvOK(const Domino::Event) override;
+
 private:
     // forbid ouside usage
     using aDominoType::getShared;
@@ -69,6 +71,18 @@ void WbasicDatDom<aDominoType>::replaceShared(const Domino::EvName& aEvName, sha
     if (isWrCtrl(aEvName))
         WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!")
     else aDominoType::replaceShared(aEvName, aSharedData);
+}
+
+// ***********************************************************************************************
+template<typename aDominoType>
+bool WbasicDatDom<aDominoType>::rmEvOK(const Domino::Event aEv)
+{
+    if (! aDominoType::rmEvOK(aEv))  // fail eg invalid aEv or already removed
+        return false;
+
+    if (aEv < wrCtrl_.size())
+        wrCtrl_[aEv] = false;
+    return true;
 }
 
 // ***********************************************************************************************
