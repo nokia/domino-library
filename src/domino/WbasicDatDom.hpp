@@ -75,18 +75,6 @@ void WbasicDatDom<aDominoType>::replaceShared(const Domino::EvName& aEvName, sha
 
 // ***********************************************************************************************
 template<typename aDominoType>
-bool WbasicDatDom<aDominoType>::rmEvOK(const Domino::Event aEv)
-{
-    if (! aDominoType::rmEvOK(aEv))  // fail eg invalid aEv or already removed
-        return false;
-
-    if (aEv < wrCtrl_.size())
-        wrCtrl_[aEv] = false;
-    return true;
-}
-
-// ***********************************************************************************************
-template<typename aDominoType>
 shared_ptr<void> WbasicDatDom<aDominoType>::wbasic_getShared(const Domino::EvName& aEvName) const
 {
     if (isWrCtrl(aEvName))
@@ -122,6 +110,18 @@ bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName, const bo
     wrCtrl_[ev] = aNewState;
     HID("(WbasicDatDom) Succeed, EvName=" << aEvName << ", new wrCtrl=" << aNewState
         << ", nWr=" << wrCtrl_.size() << ", cap=" << wrCtrl_.capacity());
+    return true;
+}
+
+// ***********************************************************************************************
+template<typename aDominoType>
+bool WbasicDatDom<aDominoType>::rmEvOK(const Domino::Event aEv)
+{
+    if (! aDominoType::rmEvOK(aEv))  // fail eg invalid aEv or already removed
+        return false;
+
+    if (aEv < wrCtrl_.size())
+        wrCtrl_[aEv] = false;
     return true;
 }
 
