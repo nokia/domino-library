@@ -113,18 +113,6 @@ bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName, const bo
     return true;
 }
 
-// ***********************************************************************************************
-template<typename aDominoType>
-bool WbasicDatDom<aDominoType>::rmEvOK(const Domino::Event aEv)
-{
-    if (! aDominoType::rmEvOK(aEv))  // fail eg invalid aEv or already removed
-        return false;
-
-    if (aEv < wrCtrl_.size())
-        wrCtrl_[aEv] = false;
-    return true;
-}
-
 
 
 #define EXTEND_INTERFACE_FOR_WBASIC_DATA_DOMINO  // more friendly than min WbasicDatDom interface
@@ -147,6 +135,20 @@ void wbasic_setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const
 {
     aDom.wbasic_replaceShared(aEvName, make_shared<aDataType>(aData));
 }
+
+
+// ***********************************************************************************************
+template<typename aDominoType>
+bool WbasicDatDom<aDominoType>::rmEvOK(const Domino::Event aEv)
+{
+    if (! aDominoType::rmEvOK(aEv))  // fail eg invalid aEv or already removed
+        return false;
+
+    if (aEv < wrCtrl_.size())
+        wrCtrl_[aEv] = false;
+    return true;
+}
+
 }  // namespace
 // ***********************************************************************************************
 // - why not wbasic_setValue() auto call wrCtrlOk()?
