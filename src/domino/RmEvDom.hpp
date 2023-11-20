@@ -31,7 +31,7 @@ public:
     explicit RmEvDom(const UniLogName& aUniLogName) : aDominoType(aUniLogName) {}
 
     bool rmEvOK(const Domino::Event) override;
-    bool isRemoved(const Domino::Event aEv) const { return aEv < isRemovedEv_.size() ? isRemovedEv_[aEv] : false; }
+    bool isRemoved(const Domino::Event aEv) const { return aEv < isRemovedEv_.size() ? isRemovedEv_.at(aEv) : false; }
 
     // -------------------------------------------------------------------------------------------
 private:
