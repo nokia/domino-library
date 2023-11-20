@@ -138,6 +138,7 @@ void wbasic_setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const
 
 
 // ***********************************************************************************************
+// place at the end to avoud gcovr/gcov bug on cov
 template<typename aDominoType>
 bool WbasicDatDom<aDominoType>::rmEvOK(const Domino::Event aEv)
 {

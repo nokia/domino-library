@@ -41,17 +41,6 @@ public:
 
 // ***********************************************************************************************
 template<class aDominoType>
-EMsgPriority PriDomino<aDominoType>::getPriority(const Domino::Event aEv) const
-{
-    auto&& it = priorities_.find(aEv);
-    if (it == priorities_.end())
-        return aDominoType::getPriority(aEv);
-    else
-        return it->second;
-}
-
-// ***********************************************************************************************
-template<class aDominoType>
 Domino::Event PriDomino<aDominoType>::setPriority(const Domino::EvName& aEvName, const EMsgPriority aPri)
 {
     DBG("(PriDomino) EvName=" << aEvName << ", newPri=" << size_t(aPri));
@@ -62,6 +51,19 @@ Domino::Event PriDomino<aDominoType>::setPriority(const Domino::EvName& aEvName,
         priorities_[event] = aPri;
     return event;
 }
+
+// ***********************************************************************************************
+// place at the end to avoud gcovr/gcov bug on cov
+template<class aDominoType>
+EMsgPriority PriDomino<aDominoType>::getPriority(const Domino::Event aEv) const
+{
+    auto&& it = priorities_.find(aEv);
+    if (it == priorities_.end())
+        return aDominoType::getPriority(aEv);
+    else
+        return it->second;
+}
+
 }  // namespace
 #endif  // PRI_DOMINO_HPP_
 // ***********************************************************************************************
