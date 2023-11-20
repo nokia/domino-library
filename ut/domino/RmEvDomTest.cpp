@@ -25,8 +25,8 @@ TYPED_TEST_P(RmDomTest, GOLD_rm_dom_resrc)
 {
     EXPECT_FALSE(PARA_DOM->rmEvOK(Domino::D_EVENT_FAILED_RET)) << "REQ: NOK to rm invalid Ev.";
 
+    PARA_DOM->setPrev("e2", {{"e1", true}, {"e1b", true}});  // create e2 before e1 to inc cov of recycleEv()
     const auto e1 = PARA_DOM->setPrev("e1", {{"e0", false}});
-    PARA_DOM->setPrev("e2", {{"e1", true}, {"e1b", true}});
     EXPECT_TRUE (PARA_DOM->state("e1"));
     EXPECT_FALSE(PARA_DOM->isRemoved(e1)) << "REQ: new ev is not removed state.";
 
