@@ -61,7 +61,7 @@ template<typename aDominoType>
 bool WbasicDatDom<aDominoType>::isWrCtrl(const Domino::EvName& aEvName) const
 {
     const auto ev = this->getEventBy(aEvName);
-    return ev < wrCtrl_.size() ? wrCtrl_.at(ev) : false;
+    return ev < wrCtrl_.size() ? wrCtrl_[ev] : false;
 }
 
 // ***********************************************************************************************

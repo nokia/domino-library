@@ -58,7 +58,7 @@ template<class aDominoType>
 bool FreeHdlrDomino<aDominoType>::isRepeatHdlr(const Domino::Event aEv) const
 {
     return aEv < isRepeatHdlr_.size()
-        ? isRepeatHdlr_.at(aEv)
+        ? isRepeatHdlr_[aEv]
         : false;
 }
 

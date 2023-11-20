@@ -96,7 +96,7 @@ bool Domino::rmEvOK(const Event aEv)
     pureRmLink(aEv, next_[true],  prev_[true]);
     pureRmLink(aEv, next_[false], prev_[false]);
 
-    auto && en = evNames_[aEv];
+    auto&& en = evNames_[aEv];
     events_.erase(en);
     en = invalidEvName;
 
