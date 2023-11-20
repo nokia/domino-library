@@ -45,6 +45,9 @@ TYPED_TEST_P(RmDomTest, GOLD_rm_dom_resrc)
 
     EXPECT_EQ(Domino::invalidEvName, PARA_DOM->evNames().at(e1)) << "REQ: EN is removed.";
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1")) << "REQ: EN is removed.";
+
+    EXPECT_EQ(e1, PARA_DOM->newEvent("new e1"));
+    EXPECT_FALSE(PARA_DOM->isRemoved(e1)) << "REQ: new ev is not removed state.";
 }
 
 REGISTER_TYPED_TEST_SUITE_P(RmDomTest

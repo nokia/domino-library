@@ -32,6 +32,7 @@ public:
 
     bool rmEvOK(const Domino::Event) override;
     bool isRemoved(const Domino::Event aEv) const { return aEv < isRemovedEv_.size() ? isRemovedEv_.at(aEv) : false; }
+    Domino::Event recycleEv() override;
 
     // -------------------------------------------------------------------------------------------
 private:
@@ -40,6 +41,19 @@ private:
 public:
     using aDominoType::oneLog;
 };
+
+// ***********************************************************************************************
+template<typename aDominoType>
+Domino::Event RmEvDom<aDominoType>::recycleEv()
+{
+    for (Domino::Event ev = 0; ev < isRemovedEv_.size(); ev++)
+        if (isRemovedEv_[ev])
+        {
+            isRemovedEv_[ev] = false;
+            return ev;
+        }
+    return Domino::D_EVENT_FAILED_RET;
+}
 
 // ***********************************************************************************************
 template<typename aDominoType>

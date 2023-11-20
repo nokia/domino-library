@@ -42,8 +42,9 @@ Domino::Event Domino::newEvent(const EvName& aEvName)
     if (event != D_EVENT_FAILED_RET)
         return event;
 
-    event = states_.size();
-    //if (event == D_EVENT_FAILED_RET)  return event;  // hard to appear; hard to UT
+    event = recycleEv();
+    if (event == D_EVENT_FAILED_RET)
+        event = states_.size();
 
     HID("(Domino) Succeed, EvName=" << aEvName << ", event id=" << event);
     events_.emplace(aEvName, event);

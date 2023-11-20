@@ -76,6 +76,7 @@ public:
     // - rm self dom's resource (RISK: aEv's leaf(s) may become orphan!!!)
     // - virtual for each dom (& trigger base to free its resource)
     virtual bool rmEvOK(const Event aEv);
+    virtual Event recycleEv() { return D_EVENT_FAILED_RET; }
 
 protected:
     const EvName& evName(const Event aEv) const { return evNames_[aEv]; }  // aEv must valid
