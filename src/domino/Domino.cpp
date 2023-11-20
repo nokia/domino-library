@@ -62,7 +62,7 @@ void Domino::pureRmLink(const Event aEv, EvLinks& aMyLinks, EvLinks& aNeighborLi
     for (auto&& peerEv : itMyLinks->second)
     {
         auto&& neighborLinks = aNeighborLinks[peerEv];
-        if (neighborLinks.size() == 1)
+        if (neighborLinks.size() <= 1)
             aNeighborLinks.erase(peerEv);  // erase entire
         else
             neighborLinks.erase(aEv);      // erase 1

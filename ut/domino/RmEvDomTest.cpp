@@ -28,6 +28,7 @@ TYPED_TEST_P(RmDomTest, GOLD_rm_dom_resrc)
     const auto e1 = PARA_DOM->setPrev("e1", {{"e0", false}});
     PARA_DOM->setPrev("e2", {{"e1", true}, {"e1b", true}});
     EXPECT_TRUE (PARA_DOM->state("e1"));
+    EXPECT_FALSE(PARA_DOM->isRemoved(e1)) << "REQ: new ev is not removed state.";
 
     EXPECT_TRUE (PARA_DOM->rmEvOK(e1)) << "REQ: OK to rm leaf Ev.";
     EXPECT_FALSE(PARA_DOM->rmEvOK(e1)) << "REQ: NOK to rm invalid Ev.";
@@ -70,6 +71,7 @@ TYPED_TEST_P(RmDataDomTest, GOLD_rm_DataDom_resrc)
     PARA_DOM->replaceShared("ev", make_shared<TestData>(isDestructed));
     EXPECT_FALSE(isDestructed);
     const auto ev = PARA_DOM->getEventBy("ev");
+    EXPECT_FALSE(PARA_DOM->isRemoved(ev)) << "REQ: new ev is not removed state.";
 
     EXPECT_TRUE(PARA_DOM->rmEvOK(ev)) << "REQ: rm succ.";
     EXPECT_TRUE(isDestructed) << "REQ: data is removed.";
@@ -103,6 +105,7 @@ TYPED_TEST_P(RmWdatDomTest, GOLD_rm_WdatDom_resrc)
     PARA_DOM->wbasic_replaceShared("ev", make_shared<TestData>(isDestructed));
     EXPECT_FALSE(isDestructed);
     const auto ev = PARA_DOM->getEventBy("ev");
+    EXPECT_FALSE(PARA_DOM->isRemoved(ev)) << "REQ: new ev is not removed state.";
 
     EXPECT_TRUE(PARA_DOM->rmEvOK(ev)) << "REQ: rm succ.";
     EXPECT_TRUE(isDestructed) << "REQ: data is removed.";
