@@ -19,6 +19,8 @@
 // ***********************************************************************************************
 #pragma once
 
+#include <unordered_set>
+
 using namespace std;
 
 namespace RLib
@@ -31,12 +33,15 @@ public:
     explicit RmEvDom(const UniLogName& aUniLogName) : aDominoType(aUniLogName) {}
 
     bool rmEvOK(const Domino::Event) override;
-    bool isRemoved(const Domino::Event aEv) const { return aEv < isRemovedEv_.size() ? isRemovedEv_[aEv] : false; }
+    bool isRemoved(const Domino::Event aEv) const { return isRemovedEv_.count(aEv); }
     Domino::Event recycleEv() override;
 
-    // -------------------------------------------------------------------------------------------
 private:
-    vector<bool> isRemovedEv_;  // bitmap & dyn expand, [event]=true(rm-ed) or not
+    // -------------------------------------------------------------------------------------------
+    // - REQ: min mem
+    // - REQ: fast (eg isRemoved(), insert, del)
+    // - req: better FIFO
+    unordered_set<Domino::Event> isRemovedEv_;
 
 public:
     using aDominoType::oneLog;
@@ -46,13 +51,12 @@ public:
 template<typename aDominoType>
 Domino::Event RmEvDom<aDominoType>::recycleEv()
 {
-    for (Domino::Event ev = 0; ev < isRemovedEv_.size(); ev++)
-        if (isRemovedEv_[ev])
-        {
-            isRemovedEv_[ev] = false;
-            return ev;
-        }
-    return Domino::D_EVENT_FAILED_RET;
+    if (isRemovedEv_.empty())
+        return Domino::D_EVENT_FAILED_RET;
+
+    const auto ev = *(isRemovedEv_.begin());
+    isRemovedEv_.erase(isRemovedEv_.begin());
+    return ev;
 }
 
 // ***********************************************************************************************
@@ -66,9 +70,7 @@ bool RmEvDom<aDominoType>::rmEvOK(const Domino::Event aEv)
         return false;
 
     // rmEvOK() succ; must NOT rely on aDominoType at all since info of aEv is removed
-    if (aEv >= isRemovedEv_.size())
-        isRemovedEv_.resize(aEv + 1);
-    isRemovedEv_[aEv] = true;
+    isRemovedEv_.insert(aEv);
     return true;
 }
 
@@ -77,4 +79,5 @@ bool RmEvDom<aDominoType>::rmEvOK(const Domino::Event aEv)
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2023-11-14  CSZ       1)create
+// 2023-11-22  CSZ       - better isRemovedEv_
 // ***********************************************************************************************
