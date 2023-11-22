@@ -36,13 +36,13 @@ using namespace testing;
 
 namespace RLib
 {
-using MinDatDom       = DataDomino<Domino>;
+using MinDatDom       =              DataDomino<Domino>;
 using MinWbasicDatDom = WbasicDatDom<DataDomino<Domino>>;
 
-using MinHdlrDom      = HdlrDomino<Domino>;
+using MinHdlrDom      =                 HdlrDomino<Domino>;
 using MinMhdlrDom     = MultiHdlrDomino<HdlrDomino<Domino>>;
-using MinPriDom       = PriDomino<HdlrDomino<Domino>>;
-using MinFreeDom      = FreeHdlrDomino<HdlrDomino<Domino>>;
+using MinPriDom       =       PriDomino<HdlrDomino<Domino>>;
+using MinFreeDom      =  FreeHdlrDomino<HdlrDomino<Domino>>;
 
 using MinRmEvDom      = RmEvDom<Domino>;
 

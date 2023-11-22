@@ -14,15 +14,22 @@ const Domino::EvName Domino::invalidEvName("Invalid Ev/EvName");
 // ***********************************************************************************************
 void Domino::deduceState(const Event aEv)
 {
-    for (auto&& prevEvent : prev_[true][aEv])
-        if (! states_[prevEvent])  // no exception from [] than at()
-            return;
-    for (auto&& prevEvent : prev_[false][aEv])
-        if (states_[prevEvent])
-            return;
+    auto&& itEvLinks = prev_[true].find(aEv);
+    if (itEvLinks != prev_[true].end())  // true br
+        for (auto&& tPrev : itEvLinks->second)
+            if (states_[tPrev] != true)  // 1 prev not satisfied
+                return;
+    itEvLinks = prev_[false].find(aEv);
+    if (itEvLinks != prev_[false].end())  // false br
+        for (auto&& fPrev : itEvLinks->second)
+            if (states_[fPrev] != false)  // 1 prev not satisfied
+                return;
 
     pureSetState(aEv, true);
-    for (auto&& nextEvent : next_[true][aEv])
+    itEvLinks = next_[true].find(aEv);
+    if (itEvLinks == next_[true].end())  // no more next
+        return;
+    for (auto&& nextEvent : itEvLinks->second)
         deduceState(nextEvent);
 }
 
@@ -137,8 +144,13 @@ void Domino::setState(const SimuEvents& aSimuEvents)
     for (auto&& itSim : aSimuEvents)
         pureSetState(newEvent(itSim.first), itSim.second);
     for (auto&& itSim : aSimuEvents)
-        for (auto&& nextEvent : next_[itSim.second][events_[itSim.first]])
+    {
+        auto&& itEvLinks = next_[itSim.second].find(events_[itSim.first]);
+        if (itEvLinks == next_[itSim.second].end())
+            break;
+        for (auto&& nextEvent : itEvLinks->second)
             deduceState(nextEvent);
+    }
 
     if (!sthChanged_)
         DBG("(Domino) nothing changed for all nEvent=" << aSimuEvents.size());
