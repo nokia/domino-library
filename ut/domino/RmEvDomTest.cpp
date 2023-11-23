@@ -152,7 +152,7 @@ TYPED_TEST_P(RmHdlrDomTest, GOLD_rm_HdlrDom_resrc)
 {
     multiset<int> hdlrIDs;
     auto e1 = PARA_DOM->setHdlr("e1", [&hdlrIDs](){ hdlrIDs.insert(1); });
-    PARA_DOM->setState({{"e1", true}});
+    PARA_DOM->forceAllHdlr("e1");
     EXPECT_TRUE(MSG_SELF->nMsg() >= 1u) << "REQ: at least 1 hdlr on road.";
     EXPECT_EQ(0u, hdlrIDs.size()) << "REQ: not callback yet.";
 
@@ -167,5 +167,25 @@ REGISTER_TYPED_TEST_SUITE_P(RmHdlrDomTest
 );
 using AnyRmHdlrDom = Types<MaxNofreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, RmHdlrDomTest, AnyRmHdlrDom);
+
+#define RM_FREE_HDLR_DOM
+// ***********************************************************************************************
+template<class aParaDom> using RmFreeHdlrDomTest = RmEvDomTest<aParaDom>;
+TYPED_TEST_SUITE_P(RmFreeHdlrDomTest);
+
+TYPED_TEST_P(RmFreeHdlrDomTest, GOLD_rm_FreeHdlrDom_resrc)
+{
+    auto e1 = PARA_DOM->repeatedHdlr("e1");
+    EXPECT_TRUE(PARA_DOM->isRepeatHdlr(e1));
+
+    EXPECT_TRUE(PARA_DOM->rmEvOK(e1));
+    EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e1)) << "REQ: rm Ev shall clean auto-free flag.";
+}
+
+REGISTER_TYPED_TEST_SUITE_P(RmFreeHdlrDomTest
+    , GOLD_rm_FreeHdlrDom_resrc
+);
+using AnyRmFreeHdlrDom = Types<MaxDom>;
+INSTANTIATE_TYPED_TEST_SUITE_P(PARA, RmFreeHdlrDomTest, AnyRmFreeHdlrDom);
 
 }  // namespace

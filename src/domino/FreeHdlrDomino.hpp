@@ -31,6 +31,8 @@ public:
     Domino::Event repeatedHdlr(const Domino::EvName&, const bool isRepeated = true);  // set false = simple rm
     bool isRepeatHdlr(const Domino::Event) const;
 
+    bool rmEvOK(const Domino::Event) override;
+
 protected:
     void triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event) override;
     using aDominoType::effect;
@@ -44,6 +46,15 @@ public:
 
 // ***********************************************************************************************
 template<class aDominoType>
+bool FreeHdlrDomino<aDominoType>::isRepeatHdlr(const Domino::Event aEv) const
+{
+    return aEv < isRepeatHdlr_.size()
+        ? isRepeatHdlr_[aEv]
+        : false;
+}
+
+// ***********************************************************************************************
+template<class aDominoType>
 Domino::Event FreeHdlrDomino<aDominoType>::repeatedHdlr(const Domino::EvName& aEvName, const bool isRepeated)
 {
     auto&& event = this->newEvent(aEvName);
@@ -54,12 +65,15 @@ Domino::Event FreeHdlrDomino<aDominoType>::repeatedHdlr(const Domino::EvName& aE
 }
 
 // ***********************************************************************************************
-template<class aDominoType>
-bool FreeHdlrDomino<aDominoType>::isRepeatHdlr(const Domino::Event aEv) const
+template<typename aDominoType>
+bool FreeHdlrDomino<aDominoType>::rmEvOK(const Domino::Event aEv)
 {
-    return aEv < isRepeatHdlr_.size()
-        ? isRepeatHdlr_[aEv]
-        : false;
+    if (! aDominoType::rmEvOK(aEv))  // fail eg invalid aEv or already removed
+        return false;
+
+    if (aEv < isRepeatHdlr_.size())
+        isRepeatHdlr_[aEv] = false;
+    return true;
 }
 
 // ***********************************************************************************************
