@@ -65,18 +65,6 @@ Domino::Event FreeHdlrDomino<aDominoType>::repeatedHdlr(const Domino::EvName& aE
 }
 
 // ***********************************************************************************************
-template<typename aDominoType>
-bool FreeHdlrDomino<aDominoType>::rmEvOK(const Domino::Event aEv)
-{
-    if (! aDominoType::rmEvOK(aEv))  // fail eg invalid aEv or already removed
-        return false;
-
-    if (aEv < isRepeatHdlr_.size())
-        isRepeatHdlr_[aEv] = false;
-    return true;
-}
-
-// ***********************************************************************************************
 template<class aDominoType>
 void FreeHdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event aEv)
 {
@@ -97,6 +85,20 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Do
         this->getPriority(aEv)
     );
 }
+
+// ***********************************************************************************************
+// place at the end to avoud gcovr/gcov bug on cov
+template<typename aDominoType>
+bool FreeHdlrDomino<aDominoType>::rmEvOK(const Domino::Event aEv)
+{
+    if (! aDominoType::rmEvOK(aEv))  // fail eg invalid aEv or already removed
+        return false;
+
+    if (aEv < isRepeatHdlr_.size())
+        isRepeatHdlr_[aEv] = false;
+    return true;
+}
+
 }  // namespace
 #endif  // FREE_HDLR_DOMINO_HPP_
 // ***********************************************************************************************
