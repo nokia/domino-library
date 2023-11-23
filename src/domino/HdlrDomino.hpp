@@ -93,17 +93,6 @@ Domino::Event HdlrDomino<aDominoType>::multiHdlrByAliasEv(const Domino::EvName& 
 }
 
 // ***********************************************************************************************
-template<typename aDominoType>
-bool HdlrDomino<aDominoType>::rmEvOK(const Domino::Event aEv)
-{
-    if (! aDominoType::rmEvOK(aEv))  // fail eg invalid aEv or already removed
-        return false;
-
-    hdlrs_.erase(aEv);
-    return true;
-}
-
-// ***********************************************************************************************
 template<class aDominoType>
 bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::Event& aEv, const SharedMsgCB& aHdlr)
 {
@@ -172,6 +161,18 @@ void HdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Domino
         },
         getPriority(aEv)
     );
+}
+
+// ***********************************************************************************************
+// place at the end to avoud gcovr/gcov bug on cov
+template<typename aDominoType>
+bool HdlrDomino<aDominoType>::rmEvOK(const Domino::Event aEv)
+{
+    if (! aDominoType::rmEvOK(aEv))  // fail eg invalid aEv or already removed
+        return false;
+
+    hdlrs_.erase(aEv);
+    return true;
 }
 
 }  // namespace
