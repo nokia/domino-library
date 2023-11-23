@@ -143,4 +143,29 @@ REGISTER_TYPED_TEST_SUITE_P(RmWdatDomTest
 using AnyRmWdatDom = Types<MaxNofreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, RmWdatDomTest, AnyRmWdatDom);
 
+#define RM_HDLR_DOM
+// ***********************************************************************************************
+template<class aParaDom> using RmHdlrDomTest = RmEvDomTest<aParaDom>;
+TYPED_TEST_SUITE_P(RmHdlrDomTest);
+
+TYPED_TEST_P(RmHdlrDomTest, GOLD_rm_HdlrDom_resrc)
+{
+    multiset<int> hdlrIDs;
+    auto e1 = PARA_DOM->setHdlr("e1", [&hdlrIDs](){ hdlrIDs.insert(1); });
+    PARA_DOM->setState({{"e1", true}});
+    EXPECT_TRUE(MSG_SELF->nMsg() >= 1u) << "REQ: at least 1 hdlr on road.";
+    EXPECT_EQ(0u, hdlrIDs.size()) << "REQ: not callback yet.";
+
+    EXPECT_TRUE(PARA_DOM->rmEvOK(e1));
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    EXPECT_EQ(0u, MSG_SELF->nMsg()) << "REQ: all msg handled.";
+    EXPECT_EQ(0u, hdlrIDs.size()) << "REQ: not exe on-road hdlr since removed.";
+}
+
+REGISTER_TYPED_TEST_SUITE_P(RmHdlrDomTest
+    , GOLD_rm_HdlrDom_resrc
+);
+using AnyRmHdlrDom = Types<MaxNofreeDom, MaxDom>;
+INSTANTIATE_TYPED_TEST_SUITE_P(PARA, RmHdlrDomTest, AnyRmHdlrDom);
+
 }  // namespace

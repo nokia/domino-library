@@ -53,6 +53,8 @@ public:
 
     virtual EMsgPriority getPriority(const Domino::Event) const { return EMsgPri_NORM; }
 
+    bool rmEvOK(const Domino::Event) override;
+
 protected:
     void effect(const Domino::Event) override;
     virtual void triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event aEv);
@@ -88,6 +90,17 @@ Domino::Event HdlrDomino<aDominoType>::multiHdlrByAliasEv(const Domino::EvName& 
         return Domino::D_EVENT_FAILED_RET;
 
     return this->setPrev(aAliasEN, {{aHostEN, true}});
+}
+
+// ***********************************************************************************************
+template<typename aDominoType>
+bool HdlrDomino<aDominoType>::rmEvOK(const Domino::Event aEv)
+{
+    if (! aDominoType::rmEvOK(aEv))  // fail eg invalid aEv or already removed
+        return false;
+
+    hdlrs_.erase(aEv);
+    return true;
 }
 
 // ***********************************************************************************************
@@ -149,6 +162,7 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
 template<class aDominoType>
 void HdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event aEv)
 {
+    HID("HdlrDomino trigger a new msg.");
     msgSelf_->newMsg(
         [weakMsgCB = WeakMsgCB(aHdlr)]() mutable  // WeakMsgCB is to support rm hdlr
         {
