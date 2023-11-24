@@ -73,15 +73,15 @@ public:
     Event    setPrev(const EvName&, const SimuEvents& aSimuPrevEvents);
     EvName   whyFalse(const EvName&) const;
 
-    // - rm self dom's resource (RISK: aEv's leaf(s) may become orphan!!!)
-    // - virtual for each dom (& trigger base to free its resource)
-    virtual bool rmEvOK(const Event aEv);
-    virtual Event recycleEv() { return D_EVENT_FAILED_RET; }
-
 protected:
     const EvName& evName(const Event aEv) const { return evNames_[aEv]; }  // aEv must valid
     bool          state (const Event aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
     virtual void  effect(const Event) {}  // can't const since FreeDom will rm hdlr
+
+    // - rm self dom's resource (RISK: aEv's leaf(s) may become orphan!!!)
+    // - virtual for each dom (& trigger base to free its resource)
+    virtual bool innerRmEvOK(const Event aEv);
+    virtual Event recycleEv() { return D_EVENT_FAILED_RET; }
 
 private:
     void deduceState(const Event);
@@ -136,7 +136,8 @@ public:
 //   . UT shall not check them but check cb - more direct
 // - why must EvName on ALL interface?
 //   . EvName is much safer than Event (random Event could be valid, but rare of random EvName)
-//     . read-only interface can use Event; mislead? better forbid also?
+//     . read-only public interface can use Event since no hurt inner Dom
+//     . inner mem-func can use Event
 //   . EvName is lower performance than Event?
 //     . a little, hope compiler optimize it
 //   . Can buffer last EvName ptr to speedup?

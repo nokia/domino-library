@@ -44,7 +44,8 @@ public:
     // - for aDataType w/o default constructor!!!
     virtual void replaceShared(const Domino::EvName&, shared_ptr<void> aSharedData = nullptr);
 
-    bool rmEvOK(const Domino::Event) override;
+protected:
+    bool innerRmEvOK(const Domino::Event) override;
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -71,9 +72,9 @@ void DataDomino<aDominoType>::replaceShared(const Domino::EvName& aEvName, share
 
 // ***********************************************************************************************
 template<typename aDominoType>
-bool DataDomino<aDominoType>::rmEvOK(const Domino::Event aEv)
+bool DataDomino<aDominoType>::innerRmEvOK(const Domino::Event aEv)
 {
-    if (! aDominoType::rmEvOK(aEv))  // fail eg invalid aEv or already removed
+    if (! aDominoType::innerRmEvOK(aEv))  // fail eg invalid aEv or already removed
         return false;
 
     dataStore_.erase(aEv);

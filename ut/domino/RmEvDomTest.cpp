@@ -24,15 +24,15 @@ TYPED_TEST_SUITE_P(RmDomTest);
 
 TYPED_TEST_P(RmDomTest, GOLD_rm_dom_resrc)
 {
-    EXPECT_FALSE(PARA_DOM->rmEvOK(Domino::D_EVENT_FAILED_RET)) << "REQ: NOK to rm invalid Ev.";
+    EXPECT_FALSE(PARA_DOM->rmEvOK("invalid EN")) << "REQ: NOK to rm invalid Ev.";
 
     PARA_DOM->setPrev("e2", {{"e1", true}, {"e1b", true}});
     const auto e1 = PARA_DOM->setPrev("e1", {{"e0", false}});
     EXPECT_TRUE (PARA_DOM->state("e1"));
     EXPECT_FALSE(PARA_DOM->isRemoved(e1)) << "REQ: new ev is not removed state.";
 
-    EXPECT_TRUE (PARA_DOM->rmEvOK(e1)) << "REQ: OK to rm valid Ev.";
-    EXPECT_FALSE(PARA_DOM->rmEvOK(e1)) << "REQ: NOK to rm invalid Ev.";
+    EXPECT_TRUE (PARA_DOM->rmEvOK("e1")) << "REQ: OK to rm valid Ev.";
+    EXPECT_FALSE(PARA_DOM->rmEvOK("e1")) << "REQ: NOK to rm invalid Ev.";
 
     PARA_DOM->setState({{"e0", true}});
     PARA_DOM->setState({{"e0", false}});
@@ -53,7 +53,7 @@ TYPED_TEST_P(RmDomTest, GOLD_reuse_ev)
     PARA_DOM->setPrev("e2", {{"e1", true}});  // create e2 before e1 to inc cov of recycleEv()
     const auto e1 = PARA_DOM->setPrev("e1", {{"e0", false}});
 
-    EXPECT_TRUE (PARA_DOM->rmEvOK(e1));
+    EXPECT_TRUE (PARA_DOM->rmEvOK("e1"));
     EXPECT_EQ(e1, PARA_DOM->newEvent("new e1")) << "REQ: reuse removed ev.";
     EXPECT_FALSE(PARA_DOM->isRemoved(e1)) << "REQ: new ev is not removed state.";
 
@@ -61,8 +61,8 @@ TYPED_TEST_P(RmDomTest, GOLD_reuse_ev)
     const auto e2 = PARA_DOM->getEventBy("e2");
     set<Domino::Event> evs = {e0, e2};
 
-    EXPECT_TRUE(PARA_DOM->rmEvOK(e0)) << "REQ: can remove more ev.";
-    EXPECT_TRUE(PARA_DOM->rmEvOK(e2)) << "REQ: existing multi removed ev.";
+    EXPECT_TRUE(PARA_DOM->rmEvOK("e0")) << "REQ: can remove more ev.";
+    EXPECT_TRUE(PARA_DOM->rmEvOK("e2")) << "REQ: existing multi removed ev.";
     EXPECT_EQ(1u, evs.count(PARA_DOM->newEvent("e3"))) << "REQ: can reuse removed ev.";
     EXPECT_EQ(1u, evs.count(PARA_DOM->newEvent("e4"))) << "REQ: can reuse removed ev.";
     EXPECT_NE(PARA_DOM->getEventBy("e3"), PARA_DOM->getEventBy("e4")) << "REQ: diff reused ev.";
@@ -95,11 +95,11 @@ TYPED_TEST_P(RmDataDomTest, GOLD_rm_DataDom_resrc)
     const auto ev = PARA_DOM->getEventBy("ev");
     EXPECT_FALSE(PARA_DOM->isRemoved(ev)) << "REQ: new ev is not removed state.";
 
-    EXPECT_TRUE(PARA_DOM->rmEvOK(ev)) << "REQ: rm succ.";
+    EXPECT_TRUE(PARA_DOM->rmEvOK("ev")) << "REQ: rm succ.";
     EXPECT_TRUE(isDestructed) << "REQ: data is removed.";
     EXPECT_EQ(nullptr, PARA_DOM->getShared("ev")) << "REQ: get null after removed." << endl;
 
-    EXPECT_FALSE(PARA_DOM->rmEvOK(ev)) << "REQ: fail to rm invalid.";
+    EXPECT_FALSE(PARA_DOM->rmEvOK("ev")) << "REQ: fail to rm invalid.";
 }
 
 REGISTER_TYPED_TEST_SUITE_P(RmDataDomTest
@@ -129,12 +129,12 @@ TYPED_TEST_P(RmWdatDomTest, GOLD_rm_WdatDom_resrc)
     const auto ev = PARA_DOM->getEventBy("ev");
     EXPECT_FALSE(PARA_DOM->isRemoved(ev)) << "REQ: new ev is not removed state.";
 
-    EXPECT_TRUE(PARA_DOM->rmEvOK(ev)) << "REQ: rm succ.";
+    EXPECT_TRUE(PARA_DOM->rmEvOK("ev")) << "REQ: rm succ.";
     EXPECT_TRUE(isDestructed) << "REQ: data is removed.";
     EXPECT_EQ(nullptr, PARA_DOM->wbasic_getShared("ev")) << "REQ: get null after removed." << endl;
     EXPECT_FALSE(PARA_DOM->isWrCtrl("ev")) << "REQ: reset wctrl flag.";
 
-    EXPECT_FALSE(PARA_DOM->rmEvOK(ev)) << "REQ: fail to rm invalid.";
+    EXPECT_FALSE(PARA_DOM->rmEvOK("ev")) << "REQ: fail to rm invalid.";
 }
 
 REGISTER_TYPED_TEST_SUITE_P(RmWdatDomTest
@@ -161,12 +161,12 @@ TYPED_TEST_P(RmHdlrDomTest, GOLD_rm_HdlrDom_resrc)
     EXPECT_EQ(2u, MSG_SELF->nMsg()) << "REQ: 2 hdlrs on road.";
     EXPECT_EQ(0u, hdlrIDs.size()) << "REQ: not callback yet.";
 
-    EXPECT_TRUE(PARA_DOM->rmEvOK(e1));
+    EXPECT_TRUE(PARA_DOM->rmEvOK("e1"));
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());  // handle 1 low priority msg once
     EXPECT_EQ(1u, MSG_SELF->nMsg()) << "REQ: e1 not on road.";
     EXPECT_EQ(multiset<int>{}, hdlrIDs) << "REQ: not exe e1 hdlr since removed.";
 
-    EXPECT_TRUE(PARA_DOM->rmEvOK(e2)) << "REQ: can rm alias Ev.";
+    EXPECT_TRUE(PARA_DOM->rmEvOK("e2")) << "REQ: can rm alias Ev.";
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
     EXPECT_EQ(0u, MSG_SELF->nMsg()) << "REQ: e2 not on road.";
     EXPECT_EQ(multiset<int>{}, hdlrIDs) << "REQ: not exe e2 hdlr since removed.";
@@ -188,7 +188,7 @@ TYPED_TEST_P(RmFreeHdlrDomTest, GOLD_rm_FreeHdlrDom_resrc)
     auto e1 = PARA_DOM->repeatedHdlr("e1");
     EXPECT_TRUE(PARA_DOM->isRepeatHdlr(e1));
 
-    EXPECT_TRUE(PARA_DOM->rmEvOK(e1));
+    EXPECT_TRUE(PARA_DOM->rmEvOK("e1"));
     EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e1)) << "REQ: rm Ev shall clean auto-free flag.";
 }
 

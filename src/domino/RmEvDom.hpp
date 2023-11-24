@@ -16,6 +16,11 @@
 //   . standalone class to min impact other dom
 //   . how about orphan ev after rm its parent?
 //     . let user take care his rm rather than complex dom
+//
+// - RISK:
+//   . rm ev may break links (user shall take care)
+//   . rm ev impact/complex domino
+//   . so use RmEvDom when necessary
 // ***********************************************************************************************
 #pragma once
 
@@ -32,8 +37,10 @@ class RmEvDom : public aDominoType
 public:
     explicit RmEvDom(const UniLogName& aUniLogName) : aDominoType(aUniLogName) {}
 
-    bool rmEvOK(const Domino::Event) override;
+    bool rmEvOK(const Domino::EvName aEN) { return innerRmEvOK(this->getEventBy(aEN)); }
     bool isRemoved(const Domino::Event aEv) const { return isRemovedEv_.count(aEv); }
+protected:
+    bool innerRmEvOK(const Domino::Event) override;
     Domino::Event recycleEv() override;
 
 private:
@@ -61,15 +68,15 @@ Domino::Event RmEvDom<aDominoType>::recycleEv()
 
 // ***********************************************************************************************
 template<typename aDominoType>
-bool RmEvDom<aDominoType>::rmEvOK(const Domino::Event aEv)
+bool RmEvDom<aDominoType>::innerRmEvOK(const Domino::Event aEv)
 {
     if (isRemoved(aEv))  // already removed
         return false;
 
-    if (! aDominoType::rmEvOK(aEv))  // fail eg invalid aEv
+    if (! aDominoType::innerRmEvOK(aEv))  // fail eg invalid aEv
         return false;
 
-    // rmEvOK() succ; must NOT rely on aDominoType at all since info of aEv is removed
+    // innerRmEvOK() succ; must NOT rely on aDominoType at all since info of aEv is removed
     isRemovedEv_.insert(aEv);
     return true;
 }
@@ -80,4 +87,5 @@ bool RmEvDom<aDominoType>::rmEvOK(const Domino::Event aEv)
 // ..........  .........   .......................................................................
 // 2023-11-14  CSZ       1)create
 // 2023-11-22  CSZ       - better isRemovedEv_
+// 2023-11-24  CSZ       - rmEvOK->innerRmEvOK since ev para (EN can outer use)
 // ***********************************************************************************************

@@ -53,11 +53,11 @@ public:
 
     virtual EMsgPriority getPriority(const Domino::Event) const { return EMsgPri_NORM; }
 
-    bool rmEvOK(const Domino::Event) override;
-
 protected:
     void effect(const Domino::Event) override;
     virtual void triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event aEv);
+
+    bool innerRmEvOK(const Domino::Event) override;
 
     // -------------------------------------------------------------------------------------------
 private:
@@ -166,9 +166,9 @@ void HdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Domino
 // ***********************************************************************************************
 // place at the end to avoud gcovr/gcov bug on cov
 template<typename aDominoType>
-bool HdlrDomino<aDominoType>::rmEvOK(const Domino::Event aEv)
+bool HdlrDomino<aDominoType>::innerRmEvOK(const Domino::Event aEv)
 {
-    if (! aDominoType::rmEvOK(aEv))  // fail eg invalid aEv or already removed
+    if (! aDominoType::innerRmEvOK(aEv))  // fail eg invalid aEv or already removed
         return false;
 
     hdlrs_.erase(aEv);

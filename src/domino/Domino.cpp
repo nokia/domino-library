@@ -93,7 +93,7 @@ void Domino::pureSetState(const Event aEv, const bool aNewState)
 }
 
 // ***********************************************************************************************
-bool Domino::rmEvOK(const Event aEv)
+bool Domino::innerRmEvOK(const Event aEv)
 {
     if (aEv >= states_.size())  // invalid aEv
         return false;

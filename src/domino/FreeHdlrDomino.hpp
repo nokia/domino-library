@@ -31,11 +31,11 @@ public:
     Domino::Event repeatedHdlr(const Domino::EvName&, const bool isRepeated = true);  // set false = simple rm
     bool isRepeatHdlr(const Domino::Event) const;
 
-    bool rmEvOK(const Domino::Event) override;
-
 protected:
     void triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event) override;
     using aDominoType::effect;
+
+    bool innerRmEvOK(const Domino::Event) override;
 
     // -------------------------------------------------------------------------------------------
 private:
@@ -89,9 +89,9 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Do
 // ***********************************************************************************************
 // place at the end to avoud gcovr/gcov bug on cov
 template<typename aDominoType>
-bool FreeHdlrDomino<aDominoType>::rmEvOK(const Domino::Event aEv)
+bool FreeHdlrDomino<aDominoType>::innerRmEvOK(const Domino::Event aEv)
 {
-    if (! aDominoType::rmEvOK(aEv))  // fail eg invalid aEv or already removed
+    if (! aDominoType::innerRmEvOK(aEv))  // fail eg invalid aEv or already removed
         return false;
 
     if (aEv < isRepeatHdlr_.size())
