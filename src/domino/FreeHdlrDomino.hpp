@@ -45,6 +45,17 @@ public:
 };
 
 // ***********************************************************************************************
+// place at the end to avoud gcovr/gcov bug on cov
+template<typename aDominoType>
+void FreeHdlrDomino<aDominoType>::innerRmEvOK(const Domino::Event aEv)
+{
+    if (aEv < isRepeatHdlr_.size())
+        isRepeatHdlr_[aEv] = false;
+
+    aDominoType::innerRmEvOK(aEv);
+}
+
+// ***********************************************************************************************
 template<class aDominoType>
 bool FreeHdlrDomino<aDominoType>::isRepeatHdlr(const Domino::Event aEv) const
 {
@@ -84,17 +95,6 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Do
         },
         this->getPriority(aEv)
     );
-}
-
-// ***********************************************************************************************
-// place at the end to avoud gcovr/gcov bug on cov
-template<typename aDominoType>
-void FreeHdlrDomino<aDominoType>::innerRmEvOK(const Domino::Event aEv)
-{
-    if (aEv < isRepeatHdlr_.size())
-        isRepeatHdlr_[aEv] = false;
-
-    aDominoType::innerRmEvOK(aEv);
 }
 
 }  // namespace
