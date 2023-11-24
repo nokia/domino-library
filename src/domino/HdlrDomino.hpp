@@ -81,6 +81,14 @@ void HdlrDomino<aDominoType>::effect(const Domino::Event aEv)
 }
 
 // ***********************************************************************************************
+template<typename aDominoType>
+void HdlrDomino<aDominoType>::innerRmEvOK(const Domino::Event aEv)
+{
+    hdlrs_.erase(aEv);
+    aDominoType::innerRmEvOK(aEv);
+}
+
+// ***********************************************************************************************
 template<class aDominoType>
 Domino::Event HdlrDomino<aDominoType>::multiHdlrByAliasEv(const Domino::EvName& aAliasEN,
     const MsgCB& aHdlr, const Domino::EvName& aHostEN)
@@ -161,15 +169,6 @@ void HdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Domino
         },
         getPriority(aEv)
     );
-}
-
-// ***********************************************************************************************
-// place at the end to avoud gcovr/gcov bug on cov
-template<typename aDominoType>
-void HdlrDomino<aDominoType>::innerRmEvOK(const Domino::Event aEv)
-{
-    hdlrs_.erase(aEv);
-    aDominoType::innerRmEvOK(aEv);
 }
 
 }  // namespace

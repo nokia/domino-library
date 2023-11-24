@@ -45,7 +45,6 @@ public:
 };
 
 // ***********************************************************************************************
-// place at the end to avoud gcovr/gcov bug on cov
 template<typename aDominoType>
 void FreeHdlrDomino<aDominoType>::innerRmEvOK(const Domino::Event aEv)
 {
