@@ -33,7 +33,7 @@ public:
     void wbasic_replaceShared(const Domino::EvName&, shared_ptr<void> aSharedData = nullptr);
 
 protected:
-    bool innerRmEvOK(const Domino::Event) override;
+    void innerRmEvOK(const Domino::Event) override;
 
 private:
     // forbid ouside usage
@@ -141,14 +141,12 @@ void wbasic_setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const
 // ***********************************************************************************************
 // place at the end to avoud gcovr/gcov bug on cov
 template<typename aDominoType>
-bool WbasicDatDom<aDominoType>::innerRmEvOK(const Domino::Event aEv)
+void WbasicDatDom<aDominoType>::innerRmEvOK(const Domino::Event aEv)
 {
-    if (! aDominoType::innerRmEvOK(aEv))  // fail eg invalid aEv or already removed
-        return false;
-
     if (aEv < wrCtrl_.size())
         wrCtrl_[aEv] = false;
-    return true;
+
+    aDominoType::innerRmEvOK(aEv);
 }
 
 }  // namespace

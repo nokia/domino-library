@@ -40,7 +40,7 @@ public:
     bool rmEvOK(const Domino::EvName& aEN);
     bool isRemoved(const Domino::Event aEv) const { return isRemovedEv_.count(aEv); }
 protected:
-    bool innerRmEvOK(const Domino::Event) override;
+    void innerRmEvOK(const Domino::Event) override;
     Domino::Event recycleEv() override;
 
 private:
@@ -74,20 +74,17 @@ bool RmEvDom<aDominoType>::rmEvOK(const Domino::EvName& aEN)
     if (ev == Domino::D_EVENT_FAILED_RET)  // invalid; most beginning check, avoid useless exe
         return false;
 
-    return innerRmEvOK(ev);
+    innerRmEvOK(ev);
+    return true;
 }
 
 // ***********************************************************************************************
 // place at the end to avoud gcovr/gcov bug on cov
 template<typename aDominoType>
-bool RmEvDom<aDominoType>::innerRmEvOK(const Domino::Event aEv)
+void RmEvDom<aDominoType>::innerRmEvOK(const Domino::Event aEv)
 {
-    if (! aDominoType::innerRmEvOK(aEv))  // fail eg invalid aEv
-        return false;
-
-    // innerRmEvOK() succ; must NOT rely on aDominoType at all since info of aEv is removed
+    aDominoType::innerRmEvOK(aEv);
     isRemovedEv_.insert(aEv);
-    return true;
 }
 
 }  // namespace

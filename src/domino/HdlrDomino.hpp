@@ -57,7 +57,7 @@ protected:
     void effect(const Domino::Event) override;
     virtual void triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event aEv);
 
-    bool innerRmEvOK(const Domino::Event) override;
+    void innerRmEvOK(const Domino::Event) override;
 
     // -------------------------------------------------------------------------------------------
 private:
@@ -166,13 +166,10 @@ void HdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Domino
 // ***********************************************************************************************
 // place at the end to avoud gcovr/gcov bug on cov
 template<typename aDominoType>
-bool HdlrDomino<aDominoType>::innerRmEvOK(const Domino::Event aEv)
+void HdlrDomino<aDominoType>::innerRmEvOK(const Domino::Event aEv)
 {
-    if (! aDominoType::innerRmEvOK(aEv))  // fail eg invalid aEv or already removed
-        return false;
-
     hdlrs_.erase(aEv);
-    return true;
+    aDominoType::innerRmEvOK(aEv);
 }
 
 }  // namespace
