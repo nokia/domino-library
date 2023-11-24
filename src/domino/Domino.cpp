@@ -95,9 +95,6 @@ void Domino::pureSetState(const Event aEv, const bool aNewState)
 // ***********************************************************************************************
 bool Domino::innerRmEvOK(const Event aEv)
 {
-    if (aEv >= states_.size())  // invalid aEv
-        return false;
-
     pureRmLink(aEv, prev_[true],  next_[true]);
     pureRmLink(aEv, prev_[false], next_[false]);
     pureRmLink(aEv, next_[true],  prev_[true]);

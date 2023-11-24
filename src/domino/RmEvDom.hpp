@@ -37,7 +37,7 @@ class RmEvDom : public aDominoType
 public:
     explicit RmEvDom(const UniLogName& aUniLogName) : aDominoType(aUniLogName) {}
 
-    bool rmEvOK(const Domino::EvName aEN) { return innerRmEvOK(this->getEventBy(aEN)); }
+    bool rmEvOK(const Domino::EvName& aEN);
     bool isRemoved(const Domino::Event aEv) const { return isRemovedEv_.count(aEv); }
 protected:
     bool innerRmEvOK(const Domino::Event) override;
@@ -68,11 +68,20 @@ Domino::Event RmEvDom<aDominoType>::recycleEv()
 
 // ***********************************************************************************************
 template<typename aDominoType>
-bool RmEvDom<aDominoType>::innerRmEvOK(const Domino::Event aEv)
+bool RmEvDom<aDominoType>::rmEvOK(const Domino::EvName& aEN)
 {
-    if (isRemoved(aEv))  // already removed
+    const auto ev = this->getEventBy(aEN);
+    if (ev == Domino::D_EVENT_FAILED_RET)  // invalid; most beginning check, avoid useless exe
         return false;
 
+    return innerRmEvOK(ev);
+}
+
+// ***********************************************************************************************
+// place at the end to avoud gcovr/gcov bug on cov
+template<typename aDominoType>
+bool RmEvDom<aDominoType>::innerRmEvOK(const Domino::Event aEv)
+{
     if (! aDominoType::innerRmEvOK(aEv))  // fail eg invalid aEv
         return false;
 
