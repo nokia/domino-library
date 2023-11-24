@@ -93,7 +93,7 @@ void Domino::pureSetState(const Event aEv, const bool aNewState)
 }
 
 // ***********************************************************************************************
-void Domino::innerRmEvOK(const Event aEv)
+void Domino::innerRmEv(const Event aEv)
 {
     pureRmLink(aEv, prev_[true],  next_[true]);
     pureRmLink(aEv, prev_[false], next_[false]);

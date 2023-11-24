@@ -80,7 +80,7 @@ protected:
 
     // - rm self dom's resource (RISK: aEv's leaf(s) may become orphan!!!)
     // - virtual for each dom (& trigger base to free its resource)
-    virtual void innerRmEvOK(const Event aEv);
+    virtual void innerRmEv(const Event aEv);
     virtual Event recycleEv() { return D_EVENT_FAILED_RET; }
 
 private:

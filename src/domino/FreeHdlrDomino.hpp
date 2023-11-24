@@ -35,7 +35,7 @@ protected:
     void triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event) override;
     using aDominoType::effect;
 
-    void innerRmEvOK(const Domino::Event) override;
+    void innerRmEv(const Domino::Event) override;
 
     // -------------------------------------------------------------------------------------------
 private:
@@ -46,12 +46,12 @@ public:
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void FreeHdlrDomino<aDominoType>::innerRmEvOK(const Domino::Event aEv)
+void FreeHdlrDomino<aDominoType>::innerRmEv(const Domino::Event aEv)
 {
     if (aEv < isRepeatHdlr_.size())
         isRepeatHdlr_[aEv] = false;
 
-    aDominoType::innerRmEvOK(aEv);
+    aDominoType::innerRmEv(aEv);
 }
 
 // ***********************************************************************************************

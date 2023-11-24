@@ -198,4 +198,24 @@ REGISTER_TYPED_TEST_SUITE_P(RmFreeHdlrDomTest
 using AnyRmFreeHdlrDom = Types<MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, RmFreeHdlrDomTest, AnyRmFreeHdlrDom);
 
+#define RM_PRI_DOM
+// ***********************************************************************************************
+template<class aParaDom> using RmPriDomTest = RmEvDomTest<aParaDom>;
+TYPED_TEST_SUITE_P(RmPriDomTest);
+
+TYPED_TEST_P(RmPriDomTest, GOLD_rm_PriDom_resrc)
+{
+    auto e1 = PARA_DOM->setPriority("e1", EMsgPriority::EMsgPri_LOW);
+    EXPECT_EQ(EMsgPriority::EMsgPri_LOW, PARA_DOM->getPriority(e1));
+
+    EXPECT_TRUE(PARA_DOM->rmEvOK("e1"));
+    EXPECT_EQ(EMsgPriority::EMsgPri_NORM, PARA_DOM->getPriority(e1)) << "REQ: reset pri";
+}
+
+REGISTER_TYPED_TEST_SUITE_P(RmPriDomTest
+    , GOLD_rm_PriDom_resrc
+);
+using AnyRmPriDom = Types<MaxNofreeDom, MaxDom>;
+INSTANTIATE_TYPED_TEST_SUITE_P(PARA, RmPriDomTest, AnyRmPriDom);
+
 }  // namespace

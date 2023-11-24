@@ -40,7 +40,7 @@ public:
     bool rmEvOK(const Domino::EvName& aEN);
     bool isRemoved(const Domino::Event aEv) const { return isRemovedEv_.count(aEv); }
 protected:
-    void innerRmEvOK(const Domino::Event) override;
+    void innerRmEv(const Domino::Event) override;
     Domino::Event recycleEv() override;
 
 private:
@@ -74,16 +74,16 @@ bool RmEvDom<aDominoType>::rmEvOK(const Domino::EvName& aEN)
     if (ev == Domino::D_EVENT_FAILED_RET)  // invalid; most beginning check, avoid useless exe
         return false;
 
-    innerRmEvOK(ev);
+    innerRmEv(ev);
     return true;
 }
 
 // ***********************************************************************************************
 // place at the end to avoud gcovr/gcov bug on cov
 template<typename aDominoType>
-void RmEvDom<aDominoType>::innerRmEvOK(const Domino::Event aEv)
+void RmEvDom<aDominoType>::innerRmEv(const Domino::Event aEv)
 {
-    aDominoType::innerRmEvOK(aEv);
+    aDominoType::innerRmEv(aEv);
     isRemovedEv_.insert(aEv);
 }
 
@@ -93,5 +93,5 @@ void RmEvDom<aDominoType>::innerRmEvOK(const Domino::Event aEv)
 // ..........  .........   .......................................................................
 // 2023-11-14  CSZ       1)create
 // 2023-11-22  CSZ       - better isRemovedEv_
-// 2023-11-24  CSZ       - rmEvOK->innerRmEvOK since ev para (EN can outer use)
+// 2023-11-24  CSZ       - rmEvOK->innerRmEv since ev para (EN can outer use)
 // ***********************************************************************************************
