@@ -49,6 +49,7 @@ public:
 
 protected:
     void effect(const Domino::Event) override;  // key/min change other Dominos
+    void innerRmEv(const Domino::Event) override;
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -73,6 +74,14 @@ void MultiHdlrDomino<aDominoType>::effect(const Domino::Event aEv)
         this->triggerHdlr(itHdlr->second, aEv);  // may rm itHdlr in FreeHdlrDomino
         itHdlr = itNext;
     }
+}
+
+// ***********************************************************************************************
+template<typename aDominoType>
+void MultiHdlrDomino<aDominoType>::innerRmEv(const Domino::Event aEv)
+{
+    multiHdlrs_.erase(aEv);
+    aDominoType::innerRmEv(aEv);
 }
 
 // ***********************************************************************************************
