@@ -100,6 +100,9 @@ TYPED_TEST_P(RmDataDomTest, GOLD_rm_DataDom_resrc)
     EXPECT_EQ(nullptr, PARA_DOM->getShared("ev")) << "REQ: get null after removed." << endl;
 
     EXPECT_FALSE(PARA_DOM->rmEvOK("ev")) << "REQ: fail to rm invalid.";
+
+    EXPECT_EQ(ev, PARA_DOM->newEvent("another ev"))  << "REQ: reuse ev.";
+    EXPECT_EQ(nullptr, PARA_DOM->getShared("another ev")) << "REQ: reuse ev's data space." << endl;
 }
 
 REGISTER_TYPED_TEST_SUITE_P(RmDataDomTest
@@ -135,6 +138,9 @@ TYPED_TEST_P(RmWdatDomTest, GOLD_rm_WdatDom_resrc)
     EXPECT_FALSE(PARA_DOM->isWrCtrl("ev")) << "REQ: reset wctrl flag.";
 
     EXPECT_FALSE(PARA_DOM->rmEvOK("ev")) << "REQ: fail to rm invalid.";
+
+    EXPECT_EQ(ev, PARA_DOM->newEvent("another ev"))  << "REQ: reuse ev.";
+    EXPECT_EQ(nullptr, PARA_DOM->wbasic_getShared("another ev")) << "REQ: reuse ev's data space." << endl;
 }
 
 REGISTER_TYPED_TEST_SUITE_P(RmWdatDomTest
@@ -166,10 +172,14 @@ TYPED_TEST_P(RmHdlrDomTest, GOLD_rm_HdlrDom_resrc)
     EXPECT_EQ(1u, MSG_SELF->nMsg()) << "REQ: e1 not on road.";
     EXPECT_EQ(multiset<int>{}, hdlrIDs) << "REQ: not exe e1 hdlr since removed.";
 
+    EXPECT_EQ(e1, PARA_DOM->setHdlr("another e1", [&hdlrIDs](){ hdlrIDs.insert(3); }))  << "REQ: reuse e1.";
+    PARA_DOM->forceAllHdlr("another e1");
+    EXPECT_EQ(2u, MSG_SELF->nMsg()) << "REQ: another e1's hdlr is on road.";
+
     EXPECT_TRUE(PARA_DOM->rmEvOK("e2")) << "REQ: can rm alias Ev.";
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
     EXPECT_EQ(0u, MSG_SELF->nMsg()) << "REQ: e2 not on road.";
-    EXPECT_EQ(multiset<int>{}, hdlrIDs) << "REQ: not exe e2 hdlr since removed.";
+    EXPECT_EQ(multiset<int>{3}, hdlrIDs) << "REQ: not exe e2 hdlr since removed; exe another e1's hdlr.";
 }
 
 REGISTER_TYPED_TEST_SUITE_P(RmHdlrDomTest
@@ -190,6 +200,9 @@ TYPED_TEST_P(RmFreeHdlrDomTest, GOLD_rm_FreeHdlrDom_resrc)
 
     EXPECT_TRUE(PARA_DOM->rmEvOK("e1"));
     EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e1)) << "REQ: rm Ev shall clean auto-free flag.";
+
+    EXPECT_EQ(e1, PARA_DOM->repeatedHdlr("another e1")) << "REQ: reuse e1.";
+    EXPECT_TRUE(PARA_DOM->isRepeatHdlr(e1));
 }
 
 REGISTER_TYPED_TEST_SUITE_P(RmFreeHdlrDomTest
@@ -210,6 +223,9 @@ TYPED_TEST_P(RmPriDomTest, GOLD_rm_PriDom_resrc)
 
     EXPECT_TRUE(PARA_DOM->rmEvOK("e1"));
     EXPECT_EQ(EMsgPriority::EMsgPri_NORM, PARA_DOM->getPriority(e1)) << "REQ: reset pri";
+
+    EXPECT_EQ(e1, PARA_DOM->setPriority("e1", EMsgPriority::EMsgPri_HIGH)) << "REQ: reuse e1.";
+    EXPECT_EQ(EMsgPriority::EMsgPri_HIGH, PARA_DOM->getPriority(e1)) << "REQ: new pri";
 }
 
 REGISTER_TYPED_TEST_SUITE_P(RmPriDomTest
@@ -234,9 +250,16 @@ TYPED_TEST_P(RmMhdlrDomTest, GOLD_rm_MhdlrDom_resrc)
     EXPECT_EQ(0u, hdlrIDs.size()) << "REQ: not callback yet.";
 
     EXPECT_TRUE(PARA_DOM->rmEvOK("e1"));
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());  // handle 1 low priority msg once
+
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
     EXPECT_EQ(0u, MSG_SELF->nMsg()) << "REQ: e2 not on road.";
     EXPECT_EQ(multiset<int>{}, hdlrIDs) << "REQ: not exe e2 hdlr since removed.";
+
+    EXPECT_EQ(e1, PARA_DOM->multiHdlrOnSameEv("reuse e1", [&hdlrIDs](){ hdlrIDs.insert(3); }, "h3"));
+    PARA_DOM->forceAllHdlr("reuse e1");
+    EXPECT_EQ(1u, MSG_SELF->nMsg()) << "REQ: new hdlr on road.";
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    EXPECT_EQ(multiset<int>{3}, hdlrIDs) << "REQ: exe new hdlr.";
 }
 
 REGISTER_TYPED_TEST_SUITE_P(RmMhdlrDomTest
