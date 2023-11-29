@@ -60,7 +60,11 @@ TEST_F(MtInQueueTest, GOLD_sparsePush_fifo)
     while (nHdl < nMsg)
     {
         auto msg = mt_getQ().pop<int>();
-        if (msg) ASSERT_EQ(nHdl++, *msg) << "REQ: fifo";
+        if (msg)
+        {
+            SCOPED_TRACE(nHdl);
+            EXPECT_EQ(nHdl++, *msg) << "REQ: fifo";
+        }
         else timedwait();  // REQ: less CPU than repeat pop() or this_thread::yield()
     }
     INF("REQ(sleep 1us/push): e2e user=0.354s->0.123s, sys=0.412s->0.159s")
@@ -81,7 +85,11 @@ TEST_F(MtInQueueTest, GOLD_surgePush_fifo)
     while (nHdl < nMsg)
     {
         auto msg = mt_getQ().pop<int>();
-        if (msg) ASSERT_EQ(nHdl++, *msg) << "REQ: fifo";
+        if (msg)
+        {
+            SCOPED_TRACE(nHdl);
+            EXPECT_EQ(nHdl++, *msg) << "REQ: fifo";
+        }
         else this_thread::yield();  // REQ: test cache_ performance
     }
     INF("REQ: loop cost 2576us now, previously no cache & lock cost 4422us")

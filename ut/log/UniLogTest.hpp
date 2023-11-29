@@ -80,6 +80,8 @@ TEST_F(UNI_LOG_TEST, GOLD_usr_of_class_and_func)
 {
     for (size_t i=0; i < 100; ++i) // for perf bug
     {
+        SCOPED_TRACE(i);
+
         ClassUsr classUsr(logName_);
         const auto len_1 = UNI_LOG::logLen(logName_);
         ASSERT_GT(len_1, 0) << "REQ: can log" << endl;

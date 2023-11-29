@@ -89,6 +89,7 @@ TEST_F(ThreadBackTest, GOLD_entryFnResult_toBackFn_withoutSem)
     const size_t maxThread = 2;  // req: test entryFn result true(succ) / false(fail)
     for (size_t idxThread = 0; idxThread < maxThread; ++idxThread)
     {
+        SCOPED_TRACE(idxThread);
         ThreadBack::newThread(
             // MT_ThreadEntryFN
             [idxThread]() -> bool
