@@ -31,8 +31,10 @@ TYPED_TEST_P(RmDomTest, GOLD_rm_dom_resrc)
     EXPECT_TRUE (PARA_DOM->state("e1"));
     EXPECT_FALSE(PARA_DOM->isRemoved(e1)) << "REQ: new ev is not removed state.";
 
-    EXPECT_TRUE (PARA_DOM->rmEvOK("e1")) << "REQ: OK to rm valid Ev.";
-    EXPECT_FALSE(PARA_DOM->rmEvOK("e1")) << "REQ: NOK to rm invalid Ev.";
+    EXPECT_TRUE(PARA_DOM->rmEvOK("e1"))   << "REQ: OK to rm valid Ev.";
+    EXPECT_TRUE(PARA_DOM->isRemoved(e1))  << "REQ: flag is set.";
+
+    EXPECT_FALSE(PARA_DOM->state("e1"))   << "REQ: reset state of removed Ev.";
 
     PARA_DOM->setState({{"e0", true}});
     PARA_DOM->setState({{"e0", false}});
@@ -42,10 +44,10 @@ TYPED_TEST_P(RmDomTest, GOLD_rm_dom_resrc)
     PARA_DOM->setState({{"e1b", true}});
     EXPECT_TRUE(PARA_DOM->state("e2")) << "REQ: e1's downlink is removed.";
 
-    EXPECT_FALSE(PARA_DOM->state("e1")) << "REQ: removed Ev's state=false";
-
     EXPECT_EQ(Domino::invalidEvName, PARA_DOM->evNames().at(e1)) << "REQ: EN is removed.";
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1")) << "REQ: EN is removed.";
+
+    EXPECT_FALSE(PARA_DOM->rmEvOK("e1")) << "REQ: NOK to rm invalid Ev.";
 }
 
 TYPED_TEST_P(RmDomTest, GOLD_reuse_ev)
@@ -54,7 +56,7 @@ TYPED_TEST_P(RmDomTest, GOLD_reuse_ev)
     const auto e1 = PARA_DOM->setPrev("e1", {{"e0", false}});
 
     EXPECT_TRUE (PARA_DOM->rmEvOK("e1"));
-    EXPECT_EQ(e1, PARA_DOM->newEvent("new e1")) << "REQ: reuse removed ev.";
+    EXPECT_EQ(e1, PARA_DOM->newEvent("new e1")) << "REQ: reuse removed ev as soon as possible.";
     EXPECT_FALSE(PARA_DOM->isRemoved(e1)) << "REQ: new ev is not removed state.";
 
     const auto e0 = PARA_DOM->getEventBy("e0");
@@ -93,13 +95,10 @@ TYPED_TEST_P(RmDataDomTest, GOLD_rm_DataDom_resrc)
     PARA_DOM->replaceShared("ev", make_shared<TestData>(isDestructed));
     EXPECT_FALSE(isDestructed);
     const auto ev = PARA_DOM->getEventBy("ev");
-    EXPECT_FALSE(PARA_DOM->isRemoved(ev)) << "REQ: new ev is not removed state.";
 
-    EXPECT_TRUE(PARA_DOM->rmEvOK("ev")) << "REQ: rm succ.";
+    PARA_DOM->rmEvOK("ev");
     EXPECT_TRUE(isDestructed) << "REQ: data is removed.";
     EXPECT_EQ(nullptr, PARA_DOM->getShared("ev")) << "REQ: get null after removed." << endl;
-
-    EXPECT_FALSE(PARA_DOM->rmEvOK("ev")) << "REQ: fail to rm invalid.";
 
     EXPECT_EQ(ev, PARA_DOM->newEvent("another ev"))  << "REQ: reuse ev.";
     EXPECT_EQ(nullptr, PARA_DOM->getShared("another ev")) << "REQ: reuse ev's data space." << endl;
@@ -130,7 +129,6 @@ TYPED_TEST_P(RmWdatDomTest, GOLD_rm_WdatDom_resrc)
     PARA_DOM->wbasic_replaceShared("ev", make_shared<TestData>(isDestructed));
     EXPECT_FALSE(isDestructed);
     const auto ev = PARA_DOM->getEventBy("ev");
-    EXPECT_FALSE(PARA_DOM->isRemoved(ev)) << "REQ: new ev is not removed state.";
 
     EXPECT_TRUE(PARA_DOM->rmEvOK("ev")) << "REQ: rm succ.";
     EXPECT_TRUE(isDestructed) << "REQ: data is removed.";
