@@ -18,7 +18,7 @@
 //     . let user take care his rm rather than complex dom
 //
 // - RISK:
-//   . rm ev may break links (user shall take care)
+//   . rm ev may break links (then user shall take care)
 //   . rm ev impact/complex domino
 //   . so use RmEvDom when necessary
 // ***********************************************************************************************
@@ -45,7 +45,7 @@ protected:
 
 private:
     // -------------------------------------------------------------------------------------------
-    // - REQ: min mem (so set is better than vector<bool> when almost empty
+    // - REQ: min mem (so set<Event> is better than vector<bool> when almost empty
     // - REQ: fast (eg isRemoved(), insert, del)
     // - req: better FIFO
     unordered_set<Domino::Event> isRemovedEv_;

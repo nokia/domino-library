@@ -43,6 +43,21 @@ Domino::Event Domino::getEventBy(const EvName& aEvName) const
 }
 
 // ***********************************************************************************************
+void Domino::innerRmEv(const Event aEv)
+{
+    pureRmLink(aEv, prev_[true],  next_[true]);
+    pureRmLink(aEv, prev_[false], next_[false]);
+    pureRmLink(aEv, next_[true],  prev_[true]);
+    pureRmLink(aEv, next_[false], prev_[false]);
+
+    auto&& en = evNames_[aEv];
+    events_.erase(en);
+    en = invalidEvName;
+
+    pureSetState(aEv, false);
+}
+
+// ***********************************************************************************************
 Domino::Event Domino::newEvent(const EvName& aEvName)
 {
     auto&& event = getEventBy(aEvName);
@@ -90,21 +105,6 @@ void Domino::pureSetState(const Event aEv, const bool aNewState)
 
         sthChanged_ = true;
     }
-}
-
-// ***********************************************************************************************
-void Domino::innerRmEv(const Event aEv)
-{
-    pureRmLink(aEv, prev_[true],  next_[true]);
-    pureRmLink(aEv, prev_[false], next_[false]);
-    pureRmLink(aEv, next_[true],  prev_[true]);
-    pureRmLink(aEv, next_[false], prev_[false]);
-
-    auto&& en = evNames_[aEv];
-    events_.erase(en);
-    en = invalidEvName;
-
-    pureSetState(aEv, false);
 }
 
 // ***********************************************************************************************
