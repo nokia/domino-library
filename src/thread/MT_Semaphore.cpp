@@ -25,9 +25,7 @@ void MT_Semaphore::mt_notify()
 // ***********************************************************************************************
 void MT_Semaphore::timedwait(const size_t aSec, const size_t aRestNsec)
 {
-    timespec ts;
-    ts.tv_sec = 0;
-    ts.tv_nsec = 0;
+    timespec ts{0, 0};
     clock_gettime(CLOCK_REALTIME, &ts);  // impossible failed since MT_Semaphore's constructor
 
     const auto ns = ts.tv_nsec + aRestNsec;
