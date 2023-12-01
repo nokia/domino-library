@@ -44,7 +44,7 @@ TYPED_TEST_P(RmDomTest, GOLD_rm_dom_resrc)
     PARA_DOM->setState({{"e1b", true}});
     EXPECT_TRUE(PARA_DOM->state("e2")) << "REQ: e1's downlink is removed.";
 
-    EXPECT_EQ(PARA_DOM->evNames().end(), PARA_DOM->evNames().find(e1)) << "REQ: EN is removed.";
+    EXPECT_EQ(0u, PARA_DOM->evNames().count(e1)) << "REQ: EN is removed.";
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1")) << "REQ: EN is removed.";
 
     EXPECT_FALSE(PARA_DOM->rmEvOK("e1")) << "REQ: NOK to rm invalid Ev.";
