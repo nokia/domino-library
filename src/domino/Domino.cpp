@@ -9,8 +9,6 @@
 
 namespace RLib
 {
-const Domino::EvName Domino::invalidEvName("Invalid Ev/EvName");
-
 // ***********************************************************************************************
 void Domino::deduceState(const Event aEv)
 {
@@ -50,9 +48,8 @@ void Domino::innerRmEv(const Event aEv)
     pureRmLink(aEv, next_[true],  prev_[true]);
     pureRmLink(aEv, next_[false], prev_[false]);
 
-    auto&& en = evNames_[aEv];
-    events_.erase(en);
-    en = invalidEvName;
+    events_.erase(evNames_[aEv]);
+    evNames_.erase(aEv);
 
     pureSetState(aEv, false);
 }
@@ -70,7 +67,7 @@ Domino::Event Domino::newEvent(const EvName& aEvName)
 
     HID("(Domino) Succeed, EvName=" << aEvName << ", event id=" << event);
     events_.emplace(aEvName, event);
-    evNames_.push_back(aEvName);
+    evNames_[event] = aEvName;
     states_.push_back(false);
     return event;
 }
@@ -99,7 +96,7 @@ void Domino::pureSetState(const Event aEv, const bool aNewState)
     if (states_[aEv] != aNewState)
     {
         states_[aEv] = aNewState;
-        DBG("(Domino) Succeed, EvName=" << evNames_[aEv] << " newState=" << aNewState);
+        HID("(Domino) Succeed, EvName=" << evNames_[aEv] << " newState=" << aNewState);
         if (aNewState == true)
             effect(aEv);
 
@@ -163,7 +160,7 @@ Domino::EvName Domino::whyFalse(const EvName& aEvName) const
         for (auto&& candEv : itPairTrue->second)
         {
             if (states_[candEv] == false)
-                return evNames_[candEv] + "==false";
+                return evNames_.at(candEv) + "==false";
         }
     }
 
@@ -173,7 +170,7 @@ Domino::EvName Domino::whyFalse(const EvName& aEvName) const
         for (auto&& candEv : itPairFalse->second)
         {
             if (states_[candEv] == true)
-                return evNames_[candEv] + "==true";
+                return evNames_.at(candEv) + "==true";
         }
     }
 

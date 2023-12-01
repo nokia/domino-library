@@ -250,8 +250,8 @@ TYPED_TEST_P(MultiHdlrDominoTest, rmHdlr_subtree)
     auto&& evNames = PARA_DOM->evNames();
     for (auto&& evName : evNames)
     {
-        auto&& it = evName.find("/A");
-        if (it != string::npos) PARA_DOM->rmAllHdlr(evName);
+        auto&& it = evName.second.find("/A");
+        if (it != string::npos) PARA_DOM->rmAllHdlr(evName.second);
     }
     EXPECT_EQ(0u, PARA_DOM->nHdlr("/A")) << "REQ: rm-ed" << endl;
     EXPECT_EQ(0u, PARA_DOM->nHdlr("/A/B/C/D")) << "REQ: rm-ed" << endl;

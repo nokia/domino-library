@@ -144,14 +144,14 @@ TYPED_TEST_P(DominoTest, search_partial_evName)
     size_t nFound = 0;
     for (auto&& evName : evNames)
     {
-        if (evName.find("/A") != string::npos) ++nFound;
+        if (evName.second.find("/A") != string::npos) ++nFound;
     }
     EXPECT_EQ(2u, nFound) << "REQ: found" << endl;
 
     nFound = 0;
     for (auto&& evName : evNames)
     {
-        if (evName.find("/X") != string::npos) ++nFound;
+        if (evName.second.find("/X") != string::npos) ++nFound;
     }
     EXPECT_EQ(0u, nFound) << "REQ: not found" << endl;
 }

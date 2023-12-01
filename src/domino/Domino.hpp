@@ -45,7 +45,7 @@ public:
     using Events     = set<Event>;
     using EvName     = string;
     using SimuEvents = map<EvName, bool>;  // not unordered-map since most traversal
-    using EvNames    = vector<EvName>;
+    using EvNames    = unordered_map<Event, EvName>;  // map is less mem than vector<EvName>
     using EvLinks    = map<Event, Events>;
 
     enum : Event
@@ -74,7 +74,7 @@ public:
     EvName   whyFalse(const EvName&) const;
 
 protected:
-    const EvName& evName(const Event aEv) const { return evNames_[aEv]; }  // aEv must valid
+    const EvName& evName(const Event aEv) const { return evNames_.at(aEv); }  // aEv must valid
     bool          state (const Event aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
     virtual void  effect(const Event) {}  // can't const since FreeDom will rm hdlr
 
@@ -96,9 +96,6 @@ private:
     unordered_map<EvName, Event> events_;               // [evName]=event
     EvNames                      evNames_;              // [event]=evName for easy debug
     bool                         sthChanged_ = false;   // for debug
-
-public:
-    static const EvName          invalidEvName;
 };
 
 }  // namespace
