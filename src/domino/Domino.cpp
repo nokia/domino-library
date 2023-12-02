@@ -48,10 +48,11 @@ void Domino::innerRmEv(const Event aEv)
     pureRmLink(aEv, next_[true],  prev_[true]);
     pureRmLink(aEv, next_[false], prev_[false]);
 
-    events_.erase(evNames_[aEv]);
-    evNames_.erase(aEv);
+    pureSetState(aEv, false);  // must before clean evNames_
 
-    pureSetState(aEv, false);
+    events_.erase(evNames_[aEv]);
+    auto ret = evNames_.erase(aEv);
+    HID("[Domino] aEv=" << aEv << ", ret=" << ret);
 }
 
 // ***********************************************************************************************

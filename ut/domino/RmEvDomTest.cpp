@@ -31,10 +31,10 @@ TYPED_TEST_P(RmDomTest, GOLD_rm_dom_resrc)
     EXPECT_TRUE (PARA_DOM->state("e1"));
     EXPECT_FALSE(PARA_DOM->isRemoved(e1)) << "REQ: new ev is not removed state.";
 
-    EXPECT_TRUE(PARA_DOM->rmEvOK("e1"))   << "REQ: OK to rm valid Ev.";
-    EXPECT_TRUE(PARA_DOM->isRemoved(e1))  << "REQ: flag is set.";
+    EXPECT_TRUE(PARA_DOM->rmEvOK("e1"))  << "REQ: OK to rm valid Ev.";
+    EXPECT_TRUE(PARA_DOM->isRemoved(e1)) << "REQ: flag is set.";
 
-    EXPECT_FALSE(PARA_DOM->state("e1"))   << "REQ: reset state of removed Ev.";
+    EXPECT_FALSE(PARA_DOM->state("e1")) << "REQ: reset state of removed Ev.";
 
     PARA_DOM->setState({{"e0", true}});
     PARA_DOM->setState({{"e0", false}});
