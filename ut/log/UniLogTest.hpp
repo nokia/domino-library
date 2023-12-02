@@ -152,7 +152,7 @@ TEST_F(UNI_LOG_TEST, low_couple_callbackFunc)
     const auto len_1 = UNI_LOG::logLen(logName_);
     ASSERT_GT(len_1, 0) << "REQ: can log" << endl;
 
-    function<void()> cb = [oneLog = *classUsr]() mutable { INF("hello world, I'm a callback func"); };
+    function<void()> cb = [oneLog = *classUsr]() mutable { DBG("hello world, I'm a callback func"); };
     const auto len_2 = UNI_LOG::logLen(logName_);
     ASSERT_GT(len_2, len_1) << "REQ: log still there (more log since no move-construct of ClassUsr)" << endl;
 

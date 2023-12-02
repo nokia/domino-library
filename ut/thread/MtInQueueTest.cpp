@@ -67,7 +67,7 @@ TEST_F(MtInQueueTest, GOLD_sparsePush_fifo)
         }
         else timedwait();  // REQ: less CPU than repeat pop() or this_thread::yield()
     }
-    INF("REQ(sleep 1us/push): e2e user=0.354s->0.123s, sys=0.412s->0.159s")
+    DBG("REQ(sleep 1us/push): e2e user=0.354s->0.123s, sys=0.412s->0.159s")
 }
 TEST_F(MtInQueueTest, GOLD_surgePush_fifo)
 {
@@ -81,7 +81,7 @@ TEST_F(MtInQueueTest, GOLD_surgePush_fifo)
     });
 
     int nHdl = 0;
-    INF("before loop")
+    DBG("before loop")
     while (nHdl < nMsg)
     {
         auto msg = mt_getQ().pop<int>();
@@ -92,7 +92,7 @@ TEST_F(MtInQueueTest, GOLD_surgePush_fifo)
         }
         else this_thread::yield();  // REQ: test cache_ performance
     }
-    INF("REQ: loop cost 2576us now, previously no cache & lock cost 4422us")
+    DBG("REQ: loop cost 2576us now, previously no cache & lock cost 4422us")
 }
 TEST_F(MtInQueueTest, GOLD_nonBlock_pop)
 {

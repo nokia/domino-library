@@ -75,6 +75,9 @@
 //   . why not support multi-thread:
 //     . mainthread/logic is the most usage
 //     . not worth to pay(lock-mechanism) for low-possible usage
+//   * why DomTest's log not in smart log?
+//     . since they're template test that need this->oneLog to access base
+//     . workaround: "auto& oneLog = *this;" in case
 // ***********************************************************************************************
 #ifndef UNI_LOG_HPP_
 #define UNI_LOG_HPP_

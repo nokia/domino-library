@@ -56,11 +56,11 @@ TEST_F(ThreadBackTest, GOLD_entryFn_inNewThread_thenBackFn_inMainThread_withSema
     DBG("main thread id=" << mt_threadID);
     ThreadBack::newThread(
         // MT_ThreadEntryFN
-        [&mt_threadID]() -> bool
+        [&mt_threadID, this]() -> bool
         {
             EXPECT_NE(this_thread::get_id(), mt_threadID) << "REQ: in new thread";
             mt_threadID = this_thread::get_id();
-            cout << "MT_ThreadEntryFN(): thread id=" << mt_threadID << endl;
+            DBG("MT_ThreadEntryFN(): thread id=" << mt_threadID);
             return true;
         },
         // ThreadBackFN
