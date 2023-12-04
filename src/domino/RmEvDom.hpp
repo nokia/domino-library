@@ -62,7 +62,7 @@ Domino::Event RmEvDom<aDominoType>::recycleEv()
         return Domino::D_EVENT_FAILED_RET;
 
     const auto ev = *(isRemovedEv_.begin());
-    isRemovedEv_.erase(isRemovedEv_.begin());
+    isRemovedEv_.erase(ev);
     return ev;
 }
 

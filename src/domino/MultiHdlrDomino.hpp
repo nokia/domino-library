@@ -127,8 +127,7 @@ size_t MultiHdlrDomino<aDominoType>::nHdlr(const Domino::EvName& aEN) const
 {
     HID("(MultiHdlrDomino) aEN=" << aEN);
     auto&& it = multiHdlrs_.find(this->getEventBy(aEN));
-    return (it == multiHdlrs_.end() ? 0 : it->second.size())
-        + aDominoType::nHdlr(aEN);
+    return (it == multiHdlrs_.end() ? 0 : it->second.size()) + aDominoType::nHdlr(aEN);
 }
 
 // ***********************************************************************************************
@@ -137,11 +136,7 @@ void MultiHdlrDomino<aDominoType>::rmAllHdlr(const Domino::EvName& aEN)
 {
     aDominoType::rmOneHdlrOK(aEN);
 
-    auto&& it = multiHdlrs_.find(this->getEventBy(aEN));
-    if (it != multiHdlrs_.end())
-    {
-        it->second.clear();
-    }
+    multiHdlrs_.erase(this->getEventBy(aEN));
 }
 
 // ***********************************************************************************************
