@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
+#include <thread>
+
 #include "MT_PingMainTH.hpp"
 #include "MtInQueue.hpp"
 
@@ -47,6 +49,7 @@ size_t MtInQueue::handleAllEle()
         if (! guard.owns_lock())
         {
             mt_pingMainTH();  // for possible ele in queue_
+            this_thread::yield();  // avoid main thread keep checking
             return nEle;
         }
         cache_.swap(queue_);
@@ -86,6 +89,7 @@ ElePair MtInQueue::pop()
         if (! guard.owns_lock())
         {
             mt_pingMainTH();  // since waste this wakeup as not own the lock
+            this_thread::yield();  // avoid main thread keep checking
             return ElePair(nullptr, typeid(void).hash_code());
         }
         if (queue_.empty())
@@ -94,7 +98,7 @@ ElePair MtInQueue::pop()
     }
     // unlocked
 
-    auto elePair = cache_.front();
+    auto elePair = cache_.front();  // must copy
     cache_.pop_front();
     return elePair;
 }

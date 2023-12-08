@@ -101,7 +101,9 @@ TEST_F(MtInQueueTest, GOLD_nonBlock_pop)
     mt_getQ().mt_push(make_shared<string>("1st"));
     mt_getQ().mt_push(make_shared<string>("2nd"));
     mt_getQ().backdoor().lock();
+    timedwait(600);  // push shall wakeup this func instead of 10m timeout
     ASSERT_FALSE(mt_getQ().pop<void>()) << "REQ: not blocked" << endl;
+    timedwait(600);  // REQ: pop() shall mt_pingMainTH() if can't access queue_
 
     mt_getQ().backdoor().unlock();
     ASSERT_EQ("1st", *(mt_getQ().pop<string>())) << "REQ: can pop";
@@ -185,8 +187,11 @@ TEST_F(MtInQueueTest, handleAllEle_shallnot_blocked)
     mtQ.backdoor().unlock();  // for mt_sizeQ()
     EXPECT_EQ(1u, mtQ.mt_sizeQ()) << "REQ: no block";
 }
-TEST_F(MtInQueueTest, shallHandle_bothCacheAndQueue_ifPossible)
+TEST_F(MtInQueueTest, GOLD_shallHandle_bothCacheAndQueue_ifPossible)
 {
+    // init
+    size_t nCalled = 0;
+    mt_getQ().hdlr<void>([&nCalled](shared_ptr<void>){ ++nCalled; });
     mt_getQ().mt_push<void>(nullptr);
     mt_getQ().mt_push<void>(nullptr);
     mt_getQ().pop();  // still 1 ele in cache_
@@ -194,10 +199,14 @@ TEST_F(MtInQueueTest, shallHandle_bothCacheAndQueue_ifPossible)
     EXPECT_EQ(2u, mt_getQ().mt_sizeQ());
 
     mt_getQ().backdoor().lock();
+    timedwait(600);  // last push shall wakeup this func instead of 10m timeout
     EXPECT_EQ(1u, mt_getQ().handleAllEle()) << "REQ: shall handle cache_";
+    EXPECT_EQ(1u, nCalled) << "REQ: hdlr is called";
+    timedwait(600);  // REQ: handleAllEle() shall mt_pingMainTH() if can't access queue_
 
     mt_getQ().backdoor().unlock();
     mt_getQ().handleAllEle();
+    EXPECT_EQ(2u, nCalled) << "REQ: hdlr is called";
     EXPECT_EQ(0u, mt_getQ().mt_sizeQ()) << "REQ: shall handle queue_";
 }
 TEST_F(MtInQueueTest, handle_emptyQ)

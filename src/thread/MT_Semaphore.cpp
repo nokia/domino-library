@@ -28,7 +28,7 @@ void MT_Semaphore::timedwait(const size_t aSec, const size_t aRestNsec)
     timespec ts{0, 0};
     clock_gettime(CLOCK_REALTIME, &ts);  // impossible failed since MT_Semaphore's constructor
 
-    const auto ns = ts.tv_nsec + aRestNsec;
+    const auto ns = ts.tv_nsec + aRestNsec;  // usr's duty for reasonable aRestNsec; here's duty for no crash
     ts.tv_sec += (aSec + ns / 1000'000'000);
     ts.tv_nsec = ns % 1000'000'000;
 
@@ -44,7 +44,7 @@ void MT_Semaphore::timedwait(const size_t aSec, const size_t aRestNsec)
         // else if (errno == EINVAL)  // avoid dead loop
         //    return;
 
-        continue;  // restart
+        continue;  // restart for EINTR
     }  // for
 }
 
