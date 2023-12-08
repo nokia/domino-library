@@ -160,8 +160,10 @@ TEST_F(MtInQueueTest, clear)
     mt_getQ().pop();
     mt_getQ().mt_push<void>(nullptr);
     mt_getQ().hdlr<void>([](shared_ptr<void>){});
-    ASSERT_EQ(2u, mt_getQ().mt_clear()) << "REQ: clear all ele" << endl;
-    EXPECT_EQ(0u, mt_getQ().nHdlr()) << "REQ: clear all hdlr" << endl;
+
+    mt_getQ().mt_clear();
+    ASSERT_EQ(0u, mt_getQ().mt_sizeQ()) << "REQ: clear all ele";
+    EXPECT_EQ(0u, mt_getQ().nHdlr()) << "REQ: clear all hdlr";
 }
 
 #define HDLR

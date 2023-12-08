@@ -49,7 +49,7 @@ public:
     template<class aEleType> shared_ptr<aEleType> pop() { return static_pointer_cast<aEleType>(pop().first); }
 
     size_t mt_sizeQ();
-    size_t mt_clear();
+    void   mt_clear();
 
     // shall be called in main thread ONLY!!!
     template<class aEleType> void hdlr(const EleHdlr&);

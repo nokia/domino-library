@@ -58,19 +58,12 @@ size_t MtInQueue::handleAllEle()
 }
 
 // ***********************************************************************************************
-size_t MtInQueue::mt_clear()
+void MtInQueue::mt_clear()
 {
     lock_guard<mutex> guard(mutex_);
-
-    const auto sizeQueue = queue_.size();
     queue_.clear();
-
-    const auto sizeCache = cache_.size();
     cache_.clear();
-
     eleHdlrs_.clear();
-
-    return sizeQueue + sizeCache;
 }
 
 // ***********************************************************************************************
