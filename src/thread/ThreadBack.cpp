@@ -8,8 +8,8 @@
 #include <iostream>
 #include <memory>
 
-#include "ThreadBack.hpp"
 #include "MT_PingMainTH.hpp"
+#include "ThreadBack.hpp"
 
 namespace RLib
 {
@@ -31,8 +31,8 @@ size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
         }
         else
             ++it;
-    }
-    return nHandled;  // though mt_nFinishedThread_ may > 0, to avoid dead-loop, & limit-duty
+    }  // 1 loop, simple & safe
+    return nHandled;
 }
 
 // ***********************************************************************************************

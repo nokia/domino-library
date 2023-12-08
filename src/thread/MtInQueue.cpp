@@ -49,7 +49,7 @@ size_t MtInQueue::handleAllEle()
         if (! guard.owns_lock())
         {
             mt_pingMainTH();  // for possible ele in queue_
-            this_thread::yield();  // avoid main thread keep checking
+            this_thread::yield();  // avoid main thread keep checking; no ut for optimization
             return nEle;
         }
         cache_.swap(queue_);
