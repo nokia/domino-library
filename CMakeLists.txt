@@ -5,7 +5,7 @@ project(ut_exe  CXX)  # as early as possible, eg must before CMAKE_CXX_FLAGS
 
 if(COV)
     message("!!! coverage enabled")
-    set(CMAKE_CXX_STANDARD  17)  # if gtest fix bug, try c++20/23 to see cov rate inc or not
+    set(CMAKE_CXX_STANDARD  20)  # if gtest fix bug, try c++20/23 to see cov rate inc or not
 
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  --coverage")          # gcov req (=-fprofile-arcs -ftest-coverage & -lgcov)
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fPIC")               # gcov req
