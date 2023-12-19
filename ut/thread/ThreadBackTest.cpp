@@ -149,6 +149,22 @@ TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
     }
 }
 
+#define WAIT_NOTIFY
+// ***********************************************************************************************
+TEST_F(ThreadBackTest, GOLD_entryFn_notify_insteadof_timeout)
+{
+    auto start = high_resolution_clock::now();
+    ThreadBack::newThread(
+        [] { return true; },  // entryFn
+        [](bool) {}  // backFn
+    );
+    timedwait(0, 500'000'000);  // long timer to ensure thread done beforehand
+    auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - start);
+    EXPECT_LT(dur.count(), 500) << "REQ: entryFn end shall notify g_sem instead of timeout";
+
+    while (ThreadBack::hdlFinishedThreads() == 0);  // clear all threads
+}
+
 #define ABNORMAL
 // ***********************************************************************************************
 TEST_F(ThreadBackTest, asyncFail_noException_toBackFnWithFalse)
@@ -165,22 +181,6 @@ TEST_F(ThreadBackTest, emptyThreadList_ok)
 {
     size_t nHandled = ThreadBack::hdlFinishedThreads();
     EXPECT_EQ(0u, nHandled);
-}
-
-#define WAIT_NOTIFY
-// ***********************************************************************************************
-TEST_F(ThreadBackTest, wait_notify)
-{
-    auto start = high_resolution_clock::now();
-    ThreadBack::newThread(
-        [] { return true; },  // entryFn
-        [](bool) {}  // backFn
-    );
-    timedwait(0, 500'000'000);  // long timer to ensure thread done beforehand
-    auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - start);
-    EXPECT_LT(dur.count(), 500) << "REQ: entryFn end shall notify g_sem instead of timeout";
-
-    while (ThreadBack::hdlFinishedThreads() == 0);  // clear all threads
 }
 
 }  // namespace
