@@ -177,7 +177,7 @@ TEST_F(MtInQueueTest, discard_noHdlrEle)
     mt_getQ().handleAllEle();
     EXPECT_EQ(0u, mt_getQ().mt_sizeQ()) << "REQ: discard ele w/o hdlr - simple & no mem leak";
 }
-TEST_F(MtInQueueTest, handleAllEle_shallnot_blocked)
+TEST_F(MtInQueueTest, handleAllEle_shallnot_block)
 {
     MtInQueue mtQ;  // cov destructor with ele left
 

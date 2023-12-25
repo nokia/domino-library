@@ -76,11 +76,11 @@ struct UNI_LOG_TEST : public Test
 };
 
 // ***********************************************************************************************
-TEST_F(UNI_LOG_TEST, GOLD_usr_of_class_and_func)
+TEST_F(UNI_LOG_TEST, GOLD_OneCellWith_classes_and_funcs)
 {
     for (size_t i=0; i < 100; ++i) // for perf bug
     {
-        SCOPED_TRACE(i);
+        SCOPED_TRACE(i);  // debug which "i" failed
 
         ClassUsr classUsr(logName_);
         const auto len_1 = UNI_LOG::logLen(logName_);
@@ -103,7 +103,7 @@ TEST_F(UNI_LOG_TEST, GOLD_usr_of_class_and_func)
 }
 
 // ***********************************************************************************************
-TEST_F(UNI_LOG_TEST, low_couple_objects)
+TEST_F(UNI_LOG_TEST, withinOneCell_decouple_objects)
 {
     auto classUsr = make_shared<ClassUsr>((logName_));
     const auto len_1 = UNI_LOG::logLen(logName_);
@@ -119,7 +119,7 @@ TEST_F(UNI_LOG_TEST, low_couple_objects)
 
     if (Test::HasFailure()) classUsr_2.needLog();
 }
-TEST_F(UNI_LOG_TEST, low_couple_between_copies)
+TEST_F(UNI_LOG_TEST, withinOneCell_decouple_copies)
 {
     auto classUsr = make_shared<ClassUsr>((logName_));
     const auto len_1 = UNI_LOG::logLen(logName_);
@@ -144,9 +144,9 @@ TEST_F(UNI_LOG_TEST, low_couple_between_copies)
 
     // req: UNI_LOG not support assignemt, copy is enough
 
-    copy.needLog();                            // req: can still output log to screen
+    copy.needLog();  // req: can still output log to screen
 }
-TEST_F(UNI_LOG_TEST, low_couple_callbackFunc)
+TEST_F(UNI_LOG_TEST, withinOneCell_decouple_callbackFuncs)
 {
     auto classUsr = make_shared<ClassUsr>((logName_));
     const auto len_1 = UNI_LOG::logLen(logName_);
@@ -164,7 +164,7 @@ TEST_F(UNI_LOG_TEST, low_couple_callbackFunc)
 }
 
 // ***********************************************************************************************
-TEST_F(UNI_LOG_TEST, no_explicit_CellLog_like_legacy)
+TEST_F(UNI_LOG_TEST, GOLD_no_explicit_CellLog_like_legacy)
 {
     const auto len_1 = UNI_LOG::logLen();
     ClassUsr classUsr;  // no explicit UNI_LOG
