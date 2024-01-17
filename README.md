@@ -32,7 +32,9 @@ Reuse-Library of C++, include classes eg:
 # New Practices
 1. UT testcase is requirement. (Refer to ./ut/\*/\*.cpp)
 
-2. LEGO domino classes. (Refer to ./ut/obj_anywhere/UtInitObjAnywhere.hpp)
+   UT testcases are also the best way to understand how to use the classes.
+
+3. LEGO domino classes. (Refer to ./ut/obj_anywhere/UtInitObjAnywhere.hpp)
 
 
 # How to use this library?
