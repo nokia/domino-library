@@ -17,6 +17,7 @@ target_include_directories(lib_ut  PUBLIC
 )
 
 target_link_libraries(lib_ut PUBLIC
+  ${lib_san}
   gtest
   gmock
 )

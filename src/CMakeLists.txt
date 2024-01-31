@@ -15,5 +15,6 @@ target_include_directories(lib_domino  PUBLIC
 )
 
 target_link_libraries(lib_domino PUBLIC
+  ${lib_san}
   pthread
 )
