@@ -53,7 +53,7 @@ endif()
 
 set(CMAKE_CXX_STANDARD_REQUIRED  TRUE)
 set(CMAKE_CXX_EXTENSIONS  OFF)
-set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fno-exceptions")  # inc branch coverage
+set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fno-exceptions  -DMY_FILE='\"$(notdir $(abspath $<))\"'")  # inc branch coverage
 
 add_executable(ut_exe)
 
