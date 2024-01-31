@@ -10,6 +10,8 @@
 //
 // - CORE:
 //   . smartLog_
+//
+// - NOT MT safe: since (static) member; so shall ONLY use in main thread
 // ***********************************************************************************************
 #ifndef UNI_SMART_LOG_HPP_
 #define UNI_SMART_LOG_HPP_

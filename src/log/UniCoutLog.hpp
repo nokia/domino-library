@@ -13,6 +13,8 @@
 //
 // - CORE:
 //   . cout
+//
+// - NOT MT safe: since (static) member; so shall ONLY use in main thread
 // ***********************************************************************************************
 #ifndef UNI_COUT_LOG_HPP_
 #define UNI_COUT_LOG_HPP_

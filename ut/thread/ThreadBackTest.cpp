@@ -60,7 +60,7 @@ TEST_F(ThreadBackTest, GOLD_entryFn_inNewThread_thenBackFn_inMainThread_withSema
         {
             EXPECT_NE(this_thread::get_id(), mt_threadID) << "REQ: in new thread";
             mt_threadID = this_thread::get_id();
-            DBG("MT_ThreadEntryFN(): thread id=" << mt_threadID);
+            HID("MT_ThreadEntryFN(): thread id=" << mt_threadID);  // not MT safe but debug only
             return true;
         },
         // ThreadBackFN
