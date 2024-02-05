@@ -11,7 +11,7 @@
 // - CORE:
 //   . smartLog_
 //
-// - MT safe: NO!!! since (static) member; so shall NOT cross-thread use
+// - MT safe: NO!!! since (static) logStore_; so shall NOT cross-thread use
 // ***********************************************************************************************
 #ifndef UNI_SMART_LOG_HPP_
 #define UNI_SMART_LOG_HPP_

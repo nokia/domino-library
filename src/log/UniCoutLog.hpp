@@ -14,7 +14,7 @@
 // - CORE:
 //   . cout
 //
-// - MT safe: NO!!! since (static) member; so shall NOT cross-thread use
+// - MT safe: NO!!! since (static) nLogLine_; so shall NOT cross-thread use
 // ***********************************************************************************************
 #ifndef UNI_COUT_LOG_HPP_
 #define UNI_COUT_LOG_HPP_
