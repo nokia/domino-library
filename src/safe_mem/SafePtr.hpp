@@ -27,11 +27,6 @@ namespace RLib
 class SafePtr
 {
 public:
-    // new
-    template<typename T>
-    SafePtr(std::shared_ptr<T> aT) : pT_(static_pointer_cast<void>(aT)), originType_(&typeid(T)) {}  // expand but safe construct
-    SafePtr() = default;
-
     template<typename To = void> To* get()
     {
         return (&typeid(To) == originType_ || is_same<To, void>::value)
@@ -44,7 +39,18 @@ private:
     // -------------------------------------------------------------------------------------------
     std::shared_ptr<void>  pT_;
     const type_info*       originType_ = nullptr;  // can't static since derived from T
+
+    template<class T, class... Args> friend SafePtr make_safe(Args&&... aArgs);
 };
+
+// ***********************************************************************************************
+template<class T, class... Args> SafePtr make_safe(Args&&... aArgs)
+{
+    SafePtr sptr;
+    sptr.pT_ = static_pointer_cast<void>(make_shared<T>(forward<Args>(aArgs)...));
+    sptr.originType_ = &typeid(T);
+    return sptr;
+}
 
 }  // namespace
 // ***********************************************************************************************
