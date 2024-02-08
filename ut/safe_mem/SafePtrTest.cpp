@@ -114,6 +114,9 @@ TEST(SafePtrTest, GOLD_void_back)
     EXPECT_EQ(nullptr, v2.get<D2>())              << "REQ: void -> unknown";
     EXPECT_EQ(2,       v2.get<Derive>()->value()) << "REQ: void back";
     EXPECT_EQ(nullptr, v2.get<Base>())            << "REQ: void -> unknown";
+
+    SafePtr<D2> d2_2 = v;
+    EXPECT_EQ(nullptr, d2_2.get<void>()) << "REQ: can't v(as Derive) -> D2";
 }
 
 #define ARRAY
