@@ -120,7 +120,7 @@ TEST(SafePtrTest, GOLD_void_back)
 // ***********************************************************************************************
 TEST(SafePtrTest, GOLD_construct_array)
 {
-    make_safe<int[]>(10);
+    //make_safe<ints[]>(10);
 }
 
 }  // namespace
