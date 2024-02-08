@@ -35,7 +35,11 @@ public:
     template<class From> SafePtr(const SafePtr<From>& aSafeFrom)
         : pT_(aSafeFrom.template get<T>())
     {
-        if (pT_ && is_same<T, void>::value && ! is_same<From, void>::value)
+        if (! is_same<T, void>::value)  // not -> void
+            return;
+        if (! pT_)  // invalid pT_
+            return;
+        if (! is_same<From, void>::value)  // not from void ->
             voidToType_ = &typeid(From);
     }
 
