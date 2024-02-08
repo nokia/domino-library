@@ -17,38 +17,50 @@
 
 #include <functional>
 #include <memory>
-#include <iostream>
+#include <type_traits>
 
 using namespace std;
 
 namespace RLib
 {
 // ***********************************************************************************************
-class SafePtr
+template<class T> class SafePtr
 {
 public:
-    template<typename To = void> To* get()
+    // create
+    template<class U, class... Args> friend SafePtr<U> make_safe(Args&&... aArgs);
+    SafePtr() = default;
+
+    // any <-> void
+    template<class From> SafePtr(const SafePtr<From>& aSafeFrom)
+        : pT_(aSafeFrom.template get<T>())
     {
-        return (&typeid(To) == originType_ || is_same<To, void>::value)
-            ? static_pointer_cast<To>(pT_).get()
-            : nullptr;
+        if (pT_ && is_same<T, void>::value && ! is_same<From, void>::value)
+            voidToType_ = &typeid(From);
     }
 
-    const type_info* originType() const { return originType_; }
+    template<typename To> shared_ptr<To> get() const
+    {
+        if (is_convertible<T*, To*>::value)  // Derive -> Base
+            return static_pointer_cast<To>(pT_);
+        if (is_same<To, void>::value)  // any -> void (for storing same type= SafePtr<void>)
+            return static_pointer_cast<To>(pT_);
+        if (is_same<T, void>::value && &typeid(To) == voidToType_)  // void -> back
+            return static_pointer_cast<To>(pT_);
+        return nullptr;
+    }
+
 private:
     // -------------------------------------------------------------------------------------------
-    std::shared_ptr<void>  pT_;
-    const type_info*       originType_ = nullptr;  // can't static since derived from T
-
-    template<class T, class... Args> friend SafePtr make_safe(Args&&... aArgs);
+    std::shared_ptr<T>  pT_;
+    const type_info*    voidToType_ = nullptr;  // cast void back
 };
 
 // ***********************************************************************************************
-template<class T, class... Args> SafePtr make_safe(Args&&... aArgs)
+template<class U, class... Args> SafePtr<U> make_safe(Args&&... aArgs)
 {
-    SafePtr sptr;
-    sptr.pT_ = static_pointer_cast<void>(make_shared<T>(forward<Args>(aArgs)...));
-    sptr.originType_ = &typeid(T);
+    SafePtr<U> sptr;
+    sptr.pT_ = make_shared<U>(forward<Args>(aArgs)...);
     return sptr;
 }
 
