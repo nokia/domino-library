@@ -64,7 +64,7 @@ public:
     {
         if (is_convertible<T*, To*>::value)  // Derive -> Base
             return static_pointer_cast<To>(pT_);
-        if (is_same<To, void>::value)  // any -> void (for storing same type= SafePtr<void>)
+        if (is_same<To, void>::value)  // any -> void (for storing same type=SafePtr<void>)
             return static_pointer_cast<To>(pT_);
         if (is_same<T, void>::value && &typeid(To) == preVoidType_)  // void -> back
             return static_pointer_cast<To>(pT_);

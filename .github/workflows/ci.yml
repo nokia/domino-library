@@ -53,5 +53,3 @@ jobs:
         verbose: true            # optional (default = false)
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        # CODECOV_TOKEN=55fba278-ead7-4bb3-b6fd-41436731b8f7
-        # CODECOV_TOKEN=61e77fb0-ea6b-4bc8-bff2-eb397ff9e519
