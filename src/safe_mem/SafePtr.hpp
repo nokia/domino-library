@@ -19,6 +19,8 @@
 #include <memory>
 #include <type_traits>
 
+#include "UniLog.hpp"
+
 using namespace std;
 
 namespace RLib
@@ -35,12 +37,23 @@ public:
     template<class From> SafePtr(const SafePtr<From>& aSafeFrom)
         : pT_(aSafeFrom.template get<T>())
     {
-        if (! is_same<T, void>::value)  // not -> void
+        HID(typeid(From).name() << " to " << typeid(T).name());
+        if (! pT_)
+        {
+            HID("pT_ == nullptr");  // ut debug only
             return;
-        if (! pT_)  // invalid pT_
+        }
+        realType_ = aSafeFrom.realType();
+        if (! is_same<T, void>::value)
+        {
+            HID("not to void");
             return;
-        if (! is_same<From, void>::value)  // not from void ->
-            voidToType_ = &typeid(From);
+        }
+        if (! is_same<From, void>::value)
+        {
+            HID("not from void");
+            preVoidType_ = &typeid(From);
+        }
     }
 
     template<typename To> shared_ptr<To> get() const
@@ -49,15 +62,21 @@ public:
             return static_pointer_cast<To>(pT_);
         if (is_same<To, void>::value)  // any -> void (for storing same type= SafePtr<void>)
             return static_pointer_cast<To>(pT_);
-        if (is_same<T, void>::value && &typeid(To) == voidToType_)  // void -> back
+        if (is_same<T, void>::value && &typeid(To) == preVoidType_)  // void -> back
+            return static_pointer_cast<To>(pT_);
+        if (&typeid(To) == realType_)  // any -> origin
             return static_pointer_cast<To>(pT_);
         return nullptr;
     }
 
+    const type_info* preVoidType() const { return preVoidType_; }
+    const type_info* realType() const { return realType_; }
+
 private:
     // -------------------------------------------------------------------------------------------
     std::shared_ptr<T>  pT_;
-    const type_info*    voidToType_ = nullptr;  // cast void back
+    const type_info*    preVoidType_ = nullptr;  // that before cast to void, can safely cast back
+    const type_info*    realType_ = &typeid(T);  // that pT_ point to, can safely cast to
 };
 
 // ***********************************************************************************************
