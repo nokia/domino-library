@@ -8,7 +8,7 @@
 //   . c++ mem bugs are 1 of the most challenge (eg use Rust to replace c++)
 // - REQ: this class is to impl
 //   . valid ptr: by construct
-//   . valid cp/mv ptr: between valid type (same type, base-derive, any<->void)
+//   . valid cp/mv/= ptr: between valid type (same type, base-derive, any<->void)
 //   . valid ptr lifecycle: by shared_ptr
 //   . valid ptr array
 //   . suggest any class ensure mem-safe (like MT safe)
@@ -40,7 +40,7 @@ public:
         HID(typeid(From).name() << " to " << typeid(T).name());
         if (! pT_)
         {
-            HID("pT_ == nullptr");  // ut debug only
+            HID("pT_ == nullptr");  // HID: ut debug only
             return;
         }
         realType_ = aSafeFrom.realType();

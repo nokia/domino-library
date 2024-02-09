@@ -73,6 +73,8 @@ TEST(SafePtrTest, GOLD_base_get)
     SafePtr<Base> b = make_safe<Derive>();
     EXPECT_NE(nullptr, b.get<Base>())    << "REQ: Base can ptr Derive";
     EXPECT_EQ(1, b.get<Base>()->value()) << "REQ: get virtual";
+
+    EXPECT_EQ(nullptr, b.get<D2>()) << "REQ: invalid";
 }
 TEST(SafePtrTest, GOLD_safeConvert_base_derive)
 {
