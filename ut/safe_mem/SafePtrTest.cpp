@@ -10,10 +10,6 @@
 
 namespace RLib
 {
-// - safe create: null & make_safe only
-// - safe ship  : cp/mv/= base<-derive(s); short->int?
-// - safe store : cast any<->void
-// - safe use   : get self T*
 #define CREATE_GET
 // ***********************************************************************************************
 TEST(SafePtrTest, GOLD_construct_get)

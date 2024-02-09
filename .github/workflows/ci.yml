@@ -21,7 +21,7 @@ jobs:
     - name: install gmock & gtest  # 1)always gtest latest 2)--depth 1 is to min download
       run: git clone https://github.com/google/googletest.git --depth 1 && cd googletest && mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=/usr && sudo make install -j
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: make ut
       run: cmake -DCOV=1 -DCMAKE_CXX_COMPILER="g++" . && make -j
@@ -35,7 +35,7 @@ jobs:
     - name: ut coverage (ret=2 is fail-under-line, =4 is fail-under-branch)
       run: gcovr -k --config=ut/gcovr/gcovr.cfg && ls -lR .
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       if: always()
       with:
         name: coverage-report
@@ -44,7 +44,7 @@ jobs:
           ./*gcov
           ./ut/CMakeFiles/UtLib.dir/domino/*PriDom*
 
-    - uses: codecov/codecov-action@v3
+    - uses: codecov/codecov-action@v4
       if: always()
       with:
         file: ut/gcovr/cov.xml   # optional

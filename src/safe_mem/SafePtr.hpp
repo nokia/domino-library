@@ -7,11 +7,15 @@
 // - ISSUE:
 //   . c++ mem bugs are 1 of the most challenge (eg use Rust to replace c++)
 // - REQ: this class is to impl
-//   . valid ptr: by construct
-//   . valid cp/mv/= ptr: between valid type (same type, base-derive, any<->void)
-//   . valid ptr lifecycle: by shared_ptr
-//   . valid ptr array
-//   . suggest any class ensure mem-safe (like MT safe)
+//   . safe create   : null & make_safe only
+//   . safe ship     : cp/mv/= base<-derive(s); short->int?
+//   . safe store    : cast any<->void
+//   . safe use      : get real / before void
+//   . safe lifecycle: by shared_ptr
+//   . safe ptr array:
+// - suggest:
+//   . any class ensure mem-safe (like MT safe)
+//   . struct ptr/ref member shall be SafePtr
 // ***********************************************************************************************
 #pragma once
 
@@ -96,13 +100,5 @@ template<class U, class... Args> SafePtr<U> make_safe(Args&&... aArgs)
 // - T not ref/ptr/const?
 // - higher perf
 // - SafeRef? or like this?
-// - why
-//   . safe construct
-//   . safe copy/=
-//   . safe array
-//   . struct ptr/ref member shall be SafePtr
-//   . safe owner (avoid wild ptr, use-after-free)
 // . how about class' this?
 //   . worth?
-// - all classes shall mem-safe
-//   . type_info* instead of hash_code?
