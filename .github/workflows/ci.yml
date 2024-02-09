@@ -46,8 +46,10 @@ jobs:
 
     - uses: codecov/codecov-action@v4
       if: always()
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       with:
-        token: d7cdb3cd-de1d-4c7d-aa24-1c668a445c03
+        # token: d7cdb3cd-de1d-4c7d-aa24-1c668a445c03
         file: ut/gcovr/cov.xml   # optional
         flags: ci_main           # optional
         fail_ci_if_error: true   # optional (default = false)
