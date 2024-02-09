@@ -44,7 +44,7 @@ jobs:
           ./*gcov
           ./ut/CMakeFiles/UtLib.dir/domino/*PriDom*
 
-    - uses: codecov/codecov-action@v4
+    - uses: codecov/codecov-action@v3
       if: always()
       with:
         file: ut/gcovr/cov.xml   # optional
