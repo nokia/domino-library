@@ -44,13 +44,14 @@ jobs:
           ./*gcov
           ./ut/CMakeFiles/UtLib.dir/domino/*PriDom*
 
-    - uses: codecov/codecov-action@v3
+    - uses: codecov/codecov-action@v4
       if: always()
-      #env:
-        #CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        # CODECOV_TOKEN=55fba278-ead7-4bb3-b6fd-41436731b8f7
       with:
         file: ut/gcovr/cov.xml   # optional
         flags: ci_main           # optional
         fail_ci_if_error: true   # optional (default = false)
         verbose: true            # optional (default = false)
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        # CODECOV_TOKEN=55fba278-ead7-4bb3-b6fd-41436731b8f7
+        # CODECOV_TOKEN=61e77fb0-ea6b-4bc8-bff2-eb397ff9e519
