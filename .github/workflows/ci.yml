@@ -46,7 +46,7 @@ jobs:
 
     - uses: codecov/codecov-action@v4
       env:
-        token: ${{ secrets.CODECOV_TOKEN }}
+        token: f65f3e4e-0ca3-4063-a372-80f57b43c92d
         slug: fchn289/domino-library
       if: always()
       with:
