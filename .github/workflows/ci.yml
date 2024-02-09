@@ -44,7 +44,9 @@ jobs:
           ./*gcov
           ./ut/CMakeFiles/UtLib.dir/domino/*PriDom*
 
-    - uses: codecov/codecov-action@v3
+    - uses: codecov/codecov-action@v4
+      env:
+        token: ${{ secrets.CODECOV_TOKEN }}
       if: always()
       with:
         file: ut/gcovr/cov.xml   # optional
