@@ -60,18 +60,8 @@ public:
         }
     }
 
-    template<typename To> shared_ptr<To> get() const
-    {
-        if (is_convertible<T*, To*>::value)  // Derive -> Base
-            return static_pointer_cast<To>(pT_);
-        if (is_same<To, void>::value)  // any -> void (for storing same type=SafePtr<void>)
-            return static_pointer_cast<To>(pT_);
-        if (is_same<T, void>::value && &typeid(To) == preVoidType_)  // void -> back
-            return static_pointer_cast<To>(pT_);
-        if (&typeid(To) == realType_)  // any -> origin
-            return static_pointer_cast<To>(pT_);
-        return nullptr;
-    }
+    template<typename To> shared_ptr<To> get() const;
+    shared_ptr<void> get() const;
 
     const type_info* preVoidType() const { return preVoidType_; }
     const type_info* realType() const { return realType_; }
@@ -82,6 +72,37 @@ private:
     const type_info*    preVoidType_ = nullptr;  // that before cast to void, can safely cast back
     const type_info*    realType_ = &typeid(T);  // that pT_ point to, can safely cast to
 };
+
+// ***********************************************************************************************
+template<class T>
+template<class To>
+shared_ptr<To> SafePtr<T>::get() const
+{
+    if (is_convertible<T*, To*>::value)
+    {
+        HID("Derive to Base (include to self)");
+        return static_pointer_cast<To>(pT_);
+    }
+    if (&typeid(To) == realType_)
+    {
+        HID("any to origin");
+        return static_pointer_cast<To>(pT_);
+    }
+    return nullptr;
+}
+template<class T>
+shared_ptr<void> SafePtr<T>::get() const
+{
+    HID("any to void (for container to store diff types)");
+    return static_pointer_cast<void>(pT_);
+}
+template<>
+template<class To>
+shared_ptr<To> SafePtr<void>::get() const
+{
+    HID("back from void");
+    return static_pointer_cast<To>(pT_);
+}
 
 // ***********************************************************************************************
 template<class U, class... Args> SafePtr<U> make_safe(Args&&... aArgs)
