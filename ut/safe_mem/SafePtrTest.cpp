@@ -81,7 +81,7 @@ TEST(SafePtrTest, GOLD_safeConvert_base_derive)
     EXPECT_EQ(2, d2.get<D2>()    ->value()) << "req: get virtual";
     EXPECT_EQ(2, d2.get<Derive>()->value()) << "REQ: safe to Base direction";
     EXPECT_EQ(2, d2.get<Base>()  ->value()) << "req: safe to Base direction";
-    EXPECT_EQ(d2.get<void>(), d2.get<D2>()) << "REQ: safe to void";
+    EXPECT_EQ(d2.get(), d2.get<D2>()) << "REQ: safe to void";
 
     SafePtr<Derive> d = d2;
     EXPECT_EQ(nullptr,     d.preVoidType()) << "req: type before to void";
@@ -90,25 +90,25 @@ TEST(SafePtrTest, GOLD_safeConvert_base_derive)
     EXPECT_EQ(2, d.get<Base>()  ->value())  << "req: safe to Base direction";
     EXPECT_EQ(2, d.get<Derive>()->value())  << "req: safe to self";
     EXPECT_EQ(2, d.get<D2>()    ->value())  << "REQ: safe to origin";
-    EXPECT_EQ(d.get<void>(), d.get<Base>()) << "req: valid to void";
+    EXPECT_EQ(d.get(), d.get<Base>()) << "req: valid to void";
 
     SafePtr<Base> b = d2;
     EXPECT_EQ(nullptr,     b.preVoidType()) << "req: type before to void";
     EXPECT_EQ(&typeid(D2), b.realType())    << "req: origin type";
 
-    EXPECT_EQ(2, b.get<Base>()  ->value())   << "req: valid self";
+    EXPECT_EQ(2,   b.get<Base>()  ->value()) << "req: valid self";
     //EXPECT_EQ(2, b.get<Derive>()->value()) << "safe but not support yet, worth to support?";
-    EXPECT_EQ(2, b.get<D2>()->value())       << "req: safe to origin";
-    EXPECT_EQ(b.get<void>(), b.get<Base>())  << "req: valid get";
+    EXPECT_EQ(2,   b.get<D2>()    ->value()) << "req: safe to origin";
+    EXPECT_EQ(b.get(), b.get<Base>()) << "req: valid get";
 }
 TEST(SafePtrTest, GOLD_void_back)
 {
     SafePtr<D2> d2 = make_safe<D2>();
-    SafePtr<void> v = d2;
+    SafePtr<> v = d2;
     EXPECT_EQ(&typeid(D2), v.preVoidType()) << "REQ: type before to void";
     EXPECT_EQ(&typeid(D2), v.realType())    << "req: origin type";
 
-    EXPECT_NE(nullptr, v.get<void>())            << "req: safe any to void";
+    EXPECT_NE(nullptr, v.get())                  << "req: safe any to void";
     EXPECT_EQ(2,       v.get<D2>()->value())     << "REQ: safe void back";
     //EXPECT_EQ(2,     v.get<Derive>()->value()) << "safe but not support yet, worth to support?";
     //EXPECT_EQ(2,     v.get<Base>()->value())   << "safe but not support yet, worth to support?";
@@ -124,7 +124,7 @@ TEST(SafePtrTest, GOLD_void_back)
     EXPECT_EQ(2,   v.get<Derive>()->value()) << "REQ: safe (D2 to Derive to) void to Derive";
     //EXPECT_EQ(2, v.get<Base>()->value())   << "safe but not support yet, worth to support?";
 
-    SafePtr<void> v2 = v;
+    SafePtr<> v2 = v;
     EXPECT_EQ(&typeid(Derive), v2.preVoidType()) << "REQ: type before to void";
     EXPECT_EQ(&typeid(D2),     v2.realType())    << "req: origin type";
 

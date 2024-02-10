@@ -30,7 +30,7 @@ using namespace std;
 namespace RLib
 {
 // ***********************************************************************************************
-template<class T> class SafePtr
+template<class T = void> class SafePtr
 {
 public:
     // create
