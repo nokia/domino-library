@@ -38,27 +38,7 @@ public:
     SafePtr() = default;
 
     // any <-> void
-    template<class From> SafePtr(const SafePtr<From>& aSafeFrom)
-        : pT_(aSafeFrom.template get<T>())
-    {
-        HID(typeid(From).name() << " to " << typeid(T).name());
-        if (! pT_)
-        {
-            HID("pT_ == nullptr");  // HID: ut debug only
-            return;
-        }
-        realType_ = aSafeFrom.realType();
-        if (! is_same<T, void>::value)
-        {
-            HID("not to void");
-            return;
-        }
-        if (! is_same<From, void>::value)
-        {
-            HID("not from void");
-            preVoidType_ = &typeid(From);
-        }
-    }
+    template<class From> SafePtr(const SafePtr<From>&);
 
     template<typename To> shared_ptr<To> get() const;
     shared_ptr<void> get() const;
@@ -72,6 +52,31 @@ private:
     const type_info*    preVoidType_ = nullptr;  // that before cast to void, can safely cast back
     const type_info*    realType_ = &typeid(T);  // that pT_ point to, can safely cast to
 };
+
+// ***********************************************************************************************
+template<class T>
+template<class From>
+SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom)
+    : pT_(aSafeFrom.template get<T>())
+{
+    HID(typeid(From).name() << " to " << typeid(T).name());
+    if (! pT_)
+    {
+        HID("pT_ == nullptr");  // HID: ut debug only
+        return;
+    }
+    realType_ = aSafeFrom.realType();
+    if (! is_same<T, void>::value)
+    {
+        HID("not to void");
+        return;
+    }
+    if (! is_same<From, void>::value)
+    {
+        HID("not from void");
+        preVoidType_ = &typeid(From);
+    }
+}
 
 // ***********************************************************************************************
 template<class T>
