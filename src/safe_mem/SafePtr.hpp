@@ -85,12 +85,12 @@ shared_ptr<To> SafePtr<T>::get() const
 {
     if (is_convertible<T*, To*>::value)
     {
-        HID("Derive to Base (include to self)");
+        HID("(SafePtr) Derive to Base (include to self)");
         return static_pointer_cast<To>(pT_);
     }
     if (&typeid(To) == realType_)
     {
-        HID("any to origin");
+        HID("(SafePtr) any to origin");
         return static_pointer_cast<To>(pT_);
     }
     return nullptr;
@@ -98,14 +98,14 @@ shared_ptr<To> SafePtr<T>::get() const
 template<class T>
 shared_ptr<void> SafePtr<T>::get() const
 {
-    HID("any to void (for container to store diff types)");
+    HID("(SafePtr) any to void (for container to store diff types)");
     return static_pointer_cast<void>(pT_);
 }
 template<>
 template<class To>
 shared_ptr<To> SafePtr<void>::get() const
 {
-    HID("back from void");
+    HID("(SafePtr) back from void");
     return static_pointer_cast<To>(pT_);
 }
 

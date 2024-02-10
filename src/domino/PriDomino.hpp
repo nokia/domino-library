@@ -53,7 +53,7 @@ void PriDomino<aDominoType>::innerRmEv(const Domino::Event aEv)
 template<class aDominoType>
 Domino::Event PriDomino<aDominoType>::setPriority(const Domino::EvName& aEvName, const EMsgPriority aPri)
 {
-    DBG("(PriDomino) EvName=" << aEvName << ", newPri=" << size_t(aPri));
+    DBG("(PriDom) EvName=" << aEvName << ", newPri=" << size_t(aPri));
     auto&& event = this->newEvent(aEvName);
     if (aPri == aDominoType::getPriority(event))
         priorities_.erase(event);  // less mem & faster searching

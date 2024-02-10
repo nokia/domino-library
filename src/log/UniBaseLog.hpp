@@ -19,7 +19,7 @@ using namespace std;
 using namespace std::chrono;
 
 // ***********************************************************************************************
-#define BUF(content) MY_FILE << ":" << __LINE__ << ": " << content << endl  // __FILE_NAME__ since GCC 12
+#define BUF(content) __func__ << "():" << __LINE__ << ": " << content << endl  // __FILE_NAME__ since GCC 12
 #define DBG(content) { oneLog() << "DBG] " << BUF(content); }
 #define INF(content) { oneLog() << "INF] " << BUF(content); }
 #define WRN(content) { oneLog() << "WRN] " << BUF(content); }

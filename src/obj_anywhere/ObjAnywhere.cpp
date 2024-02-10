@@ -26,7 +26,7 @@ void ObjAnywhere::init(UniLog& oneLog)
         WRN("(ObjAnywhere) !!! Refuse dup init.")
     else
     {
-        INF("(ObjAnywhere) Succeed.");
+        HID("(ObjAnywhere) Succeed.");
         objStore_ = make_shared<ObjStore>();
     }
 }

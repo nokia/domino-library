@@ -71,7 +71,7 @@ void MsgSelf::newMsg(const MsgCB& aMsgCB, const EMsgPriority aMsgPri)
 
     msgQueues_[aMsgPri].push_back(aMsgCB);
     ++nMsg_;
-    HID("nMsg=" << nMsg_);
+    HID("(MsgSelf) nMsg=" << nMsg_);
 
     mt_pingMainTH();
 }

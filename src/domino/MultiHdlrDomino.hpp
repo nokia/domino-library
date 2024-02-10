@@ -70,7 +70,7 @@ void MultiHdlrDomino<aDominoType>::effect(const Domino::Event aEv)
     for (auto&& itHdlr = itEv->second.begin(); itHdlr != itEv->second.end();)
     {
         auto&& itNext = next(itHdlr);
-        DBG("(MultiHdlrDomino) Succeed to trigger 1 hdlr=" << itHdlr->first << " of EvName=" << this->evName(aEv));
+        DBG("(MultiHdlrDom) Succeed to trigger 1 hdlr=" << itHdlr->first << " of EvName=" << this->evName(aEv));
         this->triggerHdlr(itHdlr->second, aEv);  // may rm itHdlr in FreeHdlrDomino
         itHdlr = itNext;
     }
@@ -91,7 +91,7 @@ Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvNa
 {
     if (aHdlr == nullptr)
     {
-        WRN("(MultiHdlrDomino) Failed!!! not accept aHdlr=nullptr.");
+        WRN("(MultiHdlrDom) Failed!!! not accept aHdlr=nullptr.");
         return Domino::D_EVENT_FAILED_RET;
     }
 
@@ -105,16 +105,16 @@ Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvNa
         auto&& itHdlr = itEv->second.find(aHdlrName);
         if (itHdlr != itEv->second.end())
         {
-            WRN("(MultiHdlrDomino)!!! Failed since dup EvName=" << aEvName << " + HdlrName=" << aHdlrName);
+            WRN("(MultiHdlrDom)!!! Failed since dup EvName=" << aEvName << " + HdlrName=" << aHdlrName);
             return Domino::D_EVENT_FAILED_RET;
         }
         itEv->second[aHdlrName] = hdlr;
     }
-    HID("(MultiHdlrDomino) Succeed for EvName=" << aEvName << ", HdlrName=" << aHdlrName);
+    HID("(MultiHdlrDom) Succeed for EvName=" << aEvName << ", HdlrName=" << aHdlrName);
 
     if (this->state(event))
     {
-        DBG("(MultiHdlrDomino) Trigger the new hdlr=" << aHdlrName << "of EvName=" << aEvName);
+        DBG("(MultiHdlrDom) Trigger the new hdlr=" << aHdlrName << "of EvName=" << aEvName);
         this->triggerHdlr(hdlr, event);
     }
 
@@ -125,7 +125,7 @@ Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvNa
 template<class aDominoType>
 size_t MultiHdlrDomino<aDominoType>::nHdlr(const Domino::EvName& aEN) const
 {
-    HID("(MultiHdlrDomino) aEN=" << aEN);
+    HID("(MultiHdlrDom) aEN=" << aEN);
     auto&& it = multiHdlrs_.find(this->getEventBy(aEN));
     return (it == multiHdlrs_.end() ? 0 : it->second.size()) + aDominoType::nHdlr(aEN);
 }
@@ -147,7 +147,7 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName, co
     if (itEv == multiHdlrs_.end())
         return false;
 
-    DBG("(MultiHdlrDomino) Succeed to remove HdlrName=" << aHdlrName << " of EvName=" << aEvName);
+    DBG("(MultiHdlrDom) Succeed to remove HdlrName=" << aHdlrName << " of EvName=" << aEvName);
     return itEv->second.erase(aHdlrName);
 }
 
@@ -168,7 +168,7 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::Event& aEv, const S
         if (itHdlr->second != aHdlr)
             continue;
 
-        HID("(MultiHdlrDomino) Will remove HdlrName=" << itHdlr->first << " of EvName=" << this->evName(aEv)
+        HID("(MultiHdlrDom) Will remove HdlrName=" << itHdlr->first << " of EvName=" << this->evName(aEv)
             << ", nHdlrRef=" << itHdlr->second.use_count());
         itEv->second.erase(itHdlr);
         return true;

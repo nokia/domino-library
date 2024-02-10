@@ -76,7 +76,7 @@ void HdlrDomino<aDominoType>::effect(const Domino::Event aEv)
     if (it == hdlrs_.end())
         return;
 
-    DBG("(HdlrDomino) Succeed to trigger 1 hdlr of EvName=" << this->evName(aEv));
+    DBG("(HdlrDom) Succeed to trigger 1 hdlr of EvName=" << this->evName(aEv));
     triggerHdlr(it->second, aEv);
 }
 
@@ -112,7 +112,7 @@ bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::Event& aEv, const Shared
     if (itHdlr->second != aHdlr)
         return false;
 
-    HID("(HdlrDomino) Will remove hdlr of EvName=" << this->evName(aEv)
+    HID("(HdlrDom) Will remove hdlr of EvName=" << this->evName(aEv)
         << ", nHdlrRef=" << itHdlr->second.use_count());
     hdlrs_.erase(itHdlr);
     return true;
@@ -122,7 +122,7 @@ bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::Event& aEv, const Shared
 template<class aDominoType>
 bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName)
 {
-    HID("(HdlrDomino) EvName=" << aEvName);
+    HID("(HdlrDom) EvName=" << aEvName);
     return hdlrs_.erase(this->getEventBy(aEvName));
 }
 
@@ -132,24 +132,24 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
 {
     if (aHdlr == nullptr)
     {
-        WRN("(HdlrDomino) Failed!!! not accept aHdlr=nullptr.");
+        WRN("(HdlrDom) Failed!!! not accept aHdlr=nullptr.");
         return Domino::D_EVENT_FAILED_RET;
     }
 
     auto&& event = this->newEvent(aEvName);
     if (hdlrs_.find(event) != hdlrs_.end())
     {
-        WRN("(HdlrDomino) Failed!!! Not support overwrite hdlr for " << aEvName << ". Use MultiHdlrDomino instead.");
+        WRN("(HdlrDom) Failed!!! Not support overwrite hdlr for " << aEvName << ". Use MultiHdlrDomino instead.");
         return Domino::D_EVENT_FAILED_RET;
     }
 
     auto hdlr = make_shared<MsgCB>(aHdlr);
     hdlrs_[event] = hdlr;
-    HID("(HdlrDomino) Succeed for EvName=" << aEvName);
+    HID("(HdlrDom) Succeed for EvName=" << aEvName);
 
     if (this->state(event) == true)
     {
-        DBG("(HdlrDomino) Trigger the new hdlr of EvName=" << aEvName);
+        DBG("(HdlrDom) Trigger the new hdlr of EvName=" << aEvName);
         triggerHdlr(hdlr, event);
     }
     return event;
@@ -159,7 +159,7 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
 template<class aDominoType>
 void HdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event aEv)
 {
-    HID("HdlrDomino trigger a new msg.");
+    HID("(HdlrDom) trigger a new msg.");
     msgSelf_->newMsg(
         [weakMsgCB = WeakMsgCB(aHdlr)]() mutable  // WeakMsgCB is to support rm hdlr
         {

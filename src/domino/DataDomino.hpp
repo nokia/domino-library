@@ -89,7 +89,7 @@ aDataType getValue(aDataDominoType& aDom, const Domino::EvName& aEvName)
         return *data;
 
     auto&& oneLog = aDom;
-    WRN("(DataDomino) Failed!!! EvName=" << aEvName << " was not found, return undefined obj!!!");
+    WRN("(DatDom) Failed!!! EvName=" << aEvName << " was not found, return undefined obj!!!");
     return aDataType();
 }
 

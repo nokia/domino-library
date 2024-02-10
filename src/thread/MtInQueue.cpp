@@ -31,7 +31,7 @@ size_t MtInQueue::handleCacheEle()
         auto&& id_hdlr = eleHdlrs_.find(ele_id.second);
         if (id_hdlr == eleHdlrs_.end())
         {
-            WRN("discard 1 ele(id=" << ele_id.second << ") since no handler.")
+            WRN("(MtQ) discard 1 ele(id=" << ele_id.second << ") since no handler.")
             continue;
         }
         id_hdlr->second(ele_id.first);

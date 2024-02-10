@@ -100,7 +100,7 @@ void ObjAnywhere::set(shared_ptr<aObjType> aSharedObj, UniLog& oneLog)
 
     auto&& found = objStore_->find(objIndex);
     if (found == objStore_->end())
-        INF("(ObjAnywhere) Set obj=" << typeid(aObjType).name() << " into ObjAnywhere.")
+        HID("(ObjAnywhere) Set obj=" << typeid(aObjType).name() << " into ObjAnywhere.")
     else
         INF("(ObjAnywhere) !!!Replace obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
     (*objStore_)[objIndex] = aSharedObj;
