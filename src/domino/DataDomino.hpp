@@ -17,6 +17,7 @@
 #include "UniLog.hpp"
 
 using namespace std;
+using UniDatT = shared_ptr<void>;
 
 namespace RLib
 {
@@ -37,32 +38,32 @@ public:
     // - if aEvName/data invalid, return null
     // - not template<aDataType> so can virtual for WrDatDom
     // . & let DataDomino has little idea of read-write ctrl, simpler
-    virtual shared_ptr<void> getShared(const Domino::EvName&) const;
+    virtual UniDatT getShared(const Domino::EvName&) const;
 
     // -------------------------------------------------------------------------------------------
     // - replace old data by new=aSharedData if old != new
     // - for aDataType w/o default constructor!!!
-    virtual void replaceShared(const Domino::EvName&, shared_ptr<void> aSharedData = nullptr);
+    virtual void replaceShared(const Domino::EvName&, UniDatT aSharedData = nullptr);
 
 protected:
     void innerRmEv(const Domino::Event) override;
 
 private:
     // -------------------------------------------------------------------------------------------
-    unordered_map<Domino::Event, shared_ptr<void> > dataStore_;  // [event]=shared_ptr<"DataType">
+    unordered_map<Domino::Event, UniDatT > dataStore_;  // [event]=shared_ptr<"DataType">
 };
 
 // ***********************************************************************************************
 template<typename aDominoType>
-shared_ptr<void> DataDomino<aDominoType>::getShared(const Domino::EvName& aEvName) const
+UniDatT DataDomino<aDominoType>::getShared(const Domino::EvName& aEvName) const
 {
     auto&& found = dataStore_.find(this->getEventBy(aEvName));
-    return (found == dataStore_.end()) ? shared_ptr<void>() : found->second;
+    return (found == dataStore_.end()) ? UniDatT() : found->second;
 }
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void DataDomino<aDominoType>::replaceShared(const Domino::EvName& aEvName, shared_ptr<void> aSharedData)
+void DataDomino<aDominoType>::replaceShared(const Domino::EvName& aEvName, UniDatT aSharedData)
 {
     if (aSharedData == nullptr)
         dataStore_.erase(this->getEventBy(aEvName));  // avoid keep inc dataStore_
