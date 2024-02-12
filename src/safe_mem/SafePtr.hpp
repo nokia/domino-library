@@ -30,15 +30,15 @@ using namespace std;
 namespace RLib
 {
 // ***********************************************************************************************
-template<class T = void> class SafePtr
+template<typename T = void> class SafePtr
 {
 public:
     // create
-    template<class U, class... Args> friend SafePtr<U> make_safe(Args&&... aArgs);
+    template<typename U, typename... Args> friend SafePtr<U> make_safe(Args&&... aArgs);
     SafePtr() = default;
 
     // any <-> void
-    template<class From> SafePtr(const SafePtr<From>&);
+    template<typename From> SafePtr(const SafePtr<From>&);
 
     template<typename To> shared_ptr<To> get() const;
     shared_ptr<void> get() const;
@@ -54,8 +54,8 @@ private:
 };
 
 // ***********************************************************************************************
-template<class T>
-template<class From>
+template<typename T>
+template<typename From>
 SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom)
     : pT_(aSafeFrom.template get<T>())
 {
@@ -79,8 +79,8 @@ SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom)
 }
 
 // ***********************************************************************************************
-template<class T>
-template<class To>
+template<typename T>
+template<typename To>
 shared_ptr<To> SafePtr<T>::get() const
 {
     if (is_convertible<T*, To*>::value)
@@ -95,14 +95,14 @@ shared_ptr<To> SafePtr<T>::get() const
     }
     return nullptr;
 }
-template<class T>
+template<typename T>
 shared_ptr<void> SafePtr<T>::get() const
 {
     HID("(SafePtr) any to void (for container to store diff types)");
     return pT_;
 }
 template<>
-template<class To>
+template<typename To>
 shared_ptr<To> SafePtr<void>::get() const
 {
     HID("(SafePtr) back from void");
@@ -110,7 +110,7 @@ shared_ptr<To> SafePtr<void>::get() const
 }
 
 // ***********************************************************************************************
-template<class U, class... Args> SafePtr<U> make_safe(Args&&... aArgs)
+template<typename U, typename... Args> SafePtr<U> make_safe(Args&&... aArgs)
 {
     SafePtr<U> sptr;
     sptr.pT_ = make_shared<U>(forward<Args>(aArgs)...);
