@@ -99,7 +99,7 @@ template<class T>
 shared_ptr<void> SafePtr<T>::get() const
 {
     HID("(SafePtr) any to void (for container to store diff types)");
-    return static_pointer_cast<void>(pT_);
+    return pT_;
 }
 template<>
 template<class To>
@@ -123,8 +123,17 @@ template<class U, class... Args> SafePtr<U> make_safe(Args&&... aArgs)
 // ..........  .........   .......................................................................
 // 2024-01-30  CSZ       1)create
 // ***********************************************************************************************
-// - T not ref/ptr/const?
-// - higher perf
-// - SafeRef? or like this?
-// . how about class' this?
-//   . worth?
+// - Q&A
+//   . must replace shared_ptr in DatDom, ObjAnywhere?
+//     . SafePtr is simple
+//     . freq cast void-any is dangeous
+//     . so worth
+//
+//   . SafePtr for array:
+//     . shared_ptr: c++11 start support T[], c++17 enhance, c++20 full support
+//     . shared_ptr[out-bound] is NOT safe, so still need SafePtr to support array
+//     . g++12 full support T[]
+//
+//   . T not ref/ptr/const?
+//   . SafeRef? or like this?
+//   . how about class' this?
