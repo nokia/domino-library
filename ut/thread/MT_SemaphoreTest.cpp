@@ -79,7 +79,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         viaMsgSelf(  // REQ: via MsgSelf
             [this, &cb_info](bool aRet)
             {
-                EXPECT_TRUE(aRet) << "entryFn succ" << endl;
+                EXPECT_TRUE(aRet) << "entryFn succ";
                 cb_info.emplace("REQ: a's backFn via MsgSelf");
             },
             msgSelf_
@@ -95,7 +95,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         viaMsgSelf(
             [this, &cb_info](bool aRet)
             {
-                EXPECT_TRUE(aRet) << "entryFn succ" << endl;
+                EXPECT_TRUE(aRet) << "entryFn succ";
                 cb_info.emplace("REQ: 2's backFn via MsgSelf");
             },
             msgSelf_

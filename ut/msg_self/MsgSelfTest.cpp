@@ -45,15 +45,15 @@ struct MsgSelfTest : public Test, public UniLog
 // ***********************************************************************************************
 TEST_F(MsgSelfTest, GOLD_sendMsg)
 {
-    EXPECT_EQ(0u, msgSelf_->nMsg()) << "REQ: init states" << endl;
+    EXPECT_EQ(0u, msgSelf_->nMsg()) << "REQ: init states";
 
     msgSelf_->newMsg(d1MsgHdlr_);
     EXPECT_EQ(1u, msgSelf_->nMsg(EMsgPri_NORM));
     EXPECT_EQ(1u, msgSelf_->nMsg());
-    EXPECT_EQ(queue<int>(), hdlrIDs_) << "REQ: not immediate call d1MsgHdlr_ but wait msg-to-self" << endl;
+    EXPECT_EQ(queue<int>(), hdlrIDs_) << "REQ: not immediate call d1MsgHdlr_ but wait msg-to-self";
 
     msgSelf_->handleAllMsg(msgSelf_->getValid());  // simulate main() callback
-    EXPECT_EQ(queue<int>({1}), hdlrIDs_) << "REQ: call d1MsgHdlr_" << endl;
+    EXPECT_EQ(queue<int>({1}), hdlrIDs_) << "REQ: call d1MsgHdlr_";
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM));
     EXPECT_FALSE(msgSelf_->nMsg());
 }
@@ -92,9 +92,9 @@ TEST_F(MsgSelfTest, GOLD_loopback_handleAll_butOneByOneLowPri)
     EXPECT_EQ(3u, msgSelf_->nMsg(EMsgPri_LOW));
 
     msgSelf_->handleAllMsg(msgSelf_->getValid());
-    EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM)) << "REQ: all normal" << endl;
-    EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_HIGH)) << "REQ: all high" << endl;
-    EXPECT_EQ(2u, msgSelf_->nMsg(EMsgPri_LOW))  << "REQ: 1/loopback()" << endl;
+    EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM)) << "REQ: all normal";
+    EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_HIGH)) << "REQ: all high";
+    EXPECT_EQ(2u, msgSelf_->nMsg(EMsgPri_LOW))  << "REQ: 1/loopback()";
 
     msgSelf_->handleAllMsg(msgSelf_->getValid());
     EXPECT_EQ(1u, msgSelf_->nMsg(EMsgPri_LOW));

@@ -51,9 +51,9 @@ TYPED_TEST_P(PriDominoTest, setPriority_thenGetIt)
 TYPED_TEST_P(PriDominoTest, defaultPriority)
 {
     auto event = PARA_DOM->newEvent("");
-    EXPECT_EQ(EMsgPri_NORM, PARA_DOM->getPriority(event)) << "REQ: valid event" << endl;
+    EXPECT_EQ(EMsgPri_NORM, PARA_DOM->getPriority(event)) << "REQ: valid event";
 
-    EXPECT_EQ(EMsgPri_NORM, PARA_DOM->getPriority(Domino::D_EVENT_FAILED_RET)) << "REQ: invalid event" << endl;
+    EXPECT_EQ(EMsgPri_NORM, PARA_DOM->getPriority(Domino::D_EVENT_FAILED_RET)) << "REQ: invalid event";
 }
 
 #define PRI_FIFO

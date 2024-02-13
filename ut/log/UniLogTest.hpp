@@ -84,19 +84,19 @@ TEST_F(UNI_LOG_TEST, GOLD_OneCellWith_classes_and_funcs)
 
         ClassUsr classUsr(logName_);
         const auto len_1 = UNI_LOG::logLen(logName_);
-        ASSERT_GT(len_1, 0) << "REQ: can log" << endl;
+        ASSERT_GT(len_1, 0) << "REQ: can log";
 
         ClassUsr classUsr_2(logName_);
         const auto len_2 = UNI_LOG::logLen(logName_);
-        ASSERT_GT(len_2, len_1) << "REQ: can log more in same log" << endl;
+        ASSERT_GT(len_2, len_1) << "REQ: can log more in same log";
 
         funcUsr(classUsr);  // req: classUsr can call func & log into same smartlog
         const auto len_3 = UNI_LOG::logLen(logName_);
-        ASSERT_GT(len_3, len_2) << "REQ: can log more in same log" << endl;
+        ASSERT_GT(len_3, len_2) << "REQ: can log more in same log";
 
         funcUsr(classUsr_2);  // REQ: classUsr_2 can call func & log into same smartlog
         const auto len_4 = UNI_LOG::logLen(logName_);
-        ASSERT_GT(len_4, len_3) << "REQ: can log more in same log" << endl;
+        ASSERT_GT(len_4, len_3) << "REQ: can log more in same log";
 
         if (Test::HasFailure()) classUsr.needLog();
     }
@@ -107,15 +107,15 @@ TEST_F(UNI_LOG_TEST, withinOneCell_decouple_objects)
 {
     auto classUsr = make_shared<ClassUsr>((logName_));
     const auto len_1 = UNI_LOG::logLen(logName_);
-    ASSERT_GT(len_1, 0) << "REQ: can log" << endl;
+    ASSERT_GT(len_1, 0) << "REQ: can log";
 
     auto classUsr_2 = ClassUsr(logName_);
     const auto len_2 = UNI_LOG::logLen(logName_);
-    ASSERT_GT(len_2, len_1) << "REQ: can log" << endl;
+    ASSERT_GT(len_2, len_1) << "REQ: can log";
 
     classUsr.reset();
     const auto len_3 = UNI_LOG::logLen(logName_);
-    ASSERT_GT(len_3, len_2) << "REQ: ClassUsr-destructed shall not crash/impact ClassUsr's log" << endl;
+    ASSERT_GT(len_3, len_2) << "REQ: ClassUsr-destructed shall not crash/impact ClassUsr's log";
 
     if (Test::HasFailure()) classUsr_2.needLog();
 }
@@ -123,24 +123,24 @@ TEST_F(UNI_LOG_TEST, withinOneCell_decouple_copies)
 {
     auto classUsr = make_shared<ClassUsr>((logName_));
     const auto len_1 = UNI_LOG::logLen(logName_);
-    ASSERT_GT(len_1, 0) << "REQ: can log" << endl;
+    ASSERT_GT(len_1, 0) << "REQ: can log";
 
     auto copy = *classUsr;
     const auto len_2 = UNI_LOG::logLen(logName_);
-    ASSERT_GT(len_2, len_1) << "REQ: log still there" << endl;
+    ASSERT_GT(len_2, len_1) << "REQ: log still there";
 
     classUsr.reset();
     const auto len_3 = UNI_LOG::logLen(logName_);
-    ASSERT_GT(len_3, len_2) << "REQ: ClassUsr-destructed shall not crash/impact copy's logging" << endl;
+    ASSERT_GT(len_3, len_2) << "REQ: ClassUsr-destructed shall not crash/impact copy's logging";
 
     auto mv = move(copy);
     ASSERT_TRUE(mv.mvCalled_);
     const auto len_4 = UNI_LOG::logLen(logName_);
-    ASSERT_GT(len_4, len_3) << "REQ: log support mv construct" << endl;
+    ASSERT_GT(len_4, len_3) << "REQ: log support mv construct";
 
-    copy.oneLog() << "ClassUsr's mv actually call UNI_LOG's cp by compiler" << endl;
+    copy.oneLog() << "ClassUsr's mv actually call UNI_LOG's cp by compiler";
     const auto len_5 = UNI_LOG::logLen(logName_);
-    ASSERT_GT(len_5, len_4) << "REQ: copy's log must works well" << endl;
+    ASSERT_GT(len_5, len_4) << "REQ: copy's log must works well";
 
     // req: UNI_LOG not support assignemt, copy is enough
 
@@ -150,17 +150,17 @@ TEST_F(UNI_LOG_TEST, withinOneCell_decouple_callbackFuncs)
 {
     auto classUsr = make_shared<ClassUsr>((logName_));
     const auto len_1 = UNI_LOG::logLen(logName_);
-    ASSERT_GT(len_1, 0) << "REQ: can log" << endl;
+    ASSERT_GT(len_1, 0) << "REQ: can log";
 
     function<void()> cb = [oneLog = *classUsr]() mutable { DBG("hello world, I'm a callback func"); };
     const auto len_2 = UNI_LOG::logLen(logName_);
-    ASSERT_GT(len_2, len_1) << "REQ: log still there (more log since no move-construct of ClassUsr)" << endl;
+    ASSERT_GT(len_2, len_1) << "REQ: log still there (more log since no move-construct of ClassUsr)";
 
     /*if (Test::HasFailure())*/ classUsr->needLog();
     classUsr.reset();
     cb();
     const auto len_3 = UNI_LOG::logLen(logName_);
-    ASSERT_GT(len_3, len_2) << "REQ: can log" << endl;
+    ASSERT_GT(len_3, len_2) << "REQ: can log";
 }
 
 // ***********************************************************************************************
@@ -169,25 +169,25 @@ TEST_F(UNI_LOG_TEST, GOLD_no_explicit_CellLog_like_legacy)
     const auto len_1 = UNI_LOG::logLen();
     ClassUsr classUsr;  // no explicit UNI_LOG
     const auto len_2 = UNI_LOG::logLen();
-    ASSERT_GE(len_2, len_1) << "REQ: can log" << endl;
-    ASSERT_EQ(ULN_DEFAULT, classUsr.uniLogName()) << "REQ: default" << endl;
+    ASSERT_GE(len_2, len_1) << "REQ: can log";
+    ASSERT_EQ(ULN_DEFAULT, classUsr.uniLogName()) << "REQ: default";
 
     ClassUsr classUsr_2;  // dup no explicit UNI_LOG
     const auto len_3 = UNI_LOG::logLen();
-    ASSERT_GE(len_3, len_2) << "REQ: can log" << endl;
-    ASSERT_EQ(ULN_DEFAULT, classUsr_2.uniLogName()) << "REQ: default" << endl;
+    ASSERT_GE(len_3, len_2) << "REQ: can log";
+    ASSERT_EQ(ULN_DEFAULT, classUsr_2.uniLogName()) << "REQ: default";
 
     funcUsr();  // no explicit UNI_LOG
     const auto len_4 = UNI_LOG::logLen();
-    ASSERT_GE(len_4, len_3) << "REQ: can log" << endl;
+    ASSERT_GE(len_4, len_3) << "REQ: can log";
 
     ClassUseDefaultLog nonCell;  // class not based on UNI_LOG
     const auto len_5 = UNI_LOG::logLen();
-    ASSERT_GE(len_5, len_4) << "REQ: can log" << endl;
+    ASSERT_GE(len_5, len_4) << "REQ: can log";
 
     funcUseDefaultLog();  // func w/o UNI_LOG para
     const auto len_6 = UNI_LOG::logLen();
-    ASSERT_GE(len_6, len_5) << "REQ: can log" << endl;
+    ASSERT_GE(len_6, len_5) << "REQ: can log";
 
     if (Test::HasFailure()) UNI_LOG::defaultUniLog_->needLog();
 }
@@ -197,7 +197,7 @@ TEST_F(UNI_LOG_TEST, GOLD_const_usr)
 {
     const ClassUsr classUsr(logName_);
     const auto len_1 = UNI_LOG::logLen(logName_);
-    ASSERT_GT(len_1, 0) << "REQ: can log" << endl;
+    ASSERT_GT(len_1, 0) << "REQ: can log";
 }
 
 }  // namespace

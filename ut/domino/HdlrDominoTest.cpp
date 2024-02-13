@@ -176,10 +176,10 @@ TYPED_TEST_P(HdlrDominoTest, multiHdlr_onOneAliasEvent_nok)
 TYPED_TEST_P(HdlrDominoTest, BugFix_invalidHdlr_noCrash)
 {
     PARA_DOM->setHdlr("e1", nullptr);
-    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1")) << "REQ: not create new Ev" << endl;
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1")) << "REQ: not create new Ev";
 
     PARA_DOM->multiHdlrByAliasEv("alias e1", nullptr, "e1");
-    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("alias e1")) << "REQ: not create new Ev" << endl;
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("alias e1")) << "REQ: not create new Ev";
 
     PARA_DOM->setState({{"e1", true}});  // req: no crash
 
@@ -207,15 +207,15 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlr_thenNoCallback)
 }
 TYPED_TEST_P(HdlrDominoTest, rmHdlr_fail)
 {
-    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK(Domino::D_EVENT_FAILED_RET, nullptr)) << "REQ: rm null hdlr" << endl;
+    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK(Domino::D_EVENT_FAILED_RET, nullptr)) << "REQ: rm null hdlr";
 
     PARA_DOM->setHdlr("event", this->hdlr0_);
     EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event"));
-    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK("event")) << "REQ: rm unexist hdlr" << endl;
+    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK("event")) << "REQ: rm unexist hdlr";
 
-    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK("not exist event")) << "REQ: rm unexist ev" << endl;
+    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK("not exist event")) << "REQ: rm unexist ev";
 
-    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK(PARA_DOM->getEventBy("event"), nullptr)) << "REQ: rm null hdlr" << endl;
+    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK(PARA_DOM->getEventBy("event"), nullptr)) << "REQ: rm null hdlr";
 }
 // ***********************************************************************************************
 // rm on-road-hdlr
@@ -226,7 +226,7 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlrOnRoad_noCallback)
     PARA_DOM->multiHdlrByAliasEv("e1", this->hdlr1_, "e");
     PARA_DOM->setState({{"e", true}});  // cb on road
     EXPECT_TRUE(MSG_SELF->nMsg());
-    EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("e0")) << "REQ: rm hdlr on-road" << endl;
+    EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("e0")) << "REQ: rm hdlr on-road";
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1());
@@ -242,7 +242,7 @@ TYPED_TEST_P(NofreeHdlrDominoTest, rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigg
     PARA_DOM->setState({{"event", true}});
     EXPECT_EQ(2U, MSG_SELF->nMsg(EMsgPri_NORM));  // 2 cb on road
 
-    EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event")) << "REQ: rm hdlr include all on-road" << endl;
+    EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event")) << "REQ: rm hdlr include all on-road";
 
     PARA_DOM->setState({{"event", false}});    // not auto-cb
     PARA_DOM->setHdlr("event", this->hdlr0_);  // re-add hdlr
@@ -304,13 +304,13 @@ TYPED_TEST_P(NofreeHdlrDominoTest, repeat_force_call)
 // ***********************************************************************************************
 TYPED_TEST_P(HdlrDominoTest, n_hdlr)
 {
-    EXPECT_EQ(0u, PARA_DOM->nHdlr("e1")) << "REQ: init no hdlr" << endl;
+    EXPECT_EQ(0u, PARA_DOM->nHdlr("e1")) << "REQ: init no hdlr";
 
     PARA_DOM->setHdlr("e1", this->hdlr0_);
-    EXPECT_EQ(1u, PARA_DOM->nHdlr("e1")) << "REQ: after added" << endl;
+    EXPECT_EQ(1u, PARA_DOM->nHdlr("e1")) << "REQ: after added";
 
     PARA_DOM->rmOneHdlrOK("e1");
-    EXPECT_EQ(0u, PARA_DOM->nHdlr("e1")) << "REQ: after del" << endl;
+    EXPECT_EQ(0u, PARA_DOM->nHdlr("e1")) << "REQ: after del";
 }
 
 #define ID_STATE

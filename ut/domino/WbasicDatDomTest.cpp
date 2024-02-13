@@ -25,84 +25,81 @@ TYPED_TEST_SUITE_P(WbasicDatDomTest);
 TYPED_TEST_P(WbasicDatDomTest, GOLD_wrCtrl_set_get_rm)  // non-wrData is covered by DataDominoTest
 {
     PARA_DOM->wrCtrlOk("ev0");  // write-ctrl data
-    auto valGet = wbasic_getValue<TypeParam, size_t>(*PARA_DOM, "ev0");  // req: any type data (1st=size_t>)
-    EXPECT_EQ(0u, valGet) << "REQ: default value for non-existed ev0" << endl;
+    EXPECT_EQ(nullptr, (wbasic_getData<TypeParam, size_t>(*PARA_DOM, "ev0"))) << "REQ: for non-existed ev0";
 
     wbasic_setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 1);
-    valGet = wbasic_getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
-    EXPECT_EQ(1u, valGet) << "REQ: get = set" << endl;
+    auto valGet = *wbasic_getData<TypeParam, size_t>(*PARA_DOM, "ev0");
+    EXPECT_EQ(1u, valGet) << "REQ: get = set";
 
     wbasic_setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 2);
-    valGet = wbasic_getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
-    EXPECT_EQ(2u, valGet) << "REQ: get = update" << endl;
+    valGet = *wbasic_getData<TypeParam, size_t>(*PARA_DOM, "ev0");
+    EXPECT_EQ(2u, valGet) << "REQ: get = update";
 
     setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 3);
-    valGet = wbasic_getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
-    EXPECT_EQ(2u, valGet) << "REQ: legacy set failed" << endl;
+    valGet = *wbasic_getData<TypeParam, size_t>(*PARA_DOM, "ev0");
+    EXPECT_EQ(2u, valGet) << "REQ: legacy set failed";
 
-    valGet = getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
-    EXPECT_EQ(0u, valGet) << "REQ: legacy get failed (ret default value)" << endl;
+    EXPECT_EQ(nullptr, (getData<TypeParam, size_t>(*PARA_DOM, "ev0"))) << "REQ: legacy get nonexist";
 
     PARA_DOM->replaceData("ev0");
-    valGet = wbasic_getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
-    EXPECT_EQ(2u, valGet) << "REQ: legacy rm failed" << endl;
+    valGet = *wbasic_getData<TypeParam, size_t>(*PARA_DOM, "ev0");
+    EXPECT_EQ(2u, valGet) << "REQ: legacy rm failed";
 
     PARA_DOM->wbasic_replaceData("ev0");
     auto shared = PARA_DOM->wbasic_getData("ev0");
-    EXPECT_EQ(nullptr, shared) << "REQ: rm wr-data" << endl;
+    EXPECT_EQ(nullptr, shared) << "REQ: rm wr-data";
 }
 TYPED_TEST_P(WbasicDatDomTest, wrCtrlInterface_cannotHdl_nonWrDat)
 {
     setValue<TypeParam, int>(*PARA_DOM, "ev0", 1);  // req: any type data (2nd=int>)
-    auto valGet = wbasic_getValue<TypeParam, int>(*PARA_DOM, "ev0");
-    EXPECT_EQ(0, valGet) << "REQ: w-get failed (ret default value)" << endl;
+    EXPECT_EQ(nullptr, (wbasic_getData<TypeParam, int>(*PARA_DOM, "ev0"))) << "REQ: w-get nonexist";
 
     wbasic_setValue<TypeParam, int>(*PARA_DOM, "ev0", 2);
-    valGet = getValue<TypeParam, int>(*PARA_DOM, "ev0");
-    EXPECT_EQ(1, valGet) << "REQ: w-set failed" << endl;
+    auto valGet = *getData<TypeParam, int>(*PARA_DOM, "ev0");
+    EXPECT_EQ(1, valGet) << "REQ: w-set failed";
 
     PARA_DOM->wbasic_replaceData("ev0");
-    valGet = getValue<TypeParam, int>(*PARA_DOM, "ev0");
-    EXPECT_EQ(1, valGet) << "REQ: w-rm failed" << endl;
+    valGet = *getData<TypeParam, int>(*PARA_DOM, "ev0");
+    EXPECT_EQ(1, valGet) << "REQ: w-rm failed";
 }
 TYPED_TEST_P(WbasicDatDomTest, canNOT_setWriteCtrl_afterOwnData)
 {
     setValue<TypeParam, char>(*PARA_DOM, "ev0", 'a');  // req: any type data (3rd=char>)
     auto data = PARA_DOM->getData("ev0");
-    EXPECT_FALSE(PARA_DOM->wrCtrlOk("ev0")) << "REQ: failed to avoid out-ctrl" << endl;
-    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0")) << "REQ: flag no change" << endl;
+    EXPECT_FALSE(PARA_DOM->wrCtrlOk("ev0")) << "REQ: failed to avoid out-ctrl";
+    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0")) << "REQ: flag no change";
 
     auto pData = data.get();
     data.reset();
     EXPECT_NE(nullptr, pData);
-    EXPECT_FALSE(PARA_DOM->wrCtrlOk("ev0")) << "REQ: still failed to avoid out-ctrl" << endl;
-    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0")) << "REQ: flag no change" << endl;
+    EXPECT_FALSE(PARA_DOM->wrCtrlOk("ev0")) << "REQ: still failed to avoid out-ctrl";
+    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0")) << "REQ: flag no change";
 
     PARA_DOM->replaceData("ev0", nullptr);
-    EXPECT_TRUE(PARA_DOM->wrCtrlOk("ev0")) << "REQ: succ since no data" << endl;
-    EXPECT_TRUE(PARA_DOM->isWrCtrl("ev0")) << "REQ: flag change" << endl;
+    EXPECT_TRUE(PARA_DOM->wrCtrlOk("ev0")) << "REQ: succ since no data";
+    EXPECT_TRUE(PARA_DOM->isWrCtrl("ev0")) << "REQ: flag change";
 }
 
 #define FLAG
 // ***********************************************************************************************
 TYPED_TEST_P(WbasicDatDomTest, setFlag_thenGetIt)
 {
-    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0")) << "REQ: invalid ev is false" << endl;
+    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0")) << "REQ: invalid ev is false";
 
     PARA_DOM->newEvent("ev0");
-    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0")) << "REQ: valid ev is false" << endl;
+    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0")) << "REQ: valid ev is false";
 
     PARA_DOM->wrCtrlOk("ev0");
-    EXPECT_TRUE(PARA_DOM->isWrCtrl("ev0")) << "REQ: set true" << endl;
+    EXPECT_TRUE(PARA_DOM->isWrCtrl("ev0")) << "REQ: set true";
 
     PARA_DOM->wrCtrlOk("ev0", false);
-    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0")) << "REQ: set false" << endl;
+    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0")) << "REQ: set false";
 
     PARA_DOM->wrCtrlOk("ev1");
-    EXPECT_TRUE(PARA_DOM->isWrCtrl("ev1")) << "REQ: create & set true" << endl;
+    EXPECT_TRUE(PARA_DOM->isWrCtrl("ev1")) << "REQ: create & set true";
 
     PARA_DOM->wrCtrlOk("ev1");
-    EXPECT_TRUE(PARA_DOM->isWrCtrl("ev1")) << "REQ: dup set true" << endl;
+    EXPECT_TRUE(PARA_DOM->isWrCtrl("ev1")) << "REQ: dup set true";
 }
 TYPED_TEST_P(WbasicDatDomTest, setFlag_holeWorkWell)
 {
@@ -127,7 +124,7 @@ TYPED_TEST_P(WbasicDatDomTest, nonConstInterface_shall_createUnExistEvent_withSt
     EXPECT_EQ(2u, this->uniqueEVs_.size());
     EXPECT_FALSE(PARA_DOM->state("e1"));
 
-    wbasic_getValue<TypeParam, char>(*PARA_DOM, "e4");  // req: no Event
+    wbasic_getData<TypeParam, char>(*PARA_DOM, "e4");  // req: no Event
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e4"));
     EXPECT_EQ(2u, this->uniqueEVs_.size());
 

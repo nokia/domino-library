@@ -95,10 +95,10 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, repeatCallback_ok)
 TYPED_TEST_P(MultiHdlrDominoTest, BugFix_invalidHdlr_noCrash)
 {
     PARA_DOM->setHdlr("e1", nullptr);
-    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1")) << "REQ: not create new Ev" << endl;
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1")) << "REQ: not create new Ev";
 
     PARA_DOM->multiHdlrOnSameEv("e1", nullptr, "e1 multi");
-    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1")) << "REQ: not create new Ev" << endl;
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1")) << "REQ: not create new Ev";
 
     PARA_DOM->setState({{"e1", true}});  // req: no crash
 
@@ -204,21 +204,21 @@ TYPED_TEST_P(MultiHdlrDominoTest, rmHdlr_byHdlrName)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr1_, "this->hdlr1_");
-    EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event", "this->hdlr1_")) << "REQ: rm MultiHdlrDomino" << endl;
+    EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event", "this->hdlr1_")) << "REQ: rm MultiHdlrDomino";
 
     EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1()).Times(0);
     PARA_DOM->setState({{"event", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
-    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK("event", "this->hdlr1_")) << "REQ: rm unexist hdlr" << endl;
-    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK("unexist ev", "this->hdlr1_")) << "REQ: rm unexist ev" << endl;
+    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK("event", "this->hdlr1_")) << "REQ: rm unexist hdlr";
+    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK("unexist ev", "this->hdlr1_")) << "REQ: rm unexist ev";
 }
 TYPED_TEST_P(MultiHdlrDominoTest, rmLegacyHdlr_byNoHdlrName)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr1_, "this->hdlr1_");
-    EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event")) << "REQ: rm HdlrDomino that has no hdlr name" << endl;
+    EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event")) << "REQ: rm HdlrDomino that has no hdlr name";
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1());
@@ -253,8 +253,8 @@ TYPED_TEST_P(MultiHdlrDominoTest, rmHdlr_subtree)
         auto&& it = evName.second.find("/A");
         if (it != string::npos) PARA_DOM->rmAllHdlr(evName.second);
     }
-    EXPECT_EQ(0u, PARA_DOM->nHdlr("/A")) << "REQ: rm-ed" << endl;
-    EXPECT_EQ(0u, PARA_DOM->nHdlr("/A/B/C/D")) << "REQ: rm-ed" << endl;
+    EXPECT_EQ(0u, PARA_DOM->nHdlr("/A")) << "REQ: rm-ed";
+    EXPECT_EQ(0u, PARA_DOM->nHdlr("/A/B/C/D")) << "REQ: rm-ed";
 }
 // ***********************************************************************************************
 // rm on-road-hdlr
@@ -266,8 +266,8 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, rmHdlrOnRoad)
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr2_, "this->hdlr2_");
     PARA_DOM->setState({{"event", true}});  // 3 cb on road
     EXPECT_TRUE(MSG_SELF->nMsg());
-    EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event")) << "REQ: invalidate HdlrDom" << endl;
-    EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event", "this->hdlr2_")) << "REQ: invalidate MultiDom" << endl;
+    EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event")) << "REQ: invalidate HdlrDom";
+    EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event", "this->hdlr2_")) << "REQ: invalidate MultiDom";
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1());
@@ -288,12 +288,12 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, rmHdlrOnRoad)
 TYPED_TEST_P(MultiHdlrDominoTest, rmHdlr_invalid)
 {
     const auto ev = PARA_DOM->newEvent("event");
-    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK("event", "invalid hdlr")) << "REQ: invalid hdlr name" << endl;
+    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK("event", "invalid hdlr")) << "REQ: invalid hdlr name";
 
-    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK(Domino::D_EVENT_FAILED_RET, nullptr)) << "REQ: invalid ev" << endl;
+    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK(Domino::D_EVENT_FAILED_RET, nullptr)) << "REQ: invalid ev";
 
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr0_, "h0");  // inc cov
-    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK(ev, nullptr)) << "REQ: rm null hdlr" << endl;
+    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK(ev, nullptr)) << "REQ: rm null hdlr";
 }
 
 #define FORCE_CALL
@@ -340,19 +340,19 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, repeat_force_call)
 // ***********************************************************************************************
 TYPED_TEST_P(MultiHdlrDominoTest, n_hdlr)
 {
-    EXPECT_EQ(0u, PARA_DOM->nHdlr("e1")) << "REQ: init no hdlr" << endl;
+    EXPECT_EQ(0u, PARA_DOM->nHdlr("e1")) << "REQ: init no hdlr";
 
     PARA_DOM->setHdlr("e1", this->hdlr0_);
-    EXPECT_EQ(1u, PARA_DOM->nHdlr("e1")) << "REQ: after added" << endl;
+    EXPECT_EQ(1u, PARA_DOM->nHdlr("e1")) << "REQ: after added";
 
     PARA_DOM->multiHdlrOnSameEv("e1", this->hdlr1_, "this->hdlr1_");
-    EXPECT_EQ(2u, PARA_DOM->nHdlr("e1")) << "REQ: after added" << endl;
+    EXPECT_EQ(2u, PARA_DOM->nHdlr("e1")) << "REQ: after added";
 
     PARA_DOM->rmOneHdlrOK("e1");
-    EXPECT_EQ(1u, PARA_DOM->nHdlr("e1")) << "REQ: after del" << endl;
+    EXPECT_EQ(1u, PARA_DOM->nHdlr("e1")) << "REQ: after del";
 
     PARA_DOM->rmOneHdlrOK("e1", "this->hdlr1_");
-    EXPECT_EQ(0u, PARA_DOM->nHdlr("e1")) << "REQ: after del" << endl;
+    EXPECT_EQ(0u, PARA_DOM->nHdlr("e1")) << "REQ: after del";
 }
 
 #define ID_STATE

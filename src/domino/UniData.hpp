@@ -22,10 +22,10 @@ namespace RLib
 
 #if 1
 using UniData = shared_ptr<void>;
-#define MAKE_UNI_DATA  make_shared
+#define MAKE_PTR  make_shared
 #else
 using UniData = SafePtr<void>;
-#define MAKE_UNI_DATA  make_safe
+#define MAKE_PTR  make_safe
 #endif
 
 }  // namespace

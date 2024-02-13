@@ -118,23 +118,20 @@ bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName, const bo
 
 #define EXTEND_INTERFACE_FOR_WBASIC_DATA_DOMINO  // more friendly than min WbasicDatDom interface
 // ***********************************************************************************************
+// - getValue() is NOT mem-safe when aEvName not found
+//   . so getData() instead of getValue
+// - this getData() cast type so convenient
 template<typename aDataDominoType, typename aDataType>
-aDataType wbasic_getValue(aDataDominoType& aDom, const Domino::EvName& aEvName)
+auto wbasic_getData(aDataDominoType& aDom, const Domino::EvName& aEvName)
 {
-    auto&& data = static_pointer_cast<aDataType>(aDom.wbasic_getData(aEvName));
-    if (data != nullptr)
-        return *data;
-
-    auto&& oneLog = aDom;
-    ERR("(WbasicDatDom) Failed!!! EvName=" << aEvName << " not found, return undefined obj!!!");
-    return aDataType();
+    return static_pointer_cast<aDataType>(aDom.wbasic_getData(aEvName));
 }
 
 // ***********************************************************************************************
 template<typename aDataDominoType, typename aDataType>
 void wbasic_setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData)
 {
-    aDom.wbasic_replaceData(aEvName, MAKE_UNI_DATA<aDataType>(aData));
+    aDom.wbasic_replaceData(aEvName, MAKE_PTR<aDataType>(aData));
 }
 
 
@@ -153,9 +150,9 @@ void WbasicDatDom<aDominoType>::innerRmEv(const Domino::Event aEv)
 // ***********************************************************************************************
 // - why not wbasic_setValue() auto call wrCtrlOk()?
 //   . auto is more convient & efficient
-//   . but impact wbasic_setValue(), wbasic_getValue(), setValue(), getValue(), logic complex
-//   . user may mis-use setValue/getValue(write-ctrl-data)
-// - why not throw when getValue/setValue/wbasic_getValue/wbasic_setValue fail?
+//   . but impact wbasic_setValue(), wbasic_getData(), setValue(), getData(), logic complex
+//   . user may mis-use setValue/getData(write-ctrl-data)
+// - why not throw when getData/setValue/wbasic_getData/wbasic_setValue fail?
 //   . fit for larger scope that can't accept throw
 //   . achieve basic req but may mislead user
 // - why also read ctrl?

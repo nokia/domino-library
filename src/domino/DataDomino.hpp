@@ -82,23 +82,20 @@ void DataDomino<aDominoType>::innerRmEv(const Domino::Event aEv)
 
 #define EXTEND_INTERFACE_FOR_DATA_DOMINO  // more friendly than min DataDomino interface
 // ***********************************************************************************************
+// - getValue() is NOT mem-safe when aEvName not found
+//   . so getData() instead of getValue
+// - this getData() cast type so convenient
 template<typename aDataDominoType, typename aDataType>
-aDataType getValue(aDataDominoType& aDom, const Domino::EvName& aEvName)
+auto getData(aDataDominoType& aDom, const Domino::EvName& aEvName)
 {
-    auto&& data = static_pointer_cast<aDataType>(aDom.getData(aEvName));
-    if (data != nullptr)
-        return *data;
-
-    auto&& oneLog = aDom;
-    ERR("(DatDom) Failed!!! EvName=" << aEvName << " was not found, return undefined obj!!!");
-    return aDataType();
+    return static_pointer_cast<aDataType>(aDom.getData(aEvName));
 }
 
 // ***********************************************************************************************
 template<typename aDataDominoType, typename aDataType>
 void setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData)
 {
-    aDom.replaceData(aEvName, MAKE_UNI_DATA<aDataType>(aData));
+    aDom.replaceData(aEvName, MAKE_PTR<aDataType>(aData));
 }
 }  // namespace
 // ***********************************************************************************************

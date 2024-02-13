@@ -28,12 +28,12 @@ struct ThreadBackTest : public Test, public UniLog
 {
     ThreadBackTest() : UniLog(UnitTest::GetInstance()->current_test_info()->name())
     {
-        EXPECT_EQ(0, ThreadBack::nThread()) << "REQ: clean env" << endl;
+        EXPECT_EQ(0, ThreadBack::nThread()) << "REQ: clean env";
     }
 
     ~ThreadBackTest()
     {
-        EXPECT_EQ(0, ThreadBack::nThread()) << "REQ: handle all" << endl;
+        EXPECT_EQ(0, ThreadBack::nThread()) << "REQ: handle all";
         GTEST_LOG_FAIL
     }
 };
@@ -80,7 +80,7 @@ TEST_F(ThreadBackTest, GOLD_entryFn_inNewThread_thenBackFn_inMainThread_withSema
             timedwait();  // REQ: semaphore is more efficient than keep hdlFinishedThreads()
             continue;
         }
-        EXPECT_EQ(mt_threadID, this_thread::get_id()) << "REQ: run ThreadBackFN() in main thread afterwards" << endl;
+        EXPECT_EQ(mt_threadID, this_thread::get_id()) << "REQ: run ThreadBackFN() in main thread afterwards";
         return;
     }
 }
@@ -99,7 +99,7 @@ TEST_F(ThreadBackTest, GOLD_entryFnResult_toBackFn_withoutSem)
             // ThreadBackFN
             [idxThread](bool aRet)
             {
-                EXPECT_EQ(idxThread % 2 != 0, aRet) << "REQ: check true & false" << endl;
+                EXPECT_EQ(idxThread % 2 != 0, aRet) << "REQ: check true & false";
             }
         );
     }
@@ -172,7 +172,7 @@ TEST_F(ThreadBackTest, asyncFail_noException_toBackFnWithFalse)
     ThreadBack::invalidNewThread(
         [](bool aRet)
         {
-            EXPECT_FALSE(aRet) << "REQ: async failed -> ret=false always" << endl;
+            EXPECT_FALSE(aRet) << "REQ: async failed -> ret=false always";
         }
     );
     ThreadBack::hdlFinishedThreads();

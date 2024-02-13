@@ -96,20 +96,20 @@ TEST_F(MtInQueueTest, GOLD_surgePush_fifo)
 }
 TEST_F(MtInQueueTest, GOLD_nonBlock_pop)
 {
-    ASSERT_FALSE(mt_getQ().pop<void>()) << "REQ: can pop empty" << endl;
+    ASSERT_FALSE(mt_getQ().pop<void>()) << "REQ: can pop empty";
 
     mt_getQ().mt_push(make_shared<string>("1st"));
     mt_getQ().mt_push(make_shared<string>("2nd"));
     mt_getQ().backdoor().lock();
     timedwait(600);  // push shall wakeup this func instead of 10m timeout
-    ASSERT_FALSE(mt_getQ().pop<void>()) << "REQ: not blocked" << endl;
+    ASSERT_FALSE(mt_getQ().pop<void>()) << "REQ: not blocked";
     timedwait(600);  // REQ: pop() shall mt_pingMainTH() if can't access queue_
 
     mt_getQ().backdoor().unlock();
     ASSERT_EQ("1st", *(mt_getQ().pop<string>())) << "REQ: can pop";
 
     mt_getQ().backdoor().lock();
-    ASSERT_EQ("2nd", *(mt_getQ().pop<string>())) << "REQ: can pop from cache" << endl;
+    ASSERT_EQ("2nd", *(mt_getQ().pop<string>())) << "REQ: can pop from cache";
     mt_getQ().backdoor().unlock();
 }
 TEST_F(MtInQueueTest, size_and_nowait)
@@ -151,7 +151,7 @@ TEST_F(MtInQueueTest, GOLD_destructCorrectly)
     ASSERT_FALSE(isDestructed);
 
     mt_getQ().mt_clear();
-    ASSERT_TRUE(isDestructed) << "REQ: destruct correctly" << endl;
+    ASSERT_TRUE(isDestructed) << "REQ: destruct correctly";
 }
 TEST_F(MtInQueueTest, clear)
 {
