@@ -37,9 +37,8 @@ public:
     template<typename U, typename... Args> friend SafePtr<U> make_safe(Args&&... aArgs);
     SafePtr() = default;
 
-    // any <-> void
+    // cast
     template<typename From> SafePtr(const SafePtr<From>&);
-
     template<typename To> shared_ptr<To> get() const;
     shared_ptr<void> get() const;
 
@@ -88,9 +87,9 @@ shared_ptr<To> SafePtr<T>::get() const
         HID("(SafePtr) Derive to Base (include to self)");
         return static_pointer_cast<To>(pT_);
     }
-    if (&typeid(To) == realType_)
+    if (&typeid(To) == realType_ || &typeid(To) == preVoidType_)
     {
-        HID("(SafePtr) any to origin");
+        HID("(SafePtr) any to origin/preVoid");
         return static_pointer_cast<To>(pT_);
     }
     return nullptr;
@@ -101,13 +100,6 @@ shared_ptr<void> SafePtr<T>::get() const
     HID("(SafePtr) any to void (for container to store diff types)");
     return pT_;
 }
-template<>
-template<typename To>
-shared_ptr<To> SafePtr<void>::get() const
-{
-    HID("(SafePtr) back from void");
-    return static_pointer_cast<To>(pT_);
-}
 
 // ***********************************************************************************************
 template<typename U, typename... Args> SafePtr<U> make_safe(Args&&... aArgs)
@@ -117,11 +109,18 @@ template<typename U, typename... Args> SafePtr<U> make_safe(Args&&... aArgs)
     return sptr;
 }
 
+// ***********************************************************************************************
+template<typename To, typename From> SafePtr<To> static_pointer_cast(const SafePtr<From>& aFromPtr) noexcept
+{
+    return SafePtr<To>(aFromPtr);
+}
+
 }  // namespace
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2024-01-30  CSZ       1)create
+// 2024-02-13  CSZ       2)usage in dom lib
 // ***********************************************************************************************
 // - Q&A
 //   . must replace shared_ptr in DatDom, ObjAnywhere?
