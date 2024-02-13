@@ -26,19 +26,19 @@ public:
     bool isWrCtrl(const Domino::EvName&) const;
     bool wrCtrlOk(const Domino::EvName&, const bool aNewState = true);
 
-    UniDatT getShared(const Domino::EvName&) const override;
-    UniDatT wbasic_getShared(const Domino::EvName&) const;
+    UniData getData(const Domino::EvName&) const override;
+    UniData wbasic_getData(const Domino::EvName&) const;
 
-    void replaceShared(const Domino::EvName&, UniDatT aSharedData = nullptr) override;
-    void wbasic_replaceShared(const Domino::EvName&, UniDatT aSharedData = nullptr);
+    void replaceData(const Domino::EvName&, UniData aUniData = UniData()) override;
+    void wbasic_replaceData(const Domino::EvName&, UniData aUniData = UniData());
 
 protected:
     void innerRmEv(const Domino::Event) override;
 
 private:
     // forbid ouside usage
-    using aDominoType::getShared;
-    using aDominoType::replaceShared;
+    using aDominoType::getData;
+    using aDominoType::replaceData;
     // -------------------------------------------------------------------------------------------
     vector<bool> wrCtrl_;
 
@@ -48,13 +48,13 @@ public:
 
 // ***********************************************************************************************
 template<typename aDominoType>
-UniDatT WbasicDatDom<aDominoType>::getShared(const Domino::EvName& aEvName) const
+UniData WbasicDatDom<aDominoType>::getData(const Domino::EvName& aEvName) const
 {
     if (not isWrCtrl(aEvName))
-        return aDominoType::getShared(aEvName);
+        return aDominoType::getData(aEvName);
 
     WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!");
-    return UniDatT();
+    return UniData();
 }
 
 // ***********************************************************************************************
@@ -67,30 +67,30 @@ bool WbasicDatDom<aDominoType>::isWrCtrl(const Domino::EvName& aEvName) const
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void WbasicDatDom<aDominoType>::replaceShared(const Domino::EvName& aEvName, UniDatT aSharedData)
+void WbasicDatDom<aDominoType>::replaceData(const Domino::EvName& aEvName, UniData aUniData)
 {
     if (isWrCtrl(aEvName))
         WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!")
-    else aDominoType::replaceShared(aEvName, aSharedData);
+    else aDominoType::replaceData(aEvName, aUniData);
 }
 
 // ***********************************************************************************************
 template<typename aDominoType>
-UniDatT WbasicDatDom<aDominoType>::wbasic_getShared(const Domino::EvName& aEvName) const
+UniData WbasicDatDom<aDominoType>::wbasic_getData(const Domino::EvName& aEvName) const
 {
     if (isWrCtrl(aEvName))
-        return aDominoType::getShared(aEvName);
+        return aDominoType::getData(aEvName);
 
     WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!");
-    return UniDatT();
+    return UniData();
 }
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void WbasicDatDom<aDominoType>::wbasic_replaceShared(const Domino::EvName& aEvName, UniDatT aSharedData)
+void WbasicDatDom<aDominoType>::wbasic_replaceData(const Domino::EvName& aEvName, UniData aUniData)
 {
     if (isWrCtrl(aEvName))
-        aDominoType::replaceShared(aEvName, aSharedData);
+        aDominoType::replaceData(aEvName, aUniData);
     else
         WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!")
 }
@@ -99,7 +99,7 @@ void WbasicDatDom<aDominoType>::wbasic_replaceShared(const Domino::EvName& aEvNa
 template<typename aDominoType>
 bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName, const bool aNewState)
 {
-    if (aDominoType::getShared(aEvName) != nullptr)
+    if (aDominoType::getData(aEvName) != nullptr)
     {
         WRN("(WbasicDatDom) !!! Failed to change wrCtrl when aleady own data(out-of-ctrl), EvName=" << aEvName);
         return false;
@@ -121,12 +121,12 @@ bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName, const bo
 template<typename aDataDominoType, typename aDataType>
 aDataType wbasic_getValue(aDataDominoType& aDom, const Domino::EvName& aEvName)
 {
-    auto&& data = static_pointer_cast<aDataType>(aDom.wbasic_getShared(aEvName));
+    auto&& data = static_pointer_cast<aDataType>(aDom.wbasic_getData(aEvName));
     if (data != nullptr)
         return *data;
 
     auto&& oneLog = aDom;
-    WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " not found, return undefined obj!!!");
+    ERR("(WbasicDatDom) Failed!!! EvName=" << aEvName << " not found, return undefined obj!!!");
     return aDataType();
 }
 
@@ -134,7 +134,7 @@ aDataType wbasic_getValue(aDataDominoType& aDom, const Domino::EvName& aEvName)
 template<typename aDataDominoType, typename aDataType>
 void wbasic_setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData)
 {
-    aDom.wbasic_replaceShared(aEvName, make_shared<aDataType>(aData));
+    aDom.wbasic_replaceData(aEvName, MAKE_UNI_DATA<aDataType>(aData));
 }
 
 
@@ -170,4 +170,5 @@ void WbasicDatDom<aDominoType>::innerRmEv(const Domino::Event aEv)
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2022-12-03  CSZ       - simple & natural
 // 2022-12-31  CSZ       - rm data
+// 2024-02-12  CSZ       2)use SafePtr (mem-safe, hared_ptr is not)
 // ***********************************************************************************************

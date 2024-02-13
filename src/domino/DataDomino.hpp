@@ -14,10 +14,10 @@
 #include <unordered_map>
 #include <memory>  // make_shared
 
+#include "UniData.hpp"
 #include "UniLog.hpp"
 
 using namespace std;
-using UniDatT = shared_ptr<void>;
 
 namespace RLib
 {
@@ -38,37 +38,37 @@ public:
     // - if aEvName/data invalid, return null
     // - not template<aDataType> so can virtual for WrDatDom
     // . & let DataDomino has little idea of read-write ctrl, simpler
-    virtual UniDatT getShared(const Domino::EvName&) const;
+    virtual UniData getData(const Domino::EvName&) const;
 
     // -------------------------------------------------------------------------------------------
-    // - replace old data by new=aSharedData if old != new
+    // - replace old data by new=aUniData if old != new
     // - for aDataType w/o default constructor!!!
-    virtual void replaceShared(const Domino::EvName&, UniDatT aSharedData = nullptr);
+    virtual void replaceData(const Domino::EvName&, UniData aUniData = UniData());
 
 protected:
     void innerRmEv(const Domino::Event) override;
 
 private:
     // -------------------------------------------------------------------------------------------
-    unordered_map<Domino::Event, UniDatT > dataStore_;  // [event]=shared_ptr<"DataType">
+    unordered_map<Domino::Event, UniData> dataStore_;  // [event]=UniData
 };
 
 // ***********************************************************************************************
 template<typename aDominoType>
-UniDatT DataDomino<aDominoType>::getShared(const Domino::EvName& aEvName) const
+UniData DataDomino<aDominoType>::getData(const Domino::EvName& aEvName) const
 {
     auto&& found = dataStore_.find(this->getEventBy(aEvName));
-    return (found == dataStore_.end()) ? UniDatT() : found->second;
+    return (found == dataStore_.end()) ? UniData() : found->second;
 }
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void DataDomino<aDominoType>::replaceShared(const Domino::EvName& aEvName, UniDatT aSharedData)
+void DataDomino<aDominoType>::replaceData(const Domino::EvName& aEvName, UniData aUniData)
 {
-    if (aSharedData == nullptr)
+    if (aUniData == nullptr)
         dataStore_.erase(this->getEventBy(aEvName));  // avoid keep inc dataStore_
     else
-        dataStore_[this->newEvent(aEvName)] = aSharedData;
+        dataStore_[this->newEvent(aEvName)] = aUniData;
 }
 
 // ***********************************************************************************************
@@ -85,12 +85,12 @@ void DataDomino<aDominoType>::innerRmEv(const Domino::Event aEv)
 template<typename aDataDominoType, typename aDataType>
 aDataType getValue(aDataDominoType& aDom, const Domino::EvName& aEvName)
 {
-    auto&& data = static_pointer_cast<aDataType>(aDom.getShared(aEvName));
+    auto&& data = static_pointer_cast<aDataType>(aDom.getData(aEvName));
     if (data != nullptr)
         return *data;
 
     auto&& oneLog = aDom;
-    WRN("(DatDom) Failed!!! EvName=" << aEvName << " was not found, return undefined obj!!!");
+    ERR("(DatDom) Failed!!! EvName=" << aEvName << " was not found, return undefined obj!!!");
     return aDataType();
 }
 
@@ -98,7 +98,7 @@ aDataType getValue(aDataDominoType& aDom, const Domino::EvName& aEvName)
 template<typename aDataDominoType, typename aDataType>
 void setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData)
 {
-    aDom.replaceShared(aEvName, make_shared<aDataType>(aData));
+    aDom.replaceData(aEvName, MAKE_UNI_DATA<aDataType>(aData));
 }
 }  // namespace
 // ***********************************************************************************************
@@ -115,4 +115,5 @@ void setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataT
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2022-12-03  CSZ       - simple & natural
 // 2022-12-30  CSZ       - rm data
+// 2024-02-12  CSZ       4)use SafePtr (mem-safe, hared_ptr is not)
 // ***********************************************************************************************

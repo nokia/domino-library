@@ -43,12 +43,12 @@ TYPED_TEST_P(WbasicDatDomTest, GOLD_wrCtrl_set_get_rm)  // non-wrData is covered
     valGet = getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
     EXPECT_EQ(0u, valGet) << "REQ: legacy get failed (ret default value)" << endl;
 
-    PARA_DOM->replaceShared("ev0");
+    PARA_DOM->replaceData("ev0");
     valGet = wbasic_getValue<TypeParam, size_t>(*PARA_DOM, "ev0");
     EXPECT_EQ(2u, valGet) << "REQ: legacy rm failed" << endl;
 
-    PARA_DOM->wbasic_replaceShared("ev0");
-    auto shared = PARA_DOM->wbasic_getShared("ev0");
+    PARA_DOM->wbasic_replaceData("ev0");
+    auto shared = PARA_DOM->wbasic_getData("ev0");
     EXPECT_EQ(nullptr, shared) << "REQ: rm wr-data" << endl;
 }
 TYPED_TEST_P(WbasicDatDomTest, wrCtrlInterface_cannotHdl_nonWrDat)
@@ -61,14 +61,14 @@ TYPED_TEST_P(WbasicDatDomTest, wrCtrlInterface_cannotHdl_nonWrDat)
     valGet = getValue<TypeParam, int>(*PARA_DOM, "ev0");
     EXPECT_EQ(1, valGet) << "REQ: w-set failed" << endl;
 
-    PARA_DOM->wbasic_replaceShared("ev0");
+    PARA_DOM->wbasic_replaceData("ev0");
     valGet = getValue<TypeParam, int>(*PARA_DOM, "ev0");
     EXPECT_EQ(1, valGet) << "REQ: w-rm failed" << endl;
 }
 TYPED_TEST_P(WbasicDatDomTest, canNOT_setWriteCtrl_afterOwnData)
 {
     setValue<TypeParam, char>(*PARA_DOM, "ev0", 'a');  // req: any type data (3rd=char>)
-    auto data = PARA_DOM->getShared("ev0");
+    auto data = PARA_DOM->getData("ev0");
     EXPECT_FALSE(PARA_DOM->wrCtrlOk("ev0")) << "REQ: failed to avoid out-ctrl" << endl;
     EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0")) << "REQ: flag no change" << endl;
 
@@ -78,7 +78,7 @@ TYPED_TEST_P(WbasicDatDomTest, canNOT_setWriteCtrl_afterOwnData)
     EXPECT_FALSE(PARA_DOM->wrCtrlOk("ev0")) << "REQ: still failed to avoid out-ctrl" << endl;
     EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0")) << "REQ: flag no change" << endl;
 
-    PARA_DOM->replaceShared("ev0", nullptr);
+    PARA_DOM->replaceData("ev0", nullptr);
     EXPECT_TRUE(PARA_DOM->wrCtrlOk("ev0")) << "REQ: succ since no data" << endl;
     EXPECT_TRUE(PARA_DOM->isWrCtrl("ev0")) << "REQ: flag change" << endl;
 }

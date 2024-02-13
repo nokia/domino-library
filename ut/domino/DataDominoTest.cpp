@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
 */
 // ***********************************************************************************************
-#include <memory>  // make_shared
 #include <set>
 #include <string>
 
@@ -41,36 +40,36 @@ TYPED_TEST_P(DataDominoTest, GOLD_setValue_thenGetIt)
 }
 TYPED_TEST_P(DataDominoTest, setShared_thenGetIt_thenRmIt)
 {
-    EXPECT_EQ(nullptr, PARA_DOM->getShared("ev0")) << "REQ: get null since ev0 not exist" << endl;
+    EXPECT_EQ(nullptr, PARA_DOM->getData("ev0")) << "REQ: get null since ev0 not exist" << endl;
 
-    PARA_DOM->replaceShared("ev0", make_shared<string>("ev0's data"));  // req: any type data (2nd=string)
-    auto sharedString = static_pointer_cast<string>(PARA_DOM->getShared("ev0"));
+    PARA_DOM->replaceData("ev0", MAKE_UNI_DATA<string>("ev0's data"));  // req: any type data (2nd=string)
+    auto sharedString = static_pointer_cast<string>(PARA_DOM->getData("ev0"));
     ASSERT_NE(nullptr, sharedString);
     EXPECT_EQ("ev0's data", *sharedString) << "REQ: get = set" << endl;
 
     *sharedString = "ev0's updated data";
     EXPECT_EQ("ev0's updated data", (getValue<TypeParam, string>(*PARA_DOM, "ev0"))) << "REQ: get=update" << endl;
 
-    PARA_DOM->replaceShared("ev0", make_shared<string>("replace ev0's data"));
+    PARA_DOM->replaceData("ev0", MAKE_UNI_DATA<string>("replace ev0's data"));
     EXPECT_EQ("replace ev0's data", (getValue<TypeParam, string>(*PARA_DOM, "ev0"))) << "REQ: get replaced" << endl;
-    EXPECT_NE(sharedString, static_pointer_cast<string>(PARA_DOM->getShared("ev0"))) << "REQ: replace != old" << endl;
+    EXPECT_NE(sharedString, static_pointer_cast<string>(PARA_DOM->getData("ev0"))) << "REQ: replace != old" << endl;
 
-    PARA_DOM->replaceShared("ev0");  // req: rm data
-    EXPECT_EQ(nullptr, PARA_DOM->getShared("ev0")) << "REQ: get null" << endl;
+    PARA_DOM->replaceData("ev0");  // req: rm data
+    EXPECT_EQ(nullptr, PARA_DOM->getData("ev0")) << "REQ: get null" << endl;
 }
 
 #define DESTRUCT
 // ***********************************************************************************************
 TYPED_TEST_P(DataDominoTest, desruct_data)
 {
-    PARA_DOM->replaceShared("ev0", make_shared<char>('A'));  // req: any type data (3rd=char)
-    weak_ptr<void> weak = PARA_DOM->getShared("ev0");
+    PARA_DOM->replaceData("ev0", MAKE_UNI_DATA<char>('A'));  // req: any type data (3rd=char)
+    weak_ptr<void> weak = PARA_DOM->getData("ev0");
     EXPECT_NE(0, weak.use_count());
 
-    PARA_DOM->replaceShared("ev0", make_shared<char>('B'));
+    PARA_DOM->replaceData("ev0", MAKE_UNI_DATA<char>('B'));
     EXPECT_EQ(0, weak.use_count()) << "REQ: old is rm-ed" << endl;
 
-    weak = PARA_DOM->getShared("ev0");
+    weak = PARA_DOM->getData("ev0");
     ObjAnywhere::deinit(*this);  // req: rm all
     EXPECT_EQ(0, weak.use_count());
 }
@@ -84,9 +83,9 @@ TYPED_TEST_P(DataDominoTest, correct_data_destructor)
     };
     bool isDestructed;
 
-    PARA_DOM->replaceShared("ev", make_shared<TestData>(isDestructed));  // req: any type data (4th=TestData)
+    PARA_DOM->replaceData("ev", MAKE_UNI_DATA<TestData>(isDestructed));  // req: any type data (4th=TestData)
     EXPECT_FALSE(isDestructed);
-    PARA_DOM->replaceShared("ev", shared_ptr<TestData>());
+    PARA_DOM->replaceData("ev", shared_ptr<TestData>());
     EXPECT_TRUE(isDestructed);
 }
 
@@ -97,11 +96,11 @@ TYPED_TEST_P(DataDominoTest, correct_data_destructor)
 TYPED_TEST_P(DataDominoTest, nonConstInterface_shall_createUnExistEvent_withStateFalse)
 {
     // DataDomino::
-    PARA_DOM->getShared("e1");
+    PARA_DOM->getData("e1");
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1")) << "REQ: nonexistent" << endl;
     EXPECT_FALSE(PARA_DOM->state("e1"));
 
-    PARA_DOM->replaceShared("e2", make_shared<int>(0));  // REQ: any type data (5th=int)
+    PARA_DOM->replaceData("e2", MAKE_UNI_DATA<int>(0));  // REQ: any type data (5th=int)
     EXPECT_NE(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e2")) << "REQ: new Event" << endl;
     EXPECT_FALSE(PARA_DOM->state("e2"));
 }
