@@ -10,7 +10,7 @@
 //   . safe create   : null & make_safe only
 //   . safe ship     : cp/mv/= base<-derive(s); short->int?
 //   . safe store    : cast any<->void
-//   . safe use      : get real / before void
+//   . safe use      : cast to real / before void
 //   . safe lifecycle: by shared_ptr
 //   . safe ptr array:
 // - suggest:
@@ -39,9 +39,10 @@ public:
 
     // cast
     template<typename From> SafePtr(const SafePtr<From>&);
-    template<typename To> shared_ptr<To> get() const;
-    shared_ptr<void> get() const;
+    template<typename To> shared_ptr<To> cast() const;
+    shared_ptr<void> cast() const;
 
+    T* get() const { return pT_.get(); }  // same interface as shared_ptr
     const type_info* preVoidType() const { return preVoidType_; }
     const type_info* realType() const { return realType_; }
 
@@ -56,7 +57,7 @@ private:
 template<typename T>
 template<typename From>
 SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom)
-    : pT_(aSafeFrom.template get<T>())
+    : pT_(aSafeFrom.template cast<T>())
 {
     HID(typeid(From).name() << " to " << typeid(T).name());
     if (! pT_)
@@ -80,7 +81,7 @@ SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom)
 // ***********************************************************************************************
 template<typename T>
 template<typename To>
-shared_ptr<To> SafePtr<T>::get() const
+shared_ptr<To> SafePtr<T>::cast() const
 {
     if (is_convertible<T*, To*>::value)
     {
@@ -95,7 +96,7 @@ shared_ptr<To> SafePtr<T>::get() const
     return nullptr;
 }
 template<typename T>
-shared_ptr<void> SafePtr<T>::get() const
+shared_ptr<void> SafePtr<T>::cast() const
 {
     HID("(SafePtr) any to void (for container to store diff types)");
     return pT_;

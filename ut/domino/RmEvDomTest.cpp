@@ -98,10 +98,10 @@ TYPED_TEST_P(RmDataDomTest, GOLD_rm_DataDom_resrc)
 
     EXPECT_TRUE(PARA_DOM->rmEvOK("ev")) << "REQ: rm succ.";
     EXPECT_TRUE(isDestructed) << "REQ: data is removed.";
-    EXPECT_EQ(nullptr, PARA_DOM->getData("ev")) << "REQ: get null after removed.";
+    EXPECT_EQ(nullptr, PARA_DOM->getData("ev").get()) << "REQ: get null after removed.";
 
     EXPECT_EQ(ev, PARA_DOM->newEvent("another ev"))  << "REQ: reuse ev.";
-    EXPECT_EQ(nullptr, PARA_DOM->getData("another ev")) << "REQ: reuse ev's data space.";
+    EXPECT_EQ(nullptr, PARA_DOM->getData("another ev").get()) << "REQ: reuse ev's data space.";
 }
 
 REGISTER_TYPED_TEST_SUITE_P(RmDataDomTest
@@ -132,13 +132,13 @@ TYPED_TEST_P(RmWdatDomTest, GOLD_rm_WdatDom_resrc)
 
     EXPECT_TRUE(PARA_DOM->rmEvOK("ev")) << "REQ: rm succ.";
     EXPECT_TRUE(isDestructed) << "REQ: data is removed.";
-    EXPECT_EQ(nullptr, PARA_DOM->wbasic_getData("ev")) << "REQ: get null after removed.";
+    EXPECT_EQ(nullptr, PARA_DOM->wbasic_getData("ev").get()) << "REQ: get null after removed.";
     EXPECT_FALSE(PARA_DOM->isWrCtrl("ev")) << "REQ: reset wctrl flag.";
 
     EXPECT_FALSE(PARA_DOM->rmEvOK("ev")) << "REQ: fail to rm invalid.";
 
     EXPECT_EQ(ev, PARA_DOM->newEvent("another ev"))  << "REQ: reuse ev.";
-    EXPECT_EQ(nullptr, PARA_DOM->wbasic_getData("another ev")) << "REQ: reuse ev's data space.";
+    EXPECT_EQ(nullptr, PARA_DOM->wbasic_getData("another ev").get()) << "REQ: reuse ev's data space.";
 }
 
 REGISTER_TYPED_TEST_SUITE_P(RmWdatDomTest

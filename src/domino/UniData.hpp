@@ -17,13 +17,15 @@
 
 using namespace std;
 
+#if 0
 namespace RLib
 {
-
-#if 1
 using UniData = shared_ptr<void>;
 #define MAKE_PTR  make_shared
 #else
+#include "SafePtr.hpp"
+namespace RLib
+{
 using UniData = SafePtr<void>;
 #define MAKE_PTR  make_safe
 #endif

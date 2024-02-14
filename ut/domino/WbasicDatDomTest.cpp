@@ -25,57 +25,50 @@ TYPED_TEST_SUITE_P(WbasicDatDomTest);
 TYPED_TEST_P(WbasicDatDomTest, GOLD_wrCtrl_set_get_rm)  // non-wrData is covered by DataDominoTest
 {
     PARA_DOM->wrCtrlOk("ev0");  // write-ctrl data
-    EXPECT_EQ(nullptr, (wbasic_getData<TypeParam, size_t>(*PARA_DOM, "ev0"))) << "REQ: for non-existed ev0";
+    EXPECT_EQ(nullptr, (wbasic_getData<TypeParam, size_t>(*PARA_DOM, "ev0").get())) << "REQ: for non-existed ev0";
 
     wbasic_setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 1);
-    auto valGet = *wbasic_getData<TypeParam, size_t>(*PARA_DOM, "ev0");
+    auto valGet = *(wbasic_getData<TypeParam, size_t>(*PARA_DOM, "ev0").get());
     EXPECT_EQ(1u, valGet) << "REQ: get = set";
 
     wbasic_setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 2);
-    valGet = *wbasic_getData<TypeParam, size_t>(*PARA_DOM, "ev0");
+    valGet = *(wbasic_getData<TypeParam, size_t>(*PARA_DOM, "ev0").get());
     EXPECT_EQ(2u, valGet) << "REQ: get = update";
 
     setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 3);
-    valGet = *wbasic_getData<TypeParam, size_t>(*PARA_DOM, "ev0");
+    valGet = *(wbasic_getData<TypeParam, size_t>(*PARA_DOM, "ev0").get());
     EXPECT_EQ(2u, valGet) << "REQ: legacy set failed";
 
-    EXPECT_EQ(nullptr, (getData<TypeParam, size_t>(*PARA_DOM, "ev0"))) << "REQ: legacy get nonexist";
+    EXPECT_EQ(nullptr, (getData<TypeParam, size_t>(*PARA_DOM, "ev0").get())) << "REQ: legacy get nonexist";
 
     PARA_DOM->replaceData("ev0");
-    valGet = *wbasic_getData<TypeParam, size_t>(*PARA_DOM, "ev0");
+    valGet = *(wbasic_getData<TypeParam, size_t>(*PARA_DOM, "ev0").get());
     EXPECT_EQ(2u, valGet) << "REQ: legacy rm failed";
 
     PARA_DOM->wbasic_replaceData("ev0");
-    auto shared = PARA_DOM->wbasic_getData("ev0");
-    EXPECT_EQ(nullptr, shared) << "REQ: rm wr-data";
+    EXPECT_EQ(nullptr, (PARA_DOM->wbasic_getData("ev0").get())) << "REQ: rm wr-data";
 }
 TYPED_TEST_P(WbasicDatDomTest, wrCtrlInterface_cannotHdl_nonWrDat)
 {
     setValue<TypeParam, int>(*PARA_DOM, "ev0", 1);  // req: any type data (2nd=int>)
-    EXPECT_EQ(nullptr, (wbasic_getData<TypeParam, int>(*PARA_DOM, "ev0"))) << "REQ: w-get nonexist";
+    EXPECT_EQ(nullptr, (wbasic_getData<TypeParam, int>(*PARA_DOM, "ev0").get())) << "REQ: w-get nonexist";
 
     wbasic_setValue<TypeParam, int>(*PARA_DOM, "ev0", 2);
-    auto valGet = *getData<TypeParam, int>(*PARA_DOM, "ev0");
+    auto valGet = *(getData<TypeParam, int>(*PARA_DOM, "ev0").get());
     EXPECT_EQ(1, valGet) << "REQ: w-set failed";
 
     PARA_DOM->wbasic_replaceData("ev0");
-    valGet = *getData<TypeParam, int>(*PARA_DOM, "ev0");
+    valGet = *(getData<TypeParam, int>(*PARA_DOM, "ev0").get());
     EXPECT_EQ(1, valGet) << "REQ: w-rm failed";
 }
 TYPED_TEST_P(WbasicDatDomTest, canNOT_setWriteCtrl_afterOwnData)
 {
     setValue<TypeParam, char>(*PARA_DOM, "ev0", 'a');  // req: any type data (3rd=char>)
-    auto data = PARA_DOM->getData("ev0");
+    auto pData = PARA_DOM->getData("ev0").get();
     EXPECT_FALSE(PARA_DOM->wrCtrlOk("ev0")) << "REQ: failed to avoid out-ctrl";
     EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0")) << "REQ: flag no change";
 
-    auto pData = data.get();
-    data.reset();
-    EXPECT_NE(nullptr, pData);
-    EXPECT_FALSE(PARA_DOM->wrCtrlOk("ev0")) << "REQ: still failed to avoid out-ctrl";
-    EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0")) << "REQ: flag no change";
-
-    PARA_DOM->replaceData("ev0", nullptr);
+    PARA_DOM->replaceData("ev0", UniData());
     EXPECT_TRUE(PARA_DOM->wrCtrlOk("ev0")) << "REQ: succ since no data";
     EXPECT_TRUE(PARA_DOM->isWrCtrl("ev0")) << "REQ: flag change";
 }

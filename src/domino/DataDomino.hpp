@@ -65,7 +65,7 @@ UniData DataDomino<aDominoType>::getData(const Domino::EvName& aEvName) const
 template<typename aDominoType>
 void DataDomino<aDominoType>::replaceData(const Domino::EvName& aEvName, UniData aUniData)
 {
-    if (aUniData == nullptr)
+    if (aUniData.get() == nullptr)
         dataStore_.erase(this->getEventBy(aEvName));  // avoid keep inc dataStore_
     else
         dataStore_[this->newEvent(aEvName)] = aUniData;
