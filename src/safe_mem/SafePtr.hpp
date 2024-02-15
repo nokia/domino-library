@@ -113,7 +113,6 @@ template<typename U, typename... Args> SafePtr<U> make_safe(Args&&... aArgs)
 {
     SafePtr<U> sptr;
     sptr.pT_ = make_shared<U>(forward<Args>(aArgs)...);
-    HID("new ptr=" << sptr.pT_.get());
     return sptr;
 }
 

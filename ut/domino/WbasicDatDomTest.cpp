@@ -64,7 +64,6 @@ TYPED_TEST_P(WbasicDatDomTest, wrCtrlInterface_cannotHdl_nonWrDat)
 TYPED_TEST_P(WbasicDatDomTest, canNOT_setWriteCtrl_afterOwnData)
 {
     setValue<TypeParam, char>(*PARA_DOM, "ev0", 'a');  // req: any type data (3rd=char>)
-    PARA_DOM->getData("ev0");
     EXPECT_FALSE(PARA_DOM->wrCtrlOk("ev0")) << "REQ: failed to avoid out-ctrl";
     EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0")) << "REQ: flag no change";
 
