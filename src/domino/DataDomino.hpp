@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-// - ISSUE: eg C&M translator store any type data from RU/BBU/HLAPI, like IM [MUST-HAVE!]
-// - Req:   Domino to store any type of data
-// - core:  dataStore_
-// - scope: provide min interface (& extend by non-member func)
+// - ISSUE:    eg C&M translator store any type data from RU/BBU/HLAPI, like IM [MUST-HAVE!]
+// - Req:      Domino to store any type of data
+// - core:     dataStore_
+// - scope:    provide min interface (& extend by non-member func)
+// - mem-safe: true
 // ***********************************************************************************************
 #pragma once
 
@@ -112,5 +113,5 @@ void setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataT
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2022-12-03  CSZ       - simple & natural
 // 2022-12-30  CSZ       - rm data
-// 2024-02-12  CSZ       4)use SafePtr (mem-safe, shared_ptr is not)
+// 2024-02-12  CSZ       4)use SafePtr (mem-safe); shared_ptr is not mem-safe
 // ***********************************************************************************************

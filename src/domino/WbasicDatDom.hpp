@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-// - what: simple/easy write-protect for DataDomino
-// - why:  eg Yang RW para need write-protect
-// - core: wrCtrl_
+// - what:     simple/easy write-protect for DataDomino
+// - why:      eg Yang RW para need write-protect
+// - core:     wrCtrl_
+// - mem-safe: true
 // ***********************************************************************************************
 #pragma once
 
@@ -167,5 +168,5 @@ void WbasicDatDom<aDominoType>::innerRmEv(const Domino::Event aEv)
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2022-12-03  CSZ       - simple & natural
 // 2022-12-31  CSZ       - rm data
-// 2024-02-12  CSZ       2)use SafePtr (mem-safe, shared_ptr is not)
+// 2024-02-12  CSZ       2)use SafePtr (mem-safe); shared_ptr is not mem-safe
 // ***********************************************************************************************

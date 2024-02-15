@@ -113,7 +113,7 @@ template<typename U, typename... Args> SafePtr<U> make_safe(Args&&... aArgs)
 {
     SafePtr<U> sptr;
     sptr.pT_ = make_shared<U>(forward<Args>(aArgs)...);
-    return sptr;
+    return sptr;  // !!! valgrind failed when HID() here
 }
 
 // ***********************************************************************************************
