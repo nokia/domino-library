@@ -25,8 +25,8 @@
 #include <unordered_map>
 
 #include "MT_PingMainTH.hpp"
-#include "UniData.hpp"
 #include "UniLog.hpp"
+#include "UniPtr.hpp"
 
 using namespace std;
 
@@ -34,8 +34,8 @@ namespace RLib
 {
 // ele & its typeid.hash_code
 // - hash_code is size_t (simplest) vs type_info (unworth to cost storage mem, & complex MtInQueue)
-using ElePair = pair<UniData, size_t>;  // <ele, ID>
-using EleHdlr = function<void(UniData)>;
+using ElePair = pair<UniPtr, size_t>;  // <ele, ID>
+using EleHdlr = function<void(UniPtr)>;
 
 // ***********************************************************************************************
 class MtInQueue : public UniLog  // mt_ interface can't UniLog that's not MT safe!!!

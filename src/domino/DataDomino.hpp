@@ -15,8 +15,8 @@
 #include <unordered_map>
 #include <memory>  // make_shared
 
-#include "UniData.hpp"
 #include "UniLog.hpp"
+#include "UniPtr.hpp"
 
 using namespace std;
 
@@ -39,37 +39,37 @@ public:
     // - if aEvName/data invalid, return null
     // - not template<aDataType> so can virtual for WrDatDom
     // . & let DataDomino has little idea of read-write ctrl, simpler
-    virtual UniData getData(const Domino::EvName&) const;
+    virtual UniPtr getData(const Domino::EvName&) const;
 
     // -------------------------------------------------------------------------------------------
-    // - replace old data by new=aUniData if old != new
+    // - replace old data by new=aUniPtr if old != new
     // - for aDataType w/o default constructor!!!
-    virtual void replaceData(const Domino::EvName&, UniData aUniData = UniData());
+    virtual void replaceData(const Domino::EvName&, UniPtr aUniPtr = UniPtr());
 
 protected:
     void innerRmEv(const Domino::Event) override;
 
 private:
     // -------------------------------------------------------------------------------------------
-    unordered_map<Domino::Event, UniData> dataStore_;  // [event]=UniData
+    unordered_map<Domino::Event, UniPtr> dataStore_;  // [event]=UniPtr
 };
 
 // ***********************************************************************************************
 template<typename aDominoType>
-UniData DataDomino<aDominoType>::getData(const Domino::EvName& aEvName) const
+UniPtr DataDomino<aDominoType>::getData(const Domino::EvName& aEvName) const
 {
     auto&& found = dataStore_.find(this->getEventBy(aEvName));
-    return (found == dataStore_.end()) ? UniData() : found->second;
+    return (found == dataStore_.end()) ? UniPtr() : found->second;
 }
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void DataDomino<aDominoType>::replaceData(const Domino::EvName& aEvName, UniData aUniData)
+void DataDomino<aDominoType>::replaceData(const Domino::EvName& aEvName, UniPtr aUniPtr)
 {
-    if (aUniData.get() == nullptr)
+    if (aUniPtr.get() == nullptr)
         dataStore_.erase(this->getEventBy(aEvName));  // avoid keep inc dataStore_
     else
-        dataStore_[this->newEvent(aEvName)] = aUniData;
+        dataStore_[this->newEvent(aEvName)] = aUniPtr;
 }
 
 // ***********************************************************************************************

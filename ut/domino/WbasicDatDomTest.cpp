@@ -67,7 +67,7 @@ TYPED_TEST_P(WbasicDatDomTest, canNOT_setWriteCtrl_afterOwnData)
     EXPECT_FALSE(PARA_DOM->wrCtrlOk("ev0")) << "REQ: failed to avoid out-ctrl";
     EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0")) << "REQ: flag no change";
 
-    PARA_DOM->replaceData("ev0", UniData());
+    PARA_DOM->replaceData("ev0", UniPtr());
     EXPECT_TRUE(PARA_DOM->wrCtrlOk("ev0")) << "REQ: succ since no data";
     EXPECT_TRUE(PARA_DOM->isWrCtrl("ev0")) << "REQ: flag change";
 }
