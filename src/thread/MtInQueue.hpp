@@ -20,11 +20,11 @@
 
 #include <deque>
 #include <functional>
-#include <memory>
 #include <mutex>
 #include <unordered_map>
 
 #include "MT_PingMainTH.hpp"
+#include "UniData.hpp"
 #include "UniLog.hpp"
 
 using namespace std;
@@ -33,8 +33,8 @@ namespace RLib
 {
 // ele & its typeid.hash_code
 // - hash_code is size_t (simplest) vs type_info (unworth to cost storage mem, & complex MtInQueue)
-using ElePair = pair<shared_ptr<void>, size_t>;  // <ele, ID>
-using EleHdlr = function<void(shared_ptr<void>)>;
+using ElePair = pair<UniData, size_t>;  // <ele, ID>
+using EleHdlr = function<void(UniData)>;
 
 // ***********************************************************************************************
 class MtInQueue : public UniLog  // mt_ interface can't UniLog that's not MT safe!!!
@@ -42,11 +42,11 @@ class MtInQueue : public UniLog  // mt_ interface can't UniLog that's not MT saf
 public:
     ~MtInQueue();
 
-    template<class aEleType> void mt_push(shared_ptr<aEleType> aEle);
+    template<class aEleType> void mt_push(PTR<aEleType> aEle);
 
     // shall be called in main thread ONLY!!!
     ElePair pop();  // high performance
-    template<class aEleType> shared_ptr<aEleType> pop() { return static_pointer_cast<aEleType>(pop().first); }
+    template<class aEleType> PTR<aEleType> pop() { return static_pointer_cast<aEleType>(pop().first); }
 
     size_t mt_sizeQ();
     void   mt_clear();
@@ -82,12 +82,13 @@ void MtInQueue::hdlr(const EleHdlr& aHdlr)
 
 // ***********************************************************************************************
 template<class aEleType>
-void MtInQueue::mt_push(shared_ptr<aEleType> aEle)
+void MtInQueue::mt_push(PTR<aEleType> aEle)
 {
     {
         lock_guard<mutex> guard(mutex_);
         queue_.push_back(ElePair(aEle, typeid(aEleType).hash_code()));
-    }  // unlock then mt_notifyFn()
+        HID("(MtQ) ptr=" << aEle.get() << ", nRef=" << aEle.use_count());
+    }   // unlock then mt_notifyFn()
     mt_pingMainTH();
 }
 
@@ -110,4 +111,5 @@ MtInQueue& mt_getQ();
 // 2023-09-18  CSZ       - support main thread wait() instead of keeping pop()
 // 2023-10-26  CSZ       - replace mt_notifyFn_() by mt_pingMainTH()
 // 2023-10-29  CSZ       - integrate handler
+// 2024-02-15  CSZ       3)use SafePtr (mem-safe, shared_ptr is not)
 // ***********************************************************************************************

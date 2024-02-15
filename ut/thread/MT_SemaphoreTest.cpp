@@ -45,23 +45,23 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
 
     // setup msg handler table for mt_getQ()
     EXPECT_EQ(0u, mt_getQ().nHdlr())  << "REQ: init no hdlr";
-    mt_getQ().hdlr<string>([this, &cb_info](shared_ptr<void> aMsg)
+    mt_getQ().hdlr<string>([this, &cb_info](UniData aMsg)
     {
         msgSelf_->newMsg(  // REQ: via MsgSelf
             [aMsg, &cb_info]
             {
-                EXPECT_EQ("a", *static_pointer_cast<string>(aMsg));
+                EXPECT_EQ("a", *(static_pointer_cast<string>(aMsg).get()));
                 cb_info.emplace("REQ: a's Q hdlr via MsgSelf");
             }
         );
     });
     EXPECT_EQ(1u, mt_getQ().nHdlr())  << "REQ: count hdlr";
-    mt_getQ().hdlr<int>([this, &cb_info](shared_ptr<void> aMsg)
+    mt_getQ().hdlr<int>([this, &cb_info](UniData aMsg)
     {
         msgSelf_->newMsg(
             [aMsg, &cb_info]
             {
-                EXPECT_EQ(2, *static_pointer_cast<int>(aMsg));
+                EXPECT_EQ(2, *(static_pointer_cast<int>(aMsg).get()));
                 cb_info.emplace("REQ: 2's Q hdlr via MsgSelf");
             }
         );
@@ -72,7 +72,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     ThreadBack::newThread(
         // entryFn
         [] {
-            mt_getQ().mt_push(make_shared<string>("a"));
+            mt_getQ().mt_push(MAKE_PTR<string>("a"));
             return true;
         },
         // backFn
@@ -88,7 +88,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     ThreadBack::newThread(
         // entryFn
         [] {
-            mt_getQ().mt_push(make_shared<int>(2));
+            mt_getQ().mt_push(MAKE_PTR<int>(2));
             return true;
         },
         // backFn

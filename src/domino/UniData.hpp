@@ -20,14 +20,18 @@ using namespace std;
 #if 0
 namespace RLib
 {
-using UniData = shared_ptr<void>;
+using UniData  =  shared_ptr<void>;
 #define MAKE_PTR  make_shared
+#define PTR       shared_ptr
 #else
 #include "SafePtr.hpp"
 namespace RLib
 {
-using UniData = SafePtr<void>;
+using UniData   = SafePtr<void>;
 #define MAKE_PTR  make_safe
+#define PTR       SafePtr
+// 4th req: SafePtr.get() return same as shared_ptr
+// 5th req: SafePtr.use_count() is same as shared_ptr
 #endif
 
 }  // namespace

@@ -167,5 +167,5 @@ void WbasicDatDom<aDominoType>::innerRmEv(const Domino::Event aEv)
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2022-12-03  CSZ       - simple & natural
 // 2022-12-31  CSZ       - rm data
-// 2024-02-12  CSZ       2)use SafePtr (mem-safe, hared_ptr is not)
+// 2024-02-12  CSZ       2)use SafePtr (mem-safe, shared_ptr is not)
 // ***********************************************************************************************

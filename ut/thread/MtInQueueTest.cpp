@@ -39,10 +39,10 @@ struct MtInQueueTest : public Test, public UniLog
 // ***********************************************************************************************
 TEST_F(MtInQueueTest, GOLD_simple_fifo)
 {
-    mt_getQ().mt_push<int>(make_shared<int>(1));
-    mt_getQ().mt_push<int>(make_shared<int>(2));
-    EXPECT_EQ(1, *(mt_getQ().pop<int>())) << "REQ: fifo";
-    EXPECT_EQ(2, *(mt_getQ().pop<int>())) << "REQ: fifo";
+    mt_getQ().mt_push<int>(MAKE_PTR<int>(1));
+    mt_getQ().mt_push<int>(MAKE_PTR<int>(2));
+    EXPECT_EQ(1, *(mt_getQ().pop<int>().get())) << "REQ: fifo";
+    EXPECT_EQ(2, *(mt_getQ().pop<int>().get())) << "REQ: fifo";
 }
 TEST_F(MtInQueueTest, GOLD_sparsePush_fifo)
 {
@@ -51,7 +51,7 @@ TEST_F(MtInQueueTest, GOLD_sparsePush_fifo)
     {
         for (int i = 0; i < nMsg; i++)
         {
-            mt_getQ().mt_push(make_shared<int>(i));
+            mt_getQ().mt_push(MAKE_PTR<int>(i));
             this_thread::sleep_for(1us);  // simulate real world (sparse msg)
         }
     });
@@ -60,12 +60,18 @@ TEST_F(MtInQueueTest, GOLD_sparsePush_fifo)
     while (nHdl < nMsg)
     {
         auto msg = mt_getQ().pop<int>();
-        if (msg)
+        if (msg.get())
         {
+            HID("nHdl=" << nHdl << ", msg=" << msg.get() << ", nRef=" << msg.use_count());
             SCOPED_TRACE(nHdl);
-            EXPECT_EQ(nHdl++, *msg) << "REQ: fifo";
+            EXPECT_EQ(nHdl, *(msg.get())) << "REQ: fifo";
+            ++nHdl;
         }
-        else timedwait();  // REQ: less CPU than repeat pop() or this_thread::yield()
+        else
+        {
+            HID("nHdl=" << nHdl << ", nRef=" << msg.use_count());
+            timedwait();  // REQ: less CPU than repeat pop() or this_thread::yield()
+        }
     }
     DBG("REQ(sleep 1us/push): e2e user=0.354s->0.123s, sys=0.412s->0.159s")
 }
@@ -76,7 +82,7 @@ TEST_F(MtInQueueTest, GOLD_surgePush_fifo)
     {
         for (int i = 0; i < nMsg; i++)
         {
-            mt_getQ().mt_push(make_shared<int>(i));  // surge push
+            mt_getQ().mt_push(MAKE_PTR<int>(i));  // surge push
         }
     });
 
@@ -85,10 +91,10 @@ TEST_F(MtInQueueTest, GOLD_surgePush_fifo)
     while (nHdl < nMsg)
     {
         auto msg = mt_getQ().pop<int>();
-        if (msg)
+        if (msg.get())
         {
             SCOPED_TRACE(nHdl);
-            EXPECT_EQ(nHdl++, *msg) << "REQ: fifo";
+            EXPECT_EQ(nHdl++, *(msg.get())) << "REQ: fifo";
         }
         else this_thread::yield();  // REQ: test cache_ performance
     }
@@ -96,43 +102,43 @@ TEST_F(MtInQueueTest, GOLD_surgePush_fifo)
 }
 TEST_F(MtInQueueTest, GOLD_nonBlock_pop)
 {
-    ASSERT_FALSE(mt_getQ().pop<void>()) << "REQ: can pop empty";
+    ASSERT_EQ(nullptr, mt_getQ().pop<void>().get()) << "REQ: can pop empty";
 
-    mt_getQ().mt_push(make_shared<string>("1st"));
-    mt_getQ().mt_push(make_shared<string>("2nd"));
+    mt_getQ().mt_push(MAKE_PTR<string>("1st"));
+    mt_getQ().mt_push(MAKE_PTR<string>("2nd"));
     mt_getQ().backdoor().lock();
     timedwait(600);  // push shall wakeup this func instead of 10m timeout
-    ASSERT_FALSE(mt_getQ().pop<void>()) << "REQ: not blocked";
+    ASSERT_EQ(nullptr, mt_getQ().pop<void>().get()) << "REQ: not blocked";
     timedwait(600);  // REQ: pop() shall mt_pingMainTH() if can't access queue_
 
     mt_getQ().backdoor().unlock();
-    ASSERT_EQ("1st", *(mt_getQ().pop<string>())) << "REQ: can pop";
+    ASSERT_EQ("1st", *(mt_getQ().pop<string>().get())) << "REQ: can pop";
 
     mt_getQ().backdoor().lock();
-    ASSERT_EQ("2nd", *(mt_getQ().pop<string>())) << "REQ: can pop from cache";
+    ASSERT_EQ("2nd", *(mt_getQ().pop<string>().get())) << "REQ: can pop from cache";
     mt_getQ().backdoor().unlock();
 }
 TEST_F(MtInQueueTest, size_and_nowait)
 {
-    mt_getQ().mt_push<int>(make_shared<int>(1));
+    mt_getQ().mt_push<int>(MAKE_PTR<int>(1));
     ASSERT_EQ(1u, mt_getQ().mt_sizeQ())  << "REQ: inc size"  << endl;
     timedwait(600);  // ut can't tolerate 10m timer
     ASSERT_EQ(1u, mt_getQ().mt_sizeQ())  << "REQ: wait() ret immediately since mt_getQ() not empty"  << endl;
 
-    mt_getQ().mt_push<int>(make_shared<int>(2));
+    mt_getQ().mt_push<int>(MAKE_PTR<int>(2));
     ASSERT_EQ(2u, mt_getQ().mt_sizeQ())  << "REQ: inc size"  << endl;
 
-    EXPECT_EQ(1, *(mt_getQ().pop<int>())) << "REQ: fifo";
+    EXPECT_EQ(1, *(mt_getQ().pop<int>().get())) << "REQ: fifo";
     ASSERT_EQ(1u, mt_getQ().mt_sizeQ())  << "REQ: dec size"  << endl;
     timedwait(600);
     ASSERT_EQ(1u, mt_getQ().mt_sizeQ())  << "REQ: wait() ret immediately since mt_getQ() not empty"  << endl;
 
-    mt_getQ().mt_push<int>(make_shared<int>(3));
+    mt_getQ().mt_push<int>(MAKE_PTR<int>(3));
     timedwait(600);
     ASSERT_EQ(2u, mt_getQ().mt_sizeQ())  << "REQ: wait() ret immediately since mt_getQ() not empty"  << endl;
 
-    EXPECT_EQ(2, *(mt_getQ().pop<int>())) << "REQ: keep fifo after wait_for()";
-    EXPECT_EQ(3, *(mt_getQ().pop<int>())) << "REQ: keep fifo after wait_for()";
+    EXPECT_EQ(2, *(mt_getQ().pop<int>().get())) << "REQ: keep fifo after wait_for()";
+    EXPECT_EQ(3, *(mt_getQ().pop<int>().get())) << "REQ: keep fifo after wait_for()";
     ASSERT_EQ(0u, mt_getQ().mt_sizeQ())  << "REQ: dec size"  << endl;
 }
 
@@ -147,7 +153,7 @@ struct TestObj
 TEST_F(MtInQueueTest, GOLD_destructCorrectly)
 {
     bool isDestructed;
-    mt_getQ().mt_push(make_shared<TestObj>(isDestructed));
+    mt_getQ().mt_push(MAKE_PTR<TestObj>(isDestructed));
     ASSERT_FALSE(isDestructed);
 
     mt_getQ().mt_clear();
@@ -155,11 +161,11 @@ TEST_F(MtInQueueTest, GOLD_destructCorrectly)
 }
 TEST_F(MtInQueueTest, clear)
 {
-    mt_getQ().mt_push<void>(nullptr);
-    mt_getQ().mt_push<void>(nullptr);
+    mt_getQ().mt_push<void>(UniData());
+    mt_getQ().mt_push<void>(UniData());
     mt_getQ().pop();
-    mt_getQ().mt_push<void>(nullptr);
-    mt_getQ().hdlr<void>([](shared_ptr<void>){});
+    mt_getQ().mt_push<void>(UniData());
+    mt_getQ().hdlr<void>([](UniData){});
 
     mt_getQ().mt_clear();
     ASSERT_EQ(0u, mt_getQ().mt_sizeQ()) << "REQ: clear all ele";
@@ -171,7 +177,7 @@ TEST_F(MtInQueueTest, clear)
 // normal covered by MT_SemaphoreTest
 TEST_F(MtInQueueTest, discard_noHdlrEle)
 {
-    mt_getQ().mt_push<void>(nullptr);
+    mt_getQ().mt_push<void>(UniData());
     EXPECT_EQ(1u, mt_getQ().mt_sizeQ());
 
     mt_getQ().handleAllEle();
@@ -181,7 +187,7 @@ TEST_F(MtInQueueTest, handleAllEle_shallnot_block)
 {
     MtInQueue mtQ;  // cov destructor with ele left
 
-    mtQ.mt_push<void>(nullptr);
+    mtQ.mt_push<void>(UniData());
     EXPECT_EQ(1u, mtQ.mt_sizeQ());
     mtQ.backdoor().lock();
 
@@ -193,11 +199,11 @@ TEST_F(MtInQueueTest, GOLD_shallHandle_bothCacheAndQueue_ifPossible)
 {
     // init
     size_t nCalled = 0;
-    mt_getQ().hdlr<void>([&nCalled](shared_ptr<void>){ ++nCalled; });
-    mt_getQ().mt_push<void>(nullptr);
-    mt_getQ().mt_push<void>(nullptr);
+    mt_getQ().hdlr<void>([&nCalled](UniData){ ++nCalled; });
+    mt_getQ().mt_push<void>(UniData());
+    mt_getQ().mt_push<void>(UniData());
     mt_getQ().pop();  // still 1 ele in cache_
-    mt_getQ().mt_push<void>(nullptr);  // and 1 ele in queue_
+    mt_getQ().mt_push<void>(UniData());  // and 1 ele in queue_
     EXPECT_EQ(2u, mt_getQ().mt_sizeQ());
 
     mt_getQ().backdoor().lock();

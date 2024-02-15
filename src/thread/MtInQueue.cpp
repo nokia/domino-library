@@ -83,16 +83,17 @@ ElePair MtInQueue::pop()
         {
             mt_pingMainTH();  // since waste this wakeup as not own the lock
             this_thread::yield();  // avoid main thread keep checking
-            return ElePair(nullptr, typeid(void).hash_code());
+            return ElePair(UniData(), typeid(void).hash_code());
         }
         if (queue_.empty())
-            return ElePair(nullptr, typeid(void).hash_code());
+            return ElePair(UniData(), typeid(void).hash_code());
         cache_.swap(queue_);  // fast & for at most ele
     }
     // unlocked
 
     auto elePair = cache_.front();  // must copy
     cache_.pop_front();
+    HID("(MtQ) ptr=" << elePair.first.get() << ", nRef=" << elePair.first.use_count());
     return elePair;
 }
 

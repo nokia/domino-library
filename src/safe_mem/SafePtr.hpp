@@ -43,6 +43,7 @@ public:
     shared_ptr<void> cast_get() const;
 
     T* get() const { return pT_.get(); }  // same interface as shared_ptr
+    long int use_count() const noexcept { return pT_.use_count(); }  // same interface as shared_ptr
     const type_info* preVoidType() const { return preVoidType_; }
     const type_info* realType() const { return realType_; }
 
@@ -112,6 +113,7 @@ template<typename U, typename... Args> SafePtr<U> make_safe(Args&&... aArgs)
 {
     SafePtr<U> sptr;
     sptr.pT_ = make_shared<U>(forward<Args>(aArgs)...);
+    HID("new ptr=" << sptr.pT_.get());
     return sptr;
 }
 
