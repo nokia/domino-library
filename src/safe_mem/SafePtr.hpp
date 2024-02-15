@@ -39,8 +39,8 @@ public:
 
     // cast
     template<typename From> SafePtr(const SafePtr<From>&);
-    template<typename To> shared_ptr<To> cast() const;
-    shared_ptr<void> cast() const;
+    template<typename To> shared_ptr<To> cast_get() const;
+    shared_ptr<void> cast_get() const;
 
     T* get() const { return pT_.get(); }  // same interface as shared_ptr
     const type_info* preVoidType() const { return preVoidType_; }
@@ -57,7 +57,7 @@ private:
 template<typename T>
 template<typename From>
 SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom)
-    : pT_(aSafeFrom.template cast<T>())
+    : pT_(aSafeFrom.template cast_get<T>())
 {
     HID(typeid(From).name() << " to " << typeid(T).name());
     if (! pT_)
@@ -66,37 +66,42 @@ SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom)
         return;
     }
     realType_ = aSafeFrom.realType();
+
+    preVoidType_ = aSafeFrom.preVoidType();
     if (! is_same<T, void>::value)
     {
-        HID("not to void");
+        HID("valid cast to non-void");
         return;
     }
-    if (! is_same<From, void>::value)
-    {
-        HID("not from void");
-        preVoidType_ = &typeid(From);
-    }
+    HID("cast non-void to void (void-to-void is covered by copy constructor)");
+    preVoidType_ = &typeid(From);
 }
 
 // ***********************************************************************************************
 template<typename T>
 template<typename To>
-shared_ptr<To> SafePtr<T>::cast() const
+shared_ptr<To> SafePtr<T>::cast_get() const
 {
     if (is_convertible<T*, To*>::value)
     {
         HID("(SafePtr) Derive to Base (include to self)");
         return static_pointer_cast<To>(pT_);
     }
-    if (&typeid(To) == realType_ || &typeid(To) == preVoidType_)
+    if (&typeid(To) == realType_)
     {
-        HID("(SafePtr) any to origin/preVoid");
+        HID("(SafePtr) any to origin");
         return static_pointer_cast<To>(pT_);
     }
+    if (&typeid(To) == preVoidType_)
+    {
+        HID("(SafePtr) any to type-before-cast-to-void");
+        return static_pointer_cast<To>(pT_);
+    }
+    HID("(SafePtr) unsupported cast");
     return nullptr;
 }
 template<typename T>
-shared_ptr<void> SafePtr<T>::cast() const
+shared_ptr<void> SafePtr<T>::cast_get() const
 {
     HID("(SafePtr) any to void (for container to store diff types)");
     return pT_;
