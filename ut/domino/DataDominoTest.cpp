@@ -42,16 +42,16 @@ TYPED_TEST_P(DataDominoTest, setShared_thenGetIt_thenRmIt)
     EXPECT_EQ(nullptr, PARA_DOM->getData("ev0").get()) << "REQ: get null since ev0 not exist";
 
     PARA_DOM->replaceData("ev0", MAKE_PTR<string>("ev0's data"));  // req: any type data (2nd=string)
-    auto&& pString = static_pointer_cast<string>(PARA_DOM->getData("ev0")).get();
-    ASSERT_NE(nullptr, pString);
-    EXPECT_EQ("ev0's data", *pString) << "REQ: get = set";
+    auto pString = static_pointer_cast<string>(PARA_DOM->getData("ev0"));  // directly get() will destruct shared_ptr afterward
+    ASSERT_NE(nullptr, pString.get());
+    EXPECT_EQ("ev0's data", *(pString.get())) << "REQ: get = set";
 
-    *pString = "ev0's updated data";
+    *(pString.get()) = "ev0's updated data";
     EXPECT_EQ("ev0's updated data", *(getData<TypeParam, string>(*PARA_DOM, "ev0").get())) << "REQ: get=update";
 
     PARA_DOM->replaceData("ev0", MAKE_PTR<string>("replace ev0's data"));
     EXPECT_EQ("replace ev0's data", *(getData<TypeParam, string>(*PARA_DOM, "ev0").get())) << "REQ: get replaced";
-    EXPECT_NE(pString, static_pointer_cast<string>(PARA_DOM->getData("ev0")).get()) << "REQ: replace != old";
+    EXPECT_NE(pString.get(), static_pointer_cast<string>(PARA_DOM->getData("ev0")).get()) << "REQ: replace != old";
 
     PARA_DOM->replaceData("ev0");  // req: rm data
     EXPECT_EQ(nullptr, PARA_DOM->getData("ev0").get()) << "REQ: get null";
