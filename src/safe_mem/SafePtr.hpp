@@ -42,6 +42,7 @@ public:
     template<typename From> SafePtr(const SafePtr<From>&);
     template<typename To> shared_ptr<To> cast_get() const;
     shared_ptr<void> cast_get() const;
+    auto operator->() const { return pT_; }
 
     T* get() const { return pT_.get(); }  // same interface as shared_ptr
     long int use_count() const noexcept { return pT_.use_count(); }  // same interface as shared_ptr
@@ -50,9 +51,9 @@ public:
 
 private:
     // -------------------------------------------------------------------------------------------
-    std::shared_ptr<T>  pT_;
-    const type_info*    preVoidType_ = nullptr;  // that before cast to void, can safely cast back
-    const type_info*    realType_ = &typeid(T);  // that pT_ point to, can safely cast to
+    shared_ptr<T>    pT_;
+    const type_info* preVoidType_ = nullptr;  // that before cast to void, can safely cast back
+    const type_info* realType_ = &typeid(T);  // that pT_ point to, can safely cast to
 };
 
 // ***********************************************************************************************

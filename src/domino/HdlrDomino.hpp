@@ -34,8 +34,8 @@ template<class aDominoType>
 class HdlrDomino : public aDominoType
 {
 public:
-    explicit HdlrDomino(const UniLogName& aUniLogName) : aDominoType(aUniLogName) { msgSelf_ = MSG_SELF; }  // default
-    void setMsgSelf(shared_ptr<MsgSelf>& aMsgSelf) { msgSelf_ = aMsgSelf; }  // can replace default
+    explicit HdlrDomino(const UniLogName& aUniLogName) : aDominoType(aUniLogName) {}
+    void setMsgSelf(const PTR<MsgSelf>& aMsgSelf) { msgSelf_ = aMsgSelf; }  // can replace default
 
     Domino::Event setHdlr(const Domino::EvName&, const MsgCB& aHdlr);
     bool rmOneHdlrOK(const Domino::EvName&);  // rm by EvName
@@ -63,7 +63,7 @@ protected:
 private:
     unordered_map<Domino::Event, SharedMsgCB> hdlrs_;
 protected:
-    shared_ptr<MsgSelf> msgSelf_;
+    PTR<MsgSelf> msgSelf_ = ObjAnywhere::get<MsgSelf>(*this);
 public:
     using aDominoType::oneLog;
 };

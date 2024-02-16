@@ -11,8 +11,9 @@
 //   . eg ObjAnywhere::get<Obj>(): get Obj
 // - more value:
 //   . ObjAnywhere not include any Obj.hpp so no cross-include conflict
-//   * ObjAnywhere stores shared_ptr<Obj>, not shared_ptr<void> (real store, correct destruct, lifespan mgr)
+//   * ObjAnywhere stores shared_ptr<Obj> - real store, correct destruct, lifespan mgr
 // - core: objStore_
+// - mem-safe: true
 // - note:
 //   . Obj can be destructed by its own destructor when shared_ptr<Obj>.use_count()==0
 //   . it's possible after deinit() that Obj still exists since its use_count()>0
@@ -27,10 +28,10 @@
 #define SERVICE_ANYWHERE_HPP_
 
 #include <unordered_map>
-#include <memory>    // for shared_ptr
 #include <typeinfo>  // typeid()
 
 #include "UniLog.hpp"
+#include "UniPtr.hpp"
 
 using namespace std;
 
@@ -41,7 +42,7 @@ class ObjAnywhere
 {
 public:
     using ObjIndex = size_t;
-    using ObjStore = unordered_map<ObjIndex, shared_ptr<void> >;
+    using ObjStore = unordered_map<ObjIndex, UniPtr>;
 
     static void init(UniLog& = UniLog::defaultUniLog());    // init objStore_
     static void deinit(UniLog& = UniLog::defaultUniLog());  // rm objStore_
@@ -52,13 +53,13 @@ public:
     // - save aObjType into objStore_
     // -------------------------------------------------------------------------------------------
     template<typename aObjType>
-    static void set(shared_ptr<aObjType> aSharedObj, UniLog& = UniLog::defaultUniLog());
+    static void set(PTR<aObjType> aSharedObj, UniLog& = UniLog::defaultUniLog());
 
     // -------------------------------------------------------------------------------------------
     // - get a "Obj" from objStore_
     // - template operator[] not easier in usage
     // -------------------------------------------------------------------------------------------
-    template<typename aObjType> static shared_ptr<aObjType> get(UniLog& = UniLog::defaultUniLog());
+    template<typename aObjType> static PTR<aObjType> get(UniLog& = UniLog::defaultUniLog());
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -67,7 +68,7 @@ private:
 
 // ***********************************************************************************************
 template<typename aObjType>
-shared_ptr<aObjType> ObjAnywhere::get(UniLog& oneLog)
+PTR<aObjType> ObjAnywhere::get(UniLog& oneLog)
 {
     if (not isInit())
         return nullptr;
@@ -82,7 +83,7 @@ shared_ptr<aObjType> ObjAnywhere::get(UniLog& oneLog)
 
 // ***********************************************************************************************
 template<typename aObjType>
-void ObjAnywhere::set(shared_ptr<aObjType> aSharedObj, UniLog& oneLog)
+void ObjAnywhere::set(PTR<aObjType> aSharedObj, UniLog& oneLog)
 {
     if (not isInit())
     {
@@ -91,7 +92,7 @@ void ObjAnywhere::set(shared_ptr<aObjType> aSharedObj, UniLog& oneLog)
     }
 
     auto&& objIndex = typeid(aObjType).hash_code();
-    if (aSharedObj == nullptr)
+    if (aSharedObj.get() == nullptr)
     {
         objStore_->erase(objIndex);  // natural expectation
         INF("(ObjAnywhere) Removed obj=" << typeid(aObjType).name() << " from ObjAnywhere.");
@@ -126,4 +127,5 @@ void ObjAnywhere::set(shared_ptr<aObjType> aSharedObj, UniLog& oneLog)
 // 2022-01-01  PJ & CSZ  - formal log & naming
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2022-12-02  CSZ       - simple & natural
+// 2024-02-15  CSZ       7)use SafePtr (mem-safe); shared_ptr is not mem-safe
 // ***********************************************************************************************

@@ -27,9 +27,9 @@
 
 // ***********************************************************************************************
 // UT req: combined domino shall pass all UT
-#define DOMINO      (ObjAnywhere::get<MaxDom>(*this))
-#define NO_FREE_DOM (ObjAnywhere::get<MaxNofreeDom>(*this))
-#define PARA_DOM    (ObjAnywhere::get<TypeParam>(*this))
+#define DOMINO      (ObjAnywhere::get<MaxDom>      (*this).get())
+#define NO_FREE_DOM (ObjAnywhere::get<MaxNofreeDom>(*this).get())
+#define PARA_DOM    (ObjAnywhere::get<TypeParam>   (*this).get())
 
 using namespace std;
 using namespace testing;
@@ -58,19 +58,19 @@ struct UtInitObjAnywhere : public UniLog, public Test
     {
         ObjAnywhere::init(*this);
 
-        ObjAnywhere::set(make_shared<MsgSelf>(uniLogName()), *this);
+        ObjAnywhere::set(MAKE_PTR<MsgSelf>(uniLogName()), *this);
 
-        ObjAnywhere::set(make_shared<Domino>         (uniLogName()), *this);
-        ObjAnywhere::set(make_shared<MinDatDom>      (uniLogName()), *this);
-        ObjAnywhere::set(make_shared<MinWbasicDatDom>(uniLogName()), *this);
-        ObjAnywhere::set(make_shared<MinHdlrDom>     (uniLogName()), *this);
-        ObjAnywhere::set(make_shared<MinMhdlrDom>    (uniLogName()), *this);
-        ObjAnywhere::set(make_shared<MinPriDom>      (uniLogName()), *this);
-        ObjAnywhere::set(make_shared<MinFreeDom>     (uniLogName()), *this);
-        ObjAnywhere::set(make_shared<MinRmEvDom>     (uniLogName()), *this);
+        ObjAnywhere::set(MAKE_PTR<Domino>         (uniLogName()), *this);
+        ObjAnywhere::set(MAKE_PTR<MinDatDom>      (uniLogName()), *this);
+        ObjAnywhere::set(MAKE_PTR<MinWbasicDatDom>(uniLogName()), *this);
+        ObjAnywhere::set(MAKE_PTR<MinHdlrDom>     (uniLogName()), *this);
+        ObjAnywhere::set(MAKE_PTR<MinMhdlrDom>    (uniLogName()), *this);
+        ObjAnywhere::set(MAKE_PTR<MinPriDom>      (uniLogName()), *this);
+        ObjAnywhere::set(MAKE_PTR<MinFreeDom>     (uniLogName()), *this);
+        ObjAnywhere::set(MAKE_PTR<MinRmEvDom>     (uniLogName()), *this);
 
-        ObjAnywhere::set(make_shared<MaxDom>         (uniLogName()), *this);
-        ObjAnywhere::set(make_shared<MaxNofreeDom>   (uniLogName()), *this);
+        ObjAnywhere::set(MAKE_PTR<MaxDom>         (uniLogName()), *this);
+        ObjAnywhere::set(MAKE_PTR<MaxNofreeDom>   (uniLogName()), *this);
     }
     ~UtInitObjAnywhere()
     {
