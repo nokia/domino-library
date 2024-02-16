@@ -15,47 +15,47 @@ namespace RLib
 TEST(SafePtrTest, GOLD_construct_get)
 {
     auto one = make_safe<int>(42);
-    EXPECT_EQ(42, *(one.cast_get<int>())) << "REQ: valid construct & get";
+    EXPECT_EQ(42, *(one.cast_get())) << "REQ: valid construct & get";
 
-    *(one.cast_get<int>()) = 43;
-    EXPECT_EQ(43, *(one.cast_get<int>())) << "REQ: valid update";
+    *(one.cast_get()) = 43;
+    EXPECT_EQ(43, *(one.cast_get())) << "REQ: valid update";
 
-    EXPECT_EQ(one.cast_get<void>(), one.cast_get<int>()) << "REQ: valid get (void)";
+    EXPECT_EQ(one.cast_get<void>(), one.cast_get()) << "REQ: valid get (void)";
     // one.cast_get<unsigned>();  // REQ: invalid cast_get() will fail compile
 }
 TEST(SafePtrTest, GOLD_cp_get)
 {
     auto one = make_safe<int>(42);
     auto two(one);
-    EXPECT_EQ(42, *(two.cast_get<int>())) << "REQ: valid cp & get";
+    EXPECT_EQ(42, *(two.cast_get())) << "REQ: valid cp & get";
 
-    *(one.cast_get<int>()) = 43;
-    EXPECT_EQ(43, *(two.cast_get<int>())) << "REQ: valid update via sharing";
+    *(one.cast_get()) = 43;
+    EXPECT_EQ(43, *(two.cast_get())) << "REQ: valid update via sharing";
 }
 TEST(SafePtrTest, GOLD_assign_get)
 {
     SafePtr<int> one;
-    EXPECT_EQ(nullptr, one.cast_get<int>()) << "REQ: construct null";
+    EXPECT_EQ(nullptr, one.cast_get()) << "REQ: construct null";
 
     auto two = make_safe<int>(42);
     one = two;
-    EXPECT_EQ(42, *(one.cast_get<int>()))  << "REQ: valid assign & get";
+    EXPECT_EQ(42, *(one.cast_get()))  << "REQ: valid assign & get";
 
     two = SafePtr<int>();
-    EXPECT_EQ(42,    *(one.cast_get<int>())) << "REQ: valid get after shared is reset";
-    EXPECT_EQ(nullptr, two.cast_get<int>())  << "REQ: assign to null";
+    EXPECT_EQ(42,    *(one.cast_get())) << "REQ: valid get after shared is reset";
+    EXPECT_EQ(nullptr, two.cast_get())  << "REQ: assign to null";
 }
 TEST(SafePtrTest, GOLD_mv_get)
 {
     SafePtr<int> one;
     auto two = make_safe<int>(42);
     one = move(two);
-    EXPECT_EQ(42,    *(one.cast_get<int>())) << "REQ: valid move assignment & get";
-    EXPECT_EQ(nullptr, two.cast_get<int>())  << "REQ: move src is null";
+    EXPECT_EQ(42,    *(one.cast_get())) << "REQ: valid move assignment & get";
+    EXPECT_EQ(nullptr, two.cast_get())  << "REQ: move src is null";
 
     SafePtr<int> three(move(one));
-    EXPECT_EQ(42,    *(three.cast_get<int>())) << "REQ: valid move cp & get";
-    EXPECT_EQ(nullptr, one.cast_get<int>())    << "REQ: move src is null";
+    EXPECT_EQ(42,    *(three.cast_get())) << "REQ: valid move cp & get";
+    EXPECT_EQ(nullptr, one.cast_get())    << "REQ: move src is null";
 }
 
 #define DERIVE_VOID

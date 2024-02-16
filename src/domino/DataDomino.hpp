@@ -8,7 +8,7 @@
 // - Req:      Domino to store any type of data
 // - core:     dataStore_
 // - scope:    provide min interface (& extend by non-member func)
-// - mem-safe: true
+// - mem-safe: true (when use SafePtr instead of shared_ptr)
 // ***********************************************************************************************
 #pragma once
 

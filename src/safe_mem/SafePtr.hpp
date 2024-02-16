@@ -31,7 +31,8 @@ using namespace std;
 namespace RLib
 {
 // ***********************************************************************************************
-template<typename T = void> class SafePtr
+template<typename T = void>
+class SafePtr
 {
 public:
     // create
@@ -42,7 +43,7 @@ public:
     // cast
     template<typename From> SafePtr(const SafePtr<From>&);
     template<typename To> shared_ptr<To> cast_get() const;
-    shared_ptr<void> cast_get() const;
+    shared_ptr<T> cast_get() const;
 
     // use
     T* get() const { return pT_.get(); }  // same interface as shared_ptr
@@ -85,6 +86,12 @@ SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom)
 
 // ***********************************************************************************************
 template<typename T>
+shared_ptr<T> SafePtr<T>::cast_get() const
+{
+    HID("(SafePtr) to self");
+    return pT_;
+}
+template<typename T>
 template<typename To>
 shared_ptr<To> SafePtr<T>::cast_get() const
 {
@@ -103,18 +110,18 @@ shared_ptr<To> SafePtr<T>::cast_get() const
         HID("(SafePtr) any to type-before-cast-to-void");
         return static_pointer_cast<To>(pT_);
     }
+    if (is_same<To, void>::value)
+    {
+        HID("(SafePtr) any to void (for container to store diff types)");
+        return static_pointer_cast<To>(pT_);
+    }
     HID("(SafePtr) unsupported cast");
     return nullptr;
 }
-template<typename T>
-shared_ptr<void> SafePtr<T>::cast_get() const
-{
-    HID("(SafePtr) any to void (for container to store diff types)");
-    return pT_;
-}
 
 // ***********************************************************************************************
-template<typename U, typename... Args> SafePtr<U> make_safe(Args&&... aArgs)
+template<typename U, typename... Args>
+SafePtr<U> make_safe(Args&&... aArgs)
 {
     SafePtr<U> sptr;
     sptr.pT_ = make_shared<U>(forward<Args>(aArgs)...);
@@ -122,7 +129,8 @@ template<typename U, typename... Args> SafePtr<U> make_safe(Args&&... aArgs)
 }
 
 // ***********************************************************************************************
-template<typename To, typename From> auto static_pointer_cast(const SafePtr<From>& aFromPtr) noexcept
+template<typename To, typename From>
+auto static_pointer_cast(const SafePtr<From>& aFromPtr) noexcept
 {
     return SafePtr<To>(aFromPtr);
 }
@@ -144,6 +152,10 @@ template<typename To, typename From> auto static_pointer_cast(const SafePtr<From
 //     . shared_ptr: c++11 start support T[], c++17 enhance, c++20 full support
 //     . shared_ptr[out-bound] is NOT safe, so still need SafePtr to support array
 //     . g++12 full support T[]
+//
+//   . T* get() is mem-safe?
+//     . T shall be mem-safe to avoid abuse mem via T*
+//     . so yes, get() is mem-safe
 //
 //   . T not ref/ptr/const?
 //   . SafeRef? or like this?

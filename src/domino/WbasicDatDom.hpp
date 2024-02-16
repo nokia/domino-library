@@ -7,7 +7,7 @@
 // - what:     simple/easy write-protect for DataDomino
 // - why:      eg Yang RW para need write-protect
 // - core:     wrCtrl_
-// - mem-safe: true
+// - mem-safe: true (when use SafePtr instead of shared_ptr)
 // ***********************************************************************************************
 #pragma once
 
