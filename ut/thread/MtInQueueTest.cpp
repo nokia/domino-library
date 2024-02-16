@@ -59,7 +59,7 @@ TEST_F(MtInQueueTest, GOLD_sparsePush_fifo)
     int nHdl = 0;
     while (nHdl < nMsg)
     {
-        auto msg = mt_getQ().pop<int>();  // directly get() will destruct shared_ptr afterward
+        auto msg = mt_getQ().pop<int>();  // CAN'T directly get() that destruct shared_ptr afterward
         if (msg.get())
         {
             HID("nHdl=" << nHdl << ", msg=" << msg.get() << ", nRef=" << msg.use_count());
