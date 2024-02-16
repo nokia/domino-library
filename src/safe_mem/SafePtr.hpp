@@ -13,6 +13,7 @@
 //   . safe use      : cast to real / before void
 //   . safe lifecycle: by shared_ptr
 //   . safe ptr array:
+// - mem-safe: true
 // - suggest:
 //   . any class ensure mem-safe (like MT safe)
 //   . struct ptr/ref member shall be SafePtr
@@ -42,10 +43,12 @@ public:
     template<typename From> SafePtr(const SafePtr<From>&);
     template<typename To> shared_ptr<To> cast_get() const;
     shared_ptr<void> cast_get() const;
-    auto operator->() const { return pT_; }
 
+    // use
     T* get() const { return pT_.get(); }  // same interface as shared_ptr
-    long int use_count() const noexcept { return pT_.use_count(); }  // same interface as shared_ptr
+    auto operator->() const { return pT_; }  // same interface as shared_ptr
+    auto use_count() const noexcept { return pT_.use_count(); }  // same interface as shared_ptr
+
     const type_info* preVoidType() const { return preVoidType_; }
     const type_info* realType() const { return realType_; }
 
@@ -119,7 +122,7 @@ template<typename U, typename... Args> SafePtr<U> make_safe(Args&&... aArgs)
 }
 
 // ***********************************************************************************************
-template<typename To, typename From> SafePtr<To> static_pointer_cast(const SafePtr<From>& aFromPtr) noexcept
+template<typename To, typename From> auto static_pointer_cast(const SafePtr<From>& aFromPtr) noexcept
 {
     return SafePtr<To>(aFromPtr);
 }
