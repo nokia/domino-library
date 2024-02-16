@@ -71,7 +71,7 @@ TYPED_TEST_P(DataDominoTest, correct_data_destructor)
 
     PARA_DOM->replaceData("ev", MAKE_PTR<TestData>(isDestructed));  // req: any type data (4th=TestData)
     EXPECT_FALSE(isDestructed);
-    PARA_DOM->replaceData("ev", UniPtr());
+    PARA_DOM->replaceData("ev", nullptr);
     EXPECT_TRUE(isDestructed);
 }
 

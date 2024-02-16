@@ -161,10 +161,10 @@ TEST_F(MtInQueueTest, GOLD_destructCorrectly)
 }
 TEST_F(MtInQueueTest, clear)
 {
-    mt_getQ().mt_push<void>(UniPtr());
-    mt_getQ().mt_push<void>(UniPtr());
+    mt_getQ().mt_push<void>(nullptr);
+    mt_getQ().mt_push<void>(nullptr);
     mt_getQ().pop();
-    mt_getQ().mt_push<void>(UniPtr());
+    mt_getQ().mt_push<void>(nullptr);
     mt_getQ().hdlr<void>([](UniPtr){});
 
     mt_getQ().mt_clear();
@@ -177,7 +177,7 @@ TEST_F(MtInQueueTest, clear)
 // normal covered by MT_SemaphoreTest
 TEST_F(MtInQueueTest, discard_noHdlrEle)
 {
-    mt_getQ().mt_push<void>(UniPtr());
+    mt_getQ().mt_push<void>(nullptr);
     EXPECT_EQ(1u, mt_getQ().mt_sizeQ());
 
     mt_getQ().handleAllEle();
@@ -187,7 +187,7 @@ TEST_F(MtInQueueTest, handleAllEle_shallnot_block)
 {
     MtInQueue mtQ;  // cov destructor with ele left
 
-    mtQ.mt_push<void>(UniPtr());
+    mtQ.mt_push<void>(nullptr);
     EXPECT_EQ(1u, mtQ.mt_sizeQ());
     mtQ.backdoor().lock();
 
@@ -200,10 +200,10 @@ TEST_F(MtInQueueTest, GOLD_shallHandle_bothCacheAndQueue_ifPossible)
     // init
     size_t nCalled = 0;
     mt_getQ().hdlr<void>([&nCalled](UniPtr){ ++nCalled; });
-    mt_getQ().mt_push<void>(UniPtr());
-    mt_getQ().mt_push<void>(UniPtr());
+    mt_getQ().mt_push<void>(nullptr);
+    mt_getQ().mt_push<void>(nullptr);
     mt_getQ().pop();  // still 1 ele in cache_
-    mt_getQ().mt_push<void>(UniPtr());  // and 1 ele in queue_
+    mt_getQ().mt_push<void>(nullptr);  // and 1 ele in queue_
     EXPECT_EQ(2u, mt_getQ().mt_sizeQ());
 
     mt_getQ().backdoor().lock();

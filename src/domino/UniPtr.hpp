@@ -20,14 +20,15 @@ using namespace std;
 #if 0
 namespace RLib
 {
-using UniPtr   =  shared_ptr<void>;
+using   UniPtr =  shared_ptr<void>;
 #define MAKE_PTR  make_shared
 #define PTR       shared_ptr
+
 #else
 #include "SafePtr.hpp"
 namespace RLib
 {
-using UniPtr   =  SafePtr<void>;
+using   UniPtr =  SafePtr<void>;
 #define MAKE_PTR  make_safe
 #define PTR       SafePtr
 // 4th req: SafePtr.get() return same as shared_ptr

@@ -35,7 +35,8 @@ template<typename T = void> class SafePtr
 public:
     // create
     template<typename U, typename... Args> friend SafePtr<U> make_safe(Args&&... aArgs);
-    SafePtr() = default;
+    SafePtr() = default;   // must explicit since below converter constructor
+    SafePtr(nullptr_t) {}  // implicit nullptr -> SafePtr()
 
     // cast
     template<typename From> SafePtr(const SafePtr<From>&);

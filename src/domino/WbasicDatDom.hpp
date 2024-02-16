@@ -30,8 +30,8 @@ public:
     UniPtr getData(const Domino::EvName&) const override;
     UniPtr wbasic_getData(const Domino::EvName&) const;
 
-    void replaceData(const Domino::EvName&, UniPtr aUniPtr = UniPtr()) override;
-    void wbasic_replaceData(const Domino::EvName&, UniPtr aUniPtr = UniPtr());
+    void replaceData(const Domino::EvName&, UniPtr aUniPtr = nullptr) override;
+    void wbasic_replaceData(const Domino::EvName&, UniPtr aUniPtr = nullptr);
 
 protected:
     void innerRmEv(const Domino::Event) override;
@@ -55,7 +55,7 @@ UniPtr WbasicDatDom<aDominoType>::getData(const Domino::EvName& aEvName) const
         return aDominoType::getData(aEvName);
 
     WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!");
-    return UniPtr();
+    return nullptr;
 }
 
 // ***********************************************************************************************
@@ -83,7 +83,7 @@ UniPtr WbasicDatDom<aDominoType>::wbasic_getData(const Domino::EvName& aEvName) 
         return aDominoType::getData(aEvName);
 
     WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!");
-    return UniPtr();
+    return nullptr;
 }
 
 // ***********************************************************************************************
