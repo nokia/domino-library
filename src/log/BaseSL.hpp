@@ -23,8 +23,8 @@ namespace RLib
 class BaseSL  // SL = Smart Log
 {
 public:
-    bool canDelLog() const { return not needLog_; }
-    void needLog() { needLog_ = true; }
+    bool canDelLog() const noexcept { return not needLog_; }
+    void needLog() noexcept { needLog_ = true; }
 
 //------------------------------------------------------------------------------------------------
 protected:    // derive use only

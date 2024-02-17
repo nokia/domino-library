@@ -35,23 +35,26 @@ template<typename T = void>
 class SafePtr
 {
 public:
-    // create
+    // safe-only creation (vs shared_ptr, eg shared_ptr(U*) is not safe)
     template<typename U, typename... Args> friend SafePtr<U> make_safe(Args&&... aArgs);
-    SafePtr() = default;   // must explicit since below converter constructor
-    SafePtr(nullptr_t) {}  // implicit nullptr -> SafePtr()
+    constexpr SafePtr() noexcept = default;      // must explicit since below converter constructor
+    constexpr SafePtr(nullptr_t) : SafePtr() {}  // implicit nullptr -> SafePtr()
 
-    // cast
-    template<typename From> SafePtr(const SafePtr<From>&);
-    template<typename To> shared_ptr<To> cast_get() const;
-    shared_ptr<T> cast_get() const;
+    // safe-only cast (vs shared_ptr, eg static_pointer_cast<any> is not safe)
+    template<typename From> SafePtr(const SafePtr<From>&) noexcept;
+    template<typename To> shared_ptr<To> cast_get() const noexcept;
+    shared_ptr<T> cast_get() const noexcept;
 
-    // use
-    T* get() const { return pT_.get(); }  // same interface as shared_ptr
-    auto operator->() const { return pT_; }  // same interface as shared_ptr
+    // use: safe, compatible & min (vs shared_ptr)
+    // - get() etc doesn't break SafePtr's safety though caller may abuse T*
+    // - T shall ensure itself safety (forbid abuse)
+    T* get() const noexcept { return pT_.get(); }  // same interface as shared_ptr
+    auto operator->() const noexcept { return pT_; }  // same interface as shared_ptr
     auto use_count() const noexcept { return pT_.use_count(); }  // same interface as shared_ptr
 
-    const type_info* preVoidType() const { return preVoidType_; }
-    const type_info* realType() const { return realType_; }
+    // most for debug
+    const type_info* preVoidType() const noexcept { return preVoidType_; }
+    const type_info* realType() const noexcept { return realType_; }
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -86,7 +89,7 @@ SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom)
 
 // ***********************************************************************************************
 template<typename T>
-shared_ptr<T> SafePtr<T>::cast_get() const
+shared_ptr<T> SafePtr<T>::cast_get() const  // most common usage, standalone is faster
 {
     HID("(SafePtr) to self");
     return pT_;
@@ -118,6 +121,8 @@ shared_ptr<To> SafePtr<T>::cast_get() const
     HID("(SafePtr) unsupported cast");
     return nullptr;
 }
+
+
 
 // ***********************************************************************************************
 template<typename U, typename... Args>
@@ -152,10 +157,6 @@ auto static_pointer_cast(const SafePtr<From>& aFromPtr) noexcept
 //     . shared_ptr: c++11 start support T[], c++17 enhance, c++20 full support
 //     . shared_ptr[out-bound] is NOT safe, so still need SafePtr to support array
 //     . g++12 full support T[]
-//
-//   . T* get() is mem-safe?
-//     . T shall be mem-safe to avoid abuse mem via T*
-//     . so yes, get() is mem-safe
 //
 //   . T not ref/ptr/const?
 //   . SafeRef? or like this?
