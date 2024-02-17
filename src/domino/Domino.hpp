@@ -101,94 +101,6 @@ private:
 }  // namespace
 #endif  // DOMINO_HPP_
 // ***********************************************************************************************
-// - where:
-//   . start using domino for time-cost events
-//   . 99% for intra-process (while can support inter-process)
-//   . Ltd. - limit duty
-// - why Event is not a class?
-//   . states_ is better as bitmap, prev_/next_/hdlrs_/priorities_ may not exist for a event
-//   . easier BasicDomino, PriDomino, etc
-//   . no need new/share_ptr the Event class
-//   . only 1 class(Domino) is for all access
-// - why not throw exception?
-//   . wider usage (eg moam not allow exception)
-//   . simpler code without exception that inc 77% branches (Dec,2022)
-//   . alloc resrc for new Ev may throw exception (from std lib)
-//     . dom try to reuse rm-ed Ev as early as possible to avoid mem-use-up in the most usage
-//     . dom  can't solve mem-use-up so no code to handle exception
-// - why template PriDomino, etc
-//   . easy combine: eg Basic + Pri + Rw or Basic + Rw or Basic + Pri
-//   . direct to get interface of all combined classes (inherit)
-// - why not separate EvNameDomino from BasicDomino?
-//   . BasicDomino's debug needs EvNameDomino
-// - why not separate SimuDomino from BasicDomino?
-//   . tight couple at setState()
-// - why Event:EvName=1:1?
-//   . simplify complex scenario eg rmOneHdlrOK() may relate with multi-hdlr
-//   . simplify interface: EvName only, Event is internal-use only
-// - why rm "#define PRI_DOMINO (ObjAnywhere::get<PriDomino<Domino> >())"
-//   . PriDomino<Domino> != PriDomino<DataDomino<Domino> >, ObjAnywhere::get() may ret null
-// - why no nHdlr() & hasHdlr()
-//   . MultiHdlrDomino also need to support them
-//   . UT shall not check them but check cb - more direct
-// - why must EvName on ALL interface?
-//   . EvName is much safer than Event (random Event could be valid, but rare of random EvName)
-//     . read-only public interface can use Event since no hurt inner Dom
-//     . inner mem-func can use Event
-//   . EvName is lower performance than Event?
-//     . a little, hope compiler optimize it
-//   . Can buffer last EvName ptr to speedup?
-//     . dangeous: diff func could create EvName at same address in stack
-//     . 021-09-22: all UT, only 41% getEventBy() can benefit by buffer, not worth vs dangeous
-// - why not rm Ev
-//   . may impact related prev/next Ev, complex & out-control
-//   . dangeous: may break deduced path
-//     . rm entire Dom is safer
-//     . not must-have req
-//     . but keep inc Ev is not sustainable (may use up mem), eg swm's dom for version ctrl
-//       . details in RmEvDomino
-//   . can rm hdlr & data
-// - why global states (like global_var) via eg ObjAnywhere
-//   * easily bind & auto broadcast (like real dominos)
-//     * auto shape in different scenario
-//   * easily link hdlr with these states & auto callback
-//     . conclusive callback instead of trigger
-//     * can min hdlr's conditions & call as-early-as possible
-//     . easy adapt change since each hdlr/event has limited pre-condition, auto impact others
-//   * light weight (better than IM)
-//   * need not base-derive classes, eg RuAgent/SmodAgent need not derive from BaseAgent
-//     . 1 set hdlrs with unique NDL/precheck/RFM/RB/FB domino set
-//   . evNames()
-//     . to search partial EvName (for eg rm subtree's hdlrs)
-//     . simplest to ret & (let user impl partial/template/etc match)
-//     . safe to ret const (don't defense users' abusing)
-//     . search DomDoor? no untill real req
-// - how:
-//   *)trigger
-//     . prefer time-cost events
-//     . how serial coding while parallel running
-//       1) prepare events/tiles step by step
-//       2) when all done, let DominoEvents start execution
-//     . the more complex, the more benefit
-//   *)mobile: any code can be called via Domino from anywhere
-//     . cloud vs tree (intra-process)
-//     . multi-cloud vs 1 bigger tree (inter-process)
-//     . share data
-//   .)replace state machine
-//     . more direct
-//     . no waste code for each state
-//   .)msgSelf instead of callback directly
-//     . avoid strange bugs
-//     . serial coding/reading but parallel executing
-//     . can also support callback, but not must-have, & complex code/logic
-// - suggestion:
-//   . use domino only when better than no-use
-//   . event hdlr shall cover succ, fail, not needed, etc all cases, to ease following code
-// - todo:
-//   . limit-write event to owner
-//   . micro-service of PriDomino, RwDomino
-//   . connect micro-service?
-// ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2017-01-04  CSZ       1)create EventDriver
@@ -230,3 +142,108 @@ private:
 // 2023-01-11  CSZ       - search partial EvName
 // 2023-11-14  CSZ       7)rm event
 // ***********************************************************************************************
+// - where:
+//   . start using domino for time-cost events
+//   . 99% for intra-process (while can support inter-process)
+//   . Ltd. - limit duty
+//
+// - why Event is not a class?
+//   . states_ is better as bitmap, prev_/next_/hdlrs_/priorities_ may not exist for a event
+//   . easier BasicDomino, PriDomino, etc
+//   . no need new/share_ptr the Event class
+//   . only 1 class(Domino) is for all access
+//
+// - why whole DomLib not throw exception?
+//   * simpler code without exception that inc 77% branches (Dec,2022)
+//     . means exception may break current code
+//   . wider usage (eg moam not allow exception)
+//   . alloc resrc for new Ev may throw exception (from std lib)
+//     . dom try to reuse rm-ed Ev as early as possible to avoid mem-use-up in the most usage
+//     . dom  can't solve mem-use-up so no code to handle exception
+// - why not noexcept for all member func?
+//   * std::function not support noexcept (Feb,2024; g++11)
+//   * no class level noexcept, func level is verbose, compile-opt -fno-exceptions is simpler
+//
+// - why template PriDomino, etc
+//   . easy combine: eg Basic + Pri + Rw or Basic + Rw or Basic + Pri
+//   . direct to get interface of all combined classes (inherit)
+//
+// - why not separate EvNameDomino from BasicDomino?
+//   . BasicDomino's debug needs EvNameDomino
+//
+// - why not separate SimuDomino from BasicDomino?
+//   . tight couple at setState()
+//
+// - why Event:EvName=1:1?
+//   . simplify complex scenario eg rmOneHdlrOK() may relate with multi-hdlr
+//   . simplify interface: EvName only, Event is internal-use only
+//
+// - why rm "#define PRI_DOMINO (ObjAnywhere::get<PriDomino<Domino> >())"
+//   . PriDomino<Domino> != PriDomino<DataDomino<Domino> >, ObjAnywhere::get() may ret null
+//
+// - why no nHdlr() & hasHdlr()
+//   . MultiHdlrDomino also need to support them
+//   . UT shall not check them but check cb - more direct
+//
+// - why must EvName on ALL interface?
+//   . EvName is much safer than Event (random Event could be valid, but rare of random EvName)
+//     . read-only public interface can use Event since no hurt inner Dom
+//     . inner mem-func can use Event
+//   . EvName is lower performance than Event?
+//     . a little, hope compiler optimize it
+//   . Can buffer last EvName ptr to speedup?
+//     . dangeous: diff func could create EvName at same address in stack
+//     . 021-09-22: all UT, only 41% getEventBy() can benefit by buffer, not worth vs dangeous
+//
+// - why not rm Ev
+//   . may impact related prev/next Ev, complex & out-control
+//   . dangeous: may break deduced path
+//     . rm entire Dom is safer
+//     . not must-have req
+//     . but keep inc Ev is not sustainable (may use up mem), eg swm's dom for version ctrl
+//       . details in RmEvDomino
+//   . can rm hdlr & data
+//
+// - why global states (like global_var) via eg ObjAnywhere
+//   * easily bind & auto broadcast (like real dominos)
+//     * auto shape in different scenario
+//   * easily link hdlr with these states & auto callback
+//     . conclusive callback instead of trigger
+//     * can min hdlr's conditions & call as-early-as possible
+//     . easy adapt change since each hdlr/event has limited pre-condition, auto impact others
+//   * light weight (better than IM)
+//   * need not base-derive classes, eg RuAgent/SmodAgent need not derive from BaseAgent
+//     . 1 set hdlrs with unique NDL/precheck/RFM/RB/FB domino set
+//   . evNames()
+//     . to search partial EvName (for eg rm subtree's hdlrs)
+//     . simplest to ret & (let user impl partial/template/etc match)
+//     . safe to ret const (don't defense users' abusing)
+//     . search DomDoor? no untill real req
+//
+// - how:
+//   *)trigger
+//     . prefer time-cost events
+//     . how serial coding while parallel running
+//       1) prepare events/tiles step by step
+//       2) when all done, let DominoEvents start execution
+//     . the more complex, the more benefit
+//   *)mobile: any code can be called via Domino from anywhere
+//     . cloud vs tree (intra-process)
+//     . multi-cloud vs 1 bigger tree (inter-process)
+//     . share data
+//   .)replace state machine
+//     . more direct
+//     . no waste code for each state
+//   .)msgSelf instead of callback directly
+//     . avoid strange bugs
+//     . serial coding/reading but parallel executing
+//     . can also support callback, but not must-have, & complex code/logic
+//
+// - suggestion:
+//   . use domino only when better than no-use
+//   . event hdlr shall cover succ, fail, not needed, etc all cases, to ease following code
+//
+// - todo:
+//   . limit-write event to owner
+//   . micro-service of PriDomino, RwDomino
+//   . connect micro-service?
