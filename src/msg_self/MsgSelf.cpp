@@ -75,4 +75,5 @@ void MsgSelf::newMsg(const MsgCB& aMsgCB, const EMsgPriority aMsgPri)
 
     mt_pingMainTH();
 }
+
 }  // namespace

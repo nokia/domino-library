@@ -42,6 +42,17 @@ public:
 };
 
 // ***********************************************************************************************
+template<class aDominoType>
+EMsgPriority PriDomino<aDominoType>::getPriority(const Domino::Event aEv) const
+{
+    auto&& it = priorities_.find(aEv);
+    if (it == priorities_.end())
+        return aDominoType::getPriority(aEv);
+    else
+        return it->second;
+}
+
+// ***********************************************************************************************
 template<typename aDominoType>
 void PriDomino<aDominoType>::innerRmEv(const Domino::Event aEv)
 {
@@ -60,18 +71,6 @@ Domino::Event PriDomino<aDominoType>::setPriority(const Domino::EvName& aEvName,
     else
         priorities_[event] = aPri;
     return event;
-}
-
-// ***********************************************************************************************
-// place at the end to avoud gcovr/gcov bug on cov
-template<class aDominoType>
-EMsgPriority PriDomino<aDominoType>::getPriority(const Domino::Event aEv) const
-{
-    auto&& it = priorities_.find(aEv);
-    if (it == priorities_.end())
-        return aDominoType::getPriority(aEv);
-    else
-        return it->second;
 }
 
 }  // namespace

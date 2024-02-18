@@ -60,6 +60,16 @@ UniPtr WbasicDatDom<aDominoType>::getData(const Domino::EvName& aEvName) const
 
 // ***********************************************************************************************
 template<typename aDominoType>
+void WbasicDatDom<aDominoType>::innerRmEv(const Domino::Event aEv)
+{
+    if (aEv < wrCtrl_.size())
+        wrCtrl_[aEv] = false;
+
+    aDominoType::innerRmEv(aEv);
+}
+
+// ***********************************************************************************************
+template<typename aDominoType>
 bool WbasicDatDom<aDominoType>::isWrCtrl(const Domino::EvName& aEvName) const
 {
     const auto ev = this->getEventBy(aEvName);
@@ -133,18 +143,6 @@ template<typename aDataDominoType, typename aDataType>
 void wbasic_setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData)
 {
     aDom.wbasic_replaceData(aEvName, MAKE_PTR<aDataType>(aData));
-}
-
-
-// ***********************************************************************************************
-// place at the end to avoud gcovr/gcov bug on cov
-template<typename aDominoType>
-void WbasicDatDom<aDominoType>::innerRmEv(const Domino::Event aEv)
-{
-    if (aEv < wrCtrl_.size())
-        wrCtrl_[aEv] = false;
-
-    aDominoType::innerRmEv(aEv);
 }
 
 }  // namespace

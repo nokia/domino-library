@@ -11,12 +11,23 @@
 //   . safe ship     : cp/mv/= base<-derive(s); short->int?
 //   . safe store    : cast any<->void
 //   . safe use      : cast to real / before void
-//   . safe lifecycle: by shared_ptr
+//   . safe lifecycle: by shared_ptr (auto mem-mgmt, no use-after-free)
 //   . safe ptr array:
 // - mem-safe: true
 // - suggest:
 //   . any class ensure mem-safe (like MT safe)
 //   . struct ptr/ref member shall be SafePtr
+//
+// - VALUE:
+//   . way#1: Rust is language-based mem ctrl (heavy)
+//   . way#2: tool (dynamic eg valdrind, or static eg coverity)
+//     . keep legacy code/invest
+//     . but coverage is less than Rust
+//   . way#3: eg SafePtr
+//     * if each class ensures itself mem-safe, then whole program is mem-safe (more coverage than tools)
+//     . more lightweight than Rust
+//     . keep legacy code/invest
+//     * keep c++'s full freedom while has a choice to limit partial freedom for mem-safe
 // ***********************************************************************************************
 #pragma once
 

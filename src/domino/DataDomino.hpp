@@ -64,20 +64,20 @@ UniPtr DataDomino<aDominoType>::getData(const Domino::EvName& aEvName) const
 
 // ***********************************************************************************************
 template<typename aDominoType>
+void DataDomino<aDominoType>::innerRmEv(const Domino::Event aEv)
+{
+    dataStore_.erase(aEv);
+    aDominoType::innerRmEv(aEv);
+}
+
+// ***********************************************************************************************
+template<typename aDominoType>
 void DataDomino<aDominoType>::replaceData(const Domino::EvName& aEvName, UniPtr aUniPtr)
 {
     if (aUniPtr.get() == nullptr)
         dataStore_.erase(this->getEventBy(aEvName));  // avoid keep inc dataStore_
     else
         dataStore_[this->newEvent(aEvName)] = aUniPtr;
-}
-
-// ***********************************************************************************************
-template<typename aDominoType>
-void DataDomino<aDominoType>::innerRmEv(const Domino::Event aEv)
-{
-    dataStore_.erase(aEv);
-    aDominoType::innerRmEv(aEv);
 }
 
 

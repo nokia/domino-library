@@ -93,6 +93,8 @@ void MtInQueue::mt_push(PTR<aEleType> aEle)
     mt_pingMainTH();
 }
 
+
+
 // ***********************************************************************************************
 // - REQ: can provide different impl w/o usr code impact
 // - REQ: MT safe

@@ -55,6 +55,15 @@ public:
 };
 
 // ***********************************************************************************************
+// place at the end to avoud gcovr/gcov bug on cov
+template<typename aDominoType>
+void RmEvDom<aDominoType>::innerRmEv(const Domino::Event aEv)
+{
+    aDominoType::innerRmEv(aEv);
+    isRemovedEv_.insert(aEv);
+}
+
+// ***********************************************************************************************
 template<typename aDominoType>
 Domino::Event RmEvDom<aDominoType>::recycleEv()
 {
@@ -76,15 +85,6 @@ bool RmEvDom<aDominoType>::rmEvOK(const Domino::EvName& aEN)
 
     innerRmEv(ev);
     return true;
-}
-
-// ***********************************************************************************************
-// place at the end to avoud gcovr/gcov bug on cov
-template<typename aDominoType>
-void RmEvDom<aDominoType>::innerRmEv(const Domino::Event aEv)
-{
-    aDominoType::innerRmEv(aEv);
-    isRemovedEv_.insert(aEv);
 }
 
 }  // namespace
