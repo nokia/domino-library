@@ -48,13 +48,13 @@ class SafePtr
 public:
     // safe-only creation (vs shared_ptr, eg shared_ptr(U*) is not safe)
     template<typename U, typename... Args> friend SafePtr<U> make_safe(Args&&... aArgs);
-    constexpr SafePtr() noexcept = default;      // must explicit since below converter constructor
-    constexpr SafePtr(nullptr_t) : SafePtr() {}  // implicit nullptr -> SafePtr()
+    constexpr SafePtr() = default;  // must explicit since below converter constructor
+    constexpr SafePtr(nullptr_t) noexcept : SafePtr() {}  // implicit nullptr -> SafePtr()
 
     // safe-only cast (vs shared_ptr, eg static_pointer_cast<any> is not safe)
     template<typename From> SafePtr(const SafePtr<From>&) noexcept;
-    template<typename To> shared_ptr<To> cast_get() const noexcept;
     shared_ptr<T> cast_get() const noexcept;
+    template<typename To> shared_ptr<To> cast_get() const noexcept;
 
     // use: safe, compatible & min (vs shared_ptr)
     // - get() etc doesn't break SafePtr's safety though caller may abuse T*
