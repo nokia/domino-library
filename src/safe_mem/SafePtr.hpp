@@ -109,7 +109,7 @@ template<typename T>
 template<typename To>
 shared_ptr<To> SafePtr<T>::cast_get() const
 {
-    if (is_convertible<T*, To*>::value)
+    if (is_base_of<To, T>::value)  // is_convertible is not safe to static_pointer_cast eg int* to float*
     {
         HID("(SafePtr) Derive to Base (include to self)");
         return static_pointer_cast<To>(pT_);
