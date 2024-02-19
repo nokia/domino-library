@@ -149,8 +149,8 @@ TEST(SafePtrTest, GOLD_const_and_back)
     EXPECT_EQ(0, safe_const_d ->value()) << "REQ: cp succ & call const)";
     EXPECT_EQ(0, share_const_d->value()) << "REQ: cp succ & call const)";
 
-    // SafePtr<D>    safe_dd  = safe_const_d;   // compile err to cp from const to non
-    // shared_ptr<D> share_dd = share_const_d;  // compile err to cp from const to non
+    // SafePtr<D>    safe_dd  = safe_const_d;   // REQ: compile err to cp from const to non
+    // shared_ptr<D> share_dd = share_const_d;  // REQ: compile err to cp from const to non
 
     const SafePtr   <D> const_safe_d  = safe_d;
     const shared_ptr<D> const_share_d = share_d;

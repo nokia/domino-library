@@ -1,8 +1,8 @@
 message("\n*** cmake lib_ut: so users can call this CMakeLists.txt in their own project ***")
 
 # src
-file(GLOB  list_src
-  "${CMAKE_CURRENT_SOURCE_DIR}/*/*.cpp"
+file(GLOB_RECURSE  list_src
+  "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
 )
 add_library(lib_ut  OBJECT  ${list_src})
 

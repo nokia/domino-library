@@ -1,11 +1,11 @@
 message("\n*** cmake lib_domino: so users can call this CMakeLists.txt in their own project ***")
 # src
-file(GLOB  list_src
-  "${CMAKE_CURRENT_SOURCE_DIR}/*/*.cpp"
+file(GLOB_RECURSE  list_src
+  "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
 )
 add_library(lib_domino  ${list_src})
 
-# include
+# include dir
 file(GLOB  list_include
   "${CMAKE_CURRENT_SOURCE_DIR}/*"
 )

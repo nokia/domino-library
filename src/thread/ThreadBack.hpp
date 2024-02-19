@@ -41,28 +41,14 @@
 //     . aovid complex MsgSelf: ThreadBack provides 1 func to fill aBack into MsgSelf
 //     . avoid complex ThreadBack (viaMsgSelf() in new hpp)
 //     . avoid block main thread
+//   . limit thread#?
+//     . eg linsee's /proc/sys/kernel/threads-max=154w, cloud=35w
+//     . /proc/sys/kernel/threads-max is for each process
+//     . so no necessary to limit in ThreadBack
 //
 // - support multi-thread
 //   . MT_/mt_ prefix: yes
 //   . others: NO (only use in main thread - most dom lib code shall in main thread - simple & easy)
-//
-// - Q&A:
-//   . MT_/mt_ prefix
-//     . MT = multi-thread: mark it to run in diff thread
-//     . most func/variable are in main-thread, so w/o this prefix
-//   . must save future<>
-//     . otherwise the thread looks like serialized with main thread
-//   . thread pool to avoid cost of creating/destroying thread?
-//     . then eg future.wait_for() can't be used, may high-risk to self-impl
-//     . ThreadBack is used for time-cost task, thread create/destroy should be too small to care
-//   * hdlFinishedThreads()'s wait_for() each thread, may spend too long?
-//     . ThreadBack is to use for time-consuming tasks
-//     * should be not too many threads exist simultaneously
-//     * so should not spend too long (wait till new req appears)
-//     . mt_nFinishedThread_:
-//       . can reduce about half iterations with 15 more LOC
-//       . atomic is lightweight & fast than mutex
-//       * since little benefit, decide rm it
 // ***********************************************************************************************
 #pragma once
 
@@ -118,3 +104,20 @@ public:
 // 2023-09-14  CSZ       2)align with MsgSelf
 // 2023-10-25  CSZ       - with semaphore's wait-notify
 // ***********************************************************************************************
+// - Q&A:
+//   . MT_/mt_ prefix
+//     . MT = multi-thread: mark it to run in diff thread
+//     . most func/variable are in main-thread, so w/o this prefix
+//   . must save future<>
+//     . otherwise the thread looks like serialized with main thread
+//   . thread pool to avoid cost of creating/destroying thread?
+//     . then eg future.wait_for() can't be used, may high-risk to self-impl
+//     . ThreadBack is used for time-cost task, thread create/destroy should be too small to care
+//   * hdlFinishedThreads()'s wait_for() each thread, may spend too long?
+//     . ThreadBack is to use for time-consuming tasks
+//     * should be not too many threads exist simultaneously
+//     * so should not spend too long (wait till new req appears)
+//     . mt_nFinishedThread_:
+//       . can reduce about half iterations with 15 more LOC
+//       . atomic is lightweight & fast than mutex
+//       * since little benefit, decide rm it
