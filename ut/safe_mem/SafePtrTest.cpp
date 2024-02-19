@@ -6,7 +6,7 @@
 // ***********************************************************************************************
 #include <gtest/gtest.h>
 
-#include "SafePtr.hpp"
+#include "UniPtr.hpp"
 
 namespace RLib
 {
@@ -125,6 +125,26 @@ TEST(SafePtrTest, inc_cov)
     SafePtr<Base> b = d;
     EXPECT_EQ(nullptr,       b.preVoidType()) << "REQ: type before to void";
     EXPECT_EQ(&typeid(Base), b.realType())    << "REQ: origin type since d is nullptr";
+}
+
+#define CONST_AND_BACK
+// ***********************************************************************************************
+TEST(SafePtrTest, GOLD_const_and_back)
+{
+    auto d = make_safe<Derive>();
+    SafePtr<const Derive> cd = d;
+
+    auto s = make_shared<Derive>();
+    shared_ptr<const Derive> cs = s;
+
+    EXPECT_EQ(d.get(), cd.get()) << "REQ: copied (same as shared_ptr)";
+    EXPECT_EQ(s.get(), cs.get()) << "REQ: copied";
+
+    // EXPECT_EQ(1, cd.cast_get()->value()) << "compile err to call non-const value()";
+    // EXPECT_EQ(1, cs->value())            << "compile err to call non-const value()";
+
+    // SafePtr<Derive>    dd = cd;  // compile err to cp from const to non
+    // shared_ptr<Derive> ss = cs;
 }
 
 #define ARRAY
