@@ -129,22 +129,34 @@ TEST(SafePtrTest, inc_cov)
 
 #define CONST_AND_BACK
 // ***********************************************************************************************
+struct D
+{
+    int value()       { return 100; }
+    int value() const { return 0; }
+};
+
 TEST(SafePtrTest, GOLD_const_and_back)
 {
-    auto d = make_safe<Derive>();
-    SafePtr<const Derive> cd = d;
+    auto safe_d  = make_safe<D>();
+    auto share_d = make_shared<D>();
 
-    auto s = make_shared<Derive>();
-    shared_ptr<const Derive> cs = s;
+    EXPECT_EQ(100, safe_d ->value()) << "REQ: call non-const";
+    EXPECT_EQ(100, share_d->value()) << "REQ: call non-const";
 
-    EXPECT_EQ(d.get(), cd.get()) << "REQ: copied (same as shared_ptr)";
-    EXPECT_EQ(s.get(), cs.get()) << "REQ: copied";
+    SafePtr   <const D> safe_const_d  = safe_d;
+    shared_ptr<const D> share_const_d = share_d;
 
-    // EXPECT_EQ(1, cd.cast_get()->value()) << "compile err to call non-const value()";
-    // EXPECT_EQ(1, cs->value())            << "compile err to call non-const value()";
+    EXPECT_EQ(0, safe_const_d ->value()) << "REQ: cp succ & call const)";
+    EXPECT_EQ(0, share_const_d->value()) << "REQ: cp succ & call const)";
 
-    // SafePtr<Derive>    dd = cd;  // compile err to cp from const to non
-    // shared_ptr<Derive> ss = cs;
+    // SafePtr<D>    safe_dd  = safe_const_d;   // compile err to cp from const to non
+    // shared_ptr<D> share_dd = share_const_d;  // compile err to cp from const to non
+
+    const SafePtr   <D> const_safe_d  = safe_d;
+    const shared_ptr<D> const_share_d = share_d;
+
+    EXPECT_EQ(100, const_safe_d ->value()) << "REQ: cp succ & call NON-const (same as shared_ptr)";
+    EXPECT_EQ(100, const_share_d->value()) << "call NON-const since all members are NON-const except 'this'";
 }
 
 #define ARRAY
