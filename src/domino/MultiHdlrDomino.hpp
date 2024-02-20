@@ -12,6 +12,7 @@
 //   . extend multi-hdlr if needed
 //   . legacy Domino uses multi-event to support multi-hdlr, but these events' state not auto-sync always
 // - core:
+// - mem safe: yes
 // ***********************************************************************************************
 #ifndef MULTI_HDLR_DOMINO_HPP_
 #define MULTI_HDLR_DOMINO_HPP_

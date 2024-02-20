@@ -9,6 +9,7 @@
 //   . separate class to lighten Domino (let PriDomino & Domin to focus it own)
 //   * priority call hdlr rather than FIFO in Domino [MUST-HAVE!]
 // - core: priorities_
+// - mem safe: yes
 // ***********************************************************************************************
 #ifndef PRI_DOMINO_HPP_
 #define PRI_DOMINO_HPP_
@@ -47,7 +48,7 @@ EMsgPriority PriDomino<aDominoType>::getPriority(const Domino::Event aEv) const
 {
     auto&& it = priorities_.find(aEv);
     if (it == priorities_.end())
-        return aDominoType::getPriority(aEv);
+        return aDominoType::getPriority(aEv);  // default
     else
         return it->second;
 }
@@ -68,7 +69,7 @@ Domino::Event PriDomino<aDominoType>::setPriority(const Domino::EvName& aEvName,
     auto&& event = this->newEvent(aEvName);
     if (aPri == aDominoType::getPriority(event))
         priorities_.erase(event);  // less mem & faster searching
-    else
+    else if (aPri < EMsgPri_MAX)
         priorities_[event] = aPri;
     return event;
 }

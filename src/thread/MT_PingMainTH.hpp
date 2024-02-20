@@ -9,6 +9,8 @@
 //     . simpler than para to constructing above class(es)
 //   . can base on MT_Semaphore
 //     . this file is an example, users can define their own MT_PingMainTH.hpp - eg condition_variable
+// - MT safe: yes
+// - mem safe: yes
 // ***********************************************************************************************
 #pragma once
 

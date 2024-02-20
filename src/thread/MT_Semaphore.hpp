@@ -15,6 +15,7 @@
 //   . can't UniLog that's not MT safe
 // - core:
 //   . mt_sem_
+// - mem safe: yes
 // ***********************************************************************************************
 #pragma once
 
@@ -30,8 +31,7 @@ class MT_Semaphore
 public:
     MT_Semaphore()  { sem_init(&mt_sem_, 0, 0); }  // 2nd para: intra-process; 3rd: init value
     ~MT_Semaphore() { sem_destroy(&mt_sem_); }
-    MT_Semaphore(const MT_Semaphore&) = delete;
-    MT_Semaphore& operator=(const MT_Semaphore&) = delete;
+    MT_Semaphore(const MT_Semaphore&) = delete;  // then compiler will not auto-gen mv(), =() etc
 
     void mt_notify();
 

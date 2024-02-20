@@ -43,10 +43,13 @@ TYPED_TEST_SUITE_P(NofreePriDominoTest);
 TYPED_TEST_P(PriDominoTest, setPriority_thenGetIt)
 {
     auto event = PARA_DOM->setPriority("event", EMsgPri_HIGH);
-    EXPECT_EQ(EMsgPri_HIGH, PARA_DOM->getPriority(event));  // get set
+    EXPECT_EQ(EMsgPri_HIGH, PARA_DOM->getPriority(event)) << "REQ: get set";
 
     PARA_DOM->setPriority("event", EMsgPri_LOW);
-    EXPECT_EQ(EMsgPri_LOW, PARA_DOM->getPriority(event));   // get updated
+    EXPECT_EQ(EMsgPri_LOW, PARA_DOM->getPriority(event)) << "REQ: get updated";
+
+    PARA_DOM->setPriority("event", EMsgPri_MAX);
+    EXPECT_EQ(EMsgPri_LOW, PARA_DOM->getPriority(event)) << "REQ: invalid set";
 }
 TYPED_TEST_P(PriDominoTest, defaultPriority)
 {

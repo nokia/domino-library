@@ -127,4 +127,5 @@ TEST_F(ObjAnywhereTest, default_is_deinit)
     EXPECT_FALSE(ObjAnywhere::isInit());
     EXPECT_EQ(0u, ObjAnywhere::nObj());
 }
+
 }  // namespace
