@@ -13,17 +13,22 @@
 //   . safe use      : cast to real / before void
 //   . safe lifecycle: by shared_ptr (auto mem-mgmt, no use-after-free)
 //   . safe ptr array:
+// - DUTY-BOUND:
+//   . ensure ptr address is safe: legal created, not freed, not wild, etc
+//   . ensure ptr type is valid: origin*, or base*, or void*
+//   . not ensure T's content which is T's duty bound
+//   . hope cooperate with tool to ensure/track SafeAdr, all T, all code's mem safe
 // - mem-safe: true
 // - suggest:
 //   . any class ensure mem-safe (like MT safe)
-//   . struct ptr/ref member shall be SafePtr
+//   . struct ptr/ref member shall be SafeAdr
 //
 // - VALUE:
 //   . way#1: Rust is language-based mem ctrl (heavy)
 //   . way#2: tool (dynamic eg valdrind, or static eg coverity)
 //     . keep legacy code/invest
 //     . but coverage is less than Rust
-//   . way#3: eg SafePtr
+//   . way#3: eg SafeAdr
 //     * if each class ensures itself mem-safe, then whole program is mem-safe (more coverage than tools)
 //     . more lightweight than Rust
 //     . keep legacy code/invest
@@ -43,21 +48,21 @@ namespace RLib
 {
 // ***********************************************************************************************
 template<typename T = void>
-class SafePtr
+class SafeAdr
 {
 public:
     // safe-only creation (vs shared_ptr, eg shared_ptr(U*) is not safe)
-    template<typename U, typename... Args> friend SafePtr<U> make_safe(Args&&... aArgs);
-    constexpr SafePtr() = default;  // must explicit since below converter constructor
-    constexpr SafePtr(nullptr_t) noexcept : SafePtr() {}  // implicit nullptr -> SafePtr()
+    template<typename U, typename... Args> friend SafeAdr<U> make_safe(Args&&... aArgs);
+    constexpr SafeAdr() = default;  // must explicit since below converter constructor
+    constexpr SafeAdr(nullptr_t) noexcept : SafeAdr() {}  // implicit nullptr -> SafeAdr()
 
     // safe-only cast (vs shared_ptr, eg static_pointer_cast<any> is not safe)
-    template<typename From> SafePtr(const SafePtr<From>&) noexcept;
+    template<typename From> SafeAdr(const SafeAdr<From>&) noexcept;
     shared_ptr<T> cast_get() const noexcept;
     template<typename To> shared_ptr<To> cast_get() const noexcept;
 
     // use: safe, compatible & min (vs shared_ptr)
-    // - get() etc doesn't break SafePtr's safety though caller may abuse T*
+    // - get() etc doesn't break SafeAdr's safety though caller may abuse T*
     // - T shall ensure itself safety (forbid abuse)
     T* get() const noexcept { return pT_.get(); }  // same interface as shared_ptr
     auto operator->() const noexcept { return pT_; }  // same interface as shared_ptr
@@ -77,7 +82,7 @@ private:
 // ***********************************************************************************************
 template<typename T>
 template<typename From>
-SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom)
+SafeAdr<T>::SafeAdr(const SafeAdr<From>& aSafeFrom)
     : pT_(aSafeFrom.template cast_get<T>())
 {
     HID(typeid(From).name() << " to " << typeid(T).name());
@@ -100,36 +105,36 @@ SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom)
 
 // ***********************************************************************************************
 template<typename T>
-shared_ptr<T> SafePtr<T>::cast_get() const  // most common usage, standalone is faster
+shared_ptr<T> SafeAdr<T>::cast_get() const  // most common usage, standalone is faster
 {
-    HID("(SafePtr) to self");
+    HID("(SafeAdr) to self");
     return pT_;
 }
 template<typename T>
 template<typename To>
-shared_ptr<To> SafePtr<T>::cast_get() const
+shared_ptr<To> SafeAdr<T>::cast_get() const
 {
     if (is_base_of<To, T>::value)  // is_convertible is not safe to static_pointer_cast eg int* to float*
     {
-        HID("(SafePtr) Derive to Base (include to self)");
+        HID("(SafeAdr) Derive to Base (include to self)");
         return static_pointer_cast<To>(pT_);
     }
     if (&typeid(To) == realType_)
     {
-        HID("(SafePtr) any to origin");
+        HID("(SafeAdr) any to origin");
         return static_pointer_cast<To>(pT_);
     }
     if (&typeid(To) == preVoidType_)
     {
-        HID("(SafePtr) any to type-before-cast-to-void");
+        HID("(SafeAdr) any to type-before-cast-to-void");
         return static_pointer_cast<To>(pT_);
     }
     if (is_same<To, void>::value)
     {
-        HID("(SafePtr) any to void (for container to store diff types)");
+        HID("(SafeAdr) any to void (for container to store diff types)");
         return static_pointer_cast<To>(pT_);
     }
-    HID("(SafePtr) unsupported cast");
+    HID("(SafeAdr) unsupported cast");
     return nullptr;
 }
 
@@ -137,18 +142,18 @@ shared_ptr<To> SafePtr<T>::cast_get() const
 
 // ***********************************************************************************************
 template<typename U, typename... Args>
-SafePtr<U> make_safe(Args&&... aArgs)
+SafeAdr<U> make_safe(Args&&... aArgs)
 {
-    SafePtr<U> sptr;
+    SafeAdr<U> sptr;
     sptr.pT_ = make_shared<U>(forward<Args>(aArgs)...);
     return sptr;  // !!! valgrind failed when HID() here
 }
 
 // ***********************************************************************************************
 template<typename To, typename From>
-auto static_pointer_cast(const SafePtr<From>& aFromPtr) noexcept
+auto static_pointer_cast(const SafeAdr<From>& aFromPtr) noexcept
 {
-    return SafePtr<To>(aFromPtr);
+    return SafeAdr<To>(aFromPtr);
 }
 
 }  // namespace
@@ -160,13 +165,13 @@ auto static_pointer_cast(const SafePtr<From>& aFromPtr) noexcept
 // ***********************************************************************************************
 // - Q&A
 //   . must replace shared_ptr in DatDom, ObjAnywhere?
-//     . SafePtr is simple
+//     . SafeAdr is simple
 //     . freq cast void-any is dangeous
 //     . so worth
 //
-//   . SafePtr for array:
+//   . SafeAdr for array:
 //     . shared_ptr: c++11 start support T[], c++17 enhance, c++20 full support
-//     . shared_ptr[out-bound] is NOT safe, so still need SafePtr to support array
+//     . shared_ptr[out-bound] is NOT safe, so still need SafeAdr to support array
 //     . g++12 full support T[]
 //
 //   . T not ref/ptr/const?

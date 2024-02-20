@@ -127,5 +127,5 @@ void ObjAnywhere::set(PTR<aObjType> aSharedObj, UniLog& oneLog)
 // 2022-01-01  PJ & CSZ  - formal log & naming
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2022-12-02  CSZ       - simple & natural
-// 2024-02-15  CSZ       7)use SafePtr (mem-safe); shared_ptr is not mem-safe
+// 2024-02-15  CSZ       7)use SafeAdr (mem-safe); shared_ptr is not mem-safe
 // ***********************************************************************************************

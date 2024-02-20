@@ -5,11 +5,11 @@
  */
 // ***********************************************************************************************
 // - why:
-//   . example to support SafePtr & shared_ptr as UniPtr
+//   . example to support SafeAdr & shared_ptr as UniPtr
 //   . users can modify this file for their req
 // - why support shared_ptr?
-//   . from mem-safe pov, SafePtr is the only choice
-//   . shared_ptr may be same safe as SafePtr, then SafePtr is unnecessary
+//   . from mem-safe pov, SafeAdr is the only choice
+//   . shared_ptr may be same safe as SafeAdr, then SafeAdr is unnecessary
 // ***********************************************************************************************
 #pragma once
 
@@ -25,13 +25,13 @@ using   UniPtr =  shared_ptr<void>;
 #define PTR       shared_ptr
 
 #else
-#include "SafePtr.hpp"
+#include "SafeAdr.hpp"
 namespace RLib
 {
-using   UniPtr =  SafePtr<void>;
+using   UniPtr =  SafeAdr<void>;
 #define MAKE_PTR  make_safe
-#define PTR       SafePtr
-// 4th req: SafePtr.get() return same as shared_ptr
+#define PTR       SafeAdr
+// 4th req: SafeAdr.get() return same as shared_ptr
 #endif
 
 }  // namespace
