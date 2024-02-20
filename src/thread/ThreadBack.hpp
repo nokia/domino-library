@@ -23,13 +23,12 @@
 // - VALUE/why:
 //   * keep all logic in main thread / single thread (simple, eg no lock/deadlock, no complex logic)
 //     . while time-consuming tasks in other threads
+//
 // - REQ:
 //   * run MT_ThreadEntryFN() in new thread by ThreadBack::newThread()
 //   * run ThreadBackFN() in main thread after MT_ThreadEntryFN() done by ThreadBack::hdlFinishedThreads()
 //   * MT_ThreadEntryFN()'s result as ThreadBackFN()'s para so succ(true) or fail(false)
 //   . eg newThread() must be called in main thread (or at least 1 same thread), no defense code to protect
-//   . MT_ThreadEntryFN() shall not be nullptr (std::async also not check nullptr)
-//     . same for ThreadBackFN() (since eg async() failed via aRet=false)
 //   . MT_ThreadEntryFN & ThreadBackFN shall NOT throw exception
 //     . they can try-catch all exception & leave RLib simple/focus
 //     . exception is bug to be fixed than pretected
@@ -49,6 +48,9 @@
 // - support multi-thread
 //   . MT_/mt_ prefix: yes
 //   . others: NO (only use in main thread - most dom lib code shall in main thread - simple & easy)
+//
+// - mem safe: yes with limit
+//   . no duty to any unsafe behavior of MT_ThreadEntryFN or ThreadBackFN
 // ***********************************************************************************************
 #pragma once
 

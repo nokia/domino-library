@@ -7,6 +7,7 @@
 // - VALUE/why:
 //   . viaMsgSelf() out of ThreadBack so ThreadBack can standalone without MsgSelf
 //   . same for MsgSelf
+// - mem safe: yes
 // ***********************************************************************************************
 #include "MsgSelf.hpp"
 #include "ThreadBack.hpp"
@@ -18,10 +19,12 @@ namespace RLib
 inline
 ThreadBackFN viaMsgSelf(const ThreadBackFN& aBackFn, shared_ptr<MsgSelf> aMsgSelf, EMsgPriority aPri = EMsgPri_NORM)
 {
-    return [aBackFn, aMsgSelf, aPri](bool aRet)  // must cp aBackFn since lambda run later in diff lifecycle
-    {
-        aMsgSelf->newMsg(bind(aBackFn, aRet), aPri);  // wrap aBackFn to queue in MsgSelf
-    };
+    return ! aBackFn || aMsgSelf == nullptr
+        ? ThreadBackFN(nullptr)  // empty fn
+        : [aBackFn, aMsgSelf, aPri](bool aRet)  // must cp aBackFn since lambda run later in diff lifecycle
+        {
+            aMsgSelf->newMsg(bind(aBackFn, aRet), aPri);  // wrap aBackFn to queue in MsgSelf
+        };
 }
 
 }  // namespace

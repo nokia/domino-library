@@ -15,7 +15,7 @@
 #include "UniLog.hpp"
 
 #define THREAD_BACK_TEST
-#include "ThreadBackViaMsgSelf.hpp"
+#include "ThreadBack.hpp"
 #undef THREAD_BACK_TEST
 
 #include <chrono>

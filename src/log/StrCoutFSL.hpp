@@ -13,8 +13,10 @@
 // - derive from BaseSL is to reuse common func
 //
 // CORE: _tmpBuf (func around it)
-
+//
 // MT safe: false
+//
+// mem safe: yes if stringstream is
 // ***********************************************************************************************
 #ifndef STREAM2COUT_FORMATTED_SMART_LOG_HPP_
 #define STREAM2COUT_FORMATTED_SMART_LOG_HPP_

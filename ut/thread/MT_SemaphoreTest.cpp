@@ -126,6 +126,22 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         timedwait();
     }
 }
+TEST_F(MT_SemaphoreTest, invalid_msgSelf)
+{
+    ThreadBack::newThread(
+        [] { return true; },  // entryFn
+        viaMsgSelf([](bool) {}, nullptr)  // invalid since msgSelf==nullptr
+    );
+    ThreadBack::newThread(
+        [] { return true; },  // entryFn
+        viaMsgSelf(nullptr, msgSelf_)  // invalid since backFn is empty
+    );
+    ThreadBack::newThread(
+        MT_ThreadEntryFN(nullptr),  // invalid since entryFn is empty
+        [](bool) {}  // backFn
+    );
+    EXPECT_EQ(0, ThreadBack::nThread());
+}
 
 // ***********************************************************************************************
 TEST_F(MT_SemaphoreTest, timeout)

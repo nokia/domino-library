@@ -38,6 +38,17 @@ size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
 // ***********************************************************************************************
 void ThreadBack::newThread(const MT_ThreadEntryFN& mt_aEntryFn, const ThreadBackFN& aBackFn, UniLog& oneLog)
 {
+    if (! mt_aEntryFn)
+    {
+        ERR("mt_aEntryFn can't be empty!!!");
+        return;
+    }
+    if (! aBackFn)
+    {
+        ERR("aBackFn can't be empty!!!");
+        return;
+    }
+
     allThreads_.emplace_back(  // save future<> & aBackFn()
         async(
             launch::async,
