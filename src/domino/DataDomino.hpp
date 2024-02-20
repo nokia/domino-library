@@ -9,6 +9,9 @@
 // - core:     dataStore_
 // - scope:    provide min interface (& extend by non-member func)
 // - mem-safe: true (when use SafeAdr instead of shared_ptr)
+//   . why HdlrDomino can use shared_ptr to store hdlr?
+//     . because here data need cast void<->aDataType, DataDomino can't ensure safety without SafeAdr
+//     . HdlrDomino need not cast
 // ***********************************************************************************************
 #pragma once
 

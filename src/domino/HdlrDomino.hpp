@@ -15,6 +15,11 @@
 //   . support rm hdlr
 //     . whenever succ, no cb, even cb already on road
 // - core: hdlrs_
+// - mem safe: yes
+//   . no duty to hdlr itself's any unsafe behavior
+//   . why shared_ptr rather than SafeAdr to store hdlr?
+//     . HdlrDomino ensures safely usage of shared_ptr
+//     . principle: safe class can base on unsafe materials
 // ***********************************************************************************************
 #ifndef HDLR_DOMINO_HPP_
 #define HDLR_DOMINO_HPP_

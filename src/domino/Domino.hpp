@@ -23,6 +23,9 @@
 //   . share state & hdlr
 //   . EvName index
 //   . template extension (PriDomino, etc)
+// - mem safe: yes with limit
+//   . no use-up mem which is impossible in most cases
+//   . user shall not loop link ev - hard, expensive & unreasonable
 // ***********************************************************************************************
 #ifndef DOMINO_HPP_
 #define DOMINO_HPP_

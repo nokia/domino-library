@@ -9,10 +9,13 @@
 //   * whenever hdlr on road, rm hdlr still can cancel it
 //   . FreeHdlrDomino need not child of all *HdlrDomino, still can rm/invalidate hdlr
 //   . no req if allow to add new hdlr during previous on road; current impl will reject new-add
+//
 // - why: free mem (eg when huge hdlrs)
 //   . save manual-del-hdlr code (MOST SWM hdlrs are not repeated hdlr)
 //   . safer to reduce wrong call, etc. [MUST-HAVE!]
 //   . why can't reset flag? this class is to convient user, shall not complex on-road, rmHdlr etc
+//
+// - mem safe: yes
 // ***********************************************************************************************
 #ifndef FREE_HDLR_DOMINO_HPP_
 #define FREE_HDLR_DOMINO_HPP_

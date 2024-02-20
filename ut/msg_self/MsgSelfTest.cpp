@@ -163,4 +163,18 @@ TEST_F(MsgSelfTest, wait_notify)
     msgSelf_->handleAllMsg(msgSelf_->getValid());  // clear msg queue
 }
 
+#define SAFE
+// ***********************************************************************************************
+TEST_F(MsgSelfTest, invalid_nMsg)
+{
+    EXPECT_EQ(0, msgSelf_->nMsg(EMsgPri_MAX));       // out bound
+    EXPECT_EQ(0, msgSelf_->nMsg(EMsgPriority(-1)));  // out bound
+}
+TEST_F(MsgSelfTest, invalid_newMsg)
+{
+    msgSelf_->newMsg(d1MsgHdlr_, EMsgPri_MAX);       // out bound
+    msgSelf_->newMsg(d1MsgHdlr_, EMsgPriority(-1));  // out bound
+    EXPECT_EQ(0, msgSelf_->nMsg());
+}
+
 }  // namespace

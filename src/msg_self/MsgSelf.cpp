@@ -68,7 +68,11 @@ void MsgSelf::newMsg(const MsgCB& aMsgCB, const EMsgPriority aMsgPri)
         WRN("(MsgSelf) failed!!! aMsgCB=nullptr doesn't make sense.");
         return;
     }
-
+    if (aMsgPri >= EMsgPri_MAX)
+    {
+        WRN("(MsgSelf) failed!!! outbound aMsgPri=" << aMsgPri);
+        return;
+    }
     msgQueues_[aMsgPri].push_back(aMsgCB);
     ++nMsg_;
     HID("(MsgSelf) nMsg=" << nMsg_);

@@ -27,6 +27,11 @@
 // - why MsgCB instead of WeakMsgCB in msgQueues_?
 //   . most users want MsgSelf (instead of themselves) to store cb (naturally; so MsgCB is better)
 //   . while only a few want to be able to withdraw cb in msgQueues_ (eg HdlrDomino; so WeakMsgCB is better)
+//
+// - mem safe: yes
+//   . no duty to MsgCB itself's any unsafe behavior
+//   . why shared_ptr rather than SafeAdr to store MsgCB?
+//     . MsgSelf ensures safely usage of shared_ptr
 // ***********************************************************************************************
 #ifndef MSG_SELF_HPP_
 #define MSG_SELF_HPP_
@@ -72,7 +77,7 @@ public:
 
     void   newMsg(const MsgCB&, const EMsgPriority = EMsgPri_NORM);  // can't withdraw CB but easier usage
     size_t nMsg() const { return nMsg_; }
-    size_t nMsg(const EMsgPriority aPriority) const { return msgQueues_[aPriority].size(); }
+    size_t nMsg(const EMsgPriority aPri) const { return aPri < EMsgPri_MAX ?  msgQueues_[aPri].size() : 0; }
     void   handleAllMsg(const shared_ptr<bool> aValidMsgSelf);
 
     static bool isLowPri(const EMsgPriority aPri) { return aPri < EMsgPri_NORM; }
