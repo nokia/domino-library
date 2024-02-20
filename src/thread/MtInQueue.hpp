@@ -15,7 +15,7 @@
 //   . cache_: if mt_push() heavily, cache_ avoid ~all mutex from pop()
 // - core:
 //   . queue_
-// - mem-safe: true
+// - mem-safe: true (when use SafeAdr instead of shared_ptr)
 // ***********************************************************************************************
 #pragma once
 
@@ -33,12 +33,11 @@ using namespace std;
 namespace RLib
 {
 // ele & its typeid.hash_code
-// - hash_code is size_t (simplest) vs type_info (unworth to cost storage mem, & complex MtInQueue)
 using ElePair = pair<UniPtr, size_t>;  // <ele, ID>
 using EleHdlr = function<void(UniPtr)>;
 
 // ***********************************************************************************************
-class MtInQueue : public UniLog  // mt_ interface can't UniLog that's not MT safe!!!
+class MtInQueue : public UniLog  // but mt_ interface can't UniLog that's not MT safe!!!
 {
 public:
     ~MtInQueue();
@@ -78,7 +77,8 @@ public:
 template<class aEleType>
 void MtInQueue::hdlr(const EleHdlr& aHdlr)
 {
-    eleHdlrs_[typeid(aEleType).hash_code()] = aHdlr;
+    if (aHdlr)
+      eleHdlrs_[typeid(aEleType).hash_code()] = aHdlr;
 }
 
 // ***********************************************************************************************

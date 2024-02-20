@@ -74,9 +74,12 @@ TEST_F(MsgSelfTest, sendInvalidMsg_noCrash)
     msgSelf_->handleAllMsg(msgSelf_->getValid());
     EXPECT_EQ(queue<int>({1}), hdlrIDs_);
 
-    msgSelf_->newMsg(MsgCB());  // req: invalid cb
+    msgSelf_->newMsg(MsgCB());                     // invalid cb
+    msgSelf_->newMsg(d1MsgHdlr_, EMsgPri_MAX);     // invalid priority
+    msgSelf_->newMsg(nullptr, EMsgPriority(-1));   // both invalid
     msgSelf_->handleAllMsg(msgSelf_->getValid());  // req: no crash (& inc cov of empty queue)
     EXPECT_EQ(queue<int>({1}), hdlrIDs_);
+    EXPECT_EQ(0, msgSelf_->nMsg());
 }
 TEST_F(MsgSelfTest, GOLD_loopback_handleAll_butOneByOneLowPri)
 {
@@ -167,14 +170,8 @@ TEST_F(MsgSelfTest, wait_notify)
 // ***********************************************************************************************
 TEST_F(MsgSelfTest, invalid_nMsg)
 {
-    EXPECT_EQ(0, msgSelf_->nMsg(EMsgPri_MAX));       // out bound
-    EXPECT_EQ(0, msgSelf_->nMsg(EMsgPriority(-1)));  // out bound
-}
-TEST_F(MsgSelfTest, invalid_newMsg)
-{
-    msgSelf_->newMsg(d1MsgHdlr_, EMsgPri_MAX);       // out bound
-    msgSelf_->newMsg(d1MsgHdlr_, EMsgPriority(-1));  // out bound
-    EXPECT_EQ(0, msgSelf_->nMsg());
+    EXPECT_EQ(0, msgSelf_->nMsg(EMsgPri_MAX))      << "REQ: not accept out bound priority";
+    EXPECT_EQ(0, msgSelf_->nMsg(EMsgPriority(-1))) << "REQ: not accept out bound priority";
 }
 
 }  // namespace

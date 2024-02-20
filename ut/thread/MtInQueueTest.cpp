@@ -223,4 +223,12 @@ TEST_F(MtInQueueTest, handle_emptyQ)
     mt_getQ().handleAllEle();
 }
 
+#define SAFE
+// ***********************************************************************************************
+TEST_F(MtInQueueTest, invalid_hdlr)
+{
+    mt_getQ().hdlr<void>(nullptr);
+    EXPECT_EQ(0, mt_getQ().nHdlr());
+}
+
 }  // namespace

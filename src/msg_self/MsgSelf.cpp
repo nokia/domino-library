@@ -63,7 +63,7 @@ bool MsgSelf::handleOneMsg()
 // ***********************************************************************************************
 void MsgSelf::newMsg(const MsgCB& aMsgCB, const EMsgPriority aMsgPri)
 {
-    if (aMsgCB == nullptr)
+    if (! aMsgCB)
     {
         WRN("(MsgSelf) failed!!! aMsgCB=nullptr doesn't make sense.");
         return;

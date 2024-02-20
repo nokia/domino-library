@@ -135,7 +135,7 @@ bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName)
 template<class aDominoType>
 Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, const MsgCB& aHdlr)
 {
-    if (aHdlr == nullptr)
+    if (! aHdlr)
     {
         WRN("(HdlrDom) Failed!!! not accept aHdlr=nullptr.");
         return Domino::D_EVENT_FAILED_RET;
