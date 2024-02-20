@@ -8,13 +8,16 @@
 //   * complex to keep hdlr in Domino
 //   . state & hdlr are different core
 //   . so mv hdlr out Domino
+//
 // - why/value:
 //   . pure Domino w/o hdlr (SOLID#1: single-responbility)
 //   * basic hdlr for common usage
 //     . and extendable
 //   . support rm hdlr
 //     . whenever succ, no cb, even cb already on road
+//
 // - core: hdlrs_
+//
 // - mem safe: yes
 //   . no duty to hdlr itself's any unsafe behavior
 //   . why shared_ptr rather than SafeAdr to store hdlr?

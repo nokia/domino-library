@@ -11,10 +11,13 @@
 //     . std::latch/etc need c++20, too high vs semaphore (POSIX)
 //     * sem_wait() doesn't miss afterwards sem_post()
 //   * support timeout to prevent missing sem_post() that may hang main thread
+//
 // - MT safety: YES (since all mt_sem_*() are mt safety)
 //   . can't UniLog that's not MT safe
+//
 // - core:
 //   . mt_sem_
+//
 // - mem safe: yes
 // ***********************************************************************************************
 #pragma once

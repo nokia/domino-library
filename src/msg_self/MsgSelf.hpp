@@ -12,9 +12,11 @@
 //   * support diff cb mechanism (async, IM, syscom, etc)
 //   . can withdraw on-road MsgCB (eg HdlrDomino.rmHdlr())
 //   . destruct MsgSelf shall not call MsgCB in msgQueues_, & no mem-leak
+//
 // - how:
 //   . newMsg(): send msgHdlr into msgQueues_ (all info are in msgHdlr so func<void()> is enough)
 //   . handleAllMsg(): call all msgHdlr in msgQueues_, priority then FIFO
+//
 // - core: msgQueues_[priority][FIFO]
 //   . msgQueues_ is a 2D array, 1st dim is priority, 2nd dim is FIFO
 //   . perf better than priority_queue that need search & insert for newMsg()

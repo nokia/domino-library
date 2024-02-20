@@ -6,6 +6,7 @@
 // ***********************************************************************************************
 // - ISSUE:
 //   . like eNB upgrade, many clues, many tasks, how to align the mass to best performance & tidy?
+//
 // - how:
 //   . treat each clue as an event, like a domino tile
 //   . treat each task as a hdlr (callback func)
@@ -17,12 +18,15 @@
 //   . each event-hdlr is called only when event state F->T
 //   . repeated event/hdlr is complex, be careful(eg DominoTests.newTriggerViaChain)
 //   . dead-loop: complex so not code check but may tool check (eg excel)
+//
 // - core: states_
+//
 // - VALUE:
 //   * auto broadcast, auto callback, auto shape [MUST-HAVE!]
 //   . share state & hdlr
 //   . EvName index
 //   . template extension (PriDomino, etc)
+//
 // - mem safe: yes with limit
 //   . no use-up mem which is impossible in most cases
 //   . user shall not loop link ev - hard, expensive & unreasonable

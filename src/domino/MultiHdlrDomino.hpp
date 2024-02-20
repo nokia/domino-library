@@ -7,11 +7,14 @@
 // - what:
 //   . Domino can support only 1 hdlr
 //   . MultiHdlrDomino can support more hdlrs
+//
 // - why:
 //   . simplify/min Domino to most usecases
 //   . extend multi-hdlr if needed
 //   . legacy Domino uses multi-event to support multi-hdlr, but these events' state not auto-sync always
+//
 // - core:
+//
 // - mem safe: yes
 // ***********************************************************************************************
 #ifndef MULTI_HDLR_DOMINO_HPP_

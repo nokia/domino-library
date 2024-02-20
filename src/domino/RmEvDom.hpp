@@ -21,6 +21,9 @@
 //   . rm ev may break links (then user shall take care)
 //   . rm ev impact/complex domino
 //   . so use RmEvDom when necessary
+//
+// - mem safe: yes with limit
+//   . no use-up mem (too many removed events; impossible in most cases)
 // ***********************************************************************************************
 #pragma once
 
@@ -55,7 +58,6 @@ public:
 };
 
 // ***********************************************************************************************
-// place at the end to avoud gcovr/gcov bug on cov
 template<typename aDominoType>
 void RmEvDom<aDominoType>::innerRmEv(const Domino::Event aEv)
 {

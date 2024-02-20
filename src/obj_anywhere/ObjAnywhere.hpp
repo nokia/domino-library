@@ -6,18 +6,24 @@
 // ***********************************************************************************************
 // - ISSUE:
 //   . how easily share obj within a process? like cout sharing
+//
 // - how:
 //   . eg ObjAnywhere::set<Obj>(): register/store Obj
 //   . eg ObjAnywhere::get<Obj>(): get Obj
+//
 // - more value:
 //   . ObjAnywhere not include any Obj.hpp so no cross-include conflict
 //   * ObjAnywhere stores shared_ptr<Obj> - real store, correct destruct, lifespan mgr
+//
 // - core: objStore_
+//
 // - mem-safe: true (when use SafeAdr instead of shared_ptr)
+//
 // - note:
 //   . Obj can be destructed by its own destructor when shared_ptr<Obj>.use_count()==0
 //   . it's possible after deinit() that Obj still exists since its use_count()>0
 //   . if req to store same Obj multiply, use DataDomino
+//
 // - can DataDomino replace ObjAnywhere?
 //   . somewhat yes
 //   . but ObjAnywhere will be more complex since ObjIndex is replaced by EvName
