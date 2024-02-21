@@ -27,11 +27,11 @@ UniSmartLog::UniSmartLog(const UniLogName& aUniLogName) : uniLogName_(aUniLogNam
 }
 
 // ***********************************************************************************************
-UniSmartLog& UniSmartLog::defaultUniLog()
+shared_ptr<UniSmartLog> UniSmartLog::defaultUniLog()
 {
     if (not defaultUniLog_)
         defaultUniLog_ = make_shared<UniSmartLog>(ULN_DEFAULT);
-    return *defaultUniLog_;
+    return defaultUniLog_;
 }
 
 // ***********************************************************************************************

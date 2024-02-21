@@ -15,6 +15,7 @@
 //   . cout
 //
 // - MT safe: NO!!! since (static) nLogLine_; so shall NOT cross-thread use
+// - mem safe: no
 // ***********************************************************************************************
 #ifndef UNI_COUT_LOG_HPP_
 #define UNI_COUT_LOG_HPP_
@@ -39,7 +40,7 @@ public:
     void needLog() {}
 
     static const UniLogName uniLogName() { return ULN_DEFAULT; }
-    static UniCoutLog& defaultUniLog();
+    static shared_ptr<UniCoutLog> defaultUniLog();  // mem-safe than ret UniCoutLog&
     // for ut
     static size_t logLen(const UniLogName& = ULN_DEFAULT) { return nLogLine_; }
     static size_t nLog() { return 1; }
@@ -55,7 +56,7 @@ public:
 // ***********************************************************************************************
 // static than inline, avoid ut conflict when coexist both UniLog
 // ***********************************************************************************************
-static ostream& oneLog() { return UniCoutLog::defaultUniLog().oneLog(); }
+static ostream& oneLog() { return UniCoutLog::defaultUniLog()->oneLog(); }
 
 }  // namespace
 #endif  // UNI_COUT_LOG_HPP_

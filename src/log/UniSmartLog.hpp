@@ -12,6 +12,7 @@
 //   . smartLog_
 //
 // - MT safe: NO!!! since (static) logStore_; so shall NOT cross-thread use
+// - mem safe: no
 // ***********************************************************************************************
 #ifndef UNI_SMART_LOG_HPP_
 #define UNI_SMART_LOG_HPP_
@@ -37,12 +38,12 @@ public:
     explicit UniSmartLog(const UniLogName& = ULN_DEFAULT);
     ~UniSmartLog() { if (smartLog_.use_count() == 2) logStore_.erase(uniLogName_); }
 
-    SmartLog& oneLog() const;  // for logging; const UniSmartLog can log
-    SmartLog& operator()() const { return oneLog(); }
+    SmartLog& oneLog() const;  // for logging; const UniSmartLog can log; not mem-safe if keep ret
+    SmartLog& operator()() const { return oneLog(); }  // not mem-safe if keep ret
     void needLog() { smartLog_->needLog(); }  // flag to dump
     const UniLogName& uniLogName() const { return uniLogName_; }
 
-    static UniSmartLog& defaultUniLog();  // usage as if global cout
+    static shared_ptr<UniSmartLog> defaultUniLog();  // usage as if global cout; mem-safe than ret UniSmartLog&
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -63,7 +64,7 @@ public:
 };
 
 // ***********************************************************************************************
-static SmartLog& oneLog() { return UniSmartLog::defaultUniLog().oneLog(); }
+static SmartLog& oneLog() { return UniSmartLog::defaultUniLog()->oneLog(); }
 
 }  // namespace
 #endif  // UNI_SMART_LOG_HPP_

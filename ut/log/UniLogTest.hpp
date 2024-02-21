@@ -57,7 +57,7 @@ struct UNI_LOG_TEST : public Test
         bool mvCalled_ = false;
     };
 
-    static void funcUsr(UNI_LOG& oneLog = UNI_LOG::defaultUniLog())
+    static void funcUsr(UNI_LOG& oneLog = *UNI_LOG::defaultUniLog())
     {
         DBG("hello");                          // req: can log, same API
     }
