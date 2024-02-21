@@ -43,6 +43,7 @@ public:
     void needLog() { smartLog_->needLog(); }  // flag to dump
     const UniLogName& uniLogName() const { return uniLogName_; }
 
+    static size_t nLog() { return logStore_.size(); }
     static shared_ptr<UniSmartLog> defaultUniLog();  // usage as if global cout; mem-safe than ret UniSmartLog&
 
 private:
@@ -65,7 +66,6 @@ public:
             ? 0
             : it->second->str().size();
     }
-    static size_t nLog() { return logStore_.size(); }
     static void reset_thenMemRisk()  // for ut case clean at the end; mem-risk=use-after-free, so ut ONLY
     {
         defaultUniLog_.reset();

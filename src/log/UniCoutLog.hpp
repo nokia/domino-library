@@ -40,6 +40,7 @@ public:
     void needLog() {}
 
     static const UniLogName uniLogName() { return ULN_DEFAULT; }
+    static size_t nLog() { return 1; }
     static shared_ptr<UniCoutLog> defaultUniLog();  // mem-safe than ret UniCoutLog&
 
     // -------------------------------------------------------------------------------------------
@@ -52,7 +53,6 @@ public:
 #ifdef RLIB_UT
 public:
     static size_t logLen(const UniLogName& = ULN_DEFAULT) { return nLogLine_; }
-    static size_t nLog() { return 1; }
     static void reset_thenMemRisk()  // for ut case clean at the end; mem-risk=use-after-free, so ut ONLY
     {
         defaultUniLog_.reset();
