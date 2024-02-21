@@ -15,12 +15,12 @@ struct UNI_LOG_TEST : public Test
 {
     UNI_LOG_TEST()
     {
-        UNI_LOG::reset();  // clean env
+        UNI_LOG::reset_thenMemRisk();  // clean env
         nLog_  = UNI_LOG::nLog();
     }
     ~UNI_LOG_TEST()
     {
-        UNI_LOG::reset();
+        UNI_LOG::reset_thenMemRisk();
         EXPECT_EQ(nLog_, UNI_LOG::nLog());   // log(s) freed for next case
 
         EXPECT_EQ(0u, UNI_LOG::logLen());    // log content cleaned for next case

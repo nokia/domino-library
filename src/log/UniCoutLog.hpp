@@ -41,16 +41,24 @@ public:
 
     static const UniLogName uniLogName() { return ULN_DEFAULT; }
     static shared_ptr<UniCoutLog> defaultUniLog();  // mem-safe than ret UniCoutLog&
-    // for ut
-    static size_t logLen(const UniLogName& = ULN_DEFAULT) { return nLogLine_; }
-    static size_t nLog() { return 1; }
-    static void reset();  // for ut case clean at the end
 
-private:
     // -------------------------------------------------------------------------------------------
+private:
     static size_t nLogLine_;
 public:
     static shared_ptr<UniCoutLog> defaultUniLog_;
+
+    // -------------------------------------------------------------------------------------------
+#ifdef RLIB_UT
+public:
+    static size_t logLen(const UniLogName& = ULN_DEFAULT) { return nLogLine_; }
+    static size_t nLog() { return 1; }
+    static void reset_thenMemRisk()  // for ut case clean at the end; mem-risk=use-after-free, so ut ONLY
+    {
+        defaultUniLog_.reset();
+        nLogLine_ = 0;
+    }
+#endif
 };
 
 // ***********************************************************************************************

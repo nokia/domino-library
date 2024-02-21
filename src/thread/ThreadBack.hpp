@@ -84,7 +84,7 @@ private:
 
 
     // -------------------------------------------------------------------------------------------
-#ifdef THREAD_BACK_TEST  // UT only
+#ifdef RLIB_UT  // UT only
 public:
     static void invalidNewThread(const ThreadBackFN& aBack)
     {

@@ -25,13 +25,6 @@ ostream& UniCoutLog::oneLog() const
 }
 
 // ***********************************************************************************************
-void UniCoutLog::reset()
-{
-    defaultUniLog_.reset();
-    nLogLine_ = 0;
-}
-
-// ***********************************************************************************************
 size_t                 UniCoutLog::nLogLine_ = 0;
 shared_ptr<UniCoutLog> UniCoutLog::defaultUniLog_;
 

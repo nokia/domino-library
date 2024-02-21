@@ -14,9 +14,9 @@
 #include "MT_PingMainTH.hpp"
 #include "UniLog.hpp"
 
-#define THREAD_BACK_TEST
+#define RLIB_UT
 #include "ThreadBack.hpp"
-#undef THREAD_BACK_TEST
+#undef RLIB_UT
 
 #include <chrono>
 using namespace testing;

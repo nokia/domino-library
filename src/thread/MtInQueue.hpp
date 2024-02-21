@@ -70,7 +70,7 @@ private:
     unordered_map<size_t, EleHdlr> eleHdlrs_;  // <ID, hdlr>
 
     // -------------------------------------------------------------------------------------------
-#ifdef MT_IN_Q_TEST  // UT only
+#ifdef RLIB_UT
 public:
     mutex& backdoor() { return mutex_; }
 #endif

@@ -56,11 +56,22 @@ public:
 
 
     // -------------------------------------------------------------------------------------------
-    // for ut
+#ifdef RLIB_UT
 public:
-    static size_t logLen(const UniLogName& = ULN_DEFAULT);
+    static size_t logLen(const UniLogName& aUniLogName = ULN_DEFAULT)
+    {
+        auto&& it = logStore_.find(aUniLogName);
+        return it == logStore_.end()
+            ? 0
+            : it->second->str().size();
+    }
     static size_t nLog() { return logStore_.size(); }
-    static void reset();  // for ut case clean at the end
+    static void reset_thenMemRisk()  // for ut case clean at the end; mem-risk=use-after-free, so ut ONLY
+    {
+        defaultUniLog_.reset();
+        logStore_.clear();
+    }
+#endif
 };
 
 // ***********************************************************************************************

@@ -35,26 +35,10 @@ shared_ptr<UniSmartLog> UniSmartLog::defaultUniLog()
 }
 
 // ***********************************************************************************************
-size_t UniSmartLog::logLen(const UniLogName& aUniLogName)
-{
-    auto&& it = logStore_.find(aUniLogName);
-    return it == logStore_.end()
-        ? 0
-        : it->second->str().size();
-}
-
-// ***********************************************************************************************
 SmartLog& UniSmartLog::oneLog() const
 {
     *smartLog_ << "s[" << timestamp() << ' ' << uniLogName_ << '/';
     return *smartLog_;
-}
-
-// ***********************************************************************************************
-void UniSmartLog::reset()
-{
-    defaultUniLog_.reset();
-    logStore_.clear();
 }
 
 // ***********************************************************************************************

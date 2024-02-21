@@ -4,7 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
+#define RLIB_UT
 #include "UniCoutLog.hpp"
+#undef RLIB_UT
 
 #define UNI_LOG_TEST UniCoutLogTest
 #define UNI_LOG      UniCoutLog
