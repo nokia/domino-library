@@ -134,10 +134,10 @@ TEST_F(MT_SemaphoreTest, invalid_msgSelf)
     );
     ThreadBack::newThread(
         [] { return true; },  // entryFn
-        viaMsgSelf(nullptr, msgSelf_)  // invalid since backFn is empty
+        viaMsgSelf(nullptr, msgSelf_)  // invalid since backFn==nullptr
     );
     ThreadBack::newThread(
-        MT_ThreadEntryFN(nullptr),  // invalid since entryFn is empty
+        MT_ThreadEntryFN(nullptr),  // invalid since entryFn==nullptr
         [](bool) {}  // backFn
     );
     EXPECT_EQ(0, ThreadBack::nThread());
