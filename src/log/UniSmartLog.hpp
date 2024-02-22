@@ -64,7 +64,7 @@ public:
             ? 0
             : it->second->str().size();
     }
-    static void reset_UtOnlySinceMayMemRisk()  // for ut case clean at the end; mem-risk=use-after-free, so ut ONLY
+    static void dumpAll_forUt()  // for ut case clean at the end; mem-risk=use-after-free, so ut ONLY
     {
         defaultUniLog_.oneLog().forceSave();  // dump
         logStore_.clear();  // simplest way to dump

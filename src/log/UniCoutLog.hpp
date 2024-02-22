@@ -14,8 +14,8 @@
 // - CORE:
 //   . cout
 //
-// - MT safe: NO!!! since (static) nLogLine_; so shall NOT cross-thread use
-// - mem safe: no
+// - MT safe : yes (no for ut)
+// - mem safe: yes
 // ***********************************************************************************************
 #pragma once
 
@@ -44,13 +44,15 @@ public:
     // -------------------------------------------------------------------------------------------
 public:
     static UniCoutLog defaultUniLog_;
-    static size_t nLogLine_;  // ut only, simpler here
+    static size_t     nLogLine_;  // ut only, simpler here
 
-    // -------------------------------------------------------------------------------------------
 #ifdef RLIB_UT
+    // -------------------------------------------------------------------------------------------
+    // MT safe : no
+    // mem safe: yes
 public:
     static size_t logLen(const UniLogName& = ULN_DEFAULT) { return nLogLine_; }
-    static void reset_UtOnlySinceMayMemRisk() { nLogLine_ = 0; }  // for ut case clean at the end
+    static void dumpAll_forUt() { nLogLine_ = 0; }  // for ut case clean at the end
 #endif
 };
 
