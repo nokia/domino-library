@@ -27,14 +27,6 @@ UniSmartLog::UniSmartLog(const UniLogName& aUniLogName) : uniLogName_(aUniLogNam
 }
 
 // ***********************************************************************************************
-shared_ptr<UniSmartLog> UniSmartLog::defaultUniLog()
-{
-    if (not defaultUniLog_)
-        defaultUniLog_ = make_shared<UniSmartLog>(ULN_DEFAULT);
-    return defaultUniLog_;
-}
-
-// ***********************************************************************************************
 SmartLog& UniSmartLog::oneLog() const
 {
     *smartLog_ << "s[" << timestamp() << ' ' << uniLogName_ << '/';
@@ -43,6 +35,6 @@ SmartLog& UniSmartLog::oneLog() const
 
 // ***********************************************************************************************
 LogStore UniSmartLog::logStore_;
-shared_ptr<UniSmartLog> UniSmartLog::defaultUniLog_;
+shared_ptr<UniSmartLog> UniSmartLog::defaultUniLog_ = make_shared<UniSmartLog>(ULN_DEFAULT);
 
 }  // namespaces

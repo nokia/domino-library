@@ -9,15 +9,7 @@
 namespace RLib
 {
 // ***********************************************************************************************
-shared_ptr<UniCoutLog> UniCoutLog::defaultUniLog()
-{
-    if (not defaultUniLog_)
-        defaultUniLog_ = make_shared<UniCoutLog>();
-    return defaultUniLog_;
-}
-
-// ***********************************************************************************************
-ostream& UniCoutLog::oneLog() const
+ostream& UniCoutLog::oneLog()
 {
     cout << "c[" << timestamp() << ' ' << ULN_DEFAULT << '/';
     ++nLogLine_;
@@ -26,6 +18,6 @@ ostream& UniCoutLog::oneLog() const
 
 // ***********************************************************************************************
 size_t                 UniCoutLog::nLogLine_ = 0;
-shared_ptr<UniCoutLog> UniCoutLog::defaultUniLog_;
+shared_ptr<UniCoutLog> UniCoutLog::defaultUniLog_ = make_shared<UniCoutLog>();
 
 }  // namespaces

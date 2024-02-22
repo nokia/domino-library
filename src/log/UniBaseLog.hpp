@@ -27,8 +27,8 @@ using namespace std::chrono;
 #define INF(content) { oneLog() << "INF] " << BUF(content); }
 #define WRN(content) { oneLog() << "WRN] " << BUF(content); }
 #define ERR(content) { oneLog() << "ERR] " << BUF(content); }
-#if WITH_HID_LOG  // more debug
-#define HID(content) { oneLog() << "HID] " << BUF(content); }
+#if WITH_HID_LOG  // more debug but NOT exist in product code
+#define HID(content) { cout << "[HID] " << BUF(content); }  // simple cout & supports multi-thread
 #else
 #define HID(content) {}
 #endif

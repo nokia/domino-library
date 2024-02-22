@@ -17,8 +17,7 @@
 // - MT safe: NO!!! since (static) nLogLine_; so shall NOT cross-thread use
 // - mem safe: no
 // ***********************************************************************************************
-#ifndef UNI_COUT_LOG_HPP_
-#define UNI_COUT_LOG_HPP_
+#pragma once
 
 #include <memory>
 #include <iostream>
@@ -35,42 +34,37 @@ class UniCoutLog
 public:
     explicit UniCoutLog(const UniLogName& = ULN_DEFAULT) { HID("ignore LogName but default, this=" << this) }
 
-    ostream& oneLog() const;
+    static ostream& oneLog();
     ostream& operator()() const { return oneLog(); }
-    void needLog() {}
+    static void needLog() {}
 
     static const UniLogName uniLogName() { return ULN_DEFAULT; }
     static size_t nLog() { return 1; }
-    static shared_ptr<UniCoutLog> defaultUniLog();  // mem-safe than ret UniCoutLog&
+    static shared_ptr<UniCoutLog> defaultUniLog() { return defaultUniLog_; }
 
     // -------------------------------------------------------------------------------------------
 private:
     static size_t nLogLine_;
-public:
     static shared_ptr<UniCoutLog> defaultUniLog_;
 
     // -------------------------------------------------------------------------------------------
 #ifdef RLIB_UT
 public:
     static size_t logLen(const UniLogName& = ULN_DEFAULT) { return nLogLine_; }
-    static void reset_thenMemRisk()  // for ut case clean at the end; mem-risk=use-after-free, so ut ONLY
-    {
-        defaultUniLog_.reset();
-        nLogLine_ = 0;
-    }
+    static void reset_UtOnlySinceMayMemRisk() { nLogLine_ = 0; }  // for ut case clean at the end
 #endif
 };
 
 // ***********************************************************************************************
 // static than inline, avoid ut conflict when coexist both UniLog
 // ***********************************************************************************************
-static ostream& oneLog() { return UniCoutLog::defaultUniLog()->oneLog(); }
+static ostream& oneLog() { return UniCoutLog::oneLog(); }
 
 }  // namespace
-#endif  // UNI_COUT_LOG_HPP_
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2022-08-26  CSZ       1)create
 // 2022-12-02  CSZ       - simple & natural
+// 2024-02-21  CSZ       2)mem-safe
 // ***********************************************************************************************

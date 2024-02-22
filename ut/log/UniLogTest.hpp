@@ -15,12 +15,12 @@ struct UNI_LOG_TEST : public Test
 {
     UNI_LOG_TEST()
     {
-        UNI_LOG::reset_thenMemRisk();  // clean env
+        UNI_LOG::reset_UtOnlySinceMayMemRisk();  // clean env
         nLog_  = UNI_LOG::nLog();
     }
     ~UNI_LOG_TEST()
     {
-        UNI_LOG::reset_thenMemRisk();
+        UNI_LOG::reset_UtOnlySinceMayMemRisk();
         EXPECT_EQ(nLog_, UNI_LOG::nLog());   // log(s) freed for next case
 
         EXPECT_EQ(0u, UNI_LOG::logLen());    // log content cleaned for next case
@@ -189,7 +189,7 @@ TEST_F(UNI_LOG_TEST, GOLD_no_explicit_CellLog_like_legacy)
     const auto len_6 = UNI_LOG::logLen();
     ASSERT_GE(len_6, len_5) << "REQ: can log";
 
-    if (Test::HasFailure()) UNI_LOG::defaultUniLog_->needLog();
+    if (Test::HasFailure()) UNI_LOG::defaultUniLog()->needLog();
 }
 
 // ***********************************************************************************************

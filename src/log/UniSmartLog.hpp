@@ -14,8 +14,7 @@
 // - MT safe: NO!!! since (static) logStore_; so shall NOT cross-thread use
 // - mem safe: no
 // ***********************************************************************************************
-#ifndef UNI_SMART_LOG_HPP_
-#define UNI_SMART_LOG_HPP_
+#pragma once
 
 #include <memory>
 #include <unordered_map>
@@ -44,7 +43,7 @@ public:
     const UniLogName& uniLogName() const { return uniLogName_; }
 
     static size_t nLog() { return logStore_.size(); }
-    static shared_ptr<UniSmartLog> defaultUniLog();  // usage as if global cout; mem-safe than ret UniSmartLog&
+    static shared_ptr<UniSmartLog> defaultUniLog() { return defaultUniLog_; }
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -66,9 +65,9 @@ public:
             ? 0
             : it->second->str().size();
     }
-    static void reset_thenMemRisk()  // for ut case clean at the end; mem-risk=use-after-free, so ut ONLY
+    static void reset_UtOnlySinceMayMemRisk()  // for ut case clean at the end; mem-risk=use-after-free, so ut ONLY
     {
-        defaultUniLog_.reset();
+        defaultUniLog()->oneLog().forceSave();
         logStore_.clear();
     }
 #endif
@@ -78,10 +77,10 @@ public:
 static SmartLog& oneLog() { return UniSmartLog::defaultUniLog()->oneLog(); }
 
 }  // namespace
-#endif  // UNI_SMART_LOG_HPP_
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2022-08-25  CSZ       1)mv major from UniLog.hpp
 // 2022-12-02  CSZ       - simple & natural
+// 2024-02-21  CSZ       2)mem-safe
 // ***********************************************************************************************
