@@ -27,8 +27,12 @@ using namespace std::chrono;
 #define INF(content) { oneLog() << "INF] " << BUF(content); }
 #define WRN(content) { oneLog() << "WRN] " << BUF(content); }
 #define ERR(content) { oneLog() << "ERR] " << BUF(content); }
-#if WITH_HID_LOG  // more debug but NOT exist in product code
-#define HID(content) { oneLog() << "HID] " << BUF(content); }
+
+// - HID() is to be more debug but product code shall disable them
+// - HID() uses cout since UniSmartLog is NOT MT safe
+// - under single thread, can change cout back to oneLog()
+#if WITH_HID_LOG
+#define HID(content) { cout << "cout[" << timestamp() << "/HID] " << BUF(content); }
 #else
 #define HID(content) {}
 #endif

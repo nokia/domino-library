@@ -18,7 +18,6 @@
 //   . ensure ptr type is valid: origin*, or base*, or void*
 //   . not ensure T's content which is T's duty bound
 //   . hope cooperate with tool to ensure/track SafeAdr, all T, all code's mem safe
-// - mem-safe: true
 // - suggest:
 //   . any class ensure mem-safe (like MT safe)
 //   . struct ptr/ref member shall be SafeAdr
@@ -33,6 +32,9 @@
 //     . more lightweight than Rust
 //     . keep legacy code/invest
 //     * keep c++'s full freedom while has a choice to limit partial freedom for mem-safe
+//
+// - MT safe : NO (so eg after MtInQueue.mt_push(), shall NOT touch pushed SafePtr)
+// - mem-safe: true
 // ***********************************************************************************************
 #pragma once
 
@@ -146,7 +148,8 @@ SafeAdr<U> make_safe(Args&&... aArgs)
 {
     SafeAdr<U> sptr;
     sptr.pT_ = make_shared<U>(forward<Args>(aArgs)...);
-    return sptr;  // !!! valgrind failed when HID() here
+    HID("new ptr=" << sptr.pT_.get());
+    return sptr;
 }
 
 // ***********************************************************************************************

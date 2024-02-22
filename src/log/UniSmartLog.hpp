@@ -11,8 +11,8 @@
 // - CORE:
 //   . smartLog_
 //
-// - MT safe: NO!!! since (static) logStore_; so shall NOT cross-thread use
-// - mem safe: no
+// - MT safe : NO!!! since eg logStore_; so shall NOT cross-thread use
+// - mem safe: yes
 // ***********************************************************************************************
 #pragma once
 

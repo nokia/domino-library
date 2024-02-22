@@ -5,10 +5,10 @@
  */
 // ***********************************************************************************************
 // - ISSUE/why:
-//   . implement UniLog based on cout
-//     . so failed case log can perfectly integrate with gtest output - easy debug
-//     (SmartLog always gtest outputs then case log)
-//     . case destructor can't catch EXPECT_CALL() failure, so SmartLog doesn't work
+//   . encapsulate cout for eg:
+//     . UT
+//     . simplest log for debug
+//     . gtest case destructor can't catch EXPECT_CALL() failure, so SmartLog doesn't work
 //     . other unknown issue(s) that SmartLog can't fix
 //
 // - CORE:
