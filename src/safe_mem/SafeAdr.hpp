@@ -148,7 +148,8 @@ SafeAdr<U> make_safe(Args&&... aArgs)
 {
     SafeAdr<U> sptr;
     sptr.pT_ = make_shared<U>(forward<Args>(aArgs)...);
-    HID("new ptr=" << sptr.pT_.get());
+    //HID("new ptr=" << sptr.pT_.get());
+    cout << "new ptr=" << (void*)(sptr.pT_.get()) << endl;  // & to print ptr instead of its content
     return sptr;
 }
 
