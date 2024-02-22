@@ -33,7 +33,9 @@
 //     . keep legacy code/invest
 //     * keep c++'s full freedom while has a choice to limit partial freedom for mem-safe
 //
-// - MT safe : NO (so eg after MtInQueue.mt_push(), shall NOT touch pushed SafePtr)
+// - MT safe: NO
+//   . so eg after MtInQueue.mt_push(), shall NOT touch pushed SafePtr
+//   . only HID is MT safe that can be used here
 // - mem-safe: true
 // ***********************************************************************************************
 #pragma once
@@ -148,8 +150,7 @@ SafeAdr<U> make_safe(Args&&... aArgs)
 {
     SafeAdr<U> sptr;
     sptr.pT_ = make_shared<U>(forward<Args>(aArgs)...);
-    //HID("new ptr=" << sptr.pT_.get());
-    cout << "new ptr=" << (void*)(sptr.pT_.get()) << endl;  // & to print ptr instead of its content
+    //HID("new ptr=" << (void*)(sptr.pT_.get()));  // too many print; void* print addr rather than content(dangeous)
     return sptr;
 }
 

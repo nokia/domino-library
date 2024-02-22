@@ -11,7 +11,9 @@
 // - CORE:
 //   . smartLog_
 //
-// - MT safe : NO!!! since eg logStore_; so shall NOT cross-thread use
+// - MT safe: NO!!! since eg logStore_; so shall NOT cross-thread use
+//   . SmartLog is to min log scope for better debug
+//   . cross-thread is not SmartLog purpose, but user can add mutex if really need
 // - mem safe: yes
 // ***********************************************************************************************
 #pragma once

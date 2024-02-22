@@ -31,7 +31,7 @@ using namespace std::chrono;
 // - HID() is to be more debug but product code shall disable them
 // - HID() uses cout since UniSmartLog is NOT MT safe
 //   . under single thread, can change cout back to oneLog() for smart log
-// - MT safe : yes
+// - MT safe : yes (only HID is safe in MT class/code)
 // - mem safe: yes
 #if WITH_HID_LOG
 #define HID(content) { cout << "cout[" << timestamp() << "/HID] " << BUF(content); }
