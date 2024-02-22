@@ -156,7 +156,7 @@ SafeAdr<U> make_safe(Args&&... aArgs)
 
 // ***********************************************************************************************
 template<typename To, typename From>
-auto static_pointer_cast(const SafeAdr<From>& aFromPtr) noexcept
+SafeAdr<To> static_pointer_cast(const SafeAdr<From>& aFromPtr) noexcept
 {
     return SafeAdr<To>(aFromPtr);
 }
