@@ -130,10 +130,10 @@ bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName, const bo
 #define EXTEND_INTERFACE_FOR_WBASIC_DATA_DOMINO  // more friendly than min WbasicDatDom interface
 // ***********************************************************************************************
 // - getValue() is NOT mem-safe when aEvName not found
-//   . so getData() instead of getValue
-// - this getData() cast type so convenient
+//   . so getData() instead of getValue()
+// - this func cast type so more convenient than WbasicDatDom's
 template<typename aDataDominoType, typename aDataType>
-auto wbasic_getData(aDataDominoType& aDom, const Domino::EvName& aEvName)
+PTR<aDataType> wbasic_getData(aDataDominoType& aDom, const Domino::EvName& aEvName)
 {
     return static_pointer_cast<aDataType>(aDom.wbasic_getData(aEvName));
 }
