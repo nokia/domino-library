@@ -15,10 +15,10 @@
 //   . SmartLog is to min log scope for better debug
 //   . cross-thread is not SmartLog purpose, but user can add mutex if really need
 // - mem safe: yes except
-//   . keep ret of oneLog() - may use-after-free
-//     . UniSmartLog can provide template<T> operator<<(T) but can't deduce endl, etc
+//   . keep ret of oneLog() - doesn't make sense, but then may use-after-free
+//     . UniSmartLog can provide template<T/...Args> operator<<() but both can't deduce endl, etc
 //     . so it's much simpler to ret SmartLog&/ref instead of UniSmartLog/copy
-//   . same as uniLogName()
+//   . uniLogName() is same
 // ***********************************************************************************************
 #pragma once
 
@@ -43,10 +43,10 @@ public:
     explicit UniSmartLog(const UniLogName& = ULN_DEFAULT);
     ~UniSmartLog() { if (smartLog_.use_count() == 2) logStore_.erase(uniLogName_); }
 
-    SmartLog& oneLog() const;  // for logging; const UniSmartLog can log
-    SmartLog& operator()() const { return oneLog(); }
+    SmartLog& oneLog() const;  // for logging; not mem-safe
+    SmartLog& operator()() const { return oneLog(); }  // not mem-safe
     void needLog() { smartLog_->needLog(); }  // flag to dump
-    const UniLogName& uniLogName() const { return uniLogName_; }
+    const UniLogName& uniLogName() const { return uniLogName_; }  // not mem-safe
 
     static size_t nLog() { return logStore_.size(); }
 
@@ -80,7 +80,7 @@ public:
 };
 
 // ***********************************************************************************************
-static SmartLog& oneLog() { return UniSmartLog::defaultUniLog_.oneLog(); }
+static SmartLog& oneLog() { return UniSmartLog::defaultUniLog_.oneLog(); }  // not mem-safe
 
 }  // namespace
 // ***********************************************************************************************

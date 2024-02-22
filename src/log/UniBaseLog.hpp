@@ -6,9 +6,6 @@
 // ***********************************************************************************************
 // - Issue/why:
 //   . all common of eg UniSmartLog, UniCoutLog
-//
-// - MT safe: no
-// - mem safe: yes
 // ***********************************************************************************************
 #ifndef UNI_BASE_HPP_
 #define UNI_BASE_HPP_
@@ -22,6 +19,8 @@ using namespace std;
 using namespace std::chrono;
 
 // ***********************************************************************************************
+// - mem safe: yes
+// - MT safe : yes upon UniCoutLog, no upon UniSmartLog
 #define BUF(content) __func__ << "():" << __LINE__ << ": " << content << endl  // __FILE_NAME__ since GCC 12
 #define DBG(content) { oneLog() << "DBG] " << BUF(content); }
 #define INF(content) { oneLog() << "INF] " << BUF(content); }
@@ -31,14 +30,14 @@ using namespace std::chrono;
 // - HID() is to be more debug but product code shall disable them
 // - HID() uses cout since UniSmartLog is NOT MT safe
 //   . under single thread, can change cout back to oneLog() for smart log
-// - MT safe : yes (only HID is safe in MT class/code)
-// - mem safe: yes
+// - HID() is MT safe also upon UniSmartLog
 #if WITH_HID_LOG
 #define HID(content) { cout << "cout[" << timestamp() << "/HID] " << BUF(content); }
 #else
 #define HID(content) {}
 #endif
 
+// UT only
 #define GTEST_LOG_FAIL { if (Test::HasFailure()) needLog(); }
 
 namespace RLib
@@ -68,4 +67,5 @@ inline char* timestamp()
 // ..........  .........   .......................................................................
 // 2022-08-29  CSZ       1)create
 // 2023-05-29  CSZ       - ms/us in timestamp
+// 2024-02-22  CSZ       2)mem-safe
 // ***********************************************************************************************

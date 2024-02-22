@@ -58,26 +58,6 @@
 //     . class based on UniLog: default using UniLog(ULN_DEFAULT)
 //     . func with UniLog para: default using UniLog::defaultUniLog()
 //     . class & func w/o UniLog: using global oneLog()
-//
-// - MT safe: FALSE
-//   * so can only use in main thread
-//   . though cout is MT safe, UniCoutLog is NOT
-//
-// - Q&A:
-//   . why oneLog() as func than var: more flexible, eg can print prefix in oneLog()
-//   . why UniLog& to func:
-//     . unify usr class & func: own its UniLog
-//     . fast to pass reference from cell/member to participant
-//     . can create new member within func
-//   . why name as oneLog:
-//     . vs ssLog: oneLog can represent SmartLog or UniLog
-//     . vs log: too common, possible comflict with user definition
-//   . why not support multi-thread:
-//     . mainthread/logic is the most usage
-//     . not worth to pay(lock-mechanism) for low-possible usage
-//   * why DomTest's log not in smart log?
-//     . since they're template test that need this->oneLog to access base
-//     . workaround: "auto& oneLog = *this;" in case
 // ***********************************************************************************************
 #ifndef UNI_LOG_HPP_
 #define UNI_LOG_HPP_
@@ -107,3 +87,18 @@ using UniLog = RLib::UniCoutLog;
 // 2022-11-11  CSZ       - simple & natural
 // 2023-05-26  CSZ       5)const UniLog & derived can log
 // ***********************************************************************************************
+// - Q&A:
+//   . why oneLog() as func than var: more flexible, eg can print prefix in oneLog()
+//   . why UniLog& to func:
+//     . unify usr class & func: own its UniLog
+//     . fast to pass reference from cell/member to participant
+//     . can create new member within func
+//   . why name as oneLog:
+//     . vs ssLog: oneLog can represent SmartLog or UniLog
+//     . vs log: too common, possible comflict with user definition
+//   . why not support multi-thread:
+//     . mainthread/logic is the most usage
+//     . not worth to pay(lock-mechanism) for low-possible usage
+//   * why DomTest's log not in smart log?
+//     . since they're template test that need this->oneLog to access base
+//     . workaround: "auto& oneLog = *this;" in case

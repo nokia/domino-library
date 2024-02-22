@@ -14,7 +14,7 @@
 // - CORE:
 //   . cout
 //
-// - MT safe : yes (no for ut)
+// - MT safe : yes
 // - mem safe: yes
 // ***********************************************************************************************
 #pragma once
@@ -48,7 +48,7 @@ public:
 
 #ifdef RLIB_UT
     // -------------------------------------------------------------------------------------------
-    // MT safe : no
+    // MT safe : no (since nLogLine_ is not atomic & no worth for ut only)
     // mem safe: yes
 public:
     static size_t logLen(const UniLogName& = ULN_DEFAULT) { return nLogLine_; }
