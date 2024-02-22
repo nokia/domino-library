@@ -29,7 +29,7 @@ template<class aDominoType>
 class FreeHdlrDomino : public aDominoType
 {
 public:
-    explicit FreeHdlrDomino(const UniLogName& aUniLogName) : aDominoType(aUniLogName) {}
+    explicit FreeHdlrDomino(const UniLogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
 
     Domino::Event repeatedHdlr(const Domino::EvName&, const bool isRepeated = true);  // set false = simple rm
     bool isRepeatHdlr(const Domino::Event) const;

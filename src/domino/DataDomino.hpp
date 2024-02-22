@@ -35,7 +35,7 @@ class DataDomino : public aDominoType
     // -------------------------------------------------------------------------------------------
 
 public:
-    explicit DataDomino(const UniLogName& aUniLogName) : aDominoType(aUniLogName) {}
+    explicit DataDomino(const UniLogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
 
     // -------------------------------------------------------------------------------------------
     // - for read/write data
@@ -47,7 +47,7 @@ public:
     // -------------------------------------------------------------------------------------------
     // - replace old data by new=aUniPtr if old != new
     // - for aDataType w/o default constructor!!!
-    virtual void replaceData(const Domino::EvName&, UniPtr aUniPtr = nullptr);
+    virtual void replaceData(const Domino::EvName&, UniPtr = nullptr);
 
 protected:
     void innerRmEv(const Domino::Event) override;
