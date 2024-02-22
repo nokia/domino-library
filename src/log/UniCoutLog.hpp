@@ -40,12 +40,12 @@ public:
 
     static const UniLogName uniLogName() { return ULN_DEFAULT; }
     static size_t nLog() { return 1; }
-    static shared_ptr<UniCoutLog> defaultUniLog() { return defaultUniLog_; }
 
     // -------------------------------------------------------------------------------------------
 private:
     static size_t nLogLine_;
-    static shared_ptr<UniCoutLog> defaultUniLog_;
+public:
+    static UniCoutLog defaultUniLog_;
 
     // -------------------------------------------------------------------------------------------
 #ifdef RLIB_UT
@@ -57,7 +57,6 @@ public:
 
 // ***********************************************************************************************
 // static than inline, avoid ut conflict when coexist both UniLog
-// ***********************************************************************************************
 static ostream& oneLog() { return UniCoutLog::oneLog(); }
 
 }  // namespace

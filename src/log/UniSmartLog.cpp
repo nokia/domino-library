@@ -35,6 +35,6 @@ SmartLog& UniSmartLog::oneLog() const
 
 // ***********************************************************************************************
 LogStore UniSmartLog::logStore_;
-shared_ptr<UniSmartLog> UniSmartLog::defaultUniLog_ = make_shared<UniSmartLog>(ULN_DEFAULT);
+UniSmartLog UniSmartLog::defaultUniLog_;
 
 }  // namespaces

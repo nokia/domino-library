@@ -18,6 +18,6 @@ ostream& UniCoutLog::oneLog()
 
 // ***********************************************************************************************
 size_t                 UniCoutLog::nLogLine_ = 0;
-shared_ptr<UniCoutLog> UniCoutLog::defaultUniLog_ = make_shared<UniCoutLog>();
+UniCoutLog UniCoutLog::defaultUniLog_;
 
 }  // namespaces

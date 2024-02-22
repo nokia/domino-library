@@ -50,8 +50,8 @@ public:
     using ObjIndex = size_t;
     using ObjStore = unordered_map<ObjIndex, UniPtr>;
 
-    static void init(UniLog& = *UniLog::defaultUniLog());    // init objStore_
-    static void deinit(UniLog& = *UniLog::defaultUniLog());  // rm objStore_
+    static void init(UniLog& = UniLog::defaultUniLog_);    // init objStore_
+    static void deinit(UniLog& = UniLog::defaultUniLog_);  // rm objStore_
     static bool isInit() { return objStore_ != nullptr; }   // init objStore_?
     static size_t nObj() { return objStore_ ? objStore_->size() : 0; }
 
@@ -59,13 +59,13 @@ public:
     // - save aObjType into objStore_
     // -------------------------------------------------------------------------------------------
     template<typename aObjType>
-    static void set(PTR<aObjType> aSharedObj, UniLog& = *UniLog::defaultUniLog());
+    static void set(PTR<aObjType> aSharedObj, UniLog& = UniLog::defaultUniLog_);
 
     // -------------------------------------------------------------------------------------------
     // - get a "Obj" from objStore_
     // - template operator[] not easier in usage
     // -------------------------------------------------------------------------------------------
-    template<typename aObjType> static PTR<aObjType> get(UniLog& = *UniLog::defaultUniLog());
+    template<typename aObjType> static PTR<aObjType> get(UniLog& = UniLog::defaultUniLog_);
 
 private:
     // -------------------------------------------------------------------------------------------

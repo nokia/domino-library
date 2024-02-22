@@ -42,9 +42,11 @@ using UniLogName = string;
 const char ULN_DEFAULT[] = "DEFAULT";
 
 // ***********************************************************************************************
+// - MT safe : yes
+// - mem safe: yes
 inline char* timestamp()
 {
-    static char buf[] = "ddd/HH:MM:SS.123456";  // ddd is days/year
+    static thread_local char buf[] = "ddd/HH:MM:SS.123456";  // ddd is days/year; thread_local is MT safe
 
     auto now_tp = system_clock::now();
     auto now_tt = system_clock::to_time_t(now_tp);

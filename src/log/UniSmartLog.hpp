@@ -43,7 +43,6 @@ public:
     const UniLogName& uniLogName() const { return uniLogName_; }
 
     static size_t nLog() { return logStore_.size(); }
-    static shared_ptr<UniSmartLog> defaultUniLog() { return defaultUniLog_; }
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -52,7 +51,7 @@ private:
 
     static LogStore logStore_;
 public:
-    static shared_ptr<UniSmartLog> defaultUniLog_;
+    static UniSmartLog defaultUniLog_;
 
 
     // -------------------------------------------------------------------------------------------
@@ -67,14 +66,14 @@ public:
     }
     static void reset_UtOnlySinceMayMemRisk()  // for ut case clean at the end; mem-risk=use-after-free, so ut ONLY
     {
-        defaultUniLog()->oneLog().forceSave();
-        logStore_.clear();
+        defaultUniLog_.oneLog().forceSave();  // dump
+        logStore_.clear();  // simplest way to dump
     }
 #endif
 };
 
 // ***********************************************************************************************
-static SmartLog& oneLog() { return UniSmartLog::defaultUniLog()->oneLog(); }
+static SmartLog& oneLog() { return UniSmartLog::defaultUniLog_.oneLog(); }
 
 }  // namespace
 // ***********************************************************************************************

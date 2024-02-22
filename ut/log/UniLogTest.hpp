@@ -57,7 +57,7 @@ struct UNI_LOG_TEST : public Test
         bool mvCalled_ = false;
     };
 
-    static void funcUsr(UNI_LOG& oneLog = *UNI_LOG::defaultUniLog())
+    static void funcUsr(UNI_LOG& oneLog = UNI_LOG::defaultUniLog_)
     {
         DBG("hello");                          // req: can log, same API
     }
@@ -189,7 +189,7 @@ TEST_F(UNI_LOG_TEST, GOLD_no_explicit_CellLog_like_legacy)
     const auto len_6 = UNI_LOG::logLen();
     ASSERT_GE(len_6, len_5) << "REQ: can log";
 
-    if (Test::HasFailure()) UNI_LOG::defaultUniLog()->needLog();
+    if (Test::HasFailure()) UNI_LOG::defaultUniLog_.needLog();
 }
 
 // ***********************************************************************************************
