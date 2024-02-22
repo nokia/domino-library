@@ -42,10 +42,9 @@ public:
     static size_t nLog() { return 1; }
 
     // -------------------------------------------------------------------------------------------
-private:
-    static size_t nLogLine_;
 public:
     static UniCoutLog defaultUniLog_;
+    static size_t nLogLine_;  // ut only, simpler here
 
     // -------------------------------------------------------------------------------------------
 #ifdef RLIB_UT

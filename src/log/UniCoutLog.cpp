@@ -9,15 +9,17 @@
 namespace RLib
 {
 // ***********************************************************************************************
+// - MT safe : yes
+// - mem safe: yes
 ostream& UniCoutLog::oneLog()
 {
+    ++nLogLine_;  // ut only; no impact product's MT safe & mem safe
     cout << "c[" << timestamp() << ' ' << ULN_DEFAULT << '/';
-    ++nLogLine_;
     return cout;
 }
 
 // ***********************************************************************************************
-size_t                 UniCoutLog::nLogLine_ = 0;
 UniCoutLog UniCoutLog::defaultUniLog_;
+size_t     UniCoutLog::nLogLine_ = 0;
 
 }  // namespaces

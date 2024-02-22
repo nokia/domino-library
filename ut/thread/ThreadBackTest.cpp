@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
+#include <atomic>
 #include <chrono>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
