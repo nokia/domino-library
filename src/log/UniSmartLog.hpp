@@ -14,7 +14,11 @@
 // - MT safe: NO!!! since eg logStore_; so shall NOT cross-thread use
 //   . SmartLog is to min log scope for better debug
 //   . cross-thread is not SmartLog purpose, but user can add mutex if really need
-// - mem safe: yes
+// - mem safe: yes except
+//   . keep ret of oneLog() - may use-after-free
+//     . UniSmartLog can provide template<T> operator<<(T) but can't deduce endl, etc
+//     . so it's much simpler to ret SmartLog&/ref instead of UniSmartLog/copy
+//   . same as uniLogName()
 // ***********************************************************************************************
 #pragma once
 
@@ -39,8 +43,8 @@ public:
     explicit UniSmartLog(const UniLogName& = ULN_DEFAULT);
     ~UniSmartLog() { if (smartLog_.use_count() == 2) logStore_.erase(uniLogName_); }
 
-    SmartLog& oneLog() const;  // for logging; const UniSmartLog can log; not mem-safe if keep ret
-    SmartLog& operator()() const { return oneLog(); }  // not mem-safe if keep ret
+    SmartLog& oneLog() const;  // for logging; const UniSmartLog can log
+    SmartLog& operator()() const { return oneLog(); }
     void needLog() { smartLog_->needLog(); }  // flag to dump
     const UniLogName& uniLogName() const { return uniLogName_; }
 
@@ -59,17 +63,18 @@ public:
     // -------------------------------------------------------------------------------------------
 #ifdef RLIB_UT
 public:
+    static void dumpAll_forUt()  // for ut case clean at the end; mem-risk=use-after-free, so ut ONLY
+    {
+        defaultUniLog_.oneLog().forceSave();  // dump
+        logStore_.clear();  // simplest way to dump
+    }
+
     static size_t logLen(const UniLogName& aUniLogName = ULN_DEFAULT)
     {
         auto&& it = logStore_.find(aUniLogName);
         return it == logStore_.end()
             ? 0
             : it->second->str().size();
-    }
-    static void dumpAll_forUt()  // for ut case clean at the end; mem-risk=use-after-free, so ut ONLY
-    {
-        defaultUniLog_.oneLog().forceSave();  // dump
-        logStore_.clear();  // simplest way to dump
     }
 #endif
 };
