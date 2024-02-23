@@ -194,6 +194,8 @@ TEST_F(MtInQueueTest, handleAllEle_shallnot_block)
     mtQ.handleAllEle();
     mtQ.backdoor().unlock();  // for mt_sizeQ()
     EXPECT_EQ(1u, mtQ.mt_sizeQ()) << "REQ: no block";
+
+    MtInQueue mtQ2;  // cov destructor without ele left
 }
 TEST_F(MtInQueueTest, GOLD_shallHandle_bothCacheAndQueue_ifPossible)
 {
