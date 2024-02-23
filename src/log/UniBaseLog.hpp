@@ -49,7 +49,7 @@ const char ULN_DEFAULT[] = "DEFAULT";
 // ***********************************************************************************************
 // - MT safe : yes
 // - mem safe: yes
-inline char* timestamp()
+inline const char* timestamp()
 {
     static thread_local char buf[] = "ddd/HH:MM:SS.123456";  // ddd is days/year; thread_local is MT safe
 

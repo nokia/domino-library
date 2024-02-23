@@ -73,7 +73,7 @@ public:
 
     Event    newEvent(const EvName&);
     Event    getEventBy(const EvName&) const;
-    const EvNames& evNames() const { return evNames_; }
+    const EvNames& evNames() const { return evNames_; }  // not mem safe to ret ref
 
     bool     state(const EvName& aEvName) const { return state(getEventBy(aEvName)); }
     void     setState(const SimuEvents&);
