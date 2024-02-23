@@ -88,10 +88,17 @@ void MtInQueue::hdlr(const EleHdlr& aHdlr)
 template<class aEleType>
 void MtInQueue::mt_push(PTR<aEleType> aEle)
 {
+    // - for MT safe: mt_push shall take over aEle's content (so sender can't touch the content)
+    if (aEle.use_count() > 1)
+    {
+        HID("!!! push failed since use_count=" << aEle.use_count());  // ERR() is not MT safe
+        return;
+    }
+
     {
         lock_guard<mutex> guard(mutex_);
         queue_.push_back(ElePair(aEle, typeid(aEleType).hash_code()));
-        HID("(MtQ) ptr=" << aEle.get() << ", nRef=" << aEle.use_count());  // HID supports MT
+        HID("(MtQ) ptr=" << (void*)(aEle.get()) << ", nRef=" << aEle.use_count());  // HID supports MT
     }   // unlock then mt_notifyFn()
     mt_pingMainTH();
 }

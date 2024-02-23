@@ -62,7 +62,7 @@ TEST_F(MtInQueueTest, GOLD_sparsePush_fifo)
         auto msg = mt_getQ().pop<int>();  // CAN'T directly get() that destruct shared_ptr afterward
         if (msg.get())
         {
-            HID("nHdl=" << nHdl << ", msg=" << msg.get() << ", nRef=" << msg.use_count());
+            HID("nHdl=" << nHdl << ", msg=" << (void*)(msg.get()) << ", nRef=" << msg.use_count());
             SCOPED_TRACE(nHdl);
             EXPECT_EQ(nHdl, *(msg.get())) << "REQ: fifo";
             ++nHdl;
@@ -229,6 +229,23 @@ TEST_F(MtInQueueTest, invalid_hdlr)
 {
     mt_getQ().hdlr<void>(nullptr);
     EXPECT_EQ(0, mt_getQ().nHdlr());
+}
+
+TEST_F(MtInQueueTest, GOLD_push_takeover_toEnsureMtSafe)
+{
+    auto ele = MAKE_PTR<int>(1);
+    auto e2  = ele;
+    mt_getQ().mt_push<int>(ele);
+    EXPECT_EQ(0, mt_getQ().mt_sizeQ()) << "REQ: push failed since can't takeover ele";
+
+    e2 = nullptr;
+    mt_getQ().mt_push<int>(ele);
+    EXPECT_EQ(0, mt_getQ().mt_sizeQ()) << "REQ: push failed since can't takeover ele";
+
+    EXPECT_EQ(1, ele.use_count());
+    mt_getQ().mt_push<int>(move(ele));
+    EXPECT_EQ(1, mt_getQ().mt_sizeQ()) << "REQ: push succ since takeover";
+    EXPECT_EQ(0, ele.use_count())      << "REQ: own nothing after push";
 }
 
 }  // namespace

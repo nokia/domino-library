@@ -17,12 +17,12 @@ UniSmartLog::UniSmartLog(const UniLogName& aUniLogName) : uniLogName_(aUniLogNam
     {
         smartLog_ = make_shared<SmartLog>();
         logStore_[aUniLogName] = smartLog_;
-        HID("creatd new log=" << smartLog_.get() << aUniLogName << ", nLog=" << nLog());
+        HID("creatd new log=" << (void*)(smartLog_.get()) << aUniLogName << ", nLog=" << nLog());
     }
     else
     {
         smartLog_ = it->second;
-        HID("reused existing log=" << smartLog_.get() << aUniLogName << ", nLog=" << nLog());
+        HID("reused existing log=" << (void*)(smartLog_.get()) << aUniLogName << ", nLog=" << nLog());
     }
 }
 
