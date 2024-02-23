@@ -16,7 +16,7 @@ MtInQueue::~MtInQueue()
 {
     const auto nEle = mt_sizeQ();
     if (nEle)
-        WRN("discard nEle=" << nEle);
+        WRN("discard nEle=" << nEle);  // main thread can WRN()
 }
 
 // ***********************************************************************************************

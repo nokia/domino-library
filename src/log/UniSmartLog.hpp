@@ -62,6 +62,9 @@ public:
 
     // -------------------------------------------------------------------------------------------
 #ifdef RLIB_UT
+    // -------------------------------------------------------------------------------------------
+    // MT safe : no
+    // mem safe: yes
 public:
     static void dumpAll_forUt()  // for ut case clean at the end; mem-risk=use-after-free, so ut ONLY
     {

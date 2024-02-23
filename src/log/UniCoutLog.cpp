@@ -9,8 +9,6 @@
 namespace RLib
 {
 // ***********************************************************************************************
-// - MT safe : yes
-// - mem safe: yes
 ostream& UniCoutLog::oneLog()
 {
     ++nLogLine_;  // ut only; no impact product's MT safe & mem safe

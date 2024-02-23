@@ -40,7 +40,7 @@ using ElePair = pair<UniPtr, size_t>;  // <ele, ID>
 using EleHdlr = function<void(UniPtr)>;
 
 // ***********************************************************************************************
-class MtInQueue : public UniLog  // but mt_ interface can't UniLog that's not MT safe!!!
+class MtInQueue
 {
 public:
     ~MtInQueue();
