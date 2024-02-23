@@ -12,7 +12,7 @@ namespace RLib
 {
 #define CREATE_GET
 // ***********************************************************************************************
-TEST(SafePtrTest, GOLD_construct_get)
+TEST(SafeAdrTest, GOLD_construct_get)
 {
     auto one = make_safe<int>(42);
     EXPECT_EQ(42, *(one.cast_get())) << "REQ: valid construct & get";
@@ -23,7 +23,7 @@ TEST(SafePtrTest, GOLD_construct_get)
     EXPECT_EQ(one.cast_get<void>(), one.cast_get()) << "REQ: valid get (void)";
     // one.cast_get<unsigned>();  // REQ: invalid cast_get() will fail compile
 }
-TEST(SafePtrTest, GOLD_cp_get)
+TEST(SafeAdrTest, GOLD_cp_get)
 {
     auto one = make_safe<int>(42);
     auto two(one);
@@ -32,7 +32,7 @@ TEST(SafePtrTest, GOLD_cp_get)
     *(one.cast_get()) = 43;
     EXPECT_EQ(43, *(two.cast_get())) << "REQ: valid update via sharing";
 }
-TEST(SafePtrTest, GOLD_assign_get)
+TEST(SafeAdrTest, GOLD_assign_get)
 {
     SafeAdr<int> one;
     EXPECT_EQ(nullptr, one.cast_get()) << "REQ: construct null";
@@ -45,7 +45,7 @@ TEST(SafePtrTest, GOLD_assign_get)
     EXPECT_EQ(42,    *(one.cast_get())) << "REQ: valid get after shared is reset";
     EXPECT_EQ(nullptr, two.cast_get())  << "REQ: assign to null";
 }
-TEST(SafePtrTest, GOLD_mv_get)
+TEST(SafeAdrTest, GOLD_mv_get)
 {
     SafeAdr<int> one;
     auto two = make_safe<int>(42);
@@ -64,14 +64,14 @@ struct Base                   { virtual int value()  { return 0; } };
 struct Derive : public Base   { int value() override { return 1; } };
 struct D2     : public Derive { int value() override { return 2; } };
 
-TEST(SafePtrTest, GOLD_base_get)
+TEST(SafeAdrTest, GOLD_base_get)
 {
     SafeAdr<Base> b = make_safe<Derive>();
     EXPECT_EQ(1,       b.cast_get<Base>()  ->value()) << "REQ: Base can ptr Derive & get virtual";
     EXPECT_EQ(1,       b.cast_get<Derive>()->value()) << "REQ: get self";
     EXPECT_EQ(nullptr, b.cast_get<D2>())              << "REQ: invalid";
 }
-TEST(SafePtrTest, castTo_baseDirection)
+TEST(SafeAdrTest, castTo_baseDirection)
 {
     SafeAdr<D2> d2 = make_safe<D2>();
     EXPECT_EQ(2, d2.cast_get<D2>()    ->value()) << "req: get virtual";
@@ -95,7 +95,7 @@ TEST(SafePtrTest, castTo_baseDirection)
     EXPECT_EQ(2, v.cast_get<D2>()    ->value()) << "req: safe to origin:  (D2->Derive->)void->D2";
     EXPECT_EQ(2, v.cast_get<Derive>()->value()) << "REQ: safe to preVoid: (D2->Derive->)void->Derive";
 }
-TEST(SafePtrTest, castTo_origin_preVoid)
+TEST(SafeAdrTest, castTo_origin_preVoid)
 {
     SafeAdr<> v = make_safe<D2>();
     EXPECT_EQ(&typeid(D2), v.realType());
@@ -119,7 +119,7 @@ TEST(SafePtrTest, castTo_origin_preVoid)
     EXPECT_EQ(nullptr, d.preVoidType())      << "lose origin so also lose preVoidType_";
     EXPECT_EQ(nullptr, d.cast_get<void>())   << "lose origin so also lose pT_";
 }
-TEST(SafePtrTest, inc_cov)
+TEST(SafeAdrTest, inc_cov)
 {
     SafeAdr<Derive> d;
     SafeAdr<Base> b = d;
@@ -135,7 +135,7 @@ struct D
     int value() const { return 0; }
 };
 
-TEST(SafePtrTest, GOLD_const_and_back)
+TEST(SafeAdrTest, GOLD_const_and_back)
 {
     auto safe_d  = make_safe<D>();
     auto share_d = make_shared<D>();
@@ -161,7 +161,7 @@ TEST(SafePtrTest, GOLD_const_and_back)
 
 #define ARRAY
 // ***********************************************************************************************
-TEST(SafePtrTest, GOLD_construct_array)
+TEST(SafeAdrTest, GOLD_construct_array)
 {
     //make_safe<ints[]>(10);
 }

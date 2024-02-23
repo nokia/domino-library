@@ -34,7 +34,7 @@
 //     * keep c++'s full freedom while has a choice to limit partial freedom for mem-safe
 //
 // - MT safe: NO
-//   . so eg after MtInQueue.mt_push(), shall NOT touch pushed SafePtr
+//   . so eg after MtInQueue.mt_push(), shall NOT touch pushed SafeAdr
 //   . only HID is MT safe that can be used here
 // - mem-safe: true
 // ***********************************************************************************************
