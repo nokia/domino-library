@@ -52,7 +52,7 @@ public:
 
     static void init(UniLog& = UniLog::defaultUniLog_);    // init objStore_
     static void deinit(UniLog& = UniLog::defaultUniLog_);  // rm objStore_
-    static bool isInit() { return objStore_ != nullptr; }   // init objStore_?
+    static bool isInit() { return objStore_ != nullptr; }  // init objStore_?
     static size_t nObj() { return objStore_ ? objStore_->size() : 0; }
 
     // -------------------------------------------------------------------------------------------

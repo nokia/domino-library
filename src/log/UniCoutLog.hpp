@@ -32,7 +32,8 @@ namespace RLib
 class UniCoutLog
 {
 public:
-    explicit UniCoutLog(const UniLogName& = ULN_DEFAULT) { HID("ignore LogName but default, this=" << this) }
+    explicit UniCoutLog(const UniLogName&) {}  // compatible UniSmartLog
+    UniCoutLog() = default;
 
     static ostream& oneLog();
     ostream& operator()() const { return oneLog(); }
@@ -59,6 +60,8 @@ public:
 // ***********************************************************************************************
 // static than inline, avoid ut conflict when coexist both UniLog
 static ostream& oneLog() { return UniCoutLog::oneLog(); }
+
+using UniLog = UniCoutLog;
 
 }  // namespace
 // ***********************************************************************************************

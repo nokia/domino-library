@@ -34,19 +34,19 @@ namespace RLib
 {
 // ***********************************************************************************************
 using SmartLog = StrCoutFSL;
-using LogStore = unordered_map<UniLogName, shared_ptr<SmartLog> >;
+using LogStore = unordered_map<shared_ptr<string>, shared_ptr<SmartLog> >;
 
 // ***********************************************************************************************
 class UniSmartLog
 {
 public:
     explicit UniSmartLog(const UniLogName& = ULN_DEFAULT);
-    ~UniSmartLog() { if (smartLog_.use_count() == 2) logStore_.erase(uniLogName_); }
+    ~UniSmartLog() { if (smartLog_.use_count() == 2) logStore_.erase(*uniLogName_); }
 
-    SmartLog& oneLog() const;  // for logging; not mem-safe
-    SmartLog& operator()() const { return oneLog(); }  // not mem-safe
+    SmartLog& oneLog() const;  // for logging; ret ref is not mem-safe when use the ref after del
+    SmartLog& operator()() const { return oneLog(); }  // not mem-safe as oneLog()
     void needLog() { smartLog_->needLog(); }  // flag to dump
-    const UniLogName& uniLogName() const { return uniLogName_; }  // not mem-safe
+    const UniLogName uniLogName() const { return uniLogName_; }
 
     static size_t nLog() { return logStore_.size(); }
 
@@ -74,7 +74,7 @@ public:
 
     static size_t logLen(const UniLogName& aUniLogName = ULN_DEFAULT)
     {
-        auto&& it = logStore_.find(aUniLogName);
+        auto&& it = logStore_.find(*aUniLogName);
         return it == logStore_.end()
             ? 0
             : it->second->str().size();
@@ -84,6 +84,8 @@ public:
 
 // ***********************************************************************************************
 static SmartLog& oneLog() { return UniSmartLog::defaultUniLog_.oneLog(); }  // not mem-safe
+
+using UniLog = UniSmartLog;
 
 }  // namespace
 // ***********************************************************************************************

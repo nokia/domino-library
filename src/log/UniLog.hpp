@@ -59,21 +59,17 @@
 //     . func with UniLog para: default using UniLog::defaultUniLog()
 //     . class & func w/o UniLog: using global oneLog()
 // ***********************************************************************************************
-#ifndef UNI_LOG_HPP_
-#define UNI_LOG_HPP_
+#pragma once
 
 // ***********************************************************************************************
 #if SMART_LOG  // base on smartlog
 #include "UniSmartLog.hpp"
-using UniLog = RLib::UniSmartLog;
 
 // ***********************************************************************************************
 #else  // base on cout (LoggingSystem is similar)
 #include "UniCoutLog.hpp"
-using UniLog = RLib::UniCoutLog;
 #endif
 
-#endif  // UNI_LOG_HPP_
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................

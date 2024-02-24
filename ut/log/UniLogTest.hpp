@@ -29,14 +29,14 @@ struct UNI_LOG_TEST : public Test
 
     // -------------------------------------------------------------------------------------------
     size_t nLog_;
-    const string logName_ = string(UnitTest::GetInstance()->current_test_info()->test_suite_name())
+    const UniLogName logName_ = string(UnitTest::GetInstance()->current_test_info()->test_suite_name())
         + '.' + UnitTest::GetInstance()->current_test_info()->name();
 
     // -------------------------------------------------------------------------------------------
     struct ClassUsr : public UNI_LOG
     {
         // req: can log
-        ClassUsr(const UniLogName aUniLogName = ULN_DEFAULT) : UNI_LOG(aUniLogName)
+        ClassUsr(const UniLogName& aUniLogName = ULN_DEFAULT) : UNI_LOG(aUniLogName)
         {
             DBG("hello, this=" << this << ", nLog=" << nLog());
         }
@@ -170,12 +170,12 @@ TEST_F(UNI_LOG_TEST, GOLD_no_explicit_CellLog_like_legacy)
     ClassUsr classUsr;  // no explicit UNI_LOG
     const auto len_2 = UNI_LOG::logLen();
     ASSERT_GE(len_2, len_1) << "REQ: can log";
-    ASSERT_EQ(ULN_DEFAULT, classUsr.uniLogName()) << "REQ: default";
+    ASSERT_EQ(ULN_DEFAULT, **(classUsr.uniLogName())) << "REQ: default";
 
     ClassUsr classUsr_2;  // dup no explicit UNI_LOG
     const auto len_3 = UNI_LOG::logLen();
     ASSERT_GE(len_3, len_2) << "REQ: can log";
-    ASSERT_EQ(ULN_DEFAULT, classUsr_2.uniLogName()) << "REQ: default";
+    ASSERT_EQ(ULN_DEFAULT, **(classUsr_2.uniLogName())) << "REQ: default";
 
     funcUsr();  // no explicit UNI_LOG
     const auto len_4 = UNI_LOG::logLen();

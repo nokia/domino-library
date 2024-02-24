@@ -65,12 +65,12 @@ public:
     shared_ptr<T> cast_get() const noexcept;
     template<typename To> shared_ptr<To> cast_get() const noexcept;
 
-    // use: safe, compatible & min (vs shared_ptr)
+    // convenient usage: safe, equal & min (vs shared_ptr)
     // - get() etc doesn't break SafeAdr's safety though caller may abuse T*
     // - T shall ensure itself safety (forbid abuse)
-    T* get() const noexcept { return pT_.get(); }  // same interface as shared_ptr
-    auto operator->() const noexcept { return pT_; }  // same interface as shared_ptr
-    auto use_count() const noexcept { return pT_.use_count(); }  // same interface as shared_ptr
+    T*   get()        const noexcept { return pT_.get(); }
+    T*   operator->() const noexcept { return pT_.operator->(); }
+    auto use_count()  const noexcept { return pT_.use_count();  }
 
     // most for debug
     const type_info* preVoidType() const noexcept { return preVoidType_; }

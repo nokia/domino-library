@@ -13,6 +13,7 @@
 #include <chrono>
 #include <cstdio>
 #include <ctime>
+#include <memory>
 #include <string>
 
 using namespace std;
@@ -31,21 +32,16 @@ using namespace std::chrono;
 // - HID() uses cout since UniSmartLog is NOT MT safe
 //   . under single thread, can change cout back to oneLog() for smart log
 // - HID() is MT safe also upon UniSmartLog
-#if WITH_HID_LOG
+#if 1//WITH_HID_LOG
 #define HID(content) { cout << "cout[" << timestamp() << "/HID] " << BUF(content) << dec; }
 #else
 #define HID(content) {}
 #endif
 
-// UT only
-#define GTEST_LOG_FAIL { if (Test::HasFailure()) needLog(); }
+#define GTEST_LOG_FAIL { if (Test::HasFailure()) needLog(); }  // UT only
 
 namespace RLib
 {
-// ***********************************************************************************************
-using UniLogName = string;
-const char ULN_DEFAULT[] = "DEFAULT";
-
 // ***********************************************************************************************
 // - MT safe : yes
 // - mem safe: yes
@@ -60,6 +56,40 @@ inline const char* timestamp()
         unsigned(duration_cast<microseconds>(now_tp.time_since_epoch()).count() % 1'000'000));  // can milliseconds
     return buf;
 }
+
+// ***********************************************************************************************
+// mem safe: yes
+// MT safe : yes
+const char ULN_DEFAULT[] = "DEFAULT";
+
+class UniLogName  // not use SafeAdr<string>, avoid cross include
+{
+public:
+    UniLogName(const char*   aName) : name_(make_shared<string>(aName)) {}
+    UniLogName(const string& aName) : name_(make_shared<string>(aName)) {}
+    shared_ptr<string> operator*() const { return name_; }  // for compare etc
+    string operator()() const { return name_ ? *name_ : "null shared_ptr<>"; }  // for print
+private:
+    shared_ptr<string> name_;
+};
+
+inline
+bool operator==(const UniLogName& lhs, const UniLogName& rhs)  // for convenient compare
+{
+    if (*lhs == *rhs)  // self
+        return true;
+    if (*lhs == nullptr)
+        return false;
+    if (*rhs == nullptr)
+        return false;
+    return **lhs == **rhs;  // same name
+}
+inline
+bool operator!=(const UniLogName& lhs, const UniLogName& rhs)
+{
+    return ! (lhs == rhs);
+}
+
 }  // namespace
 #endif  // UNI_BASE_HPP_
 // ***********************************************************************************************
