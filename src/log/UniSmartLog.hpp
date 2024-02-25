@@ -24,7 +24,7 @@
 #include <memory>
 #include <unordered_map>
 
-#include "SafeStr.hpp"
+#include "SafeString.hpp"
 #include "StrCoutFSL.hpp"
 #include "UniBaseLog.hpp"
 
@@ -40,20 +40,20 @@ using LogStore = unordered_map<shared_ptr<string>, shared_ptr<SmartLog> >;
 class UniSmartLog
 {
 public:
-    explicit UniSmartLog(const SafeStr& = ULN_DEFAULT);
+    explicit UniSmartLog(const SafeString& = ULN_DEFAULT);
     ~UniSmartLog() { if (smartLog_.use_count() == 2) logStore_.erase(*uniLogName_); }
 
     SmartLog& oneLog() const;  // for logging; ret ref is not mem-safe when use the ref after del
     SmartLog& operator()() const { return oneLog(); }  // not mem-safe as oneLog()
     void needLog() { smartLog_->needLog(); }  // flag to dump
-    SafeStr uniLogName() const { return uniLogName_; }
+    SafeString uniLogName() const { return uniLogName_; }
 
     static size_t nLog() { return logStore_.size(); }
 
 private:
     // -------------------------------------------------------------------------------------------
     shared_ptr<SmartLog> smartLog_;
-    const SafeStr        uniLogName_;
+    const SafeString     uniLogName_;
 
     static LogStore logStore_;
 public:
@@ -71,7 +71,7 @@ public:
         logStore_.clear();  // simplest way to dump
     }
 
-    static size_t logLen(const SafeStr& aUniLogName = ULN_DEFAULT)
+    static size_t logLen(const SafeString& aUniLogName = ULN_DEFAULT)
     {
         auto&& it = logStore_.find(*aUniLogName);
         return it == logStore_.end()

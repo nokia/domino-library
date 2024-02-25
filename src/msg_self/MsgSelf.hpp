@@ -72,7 +72,7 @@ using SharedMsgCB  = shared_ptr<MsgCB>;
 class MsgSelf : public UniLog
 {
 public:
-    MsgSelf(const SafeStr& = ULN_DEFAULT);
+    MsgSelf(const SafeString& aUniLogName = ULN_DEFAULT) : UniLog(aUniLogName) {}
     ~MsgSelf();
     const shared_ptr<bool> getValid() const { return isValid_; }
 

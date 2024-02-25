@@ -29,14 +29,14 @@ struct UNI_LOG_TEST : public Test
 
     // -------------------------------------------------------------------------------------------
     size_t nLog_;
-    const SafeStr logName_ = string(UnitTest::GetInstance()->current_test_info()->test_suite_name())
+    const SafeString logName_ = string(UnitTest::GetInstance()->current_test_info()->test_suite_name())
         + '.' + UnitTest::GetInstance()->current_test_info()->name();
 
     // -------------------------------------------------------------------------------------------
     struct ClassUsr : public UNI_LOG
     {
         // req: can log
-        ClassUsr(const SafeStr& aUniLogName = ULN_DEFAULT) : UNI_LOG(aUniLogName)
+        ClassUsr(const SafeString& aUniLogName = ULN_DEFAULT) : UNI_LOG(aUniLogName)
         {
             DBG("hello, this=" << this << ", nLog=" << nLog());
         }

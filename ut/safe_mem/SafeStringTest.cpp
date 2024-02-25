@@ -5,7 +5,7 @@
  */
 #include <gtest/gtest.h>
 
-#include "SafeStr.hpp"
+#include "SafeString.hpp"
 
 using namespace std;
 
@@ -13,62 +13,62 @@ namespace RLib
 {
 #define STAR_GET
 // ***********************************************************************************************
-TEST(SafeStrTest, GOLD_starGet_isMemSafe_afterDelOrigin)
+TEST(SafeStringTest, GOLD_starGet_isMemSafe_afterDelOrigin)
 {
-    SafeStr hc = "hello";
+    SafeString hc = "hello";
     auto get = *hc;
     EXPECT_EQ(2, get.use_count()) << "REQ: shared";
 
-    hc = SafeStr();  // del
+    hc = SafeString();  // del
     EXPECT_EQ(1, get.use_count()) << "REQ: safe usage after origin deleted";
 }
-TEST(SafeStrTest, GOLD_starGetNull_isMemSafe)
+TEST(SafeStringTest, GOLD_starGetNull_isMemSafe)
 {
-    SafeStr null;
+    SafeString null;
     auto get = *null;
     EXPECT_EQ(0, get.use_count()) << "REQ: shared";
 
-    null = SafeStr("hello");
-    EXPECT_EQ("hello", **null) << "REQ: re-assign";
+    null = SafeString("hello");
+    EXPECT_EQ("hello", **null)    << "REQ: re-assign";
     EXPECT_EQ(0, get.use_count()) << "REQ: no impact what got";
 }
 
 #define CONTENT_GET
 // ***********************************************************************************************
-TEST(SafeStrTest, GOLD_contentGet_isMemSafe)
+TEST(SafeStringTest, GOLD_contentGet_isMemSafe)
 {
-    SafeStr hc = "hello";
+    SafeString hc = "hello";
     auto&& get = hc();
     EXPECT_EQ("hello", get) << "REQ: get content";
 
-    hc = SafeStr();  // del
+    hc = SafeString();  // del
     EXPECT_EQ("hello", get) << "REQ: still safe of what got after origin deleted";
 }
-TEST(SafeStrTest, GOLD_contentGetNull_isMemSafe)
+TEST(SafeStringTest, GOLD_contentGetNull_isMemSafe)
 {
-    SafeStr null;
+    SafeString null;
     auto&& get = null();
     EXPECT_EQ("null shared_ptr<>", get) << "REQ: no crash to get nullptr";
 
-    null = SafeStr("hello");
+    null = SafeString("hello");
     EXPECT_EQ("hello", **null) << "REQ: re-assign";
     EXPECT_EQ("null shared_ptr<>", get) << "REQ: no impact what got";
 }
 
 #define COMPARE
 // ***********************************************************************************************
-TEST(SafeStrTest, GOLD_compare)
+TEST(SafeStringTest, GOLD_compare)
 {
-    SafeStr hc = "hello";  // 1st constructor
+    SafeString hc = "hello";  // 1st constructor
     EXPECT_EQ(hc(), hc()) << "REQ: compare self";
 
-    SafeStr hc2 = hc;  // cp constructor
+    SafeString hc2 = hc;  // cp constructor
     EXPECT_EQ(hc(), hc2()) << "REQ: compare same pointee";
 
-    SafeStr hs = string("hello");  // 2nd constructor
+    SafeString hs = string("hello");  // 2nd constructor
     EXPECT_EQ(hc(), hs()) << "REQ: same content";
 
-    SafeStr null;  // 3rd constructor
+    SafeString null;  // 3rd constructor
     EXPECT_FALSE(hc()   == null()) << "REQ: != nullptr";
     EXPECT_TRUE (null() != hs()  ) << "REQ: nullptr !=";
 }

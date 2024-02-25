@@ -9,7 +9,7 @@
 namespace RLib
 {
 // ***********************************************************************************************
-UniSmartLog::UniSmartLog(const SafeStr& aUniLogName) : uniLogName_(aUniLogName)
+UniSmartLog::UniSmartLog(const SafeString& aUniLogName) : uniLogName_(aUniLogName)
 {
     //for(auto&& it : logStore_) cout << it.first<<", p=" << it.second.get() << endl;
     auto&& it = logStore_.find(*aUniLogName);

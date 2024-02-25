@@ -25,12 +25,12 @@ using namespace std;
 namespace RLib
 {
 // ***********************************************************************************************
-class SafeStr
+class SafeString
 {
 public:
-    SafeStr(const char*   aContent) : str_(make_shared<string>(aContent)) {}
-    SafeStr(const string& aContent) : str_(make_shared<string>(aContent)) {}
-    SafeStr() = default;
+    SafeString(const char*   aContent) : str_(make_shared<string>(aContent)) {}
+    SafeString(const string& aContent) : str_(make_shared<string>(aContent)) {}
+    SafeString() = default;
 
     shared_ptr<string> operator*() const { return str_; }  // for compare etc
     string operator()() const { return str_ ? *str_ : "null shared_ptr<>"; }  // for print
@@ -40,7 +40,7 @@ private:
 
 // ***********************************************************************************************
 inline
-bool operator==(const SafeStr& lhs, const SafeStr& rhs)  // for convenient compare
+bool operator==(const SafeString& lhs, const SafeString& rhs)  // for convenient compare
 {
     if (*lhs == *rhs)  // self
         return true;
@@ -53,7 +53,7 @@ bool operator==(const SafeStr& lhs, const SafeStr& rhs)  // for convenient compa
 
 // ***********************************************************************************************
 inline
-bool operator!=(const SafeStr& lhs, const SafeStr& rhs)
+bool operator!=(const SafeString& lhs, const SafeString& rhs)
 {
     return ! (lhs == rhs);
 }
