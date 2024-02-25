@@ -9,7 +9,7 @@
 namespace RLib
 {
 // ***********************************************************************************************
-UniSmartLog::UniSmartLog(const UniLogName& aUniLogName) : uniLogName_(aUniLogName)
+UniSmartLog::UniSmartLog(const SafeStr& aUniLogName) : uniLogName_(aUniLogName)
 {
     //for(auto&& it : logStore_) cout << it.first<<", p=" << it.second.get() << endl;
     auto&& it = logStore_.find(*aUniLogName);
@@ -17,12 +17,12 @@ UniSmartLog::UniSmartLog(const UniLogName& aUniLogName) : uniLogName_(aUniLogNam
     {
         smartLog_ = make_shared<SmartLog>();
         logStore_[*aUniLogName] = smartLog_;
-        HID("creatd new log=" << (void*)(smartLog_.get()) << ", name=[" << aUniLogName() << "], nLog=" << nLog());
+        HID("creatd new log=" << (void*)(smartLog_.get()) << ", name=" << aUniLogName() << ", nLog=" << nLog());
     }
     else
     {
         smartLog_ = it->second;
-        HID("reused existing log=" << (void*)(smartLog_.get()) << ", name=[" << aUniLogName() << "], nLog=" << nLog());
+        HID("reused existing log=" << (void*)(smartLog_.get()) << ", name=" << aUniLogName() << ", nLog=" << nLog());
     }
 }
 

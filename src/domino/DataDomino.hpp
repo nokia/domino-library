@@ -35,7 +35,7 @@ class DataDomino : public aDominoType
     // -------------------------------------------------------------------------------------------
 
 public:
-    explicit DataDomino(const UniLogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
+    explicit DataDomino(const SafeStr& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
 
     // -------------------------------------------------------------------------------------------
     // - for read/write data

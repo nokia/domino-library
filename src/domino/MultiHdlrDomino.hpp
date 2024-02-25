@@ -36,7 +36,7 @@ public:
     using HdlrName  = string;
     using MultiHdlr = map<HdlrName, SharedMsgCB>;
 
-    explicit MultiHdlrDomino(const UniLogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
+    explicit MultiHdlrDomino(const SafeStr& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
 
     // -------------------------------------------------------------------------------------------
     // - add multi-hdlr on 1 event

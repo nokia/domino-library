@@ -42,7 +42,7 @@ template<class aDominoType>
 class HdlrDomino : public aDominoType
 {
 public:
-    explicit HdlrDomino(const UniLogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
+    explicit HdlrDomino(const SafeStr& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
     void setMsgSelf(const PTR<MsgSelf>& aMsgSelf) { msgSelf_ = aMsgSelf; }  // can replace default
 
     Domino::Event setHdlr(const Domino::EvName&, const MsgCB& aHdlr);

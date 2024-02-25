@@ -38,7 +38,7 @@ template<typename aDominoType>
 class RmEvDom : public aDominoType
 {
 public:
-    explicit RmEvDom(const UniLogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
+    explicit RmEvDom(const SafeStr& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
 
     bool rmEvOK(const Domino::EvName& aEN);
     bool isRemoved(const Domino::Event aEv) const { return isRemovedEv_.count(aEv); }

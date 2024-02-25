@@ -35,8 +35,7 @@
 //   . why shared_ptr rather than SafeAdr to store MsgCB?
 //     . MsgSelf ensures safely usage of shared_ptr
 // ***********************************************************************************************
-#ifndef MSG_SELF_HPP_
-#define MSG_SELF_HPP_
+#pragma once
 
 #include <functional>
 #include <memory>  // shared_ptr<>
@@ -73,7 +72,7 @@ using SharedMsgCB  = shared_ptr<MsgCB>;
 class MsgSelf : public UniLog
 {
 public:
-    MsgSelf(const UniLogName& = ULN_DEFAULT);
+    MsgSelf(const SafeStr& = ULN_DEFAULT);
     ~MsgSelf();
     const shared_ptr<bool> getValid() const { return isValid_; }
 
@@ -94,7 +93,6 @@ private:
     size_t           nMsg_ = 0;
 };
 }  // namespace
-#endif  // MSG_SELF_HPP_
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................

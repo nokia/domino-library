@@ -18,7 +18,7 @@
 // - VALUE:
 //   * unified logging interface: DBG/INF/WRN/ERR/HID
 //   . min oneLog() to DBG/etc in all scenarios: inner class & func, default global log
-//   . UniLogName to avoid para/UniLog travel (from creator, to mid ..., to end-usr)
+//   . get-log-by-name to avoid para/UniLog travel (from creator, to mid ..., to end-usr)
 //
 // - File include:
 //                          UniBaseLog.hpp

@@ -10,7 +10,7 @@
 namespace RLib
 {
 // ***********************************************************************************************
-MsgSelf::MsgSelf(const UniLogName& aUniLogName)
+MsgSelf::MsgSelf(const SafeStr& aUniLogName)
     : UniLog(aUniLogName)
 {}
 
