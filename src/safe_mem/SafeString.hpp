@@ -59,6 +59,15 @@ bool operator!=(const SafeString& lhs, const SafeString& rhs)
 }
 
 }  // namespace
+
+// ***********************************************************************************************
+// SafeString as key of unordered_map
+template<>
+struct std::hash<RLib::SafeString>
+{
+    auto operator()(const RLib::SafeString& aSafeStr) const { return hash<string>()(aSafeStr()); }
+};
+
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................

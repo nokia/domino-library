@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <gtest/gtest.h>
+#include <unordered_map>
 
 #include "SafeString.hpp"
 
@@ -71,6 +72,26 @@ TEST(SafeStringTest, GOLD_compare)
     SafeString null;  // 3rd constructor
     EXPECT_FALSE(hc()   == null()) << "REQ: != nullptr";
     EXPECT_TRUE (null() != hs()  ) << "REQ: nullptr !=";
+}
+
+#define UNORDERED_MAP_ETC
+// ***********************************************************************************************
+TEST(SafeStringTest, GOLD_asKeyOf_unorderedMap)
+{
+    unordered_map<SafeString, int> store;
+    EXPECT_EQ(0, store.size()) << "REQ: SafeString can be key";
+
+    store[SafeString()] = 100;
+    EXPECT_EQ(nullptr, *SafeString());
+    EXPECT_EQ(1, store.size()) << "REQ: key=nullptr is OK";
+
+    store[SafeString()] = 200;
+    EXPECT_EQ(1,   store.size())        << "REQ: no dup key";
+    EXPECT_EQ(200, store[SafeString()]) << "REQ: dup key overwrites value";
+
+    store[SafeString("hello")] = 300;
+    EXPECT_EQ(2,   store.size())               << "REQ: store diff keys";
+    EXPECT_EQ(300, store[SafeString("hello")]) << "REQ: get normal key's value";
 }
 
 }  // namespace

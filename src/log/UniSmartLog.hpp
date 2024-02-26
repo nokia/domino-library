@@ -34,14 +34,14 @@ namespace RLib
 {
 // ***********************************************************************************************
 using SmartLog = StrCoutFSL;
-using LogStore = unordered_map<shared_ptr<string>, shared_ptr<SmartLog> >;
+using LogStore = unordered_map<SafeString, shared_ptr<SmartLog> >;
 
 // ***********************************************************************************************
 class UniSmartLog
 {
 public:
     explicit UniSmartLog(const SafeString& = ULN_DEFAULT);
-    ~UniSmartLog() { if (smartLog_.use_count() == 2) logStore_.erase(*uniLogName_); }
+    ~UniSmartLog() { if (smartLog_.use_count() == 2) logStore_.erase(uniLogName_); }
 
     SmartLog& oneLog() const;  // for logging; ret ref is not mem-safe when use the ref after del
     SmartLog& operator()() const { return oneLog(); }  // not mem-safe as oneLog()
@@ -73,7 +73,7 @@ public:
 
     static size_t logLen(const SafeString& aUniLogName = ULN_DEFAULT)
     {
-        auto&& it = logStore_.find(*aUniLogName);
+        auto&& it = logStore_.find(aUniLogName);
         return it == logStore_.end()
             ? 0
             : it->second->str().size();

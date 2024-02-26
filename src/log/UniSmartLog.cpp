@@ -12,11 +12,11 @@ namespace RLib
 UniSmartLog::UniSmartLog(const SafeString& aUniLogName) : uniLogName_(aUniLogName)
 {
     //for(auto&& it : logStore_) cout << it.first<<", p=" << it.second.get() << endl;
-    auto&& it = logStore_.find(*aUniLogName);
+    auto&& it = logStore_.find(aUniLogName);
     if (it == logStore_.end())
     {
         smartLog_ = make_shared<SmartLog>();
-        logStore_[*aUniLogName] = smartLog_;
+        logStore_[aUniLogName] = smartLog_;
         HID("creatd new log=" << (void*)(smartLog_.get()) << ", name=" << aUniLogName() << ", nLog=" << nLog());
     }
     else
