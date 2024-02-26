@@ -5,7 +5,7 @@
  */
 // ***********************************************************************************************
 // - why:
-//   . replace shared_ptr<string> that is not full mem-safe (eg shared_ptr<string>(ptr))
+//   . replace shared_ptr<string> that is not full mem-safe (eg shared_ptr(string*))
 //   * can use SafeAdr<string>, but will cross-include SafeAdr.hpp & UniLog.hpp
 //   . simplify SafeAdr<string> - eg no cast
 //   . convenient:

@@ -55,8 +55,8 @@ template<typename T = void>
 class SafeAdr
 {
 public:
-    // (try best)safe-only creation (vs shared_ptr, eg shared_ptr(U*) is not safe)
-    template<typename U, typename... Args> friend SafeAdr<U> make_safe(Args&&... aArgs);  // mem-safe if aArgs are
+    // safe-only creation (vs shared_ptr, eg shared_ptr<U>(U*) is not safe)
+    template<typename U, typename... Args> friend SafeAdr<U> make_safe(Args&&... aArgs);  // U::U(Args) SHALL mem-safe
     constexpr SafeAdr() = default;  // must explicit since below converter constructor
     constexpr SafeAdr(nullptr_t) noexcept : SafeAdr() {}  // implicit nullptr -> SafeAdr()
 
@@ -65,12 +65,10 @@ public:
     shared_ptr<T> cast_get() const noexcept;
     template<typename To> shared_ptr<To> cast_get() const noexcept;
 
-    // convenient usage: safe(try best), equal & min (vs shared_ptr)
-    // - get() etc doesn't break SafeAdr's safety though caller may abuse T*
-    // - T shall ensure itself safety (forbid abuse)
-    T*   get()        const noexcept { return pT_.get(); }
-    T*   operator->() const noexcept { return pT_.operator->(); }
-    auto use_count()  const noexcept { return pT_.use_count();  }
+    // safe usage: convenient, equivalent & min (vs shared_ptr)
+    shared_ptr<T> get()        const noexcept { return pT_; }
+    shared_ptr<T> operator->() const noexcept { return pT_; }
+    auto          use_count()  const noexcept { return pT_.use_count();  }
 
     // most for debug
     const type_info* preVoidType() const noexcept { return preVoidType_; }

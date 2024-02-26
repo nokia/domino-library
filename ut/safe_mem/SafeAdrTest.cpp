@@ -6,7 +6,7 @@
 // ***********************************************************************************************
 #include <gtest/gtest.h>
 
-#include "UniPtr.hpp"
+#include "SafeAdr.hpp"
 
 namespace RLib
 {
@@ -157,6 +157,33 @@ TEST(SafeAdrTest, GOLD_const_and_back)
 
     EXPECT_EQ(100, const_safe_d ->value()) << "REQ: cp succ & call NON-const (same as shared_ptr)";
     EXPECT_EQ(100, const_share_d->value()) << "call NON-const since all members are NON-const except 'this'";
+}
+
+#define SAFE_GET
+// ***********************************************************************************************
+TEST(SafeAdrTest, GOLD_get_isMemSafe_afterDelOrigin)
+{
+    auto safe = make_safe<string>("hello");
+    auto get = safe.get();
+    EXPECT_EQ("hello", *get) << "REQ: get succ";
+
+    safe = nullptr;
+    EXPECT_EQ("hello", *get) << "REQ: what got is still OK";
+
+    get = safe.get();
+    EXPECT_EQ(nullptr, get) << "REQ: get nullptr OK";
+}
+TEST(SafeAdrTest, GOLD_getPtr_isMemSafe_afterDelOrigin)
+{
+    auto safe = make_safe<string>("hello");
+    auto get = safe.operator->();
+    EXPECT_EQ("hello", *get) << "REQ: get succ";
+
+    safe = nullptr;
+    EXPECT_EQ("hello", *get) << "REQ: what got is still OK";
+
+    get = safe.operator->();
+    EXPECT_EQ(nullptr, get) << "REQ: get nullptr OK";
 }
 
 #define ARRAY
