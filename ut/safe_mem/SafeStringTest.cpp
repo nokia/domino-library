@@ -61,17 +61,17 @@ TEST(SafeStringTest, GOLD_contentGetNull_isMemSafe)
 TEST(SafeStringTest, GOLD_compare)
 {
     SafeString hc = "hello";  // 1st constructor
-    EXPECT_EQ(hc(), hc()) << "REQ: compare self";
+    EXPECT_EQ(hc, hc) << "REQ: compare self";
 
     SafeString hc2 = hc;  // cp constructor
-    EXPECT_EQ(hc(), hc2()) << "REQ: compare same pointee";
+    EXPECT_EQ(hc, hc2) << "REQ: compare same pointee";
 
     SafeString hs = string("hello");  // 2nd constructor
-    EXPECT_EQ(hc(), hs()) << "REQ: same content";
+    EXPECT_EQ(hc, hs) << "REQ: same content";
 
     SafeString null;  // 3rd constructor
-    EXPECT_FALSE(hc()   == null()) << "REQ: != nullptr";
-    EXPECT_TRUE (null() != hs()  ) << "REQ: nullptr !=";
+    EXPECT_FALSE(hc   == null ) << "REQ: != nullptr";
+    EXPECT_TRUE (null != hs   ) << "REQ: nullptr !=";
 }
 
 #define UNORDERED_MAP_ETC
