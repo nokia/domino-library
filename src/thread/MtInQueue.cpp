@@ -93,7 +93,7 @@ ElePair MtInQueue::pop()
 
     auto elePair = cache_.front();  // must copy
     cache_.pop_front();
-    HID("(MtQ) ptr=" << (void*)(elePair.first.get()) << ", nRef=" << elePair.first.use_count());
+    HID("(MtQ) ptr=" << elePair.first.get() << ", nRef=" << elePair.first.use_count());
     return elePair;
 }
 

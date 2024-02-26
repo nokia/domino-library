@@ -36,7 +36,7 @@
 // - MT safe: NO
 //   . so eg after MtInQueue.mt_push(), shall NOT touch pushed SafeAdr
 //   . only HID is MT safe that can be used here
-// - mem safe: yes (unless user deliberately construct dirty - doesn't make sense)
+// - mem safe: yes
 // ***********************************************************************************************
 #pragma once
 

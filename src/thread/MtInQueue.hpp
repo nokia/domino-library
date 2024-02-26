@@ -98,7 +98,7 @@ void MtInQueue::mt_push(PTR<aEleType> aEle)
     {
         lock_guard<mutex> guard(mutex_);
         queue_.push_back(ElePair(aEle, typeid(aEleType).hash_code()));
-        HID("(MtQ) ptr=" << (void*)(aEle.get()) << ", nRef=" << aEle.use_count());  // HID supports MT
+        HID("(MtQ) ptr=" << aEle.get() << ", nRef=" << aEle.use_count());  // HID supports MT
     }   // unlock then mt_notifyFn()
     mt_pingMainTH();
 }
