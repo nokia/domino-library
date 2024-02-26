@@ -42,7 +42,7 @@ public:
     virtual UniPtr getData(const Domino::EvName&) const;
 
     // -------------------------------------------------------------------------------------------
-    // - replace old data by new=aUniPtr if old != new
+    // - replace old data by new=aData if old != new
     // - for aDataType w/o default constructor!!!
     virtual void replaceData(const Domino::EvName&, UniPtr = nullptr);
 
@@ -72,12 +72,12 @@ void DataDomino<aDominoType>::innerRmEv(const Domino::Event aEv)
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void DataDomino<aDominoType>::replaceData(const Domino::EvName& aEvName, UniPtr aUniPtr)
+void DataDomino<aDominoType>::replaceData(const Domino::EvName& aEvName, UniPtr aData)
 {
-    if (aUniPtr.get() == nullptr)
+    if (aData.get() == nullptr)
         dataStore_.erase(this->getEventBy(aEvName));  // avoid keep inc dataStore_
     else
-        dataStore_[this->newEvent(aEvName)] = aUniPtr;
+        dataStore_[this->newEvent(aEvName)] = aData;
 }
 
 

@@ -71,14 +71,14 @@ public:
     explicit Domino(const SafeString& aUniLogName = ULN_DEFAULT) : UniLog(aUniLogName) {}
     virtual ~Domino() = default;
 
-    Event    newEvent(const EvName&);
-    Event    getEventBy(const EvName&) const;
-    const EvNames& evNames() const { return evNames_; }  // not mem safe to ret ref
+    Event newEvent(const EvName&);
+    Event getEventBy(const EvName&) const;
+    const EvNames evNames() const { return evNames_; }
 
-    bool     state(const EvName& aEvName) const { return state(getEventBy(aEvName)); }
-    void     setState(const SimuEvents&);
-    Event    setPrev(const EvName&, const SimuEvents& aSimuPrevEvents);
-    EvName   whyFalse(const EvName&) const;
+    bool   state(const EvName& aEvName) const { return state(getEventBy(aEvName)); }
+    void   setState(const SimuEvents&);
+    Event  setPrev(const EvName&, const SimuEvents& aSimuPrevEvents);
+    EvName whyFalse(const EvName&) const;
 
 protected:
     const EvName& evName(const Event aEv) const { return evNames_.at(aEv); }  // aEv must valid

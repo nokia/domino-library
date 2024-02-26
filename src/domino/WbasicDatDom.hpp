@@ -30,8 +30,8 @@ public:
     UniPtr getData(const Domino::EvName&) const override;
     UniPtr wbasic_getData(const Domino::EvName&) const;
 
-    void replaceData(const Domino::EvName&, UniPtr aUniPtr = nullptr) override;
-    void wbasic_replaceData(const Domino::EvName&, UniPtr aUniPtr = nullptr);
+    void replaceData(const Domino::EvName&, UniPtr aData = nullptr) override;
+    void wbasic_replaceData(const Domino::EvName&, UniPtr aData = nullptr);
 
 protected:
     void innerRmEv(const Domino::Event) override;
@@ -78,11 +78,11 @@ bool WbasicDatDom<aDominoType>::isWrCtrl(const Domino::EvName& aEvName) const
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void WbasicDatDom<aDominoType>::replaceData(const Domino::EvName& aEvName, UniPtr aUniPtr)
+void WbasicDatDom<aDominoType>::replaceData(const Domino::EvName& aEvName, UniPtr aData)
 {
     if (isWrCtrl(aEvName))
         WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!")
-    else aDominoType::replaceData(aEvName, aUniPtr);
+    else aDominoType::replaceData(aEvName, aData);
 }
 
 // ***********************************************************************************************
@@ -98,10 +98,10 @@ UniPtr WbasicDatDom<aDominoType>::wbasic_getData(const Domino::EvName& aEvName) 
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void WbasicDatDom<aDominoType>::wbasic_replaceData(const Domino::EvName& aEvName, UniPtr aUniPtr)
+void WbasicDatDom<aDominoType>::wbasic_replaceData(const Domino::EvName& aEvName, UniPtr aData)
 {
     if (isWrCtrl(aEvName))
-        aDominoType::replaceData(aEvName, aUniPtr);
+        aDominoType::replaceData(aEvName, aData);
     else
         WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!")
 }
