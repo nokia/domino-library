@@ -52,8 +52,8 @@ public:
     // MT safe : no (since nLogLine_ is not atomic & no worth for ut only)
     // mem safe: yes
 public:
-    static size_t logLen(const LogName& = ULN_DEFAULT) { return nLogLine_; }
     static void dumpAll_forUt() { nLogLine_ = 0; }  // for ut case clean at the end
+    static size_t logLen(const LogName& = ULN_DEFAULT) { return nLogLine_; }
 #endif
 };
 
