@@ -22,7 +22,6 @@
 #include <memory>
 #include <iostream>
 
-#include "SafeString.hpp"
 #include "UniBaseLog.hpp"
 
 using namespace std;
@@ -33,14 +32,14 @@ namespace RLib
 class UniCoutLog
 {
 public:
-    explicit UniCoutLog(const SafeString&) {}  // compatible UniSmartLog
+    explicit UniCoutLog(const LogName&) {}  // compatible UniSmartLog
     UniCoutLog() = default;
 
     static ostream& oneLog();
     ostream& operator()() const { return oneLog(); }
     static void needLog() {}
 
-    static SafeString uniLogName() { return ULN_DEFAULT; }
+    static LogName uniLogName() { return ULN_DEFAULT; }
     static size_t nLog() { return 1; }
 
     // -------------------------------------------------------------------------------------------
@@ -53,7 +52,7 @@ public:
     // MT safe : no (since nLogLine_ is not atomic & no worth for ut only)
     // mem safe: yes
 public:
-    static size_t logLen(const SafeString& = ULN_DEFAULT) { return nLogLine_; }
+    static size_t logLen(const LogName& = ULN_DEFAULT) { return nLogLine_; }
     static void dumpAll_forUt() { nLogLine_ = 0; }  // for ut case clean at the end
 #endif
 };

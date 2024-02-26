@@ -22,7 +22,7 @@ template<typename aDominoType>
 class WbasicDatDom : public aDominoType
 {
 public:
-    explicit WbasicDatDom(const SafeString& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
+    explicit WbasicDatDom(const LogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
 
     bool isWrCtrl(const Domino::EvName&) const;
     bool wrCtrlOk(const Domino::EvName&, const bool aNewState = true);

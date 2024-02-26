@@ -24,7 +24,7 @@ template<class aDominoType>
 class PriDomino : public aDominoType
 {
 public:
-    explicit PriDomino(const SafeString& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
+    explicit PriDomino(const LogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
 
     // -------------------------------------------------------------------------------------------
     // Extend Tile record:

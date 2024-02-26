@@ -18,6 +18,8 @@
 using namespace std;
 using namespace std::chrono;
 
+using LogName = string;
+
 // ***********************************************************************************************
 // - mem safe: yes
 // - MT safe : yes upon UniCoutLog, no upon UniSmartLog
