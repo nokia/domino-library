@@ -32,6 +32,50 @@ void Domino::deduceState(const Event aEv)
 }
 
 // ***********************************************************************************************
+bool Domino::deeperLinkThan(size_t aLimit) const
+{
+    if (states_.size() == 0)  // deep=0
+        return false;
+    if (aLimit == 0)  // deep>0
+        return true;
+    if (next_[true].size() + next_[false].size() == 0)  // deep=1
+        return false;
+/*
+    for (auto&& it_ev_evs : next_[true])
+    {
+        if (it_ev_evs.second.size() == 0)  // deep=1
+            continue;
+        if (aLimit == 1)  // deep>1
+            return true;
+        for (auto&& it_next_ev : it_ev_evs.second)
+        {
+            if (deeperLinkThan(aLimit-2, it_next_ev))
+                return true;
+        }
+    }
+    for (auto&& it_ev_evs : next_[false])
+    {
+        if (deeperLinkThan(aLimit-1, it_ev_evs.second))
+            return true;
+    }
+*/
+    return false;
+}
+bool Domino::deeperLinkThan(size_t aLimit, Event aEv) const
+{/*
+    if (aLimit == 0)
+        return true;
+    for (auto&& it_ev_evs : next_[true])
+    {
+        if (it_ev_evs.first != aEv)
+            continue;
+        if (deeperLinkThan(aLimit-1, Event aEv))
+    }
+*/
+    return true;
+}
+
+// ***********************************************************************************************
 Domino::Event Domino::getEventBy(const EvName& aEvName) const
 {
     auto&& it = events_.find(aEvName);
@@ -140,8 +184,9 @@ void Domino::setState(const SimuEvents& aSimuEvents)
     for (auto&& itSim : aSimuEvents)
     {
         auto&& itEvLinks = next_[itSim.second].find(events_[itSim.first]);
+        HID("(Domino) en=" << itSim.first << ", hasNext=" << (itEvLinks != next_[itSim.second].end()));
         if (itEvLinks == next_[itSim.second].end())
-            break;
+            continue;
         for (auto&& nextEvent : itEvLinks->second)
             deduceState(nextEvent);
     }

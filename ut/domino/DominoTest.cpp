@@ -94,10 +94,37 @@ TYPED_TEST_P(DominoTest, GOLD_re_broadcast_byFalse)
     EXPECT_TRUE (PARA_DOM->state("e5"));
     EXPECT_FALSE(PARA_DOM->state("e4"));
 }
-TYPED_TEST_P(DominoTest, prevSelf_is_invalid)
+TYPED_TEST_P(DominoTest, bugFix_shallDeduceAll)
+{
+    PARA_DOM->setPrev("e2", {{"e1", true}});
+    PARA_DOM->setState({
+        {"e0", false},  // no-next e0 shall not abort deducing e1
+        {"e1", true},
+        {"e0", false}});
+    EXPECT_TRUE(PARA_DOM->state("e2"));
+}
+
+#define LOOP
+// ***********************************************************************************************
+TYPED_TEST_P(DominoTest, loopSelf_is_invalid)
 {
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e1", {{"e1", true}}));
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e1", {{"e1", false}}));
+}
+TYPED_TEST_P(DominoTest, loop_check)
+{
+    EXPECT_FALSE(PARA_DOM->deeperLinkThan(0)) << "REQ: empty's deep=0";
+
+    PARA_DOM->newEvent("e1");
+    EXPECT_TRUE (PARA_DOM->deeperLinkThan(0)) << "REQ: deep=1";
+    EXPECT_FALSE(PARA_DOM->deeperLinkThan(1)) << "REQ: deep=1";
+/*
+    PARA_DOM->setPrev("e1", {{"e2", true}});
+    EXPECT_TRUE (PARA_DOM->deeperLinkThan(1)) << "REQ: deep=2";
+    EXPECT_FALSE(PARA_DOM->deeperLinkThan(2)) << "REQ: deep=1";
+*/
+    PARA_DOM->setPrev("e2", {{"e1", true}});
+    //EXPECT_FALSE(PARA_DOM->deeperLinkThan(10000));
 }
 
 #define WHY_FALSE
@@ -199,7 +226,9 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , no_backward_broadcast
     , GOLD_re_broadcast_byTrue
     , GOLD_re_broadcast_byFalse
-    , prevSelf_is_invalid
+    , bugFix_shallDeduceAll
+    , loopSelf_is_invalid
+    , loop_check
 
     , GOLD_multi_retOne
     , trueEvent_retEmpty
