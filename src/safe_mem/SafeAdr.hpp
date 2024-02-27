@@ -67,7 +67,7 @@ public:
 
     // safe usage: convenient, equivalent & min (vs shared_ptr)
     shared_ptr<T> get()        const noexcept { return pT_; }
-    shared_ptr<T> operator->() const noexcept { return pT_; }
+    shared_ptr<T> operator->() const noexcept { return pT_; }  // convenient
     auto          use_count()  const noexcept { return pT_.use_count();  }
 
     // most for debug
@@ -159,7 +159,31 @@ SafeAdr<To> static_pointer_cast(const SafeAdr<From>& aFromPtr) noexcept
     return SafeAdr<To>(aFromPtr);
 }
 
+// ***********************************************************************************************
+// - SafeAdr can be key of map & unordered_map (like shared_ptr)
+// - convenient usage
+template<typename T, typename U>
+bool operator==(SafeAdr<T> lhs, SafeAdr<U> rhs)
+{
+    return lhs.get() == rhs.get();
+}
+template<typename T, typename U>
+bool operator!=(SafeAdr<T> lhs, SafeAdr<U> rhs)
+{
+    return !(lhs == rhs);
+}
+template<typename T, typename U>
+bool operator<(SafeAdr<T> lhs, SafeAdr<U> rhs)
+{
+    return lhs.get() < rhs.get();
+}
 }  // namespace
+template<typename T>
+struct std::hash<RLib::SafeAdr<T>>
+{
+    auto operator()(const RLib::SafeAdr<T>& aSafeAdr) const { return hash<shared_ptr<T>>()(aSafeAdr.get()); }
+};
+
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................

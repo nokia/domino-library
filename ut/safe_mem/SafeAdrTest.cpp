@@ -5,6 +5,8 @@
  */
 // ***********************************************************************************************
 #include <gtest/gtest.h>
+#include <map>
+#include <unordered_map>
 
 #include "SafeAdr.hpp"
 
@@ -184,6 +186,41 @@ TEST(SafeAdrTest, GOLD_getPtr_isMemSafe_afterDelOrigin)
 
     get = safe.operator->();
     EXPECT_EQ(nullptr, get) << "REQ: get nullptr OK";
+}
+
+#define MAP
+// ***********************************************************************************************
+TEST(SafeAdrTest, GOLD_asKeyOf_unorderedMap)
+{
+    unordered_map<SafeAdr<string>, int> store;
+    EXPECT_EQ(0, store.size()) << "REQ: SafeAdr can be key";
+
+    store[SafeAdr<string>()] = 100;
+    EXPECT_EQ(nullptr, SafeAdr<string>().get());
+    EXPECT_EQ(1, store.size()) << "REQ: key=nullptr is OK";
+
+    store[SafeAdr<string>()] = 200;
+    EXPECT_EQ(1,   store.size()) << "REQ: no dup key";
+    EXPECT_EQ(200, store[SafeAdr<string>()]) << "REQ: dup key overwrites value";
+
+    store[SafeAdr<string>(make_safe<string>("hello"))] = 300;
+    EXPECT_EQ(2, store.size()) << "REQ: diff key";
+}
+TEST(SafeAdrTest, GOLD_asKeyOf_map)
+{
+    map<SafeAdr<string>, int> store;
+    EXPECT_EQ(0, store.size()) << "REQ: SafeAdr can be key";
+
+    store[SafeAdr<string>()] = 100;
+    EXPECT_EQ(nullptr, SafeAdr<string>().get());
+    EXPECT_EQ(1, store.size()) << "REQ: key=nullptr is OK";
+
+    store[SafeAdr<string>()] = 200;
+    EXPECT_EQ(1,   store.size()) << "REQ: no dup key";
+    EXPECT_EQ(200, store[SafeAdr<string>()]) << "REQ: dup key overwrites value";
+
+    store[SafeAdr<string>(make_safe<string>("hello"))] = 300;
+    EXPECT_EQ(2, store.size()) << "REQ: diff key";
 }
 
 #define ARRAY
