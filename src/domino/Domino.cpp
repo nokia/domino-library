@@ -12,23 +12,23 @@ namespace RLib
 // ***********************************************************************************************
 void Domino::deduceState(const Event aEv)
 {
-    auto&& itEvLinks = prev_[true].find(aEv);
-    if (itEvLinks != prev_[true].end())  // true br
-        for (auto&& tPrev : itEvLinks->second)
-            if (states_[tPrev] != true)  // 1 prev not satisfied
+    auto&& ev_prevEVs = prev_[true].find(aEv);
+    if (ev_prevEVs != prev_[true].end())  // true br
+        for (auto&& prevEV : ev_prevEVs->second)
+            if (states_[prevEV] != true)  // 1 prev not satisfied
                 return;
-    itEvLinks = prev_[false].find(aEv);
-    if (itEvLinks != prev_[false].end())  // false br
-        for (auto&& fPrev : itEvLinks->second)
-            if (states_[fPrev] != false)  // 1 prev not satisfied
+    ev_prevEVs = prev_[false].find(aEv);
+    if (ev_prevEVs != prev_[false].end())  // false br
+        for (auto&& prevEV : ev_prevEVs->second)
+            if (states_[prevEV] != false)  // 1 prev not satisfied
                 return;
 
     pureSetState(aEv, true);
-    itEvLinks = next_[true].find(aEv);
-    if (itEvLinks == next_[true].end())  // no more next
+    auto&& ev_nextEVs = next_[true].find(aEv);
+    if (ev_nextEVs == next_[true].end())  // no more next
         return;
-    for (auto&& nextEvent : itEvLinks->second)
-        deduceState(nextEvent);
+    for (auto&& nextEV : ev_nextEVs->second)
+        deduceState(nextEV);
 }
 
 // ***********************************************************************************************
@@ -78,10 +78,10 @@ bool Domino::deeperLinkThan(size_t aLimit, Event aEv) const
 // ***********************************************************************************************
 Domino::Event Domino::getEventBy(const EvName& aEvName) const
 {
-    auto&& it = events_.find(aEvName);
-    return it == events_.end()
+    auto&& en_ev = events_.find(aEvName);
+    return en_ev == events_.end()
         ? D_EVENT_FAILED_RET
-        : it->second;
+        : en_ev->second;
 }
 
 // ***********************************************************************************************
@@ -110,7 +110,7 @@ Domino::Event Domino::newEvent(const EvName& aEvName)
     if (event == D_EVENT_FAILED_RET)
         event = states_.size();
 
-    HID("(Domino) Succeed, EvName=" << aEvName << ", event id=" << event);
+    HID("(Domino) Succeed, EvName=" << aEvName << ", event=" << event);
     events_.emplace(aEvName, event);
     evNames_[event] = aEvName;
     states_.push_back(false);
@@ -130,7 +130,7 @@ void Domino::pureRmLink(const Event aEv, EvLinks& aMyLinks, EvLinks& aNeighborLi
         if (neighborLinks.size() <= 1)
             aNeighborLinks.erase(peerEv);  // erase entire
         else
-            neighborLinks.erase(aEv);      // erase 1
+            neighborLinks.erase(aEv);  // erase 1
     }
     aMyLinks.erase(itMyLinks);
 }
@@ -153,22 +153,22 @@ void Domino::pureSetState(const Event aEv, const bool aNewState)
 Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrevEvents)
 {
     auto&& event = newEvent(aEvName);
-    for (auto&& itSim : aSimuPrevEvents)
+    for (auto&& prevEn_state : aSimuPrevEvents)
     {
-        if (event == getEventBy(itSim.first))
+        if (event == getEventBy(prevEn_state.first))
         {
             WRN("(Domino) !!!Failed, can't set self as previous event (=loop self), EvName=" << aEvName);
             return D_EVENT_FAILED_RET;
         }
     }
 
-    for (auto&& itSim : aSimuPrevEvents)
+    for (auto&& prevEn_state : aSimuPrevEvents)
     {
-        auto&& prevEv = newEvent(itSim.first);
-        prev_[itSim.second][event].insert(prevEv);
-        next_[itSim.second][prevEv].insert(event);
-        DBG("(Domino) Succeed, EvName=" << aEvName << ", preEvent=" << itSim.first
-            << ", preEventState=" << itSim.second);
+        auto&& prevEv = newEvent(prevEn_state.first);
+        prev_[prevEn_state.second][event].insert(prevEv);
+        next_[prevEn_state.second][prevEv].insert(event);
+        DBG("(Domino) Succeed, EvName=" << aEvName << ", prevEn=" << prevEn_state.first
+            << ", prerequisiteState=" << prevEn_state.second);
     }
     deduceState(event);
     return event;
@@ -179,16 +179,16 @@ void Domino::setState(const SimuEvents& aSimuEvents)
 {
     sthChanged_ = false;
 
-    for (auto&& itSim : aSimuEvents)
-        pureSetState(newEvent(itSim.first), itSim.second);
-    for (auto&& itSim : aSimuEvents)
+    for (auto&& en_state : aSimuEvents)
+        pureSetState(newEvent(en_state.first), en_state.second);
+    for (auto&& en_state : aSimuEvents)
     {
-        auto&& itEvLinks = next_[itSim.second].find(events_[itSim.first]);
-        HID("(Domino) en=" << itSim.first << ", hasNext=" << (itEvLinks != next_[itSim.second].end()));
-        if (itEvLinks == next_[itSim.second].end())
+        auto&& ev_nextEVs = next_[en_state.second].find(events_[en_state.first]);
+        if (ev_nextEVs == next_[en_state.second].end())
             continue;
-        for (auto&& nextEvent : itEvLinks->second)
-            deduceState(nextEvent);
+        HID("(Domino) en=" << en_state.first << ", nNext=" << ev_nextEVs->second.size());
+        for (auto&& nextEV : ev_nextEVs->second)
+            deduceState(nextEV);
     }
 
     if (!sthChanged_)
@@ -200,23 +200,23 @@ Domino::EvName Domino::whyFalse(const EvName& aEvName) const
 {
     auto&& ev = getEventBy(aEvName);
 
-    auto&& itPairTrue = prev_[true].find(ev);
-    if (itPairTrue != prev_[true].end())
+    auto&& ev_prevEVs = prev_[true].find(ev);
+    if (ev_prevEVs != prev_[true].end())
     {
-        for (auto&& candEv : itPairTrue->second)
+        for (auto&& prevEV : ev_prevEVs->second)
         {
-            if (states_[candEv] == false)
-                return evNames_.at(candEv) + "==false";
+            if (states_[prevEV] == false)
+                return evNames_.at(prevEV) + "==false";
         }
     }
 
-    auto&& itPairFalse = prev_[false].find(ev);
-    if (itPairFalse != prev_[false].end())
+    ev_prevEVs = prev_[false].find(ev);
+    if (ev_prevEVs != prev_[false].end())
     {
-        for (auto&& candEv : itPairFalse->second)
+        for (auto&& prevEV : ev_prevEVs->second)
         {
-            if (states_[candEv] == true)
-                return evNames_.at(candEv) + "==true";
+            if (states_[prevEV] == true)
+                return evNames_.at(prevEV) + "==true";
         }
     }
 
