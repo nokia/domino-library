@@ -118,13 +118,13 @@ TYPED_TEST_P(DominoTest, loop_check)
     PARA_DOM->newEvent("e1");
     EXPECT_TRUE (PARA_DOM->deeperLinkThan(0)) << "REQ: deep=1";
     EXPECT_FALSE(PARA_DOM->deeperLinkThan(1)) << "REQ: deep=1";
-/*
+
     PARA_DOM->setPrev("e1", {{"e2", true}});
     EXPECT_TRUE (PARA_DOM->deeperLinkThan(1)) << "REQ: deep=2";
     EXPECT_FALSE(PARA_DOM->deeperLinkThan(2)) << "REQ: deep=1";
-*/
+
     PARA_DOM->setPrev("e2", {{"e1", true}});
-    //EXPECT_FALSE(PARA_DOM->deeperLinkThan(10000));
+    EXPECT_TRUE(PARA_DOM->deeperLinkThan(10000)) << "REQ: found loop";
 }
 
 #define WHY_FALSE

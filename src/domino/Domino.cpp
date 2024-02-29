@@ -34,45 +34,57 @@ void Domino::deduceState(const Event aEv)
 // ***********************************************************************************************
 bool Domino::deeperLinkThan(size_t aLimit) const
 {
+    // check 1st level
     if (states_.size() == 0)  // deep=0
         return false;
-    if (aLimit == 0)  // deep>0
+    if (aLimit == 0)
+    {
+        DBG("(Domino) depth>=1 while limit=0");
         return true;
-    if (next_[true].size() + next_[false].size() == 0)  // deep=1
-        return false;
-/*
-    for (auto&& it_ev_evs : next_[true])
-    {
-        if (it_ev_evs.second.size() == 0)  // deep=1
-            continue;
-        if (aLimit == 1)  // deep>1
-            return true;
-        for (auto&& it_next_ev : it_ev_evs.second)
-        {
-            if (deeperLinkThan(aLimit-2, it_next_ev))
+    }
+
+    // check 2nd level
+    for (auto&& ev_nextEVs : next_[true])
+        for (auto&& nextEV : ev_nextEVs.second)
+            if (deeperLinkThan(aLimit-1, nextEV))
                 return true;
-        }
-    }
-    for (auto&& it_ev_evs : next_[false])
-    {
-        if (deeperLinkThan(aLimit-1, it_ev_evs.second))
-            return true;
-    }
-*/
+    for (auto&& ev_nextEVs : next_[false])
+        for (auto&& nextEV : ev_nextEVs.second)
+            if (deeperLinkThan(aLimit-1, nextEV))
+                return true;
     return false;
 }
 bool Domino::deeperLinkThan(size_t aLimit, Event aEv) const
-{/*
+{
+    // current level
     if (aLimit == 0)
-        return true;
-    for (auto&& it_ev_evs : next_[true])
     {
-        if (it_ev_evs.first != aEv)
-            continue;
-        if (deeperLinkThan(aLimit-1, Event aEv))
+        DBG("(Domino) at ev=" << aEv << ", depth>=1 while limit=0");
+        return true;
     }
-*/
-    return true;
+
+    // next level
+    if (deeperLinkThan(aLimit-1, aEv, next_[true]))
+        return true;
+    return deeperLinkThan(aLimit-1, aEv, next_[false]);
+}
+bool Domino::deeperLinkThan(size_t aLimit, Event aEv, const EvLinks& aEvLinks) const
+{
+    // current level
+    auto&& ev_nextEVs = aEvLinks.find(aEv);
+    if (ev_nextEVs == aEvLinks.end())
+        return false;
+    if (aLimit == 0)
+    {
+        DBG("(Domino) below ev=" << aEv << ", depth>=1 while limit=0");
+        return true;
+    }
+
+    // next level
+    for (auto&& nextEV : ev_nextEVs->second)
+        if (deeperLinkThan(aLimit-1, nextEV))
+            return true;
+    return false;
 }
 
 // ***********************************************************************************************

@@ -98,6 +98,7 @@ private:
     void pureRmLink(const Event, EvLinks& aMyLinks, EvLinks& aNeighborLinks);
 
     bool deeperLinkThan(size_t aLimit, Event) const;
+    bool deeperLinkThan(size_t aLimit, Event, const EvLinks&) const;
 
     // -------------------------------------------------------------------------------------------
     vector<bool>                 states_;               // bitmap & dyn expand, [event]=t/f
@@ -152,6 +153,7 @@ private:
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2023-01-11  CSZ       - search partial EvName
 // 2023-11-14  CSZ       7)rm event
+// 2024-02-29  CSZ       - check dead loop
 // ***********************************************************************************************
 // - where:
 //   . start using domino for time-cost events
