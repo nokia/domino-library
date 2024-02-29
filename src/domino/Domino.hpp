@@ -17,7 +17,9 @@
 // - assmuption:
 //   . each event-hdlr is called only when event state F->T
 //   . repeated event/hdlr is complex, be careful(eg DominoTests.newTriggerViaChain)
-//   . dead-loop: complex so not code check but may tool check (eg excel)
+//   . dead-loop: complex so
+//     . not check in normal code
+//     . but via standalone func - deeperLinkThan()
 //
 // - core: states_
 //
