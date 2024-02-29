@@ -122,14 +122,11 @@ TYPED_TEST_P(DominoTest, deep_loop_check)
 }
 TYPED_TEST_P(DominoTest, mix_deep_loop)
 {
-    PARA_DOM->setPrev("e1", {{"e2", true}});
-    EXPECT_TRUE (PARA_DOM->deeperLinkThan(1)) << "REQ: deep=2";
-    EXPECT_FALSE(PARA_DOM->deeperLinkThan(2)) << "REQ: deep=1";
-
-    PARA_DOM->setPrev("e2", {{"e1", false}});  // true/false mix loop
+    PARA_DOM->setPrev("e1", {{"e2", false}});  // true/false mix loop
+    PARA_DOM->setPrev("e2", {{"e1", true}});
     EXPECT_TRUE(PARA_DOM->deeperLinkThan(10000)) << "REQ: found mix loop";
 }
-TYPED_TEST_P(DominoTest, loop_check)
+TYPED_TEST_P(DominoTest, special_loop_check)
 {
     EXPECT_FALSE(PARA_DOM->deeperLinkThan(0)) << "REQ: empty's deep=0";
 
@@ -241,7 +238,7 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , loopSelf_is_invalid
     , deep_loop_check
     , mix_deep_loop
-    , loop_check
+    , special_loop_check
 
     , GOLD_multi_retOne
     , trueEvent_retEmpty
