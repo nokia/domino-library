@@ -101,6 +101,8 @@ private:
     void pureSetState(const Event, const bool aNewState);
     void pureRmLink(const Event, EvLinks& aMyLinks, EvLinks& aNeighborLinks);
 
+    bool foundNextEv(const Event aFromEv, const Event aNextEv) const;
+
     // -------------------------------------------------------------------------------------------
     vector<bool>                 states_;               // bitmap & dyn expand, [event]=t/f
 

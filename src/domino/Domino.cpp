@@ -32,6 +32,39 @@ void Domino::deduceState(const Event aEv)
 }
 
 // ***********************************************************************************************
+bool Domino::foundNextEv(const Event aFromEv, const Event aNextEv) const
+{
+    if (aFromEv == aNextEv)
+        return true;
+
+    auto&& ev_nextEVs = next_[true].find(aFromEv);
+    if (ev_nextEVs != next_[true].end())
+    {
+        for (auto&& nextEV : ev_nextEVs->second)
+        {
+            if (nextEV == aNextEv)
+                return true;
+            else if (foundNextEv(nextEV, aNextEv))
+                return true;
+        }  // for
+    }  // if
+
+    ev_nextEVs = next_[false].find(aFromEv);
+    if (ev_nextEVs != next_[false].end())
+    {
+        for (auto&& nextEV : ev_nextEVs->second)
+        {
+            if (nextEV == aNextEv)
+                return true;
+            else if (foundNextEv(nextEV, aNextEv))
+                return true;
+        }  // for
+    }  // if
+
+    return false;
+}
+
+// ***********************************************************************************************
 Domino::Event Domino::getEventBy(const EvName& aEvName) const
 {
     auto&& en_ev = events_.find(aEvName);
@@ -111,9 +144,9 @@ Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrev
     auto&& event = newEvent(aEvName);
     for (auto&& prevEn_state : aSimuPrevEvents)
     {
-        if (event == getEventBy(prevEn_state.first))
+        if (foundNextEv(event, newEvent(prevEn_state.first)))
         {
-            WRN("(Domino) !!!Failed, can't set self as previous event (=loop self), EvName=" << aEvName);
+            WRN("(Domino) !!!Failed to avoid loop between " << aEvName << " & " << prevEn_state.first);
             return D_EVENT_FAILED_RET;
         }
     }
