@@ -17,9 +17,6 @@
 // - assmuption:
 //   . each event-hdlr is called only when event state F->T
 //   . repeated event/hdlr is complex, be careful(eg DominoTests.newTriggerViaChain)
-//   . dead-loop: complex so
-//     . not check in normal code
-//     . but via standalone func - deeperLinkThan()
 //
 // - core: states_
 //
@@ -33,9 +30,15 @@
 //   . no use-up mem which is impossible in most cases
 //   . user shall not loop link ev - hard, expensive & unreasonable
 // - MT safe: no
+// - class safe: yes (all safe include mem-safe, no-ev-link-loop, no exception, etc, exclude MT safe)
+//   . ev-link-loop:
+//     . REQ:
+//       . no-loop to ensure safe
+//         . runtime forbid (rather than offline/afterward check which is not safe)
+//         . so fail setPrev() if loop
+//       . as simple as possible so little impact runtime (debug can be HID_CODE)
 // ***********************************************************************************************
-#ifndef DOMINO_HPP_
-#define DOMINO_HPP_
+#pragma once
 
 #include <map>
 #include <set>
@@ -109,7 +112,6 @@ private:
 };
 
 }  // namespace
-#endif  // DOMINO_HPP_
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
@@ -151,7 +153,7 @@ private:
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2023-01-11  CSZ       - search partial EvName
 // 2023-11-14  CSZ       7)rm event
-// 2024-02-29  CSZ       - check dead loop
+// 2024-02-29  CSZ       8)Dom is a all-safe class
 // ***********************************************************************************************
 // - where:
 //   . start using domino for time-cost events
