@@ -32,62 +32,6 @@ void Domino::deduceState(const Event aEv)
 }
 
 // ***********************************************************************************************
-bool Domino::deeperLinkThan(size_t aLimit) const
-{
-    // check 1st level
-    if (states_.size() == 0)  // deep=0
-        return false;
-    if (aLimit == 0)
-    {
-        DBG("(Domino) depth>=1 while limit=0");
-        return true;
-    }
-
-    // check 2nd level
-    for (auto&& ev_nextEVs : next_[true])
-        for (auto&& nextEV : ev_nextEVs.second)
-            if (deeperLinkThan(aLimit-1, nextEV))
-                return true;
-    for (auto&& ev_nextEVs : next_[false])
-        for (auto&& nextEV : ev_nextEVs.second)
-            if (deeperLinkThan(aLimit-1, nextEV))
-                return true;
-    return false;
-}
-bool Domino::deeperLinkThan(size_t aLimit, Event aEv) const
-{
-    // current level
-    if (aLimit == 0)
-    {
-        DBG("(Domino) at ev=" << aEv << ", depth>=1 while limit=0");
-        return true;
-    }
-
-    // next level
-    if (deeperLinkThan(aLimit-1, aEv, next_[true]))
-        return true;
-    return deeperLinkThan(aLimit-1, aEv, next_[false]);
-}
-bool Domino::deeperLinkThan(size_t aLimit, Event aEv, const EvLinks& aEvLinks) const
-{
-    // current level
-    auto&& ev_nextEVs = aEvLinks.find(aEv);
-    if (ev_nextEVs == aEvLinks.end())
-        return false;
-    if (aLimit == 0)
-    {
-        DBG("(Domino) below ev=" << aEv << ", depth>=1 while limit=0");
-        return true;
-    }
-
-    // next level
-    for (auto&& nextEV : ev_nextEVs->second)
-        if (deeperLinkThan(aLimit-1, nextEV))
-            return true;
-    return false;
-}
-
-// ***********************************************************************************************
 Domino::Event Domino::getEventBy(const EvName& aEvName) const
 {
     auto&& en_ev = events_.find(aEvName);

@@ -106,6 +106,7 @@ TYPED_TEST_P(DominoTest, bugFix_shallDeduceAll)
 
 #define LOOP
 // ***********************************************************************************************
+#if 0
 TYPED_TEST_P(DominoTest, loopSelf_is_invalid)
 {
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e1", {{"e1", true}}));
@@ -113,27 +114,38 @@ TYPED_TEST_P(DominoTest, loopSelf_is_invalid)
 }
 TYPED_TEST_P(DominoTest, deep_loop_check)
 {
-    PARA_DOM->setPrev("e1", {{"e2", true}});
-    EXPECT_TRUE (PARA_DOM->deeperLinkThan(1)) << "REQ: deep=2";
-    EXPECT_FALSE(PARA_DOM->deeperLinkThan(2)) << "REQ: deep=1";
+    PARA_DOM->setPrev("e0", {{"e1", true}});
+    EXPECT_TRUE (PARA_DOM->deeperLinkThan(1)) << "REQ: 1<deep";
+    EXPECT_FALSE(PARA_DOM->deeperLinkThan(2)) << "REQ: deep<=2";
 
-    PARA_DOM->setPrev("e2", {{"e1", true}});
-    EXPECT_TRUE(PARA_DOM->deeperLinkThan(10000)) << "REQ: found loop";
+    PARA_DOM->setPrev("e1", {{"e0", true}});
+    EXPECT_TRUE(PARA_DOM->deeperLinkThan(10)) << "REQ: found deep=2 loop";
+}
+TYPED_TEST_P(DominoTest, deeper_loop)
+{
+    PARA_DOM->setPrev("e0", {{"e1", false}});
+    PARA_DOM->setPrev("e1", {{"e2", false}});
+    EXPECT_TRUE (PARA_DOM->deeperLinkThan(2)) << "REQ: 2<deep";
+    EXPECT_FALSE(PARA_DOM->deeperLinkThan(3)) << "REQ: deep<=3";
+
+    PARA_DOM->setPrev("e2", {{"e0", false}});
+    EXPECT_TRUE(PARA_DOM->deeperLinkThan(10)) << "REQ: found deep=3 loop";
 }
 TYPED_TEST_P(DominoTest, mix_deep_loop)
 {
-    PARA_DOM->setPrev("e1", {{"e2", false}});  // true/false mix loop
-    PARA_DOM->setPrev("e2", {{"e1", true}});
-    EXPECT_TRUE(PARA_DOM->deeperLinkThan(10000)) << "REQ: found mix loop";
+    PARA_DOM->setPrev("e0", {{"e1", false}});  // true/false mix loop
+    PARA_DOM->setPrev("e1", {{"e0", true}});
+    EXPECT_TRUE(PARA_DOM->deeperLinkThan(10)) << "REQ: found mix loop";
 }
 TYPED_TEST_P(DominoTest, special_loop_check)
 {
     EXPECT_FALSE(PARA_DOM->deeperLinkThan(0)) << "REQ: empty's deep=0";
 
-    PARA_DOM->newEvent("e1");
+    PARA_DOM->newEvent("e0");
     EXPECT_TRUE (PARA_DOM->deeperLinkThan(0)) << "REQ: deep=1";
     EXPECT_FALSE(PARA_DOM->deeperLinkThan(1)) << "REQ: deep=1";
 }
+#endif
 
 #define WHY_FALSE
 // ***********************************************************************************************
@@ -235,10 +247,13 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , GOLD_re_broadcast_byTrue
     , GOLD_re_broadcast_byFalse
     , bugFix_shallDeduceAll
+/*
     , loopSelf_is_invalid
     , deep_loop_check
+    , deeper_loop
     , mix_deep_loop
     , special_loop_check
+*/
 
     , GOLD_multi_retOne
     , trueEvent_retEmpty

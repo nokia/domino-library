@@ -82,8 +82,6 @@ public:
     Event  setPrev(const EvName&, const SimuEvents& aSimuPrevEvents);
     EvName whyFalse(const EvName&) const;
 
-    bool deeperLinkThan(size_t aLimit) const;
-
 protected:
     const EvName& evName(const Event aEv) const { return evNames_.at(aEv); }  // aEv must valid
     bool          state (const Event aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
@@ -98,9 +96,6 @@ private:
     void deduceState(const Event);
     void pureSetState(const Event, const bool aNewState);
     void pureRmLink(const Event, EvLinks& aMyLinks, EvLinks& aNeighborLinks);
-
-    bool deeperLinkThan(size_t aLimit, Event) const;
-    bool deeperLinkThan(size_t aLimit, Event, const EvLinks&) const;
 
     // -------------------------------------------------------------------------------------------
     vector<bool>                 states_;               // bitmap & dyn expand, [event]=t/f
