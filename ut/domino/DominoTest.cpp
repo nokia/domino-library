@@ -106,12 +106,12 @@ TYPED_TEST_P(DominoTest, bugFix_shallDeduceAll)
 
 #define LOOP
 // ***********************************************************************************************
-#if 0
 TYPED_TEST_P(DominoTest, loopSelf_is_invalid)
 {
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e1", {{"e1", true}}));
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e1", {{"e1", false}}));
 }
+#if 0
 TYPED_TEST_P(DominoTest, deep_loop_check)
 {
     PARA_DOM->setPrev("e0", {{"e1", true}});
@@ -247,8 +247,8 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , GOLD_re_broadcast_byTrue
     , GOLD_re_broadcast_byFalse
     , bugFix_shallDeduceAll
-/*
     , loopSelf_is_invalid
+/*
     , deep_loop_check
     , deeper_loop
     , mix_deep_loop

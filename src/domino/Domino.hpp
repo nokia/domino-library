@@ -32,6 +32,7 @@
 // - mem safe: yes with limit
 //   . no use-up mem which is impossible in most cases
 //   . user shall not loop link ev - hard, expensive & unreasonable
+// - MT safe: no
 // ***********************************************************************************************
 #ifndef DOMINO_HPP_
 #define DOMINO_HPP_
