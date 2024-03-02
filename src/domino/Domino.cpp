@@ -138,7 +138,7 @@ Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrev
     {
         if (isLinkedFromTo(event, newEvent(prevEn_state.first)))
         {
-            WRN("(Domino) !!!Failed to avoid loop between " << aEvName << " & " << prevEn_state.first);
+            WRN("(Domino) !!!Failed, avoid loop between " << aEvName << " & " << prevEn_state.first);
             return D_EVENT_FAILED_RET;
         }
     }
@@ -149,7 +149,9 @@ Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrev
         prev_[prevEn_state.second][event].insert(prevEv);
         next_[prevEn_state.second][prevEv].insert(event);
         DBG("(Domino) Succeed, EvName=" << aEvName << ", prevEn=" << prevEn_state.first
-            << ", prerequisiteState=" << prevEn_state.second);
+            << ", prerequisiteState=" << prevEn_state.second
+            << ", nPrev[true]=" << prev_[true].size() << ", nNext[true]=" << next_[true].size()
+            << ", nPrev[false]=" << prev_[false].size() << ", nNext[false]=" << next_[false].size());
     }
     deduceState(event);
     return event;

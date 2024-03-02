@@ -30,13 +30,17 @@
 //   . no use-up mem which is impossible in most cases
 //   . user shall not loop link ev - hard, expensive & unreasonable
 // - MT safe: no
-// - class safe: yes (all safe include mem-safe, no-ev-link-loop, no exception, etc, exclude MT safe)
+// - class safe: yes (all-safe include mem-safe, no-ev-link-loop, no exception, etc, exclude MT safe)
 //   . ev-link-loop:
 //     . REQ:
 //       . no-loop to ensure safe
 //         . runtime forbid (rather than offline/afterward check which is not safe)
-//         . so fail setPrev() if loop
-//       . as simple as possible so little impact runtime (debug can be HID_CODE)
+//         . so fail setPrev() to prevent loop
+//       . reasonable cost-benefit
+//         . so little impact runtime (debug can be HID_CODE)
+//         . next-loop can be prevented simply
+//         . true-false-loop can NOT  (refer UT strange_loop)
+//     . so setPrev() is simple safe, NOT perfect safe
 // ***********************************************************************************************
 #pragma once
 

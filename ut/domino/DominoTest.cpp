@@ -106,37 +106,41 @@ TYPED_TEST_P(DominoTest, bugFix_shallDeduceAll)
 
 #define LOOP
 // ***********************************************************************************************
-TYPED_TEST_P(DominoTest, loopSelf_is_invalid)
+TYPED_TEST_P(DominoTest, invalid_loopSelf)
 {
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e1", {{"e1", true}})) << "REQ: can't loop self";
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e1", {{"e1", false}})) << "REQ: can't loop self";
 }
-TYPED_TEST_P(DominoTest, deep_loop_check)
+TYPED_TEST_P(DominoTest, invalid_deepLoop)
 {
     EXPECT_NE(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e0", {{"e1", true}}));
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e1", {{"e0", true}})) << "REQ: can't deep loop";
 }
-TYPED_TEST_P(DominoTest, deeper_loop)
+TYPED_TEST_P(DominoTest, invalid_deeperLoop)
 {
     EXPECT_NE(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e0", {{"e1", false}}));
     EXPECT_NE(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e1", {{"e2", false}}));
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e2", {{"e0", false}})) << "REQ: can't deeper loop";
 }
-TYPED_TEST_P(DominoTest, mix_deep_loop)
+TYPED_TEST_P(DominoTest, invalid_mixLoop)
 {
     EXPECT_NE(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e0", {{"e1", false}}));
-    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e1", {{"e0", true}})) << "REQ: can't true/false mix loop";
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e1", {{"e0", true}})) << "REQ: can't T/F mix loop";
 }
-#if 0
-TYPED_TEST_P(DominoTest, special_loop_check)
+TYPED_TEST_P(DominoTest, strange_loop)
 {
-    EXPECT_FALSE(PARA_DOM->deeperLinkThan(0)) << "REQ: empty's deep=0";
+    EXPECT_NE(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e0", {{"e1", false}}));
+    EXPECT_NE(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e0", {{"e1", true}})) << "e0-e1 'loop' via T & F";
+    EXPECT_EQ("e1==false", PARA_DOM->whyFalse("e0")) << "REQ: simply found the root cause";
+    PARA_DOM->setState({{"e1", true}});
+    EXPECT_EQ("e1==true",  PARA_DOM->whyFalse("e0")) << "REQ: simply found the root cause";
 
-    PARA_DOM->newEvent("e0");
-    EXPECT_TRUE (PARA_DOM->deeperLinkThan(0)) << "REQ: deep=1";
-    EXPECT_FALSE(PARA_DOM->deeperLinkThan(1)) << "REQ: deep=1";
+    // - this kind of loop can be very long & complex
+    //   . when occur, the end-event can't be satisfied forever (user's fault, not Domino)
+    // - not find a simple way (reasonable cost-benefit) to prevent it
+    //   . whyFalse() is simple to detect it (but not prevent so not perfect)
+    // - so setPrev() is safe in most cases but NOT in all cases
 }
-#endif
 
 #define WHY_FALSE
 // ***********************************************************************************************
@@ -238,13 +242,12 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , GOLD_re_broadcast_byTrue
     , GOLD_re_broadcast_byFalse
     , bugFix_shallDeduceAll
-    , loopSelf_is_invalid
-    , deep_loop_check
-    , deeper_loop
-    , mix_deep_loop
-/*
-    , special_loop_check
-*/
+
+    , invalid_loopSelf
+    , invalid_deepLoop
+    , invalid_deeperLoop
+    , invalid_mixLoop
+    , strange_loop
 
     , GOLD_multi_retOne
     , trueEvent_retEmpty
