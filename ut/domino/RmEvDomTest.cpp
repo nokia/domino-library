@@ -195,9 +195,10 @@ TYPED_TEST_P(RmHdlrDomTest, rmFalsePrev_callHdlr_ifSatisfied)
     multiset<int> hdlrIDs;
     PARA_DOM->setHdlr("e0", [&hdlrIDs](){ hdlrIDs.insert(0); });
     PARA_DOM->setPrev("e0", {{"e1", true}, {"e2", false}});
+    PARA_DOM->setState({{"e1", true}, {"e2", true}});
     EXPECT_FALSE(PARA_DOM->state("e0"));
 
-    EXPECT_TRUE(PARA_DOM->rmEvOK("e1")) << "req: rm succ";
+    EXPECT_TRUE(PARA_DOM->rmEvOK("e2")) << "req: rm succ";
     EXPECT_TRUE(PARA_DOM->state("e0")) << "REQ: deduce related next";
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
     EXPECT_EQ(multiset<int>{0}, hdlrIDs) << "REQ: prerequisite satisfied -> call hdlr.";
