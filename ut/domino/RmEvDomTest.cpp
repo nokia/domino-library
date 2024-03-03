@@ -171,7 +171,8 @@ TYPED_TEST_P(RmHdlrDomTest, GOLD_rm_HdlrDom_resrc)
 
     EXPECT_EQ(e1, PARA_DOM->setHdlr("another e1", [&hdlrIDs](){ hdlrIDs.insert(3); }))  << "REQ: reuse e1.";
     PARA_DOM->forceAllHdlr("another e1");
-    EXPECT_EQ(2u, MSG_SELF->nMsg()) << "REQ: another e1's hdlr is on road.";
+    EXPECT_NE(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e2")) << "REQ: rm ev not impact its alias.";
+    EXPECT_EQ(2u, MSG_SELF->nMsg()) << "REQ: another e1's hdlr is on road while alias hdlr still on road.";
 
     EXPECT_TRUE(PARA_DOM->rmEvOK("e2")) << "REQ: can rm alias Ev.";
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
