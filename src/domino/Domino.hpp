@@ -54,6 +54,8 @@
 
 namespace RLib
 {
+const char DOM_RESERVED_EVNAME[] = "[Dom Reserved EvName]";
+
 // ***********************************************************************************************
 class Domino : public UniLog
 {
@@ -161,7 +163,8 @@ private:
 // 2023-01-11  CSZ       - search partial EvName
 // 2023-11-14  CSZ       7)rm event
 // 2024-02-29  CSZ       8)setPrev() is simple-all-safe
-// 2024-03-03  CSZ       - rm ev shall deduceState(next)
+// 2024-03-03  CSZ       - enhance safe of rm ev (shall deduceState(next))
+//                       - enhance safe of whyFalse() while keep safe of newEvent()
 // ***********************************************************************************************
 // - where:
 //   . start using domino for time-cost events

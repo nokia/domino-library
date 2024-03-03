@@ -162,17 +162,17 @@ TYPED_TEST_P(DominoTest, trueEvent_retEmpty)
     PARA_DOM->setPrev("master succ", {{"all agents succ", true}, {"user abort", false}});
     PARA_DOM->setState({{"all agents succ", true}});
     EXPECT_TRUE(PARA_DOM->state("master succ"));
-    EXPECT_EQ("whyFalse() found nothing", PARA_DOM->whyFalse("master succ"));
+    EXPECT_EQ("[Dom Reserved EvName] whyFalse() found nothing", PARA_DOM->whyFalse("master succ"));
 }
 TYPED_TEST_P(DominoTest, eventWithoutPrev_retEmpty)
 {
     PARA_DOM->newEvent("no prev ev");
     EXPECT_FALSE(PARA_DOM->state("no prev ev"));
-    EXPECT_EQ("whyFalse() found nothing", PARA_DOM->whyFalse("no prev ev"));
+    EXPECT_EQ("[Dom Reserved EvName] whyFalse() found nothing", PARA_DOM->whyFalse("no prev ev"));
 }
 TYPED_TEST_P(DominoTest, invalidEvent_retEmpty)
 {
-    EXPECT_EQ("whyFalse() found nothing", PARA_DOM->whyFalse(""));
+    EXPECT_EQ("[Dom Reserved EvName] whyFalse() found nothing", PARA_DOM->whyFalse(""));
 }
 
 #define SEARCH_PARTIAL_EVNAME

@@ -217,6 +217,9 @@ Domino::EvName Domino::whyFalse(const EvName& aEvName) const
         }
     }
 
-    return EvName("whyFalse() found nothing");
+    return EvName(DOM_RESERVED_EVNAME) + " whyFalse() found nothing";
+    // - doesn't make sense that user define EvName like this
+    // - but newEvent() doesn't forbid this kind of EvName to ensure safe of other Domino func
+    //   that assume newEvent() always succ
 }
 }  // namespace
