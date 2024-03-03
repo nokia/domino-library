@@ -12,7 +12,7 @@
 //
 // - how:
 //   . each dom can rm its own resource independently as public interface (de-couple)
-//   . newEvent() may alloc fail (throw in diff dom), so has to reuse rm-ed Ev as early as possible
+//   . newEvent() has to reuse rm-ed Ev as early as possible - to avoid alloc fail
 //   . standalone class to min impact other dom
 //   . how about orphan ev after rm its parent?
 //     . let user take care his rm rather than complex dom
