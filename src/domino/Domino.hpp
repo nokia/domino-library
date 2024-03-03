@@ -160,7 +160,7 @@ private:
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2023-01-11  CSZ       - search partial EvName
 // 2023-11-14  CSZ       7)rm event
-// 2024-02-29  CSZ       8)Dom is a all-safe class
+// 2024-02-29  CSZ       8)Domino is simple-all-safe
 // ***********************************************************************************************
 // - where:
 //   . start using domino for time-cost events

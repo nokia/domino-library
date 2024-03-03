@@ -178,8 +178,35 @@ TYPED_TEST_P(RmHdlrDomTest, GOLD_rm_HdlrDom_resrc)
     EXPECT_EQ(multiset<int>{3}, hdlrIDs) << "REQ: not exe e2 hdlr since removed; exe another e1's hdlr.";
 }
 
+TYPED_TEST_P(RmHdlrDomTest, rmTruePrev_callHdlr_ifSatisfied)
+{
+    multiset<int> hdlrIDs;
+    PARA_DOM->setHdlr("e0", [&hdlrIDs](){ hdlrIDs.insert(0); });
+    PARA_DOM->setPrev("e0", {{"e1", true}, {"e2", false}});
+    EXPECT_FALSE(PARA_DOM->state("e0"));
+
+    EXPECT_TRUE(PARA_DOM->rmEvOK("e1")) << "req: rm succ";
+    EXPECT_TRUE(PARA_DOM->state("e0")) << "REQ: deduce related next";
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    EXPECT_EQ(multiset<int>{0}, hdlrIDs) << "REQ: prerequisite satisfied -> call hdlr.";
+}
+TYPED_TEST_P(RmHdlrDomTest, rmFalsePrev_callHdlr_ifSatisfied)
+{
+    multiset<int> hdlrIDs;
+    PARA_DOM->setHdlr("e0", [&hdlrIDs](){ hdlrIDs.insert(0); });
+    PARA_DOM->setPrev("e0", {{"e1", true}, {"e2", false}});
+    EXPECT_FALSE(PARA_DOM->state("e0"));
+
+    EXPECT_TRUE(PARA_DOM->rmEvOK("e1")) << "req: rm succ";
+    EXPECT_TRUE(PARA_DOM->state("e0")) << "REQ: deduce related next";
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    EXPECT_EQ(multiset<int>{0}, hdlrIDs) << "REQ: prerequisite satisfied -> call hdlr.";
+}
+
 REGISTER_TYPED_TEST_SUITE_P(RmHdlrDomTest
     , GOLD_rm_HdlrDom_resrc
+    , rmFalsePrev_callHdlr_ifSatisfied
+    , rmTruePrev_callHdlr_ifSatisfied
 );
 using AnyRmHdlrDom = Types<MaxNofreeDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, RmHdlrDomTest, AnyRmHdlrDom);

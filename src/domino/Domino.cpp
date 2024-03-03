@@ -12,6 +12,8 @@ namespace RLib
 // ***********************************************************************************************
 void Domino::deduceState(const Event aEv)
 {
+    HID("(Domino) en=" << evName(aEv));
+
     auto&& ev_prevEVs = prev_[true].find(aEv);
     if (ev_prevEVs != prev_[true].end())  // true br
         for (auto&& prevEV : ev_prevEVs->second)
@@ -68,6 +70,13 @@ Domino::Event Domino::getEventBy(const EvName& aEvName) const
 // ***********************************************************************************************
 void Domino::innerRmEv(const Event aEv)
 {
+    // for later deduceState()
+    auto&& ev_nextEVs = next_[true].find(aEv);
+    auto&& trueNextEVs = (ev_nextEVs == next_[true].end()) ? Events() : ev_nextEVs->second;
+    ev_nextEVs = next_[false].find(aEv);
+    auto&& falseNextEVs = (ev_nextEVs == next_[false].end()) ? Events() : ev_nextEVs->second;
+    HID("(Domino) en=" << evName(aEv) << ", nT=" << trueNextEVs.size() << ", nF=" << falseNextEVs.size());
+
     pureRmLink(aEv, prev_[true],  next_[true]);
     pureRmLink(aEv, prev_[false], next_[false]);
     pureRmLink(aEv, next_[true],  prev_[true]);
@@ -78,6 +87,11 @@ void Domino::innerRmEv(const Event aEv)
     events_.erase(evNames_[aEv]);
     auto ret = evNames_.erase(aEv);
     HID("[Domino] aEv=" << aEv << ", ret=" << ret);
+
+    for (auto&& ev : trueNextEVs)
+        deduceState(ev);
+    for (auto&& ev : falseNextEVs)
+        deduceState(ev);
 }
 
 // ***********************************************************************************************
@@ -203,6 +217,6 @@ Domino::EvName Domino::whyFalse(const EvName& aEvName) const
         }
     }
 
-    return EvName();
+    return EvName("whyFalse() found nothing");
 }
 }  // namespace
