@@ -34,15 +34,15 @@ void Domino::deduceState(const Event aEv)
 }
 
 // ***********************************************************************************************
-bool Domino::isLinkedFromTo(const Event aFromEv, const Event aToEv) const
+bool Domino::isNextedFromTo(const Event aFromEv, const Event aToEv) const
 {
     if (aFromEv == aToEv)
         return true;
-    if (isLinkedFromToVia(aFromEv, aToEv, next_[true]))
+    if (isNextedFromToVia(aFromEv, aToEv, next_[true]))
         return true;
-    return isLinkedFromToVia(aFromEv, aToEv, next_[false]);
+    return isNextedFromToVia(aFromEv, aToEv, next_[false]);
 }
-bool Domino::isLinkedFromToVia(const Event aFromEv, const Event aToEv, const EvLinks& aViaEvLinks) const
+bool Domino::isNextedFromToVia(const Event aFromEv, const Event aToEv, const EvLinks& aViaEvLinks) const
 {
     auto&& ev_nextEVs = aViaEvLinks.find(aFromEv);
     if (ev_nextEVs != aViaEvLinks.end())
@@ -51,7 +51,7 @@ bool Domino::isLinkedFromToVia(const Event aFromEv, const Event aToEv, const EvL
         {
             if (nextEV == aToEv)
                 return true;
-            else if (isLinkedFromTo(nextEV, aToEv))
+            else if (isNextedFromTo(nextEV, aToEv))
                 return true;
         }  // for
     }  // if
@@ -150,7 +150,7 @@ Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrev
     auto&& event = newEvent(aEvName);
     for (auto&& prevEn_state : aSimuPrevEvents)
     {
-        if (isLinkedFromTo(event, newEvent(prevEn_state.first)))
+        if (isNextedFromTo(event, newEvent(prevEn_state.first)))
         {
             WRN("(Domino) !!!Failed, avoid loop between " << aEvName << " & " << prevEn_state.first);
             return D_EVENT_FAILED_RET;
