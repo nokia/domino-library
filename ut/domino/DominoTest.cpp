@@ -147,11 +147,12 @@ TYPED_TEST_P(DominoTest, strangeLoop_prevBothTrueAndFalse)
     PARA_DOM->setState({{"e21", true}});
     EXPECT_EQ("e21==true",  PARA_DOM->whyFalse(e20)) << "REQ: simply found the futhest root cause";
 
-    // e31 <- (F) <- e30
-    // (F)\         /(F)
-    //     <- e32 <-
+    // e31 <--------------- (F) <- e30
+    // (F)\                       /(F)
+    //     <- e33 <- (T) <- e32 <-
     auto e30 = PARA_DOM->setPrev("e30", {{"e31", false}, {"e32", false}});
-    PARA_DOM->setPrev("e32", {{"e31", false}});
+    PARA_DOM->setPrev("e32", {{"e33", true}});
+    PARA_DOM->setPrev("e33", {{"e31", false}});
     EXPECT_EQ("e31==false", PARA_DOM->whyFalse(e30)) << "REQ: simply found the futhest root cause";
     PARA_DOM->setState({{"e31", true}});
     EXPECT_EQ("e31==true",  PARA_DOM->whyFalse(e30)) << "REQ: simply found the futhest root cause";
