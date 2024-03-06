@@ -129,45 +129,53 @@ TYPED_TEST_P(DominoTest, invalid_mixLoop)
 }
 TYPED_TEST_P(DominoTest, strangeLoop_prevBothTrueAndFalse)
 {
-    // e1 <- (T) <- e0
-    //   \         /
-    //    <- (F) <-
-    auto e0 = PARA_DOM->setPrev("e0", {{"e1", true }});
-    PARA_DOM->setPrev("e0", {{"e1", false}});
-    EXPECT_EQ("e1==false", PARA_DOM->whyFalse(e0)) << "REQ: simply found the root cause";
-    PARA_DOM->setState({{"e1", true}});
-    EXPECT_EQ("e1==true",  PARA_DOM->whyFalse(e0)) << "REQ: simply found the root cause";
+    // e11 <- (T) <- e10
+    //    \         /
+    //     <- (F) <-
+    auto e10 = PARA_DOM->setPrev("e10", {{"e11", true }});
+    PARA_DOM->setPrev("e10", {{"e11", false}});
+    EXPECT_EQ("e11==false", PARA_DOM->whyFalse(e10)) << "REQ: simply found the root cause";
+    PARA_DOM->setState({{"e11", true}});
+    EXPECT_EQ("e11==true",  PARA_DOM->whyFalse(e10)) << "REQ: simply found the root cause";
 
-    //  e3 <- (F) <- e2
+    // e21 <- (F) <- e20
     // (T)\         /(T)
-    //     <-- e4 <-
-    auto e2 = PARA_DOM->setPrev("e2", {{"e3", false}, {"e4", true}});
-    PARA_DOM->setPrev("e4", {{"e3", true}});
-    EXPECT_EQ("e3==false", PARA_DOM->whyFalse(e2)) << "REQ: simply found the root cause";
-    PARA_DOM->setState({{"e3", true}});
-    EXPECT_EQ("e3==true",  PARA_DOM->whyFalse(e2)) << "REQ: simply found the root cause";
+    //     <- e22 <-
+    auto e20 = PARA_DOM->setPrev("e20", {{"e21", false}, {"e22", true}});
+    PARA_DOM->setPrev("e22", {{"e21", true}});
+    EXPECT_EQ("e21==false", PARA_DOM->whyFalse(e20)) << "REQ: simply found the futhest root cause";
+    PARA_DOM->setState({{"e21", true}});
+    EXPECT_EQ("e21==true",  PARA_DOM->whyFalse(e20)) << "REQ: simply found the futhest root cause";
 
-    // - this kind of loop can be very long & complex
+    // e31 <- (F) <- e30
+    // (F)\         /(F)
+    //     <- e32 <-
+    auto e30 = PARA_DOM->setPrev("e30", {{"e31", false}, {"e32", false}});
+    PARA_DOM->setPrev("e32", {{"e31", false}});
+    EXPECT_EQ("e31==false", PARA_DOM->whyFalse(e30)) << "REQ: simply found the futhest root cause";
+    PARA_DOM->setState({{"e31", true}});
+    EXPECT_EQ("e31==true",  PARA_DOM->whyFalse(e30)) << "REQ: simply found the futhest root cause";
+
+    // - this kind of loop can be very long & complex (much more than above examples)
     //   . when occur, the end-event can't be satisfied forever (user's fault, not Domino)
     // - not find a simple way (reasonable cost-benefit) to prevent it
     //   . whyFalse() is simple to detect it (but not prevent so not perfect)
-    // - so setPrev() is safe in most cases but NOT in all cases
+    // - so setPrev() is safe in 2/3 cases but NOT in 1/3 cases
 }
 
 #define WHY_FALSE
 // ***********************************************************************************************
 // req: SmodAgent's file-need-check is based on 200+ files, too hard to debug why decide not to rom/plan
-// - ask Domino to find 1 prev-event with specified flag (true/false)
+// - ask Domino to find 1 prev-event
 //   . so SmodAgent can log_ << PARA_DOM.whyFalse(EnSmod_IS_FNC_TO_ROM_PLAN)
-// - no need whyTrue() since all prev-event must be satisfied
 // ***********************************************************************************************
 TYPED_TEST_P(DominoTest, GOLD_multi_retOne)
 {
-    auto master = PARA_DOM->setPrev("master succ", {{"all agents succ", true}, {"user abort", false}});  // REQ: simultaneous set
-    EXPECT_EQ("all agents succ==false", PARA_DOM->whyFalse(master));
+    auto master = PARA_DOM->setPrev("master succ", {{"all agents succ", true}, {"user abort", false}});
+    EXPECT_EQ("all agents succ==false", PARA_DOM->whyFalse(master)) << "REQ: get 1 root cause";
 
     PARA_DOM->setState({{"all agents succ", true}, {"user abort", true}});  // REQ: simultaneous state
-    EXPECT_EQ("user abort==true", PARA_DOM->whyFalse(master)) << "REQ: ret 1 unsatisfied pre";
+    EXPECT_EQ("user abort==true", PARA_DOM->whyFalse(master)) << "REQ: get diff root cause";
 }
 TYPED_TEST_P(DominoTest, trueEvent_retEmpty)
 {
