@@ -127,13 +127,25 @@ TYPED_TEST_P(DominoTest, invalid_mixLoop)
     EXPECT_NE(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e0", {{"e1", false}}));
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e1", {{"e0", true}})) << "REQ: can't T/F mix loop";
 }
-TYPED_TEST_P(DominoTest, strange_loop)
+TYPED_TEST_P(DominoTest, strangeLoop_prevBothTrueAndFalse)
 {
-    EXPECT_NE(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e0", {{"e1", false}}));
-    EXPECT_NE(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e0", {{"e1", true}})) << "e0-e1 'loop' via T & F";
-    EXPECT_EQ("e1==false", PARA_DOM->whyFalse("e0")) << "REQ: simply found the root cause";
+    // e1 <- (T) <- e0
+    //   \         /
+    //    <- (F) <-
+    auto e0 = PARA_DOM->setPrev("e0", {{"e1", true }});
+    PARA_DOM->setPrev("e0", {{"e1", false}});
+    EXPECT_EQ("e1==false", PARA_DOM->whyFalse(e0)) << "REQ: simply found the root cause";
     PARA_DOM->setState({{"e1", true}});
-    EXPECT_EQ("e1==true",  PARA_DOM->whyFalse("e0")) << "REQ: simply found the root cause";
+    EXPECT_EQ("e1==true",  PARA_DOM->whyFalse(e0)) << "REQ: simply found the root cause";
+
+    //  e3 <- (F) <- e2
+    // (T)\         /(T)
+    //     <-- e4 <-
+    auto e2 = PARA_DOM->setPrev("e2", {{"e3", false}, {"e4", true}});
+    PARA_DOM->setPrev("e4", {{"e3", true}});
+    EXPECT_EQ("e3==false", PARA_DOM->whyFalse(e2)) << "REQ: simply found the root cause";
+    PARA_DOM->setState({{"e3", true}});
+    EXPECT_EQ("e3==true",  PARA_DOM->whyFalse(e2)) << "REQ: simply found the root cause";
 
     // - this kind of loop can be very long & complex
     //   . when occur, the end-event can't be satisfied forever (user's fault, not Domino)
@@ -151,28 +163,29 @@ TYPED_TEST_P(DominoTest, strange_loop)
 // ***********************************************************************************************
 TYPED_TEST_P(DominoTest, GOLD_multi_retOne)
 {
-    PARA_DOM->setPrev("master succ", {{"all agents succ", true}, {"user abort", false}});  // REQ: simultaneous set
-    EXPECT_EQ("all agents succ==false", PARA_DOM->whyFalse("master succ"));
+    auto master = PARA_DOM->setPrev("master succ", {{"all agents succ", true}, {"user abort", false}});  // REQ: simultaneous set
+    EXPECT_EQ("all agents succ==false", PARA_DOM->whyFalse(master));
 
     PARA_DOM->setState({{"all agents succ", true}, {"user abort", true}});  // REQ: simultaneous state
-    EXPECT_EQ("user abort==true", PARA_DOM->whyFalse("master succ")) << "REQ: ret 1 unsatisfied pre";
+    EXPECT_EQ("user abort==true", PARA_DOM->whyFalse(master)) << "REQ: ret 1 unsatisfied pre";
 }
 TYPED_TEST_P(DominoTest, trueEvent_retEmpty)
 {
-    PARA_DOM->setPrev("master succ", {{"all agents succ", true}, {"user abort", false}});
+    auto master = PARA_DOM->setPrev("master succ", {{"all agents succ", true}, {"user abort", false}});
     PARA_DOM->setState({{"all agents succ", true}});
     EXPECT_TRUE(PARA_DOM->state("master succ"));
-    EXPECT_EQ("[Dom Reserved EvName] whyFalse() found nothing", PARA_DOM->whyFalse("master succ"));
+    EXPECT_EQ("[Dom Reserved EvName] whyFalse() found nothing", PARA_DOM->whyFalse(master));
 }
 TYPED_TEST_P(DominoTest, eventWithoutPrev_retEmpty)
 {
-    PARA_DOM->newEvent("no prev ev");
+    auto no_prev_ev = PARA_DOM->newEvent("no prev ev");
     EXPECT_FALSE(PARA_DOM->state("no prev ev"));
-    EXPECT_EQ("[Dom Reserved EvName] whyFalse() found nothing", PARA_DOM->whyFalse("no prev ev"));
+    EXPECT_EQ("[Dom Reserved EvName] whyFalse() found nothing", PARA_DOM->whyFalse(no_prev_ev));
 }
 TYPED_TEST_P(DominoTest, invalidEvent_retEmpty)
 {
-    EXPECT_EQ("[Dom Reserved EvName] whyFalse() found nothing", PARA_DOM->whyFalse(""));
+    EXPECT_EQ("[Dom Reserved EvName] whyFalse() found nothing", PARA_DOM->whyFalse(Domino::D_EVENT_FAILED_RET));
+    EXPECT_EQ("[Dom Reserved EvName] whyFalse() found nothing", PARA_DOM->whyFalse(0));
 }
 
 #define SEARCH_PARTIAL_EVNAME
@@ -247,7 +260,7 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , invalid_deepLoop
     , invalid_deeperLoop
     , invalid_mixLoop
-    , strange_loop
+    , strangeLoop_prevBothTrueAndFalse
 
     , GOLD_multi_retOne
     , trueEvent_retEmpty

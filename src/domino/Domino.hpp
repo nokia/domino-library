@@ -87,10 +87,10 @@ public:
     Event getEventBy(const EvName&) const;
     const EvNames evNames() const { return evNames_; }
 
-    bool   state(const EvName& aEvName) const { return state(getEventBy(aEvName)); }
-    void   setState(const SimuEvents&);
-    Event  setPrev(const EvName&, const SimuEvents& aSimuPrevEvents);
-    EvName whyFalse(const EvName&) const;
+    bool  state(const EvName& aEvName) const { return state(getEventBy(aEvName)); }
+    void  setState(const SimuEvents&);
+    Event setPrev(const EvName&, const SimuEvents&);
+    EvName whyFalse(const Event) const;
 
 protected:
     const EvName& evName(const Event aEv) const { return evNames_.at(aEv); }  // aEv must valid
@@ -99,16 +99,19 @@ protected:
 
     // - rm self dom's resource (RISK: aEv's leaf(s) may become orphan!!!)
     // - virtual for each dom (& trigger base to free its resource)
-    virtual void innerRmEv(const Event aEv);
+    virtual void  innerRmEv(const Event aEv);
     virtual Event recycleEv() { return D_EVENT_FAILED_RET; }
 
 private:
     void deduceState(const Event);
     void pureSetState(const Event, const bool aNewState);
     void pureRmLink(const Event, EvLinks& aMyLinks, EvLinks& aNeighborLinks);
+    void pureSetPrev(const Event, const SimuEvents&);
 
-    bool isNextedFromTo   (const Event aFromEv, const Event aToEv) const;
-    bool isNextedFromToVia(const Event aFromEv, const Event aToEv, const EvLinks& aViaEvLinks) const;
+    bool isNextFromTo   (const Event aFromEv, const Event aToEv) const;
+    bool isNextFromToVia(const Event aFromEv, const Event aToEv, const EvLinks& aViaEvLinks) const;
+
+    EvName whyTrue(const Event) const;
 
     // -------------------------------------------------------------------------------------------
     vector<bool>                 states_;               // bitmap & dyn expand, [event]=t/f
