@@ -24,14 +24,14 @@ void MsgSelf::handleAllMsg(const shared_ptr<bool> aValidMsgSelf)
     {
         // UniLog also req valid MsgSelf
         HID("(MsgSelf) How many reference to this MsgSelf? " << aValidMsgSelf.use_count());
-        while (handleOneMsg());  // handleOneMsg() may create new high priority msg(s)
+        while (handleOneMsg_());  // handleOneMsg_() may create new high priority msg(s)
     }
 }
 
 // ***********************************************************************************************
 // - performance optimization need 5 lines code, with a little benfit in most cases
 //   . so giveup until real need
-bool MsgSelf::handleOneMsg()
+bool MsgSelf::handleOneMsg_()
 {
     for (auto msgPri = EMsgPri_MAX-1; msgPri >= EMsgPri_MIN ; msgPri--)
     {

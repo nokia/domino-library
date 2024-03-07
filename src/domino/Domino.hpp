@@ -87,31 +87,31 @@ public:
     Event getEventBy(const EvName&) const;
     const EvNames evNames() const { return evNames_; }
 
-    bool  state(const EvName& aEvName) const { return state(getEventBy(aEvName)); }
+    bool  state(const EvName& aEvName) const { return state_(getEventBy(aEvName)); }
     void  setState(const SimuEvents&);
     Event setPrev(const EvName&, const SimuEvents&);
     EvName whyFalse(const Event) const;
 
 protected:
-    const EvName& evName(const Event aEv) const { return evNames_.at(aEv); }  // aEv must valid
-    bool          state (const Event aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
-    virtual void  effect(const Event) {}  // can't const since FreeDom will rm hdlr
+    const EvName& evName_(const Event aEv) const { return evNames_.at(aEv); }  // aEv must valid
+    bool          state_ (const Event aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
+    virtual void  effect_(const Event) {}  // can't const since FreeDom will rm hdlr
 
     // - rm self dom's resource (RISK: aEv's leaf(s) may become orphan!!!)
     // - virtual for each dom (& trigger base to free its resource)
-    virtual void  innerRmEv(const Event aEv);
-    virtual Event recycleEv() { return D_EVENT_FAILED_RET; }
+    virtual void  rmEv_(const Event aEv);
+    virtual Event recycleEv_() { return D_EVENT_FAILED_RET; }
 
 private:
-    void deduceState(const Event);
-    void pureSetState(const Event, const bool aNewState);
-    void pureRmLink(const Event, EvLinks& aMyLinks, EvLinks& aNeighborLinks);
-    void pureSetPrev(const Event, const SimuEvents&);
+    void deduceState_(const Event);
+    void pureSetState_(const Event, const bool aNewState);
+    void pureRmLink_(const Event, EvLinks& aMyLinks, EvLinks& aNeighborLinks);
+    void pureSetPrev_(const Event, const SimuEvents&);
 
-    bool isNextFromTo   (const Event aFromEv, const Event aToEv) const;
-    bool isNextFromToVia(const Event aFromEv, const Event aToEv, const EvLinks& aViaEvLinks) const;
+    bool isNextFromTo_   (const Event aFromEv, const Event aToEv) const;
+    bool isNextFromToVia_(const Event aFromEv, const Event aToEv, const EvLinks& aViaEvLinks) const;
 
-    EvName whyTrue(const Event) const;
+    EvName whyTrue_(const Event) const;
 
     // -------------------------------------------------------------------------------------------
     vector<bool>                 states_;               // bitmap & dyn expand, [event]=t/f
@@ -149,7 +149,7 @@ private:
 //                         for most Domino usecases
 // 2020-11-26  CSZ       - SmartLog for UT
 //                       + DOMINO return full nested dominos
-//                       + minimize derived dominos (eg FreeHdlrDomino is only pureRmHdlrOK() in triggerHdlr())
+//                       + minimize derived dominos (eg FreeHdlrDomino is only rmOneHdlrOK() in triggerHdlr_())
 //                       - minimize all dominos' mem func
 //                       - ref instead of cp in all mem func
 //                       - EvName for outer interface, Event for inner
@@ -166,7 +166,7 @@ private:
 // 2023-01-11  CSZ       - search partial EvName
 // 2023-11-14  CSZ       7)rm event
 // 2024-02-29  CSZ       8)setPrev() is simple-all-safe
-// 2024-03-03  CSZ       - enhance safe of rm ev (shall deduceState(next))
+// 2024-03-03  CSZ       - enhance safe of rm ev (shall deduceState_(next))
 //                       - enhance safe of whyFalse() while keep safe of newEvent()
 // ***********************************************************************************************
 // - where:

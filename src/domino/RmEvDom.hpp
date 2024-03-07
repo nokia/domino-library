@@ -43,8 +43,8 @@ public:
     bool rmEvOK(const Domino::EvName& aEN);
     bool isRemoved(const Domino::Event aEv) const { return isRemovedEv_.count(aEv); }
 protected:
-    void innerRmEv(const Domino::Event) override;
-    Domino::Event recycleEv() override;
+    void rmEv_(const Domino::Event) override;
+    Domino::Event recycleEv_() override;
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -59,15 +59,7 @@ public:
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void RmEvDom<aDominoType>::innerRmEv(const Domino::Event aEv)
-{
-    aDominoType::innerRmEv(aEv);
-    isRemovedEv_.insert(aEv);
-}
-
-// ***********************************************************************************************
-template<typename aDominoType>
-Domino::Event RmEvDom<aDominoType>::recycleEv()
+Domino::Event RmEvDom<aDominoType>::recycleEv_()
 {
     if (isRemovedEv_.empty())
         return Domino::D_EVENT_FAILED_RET;
@@ -79,13 +71,21 @@ Domino::Event RmEvDom<aDominoType>::recycleEv()
 
 // ***********************************************************************************************
 template<typename aDominoType>
+void RmEvDom<aDominoType>::rmEv_(const Domino::Event aEv)
+{
+    aDominoType::rmEv_(aEv);
+    isRemovedEv_.insert(aEv);
+}
+
+// ***********************************************************************************************
+template<typename aDominoType>
 bool RmEvDom<aDominoType>::rmEvOK(const Domino::EvName& aEN)
 {
     const auto ev = this->getEventBy(aEN);
     if (ev == Domino::D_EVENT_FAILED_RET)  // invalid; most beginning check, avoid useless exe
         return false;
 
-    innerRmEv(ev);
+    rmEv_(ev);
     return true;
 }
 
@@ -95,5 +95,5 @@ bool RmEvDom<aDominoType>::rmEvOK(const Domino::EvName& aEN)
 // ..........  .........   .......................................................................
 // 2023-11-14  CSZ       1)create
 // 2023-11-22  CSZ       - better isRemovedEv_
-// 2023-11-24  CSZ       - rmEvOK->innerRmEv since ev para (EN can outer use)
+// 2023-11-24  CSZ       - rmEvOK->rmEv_ since ev para (EN can outer use)
 // ***********************************************************************************************

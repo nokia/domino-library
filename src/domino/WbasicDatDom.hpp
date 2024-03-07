@@ -34,7 +34,7 @@ public:
     void wbasic_replaceData(const Domino::EvName&, UniPtr aData = nullptr);
 
 protected:
-    void innerRmEv(const Domino::Event) override;
+    void rmEv_(const Domino::Event) override;
 
 private:
     // forbid ouside usage
@@ -60,16 +60,6 @@ UniPtr WbasicDatDom<aDominoType>::getData(const Domino::EvName& aEvName) const
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void WbasicDatDom<aDominoType>::innerRmEv(const Domino::Event aEv)
-{
-    if (aEv < wrCtrl_.size())
-        wrCtrl_[aEv] = false;
-
-    aDominoType::innerRmEv(aEv);
-}
-
-// ***********************************************************************************************
-template<typename aDominoType>
 bool WbasicDatDom<aDominoType>::isWrCtrl(const Domino::EvName& aEvName) const
 {
     const auto ev = this->getEventBy(aEvName);
@@ -83,6 +73,16 @@ void WbasicDatDom<aDominoType>::replaceData(const Domino::EvName& aEvName, UniPt
     if (isWrCtrl(aEvName))
         WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!")
     else aDominoType::replaceData(aEvName, aData);
+}
+
+// ***********************************************************************************************
+template<typename aDominoType>
+void WbasicDatDom<aDominoType>::rmEv_(const Domino::Event aEv)
+{
+    if (aEv < wrCtrl_.size())
+        wrCtrl_[aEv] = false;
+
+    aDominoType::rmEv_(aEv);
 }
 
 // ***********************************************************************************************

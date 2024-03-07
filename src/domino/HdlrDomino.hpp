@@ -48,7 +48,7 @@ public:
     Domino::Event setHdlr(const Domino::EvName&, const MsgCB& aHdlr);
     bool rmOneHdlrOK(const Domino::EvName&);  // rm by EvName
     virtual bool rmOneHdlrOK(const Domino::Event&, const SharedMsgCB& aHdlr);  // rm by aHdlr
-    void forceAllHdlr(const Domino::EvName& aEN) { effect(this->getEventBy(aEN)); }  // can't const as FreeDom rm hdlr
+    void forceAllHdlr(const Domino::EvName& aEN) { effect_(this->getEventBy(aEN)); }  // can't const as FreeDom rm hdlr
     virtual size_t nHdlr(const Domino::EvName& aEN) const { return hdlrs_.count(this->getEventBy(aEN)); }
 
     // -------------------------------------------------------------------------------------------
@@ -62,10 +62,10 @@ public:
     virtual EMsgPriority getPriority(const Domino::Event) const { return EMsgPri_NORM; }
 
 protected:
-    void effect(const Domino::Event) override;
-    virtual void triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event aEv);
+    void effect_(const Domino::Event) override;
+    virtual void triggerHdlr_(const SharedMsgCB& aHdlr, const Domino::Event aEv);
 
-    void innerRmEv(const Domino::Event) override;
+    void rmEv_(const Domino::Event) override;
 
     // -------------------------------------------------------------------------------------------
 private:
@@ -78,22 +78,14 @@ public:
 
 // ***********************************************************************************************
 template<class aDominoType>
-void HdlrDomino<aDominoType>::effect(const Domino::Event aEv)
+void HdlrDomino<aDominoType>::effect_(const Domino::Event aEv)
 {
     auto&& it = hdlrs_.find(aEv);
     if (it == hdlrs_.end())
         return;
 
-    DBG("(HdlrDom) Succeed to trigger 1 hdlr of EvName=" << this->evName(aEv));
-    triggerHdlr(it->second, aEv);
-}
-
-// ***********************************************************************************************
-template<typename aDominoType>
-void HdlrDomino<aDominoType>::innerRmEv(const Domino::Event aEv)
-{
-    hdlrs_.erase(aEv);
-    aDominoType::innerRmEv(aEv);
+    DBG("(HdlrDom) Succeed to trigger 1 hdlr of EvName=" << this->evName_(aEv));
+    triggerHdlr_(it->second, aEv);
 }
 
 // ***********************************************************************************************
@@ -109,6 +101,14 @@ Domino::Event HdlrDomino<aDominoType>::multiHdlrByAliasEv(const Domino::EvName& 
 }
 
 // ***********************************************************************************************
+template<typename aDominoType>
+void HdlrDomino<aDominoType>::rmEv_(const Domino::Event aEv)
+{
+    hdlrs_.erase(aEv);
+    aDominoType::rmEv_(aEv);
+}
+
+// ***********************************************************************************************
 template<class aDominoType>
 bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::Event& aEv, const SharedMsgCB& aHdlr)
 {
@@ -120,7 +120,7 @@ bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::Event& aEv, const Shared
     if (itHdlr->second != aHdlr)
         return false;
 
-    HID("(HdlrDom) Will remove hdlr of EvName=" << this->evName(aEv)
+    HID("(HdlrDom) Will remove hdlr of EvName=" << this->evName_(aEv)
         << ", nHdlrRef=" << itHdlr->second.use_count());
     hdlrs_.erase(itHdlr);
     return true;
@@ -155,17 +155,17 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
     hdlrs_[event] = hdlr;
     HID("(HdlrDom) Succeed for EvName=" << aEvName);
 
-    if (this->state(event) == true)
+    if (this->state_(event) == true)
     {
         DBG("(HdlrDom) Trigger the new hdlr of EvName=" << aEvName);
-        triggerHdlr(hdlr, event);
+        triggerHdlr_(hdlr, event);
     }
     return event;
 }
 
 // ***********************************************************************************************
 template<class aDominoType>
-void HdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event aEv)
+void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aHdlr, const Domino::Event aEv)
 {
     HID("(HdlrDom) trigger a new msg.");
     msgSelf_->newMsg(

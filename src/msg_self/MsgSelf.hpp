@@ -84,7 +84,7 @@ public:
     static bool isLowPri(const EMsgPriority aPri) { return aPri < EMsgPri_NORM; }
 
 private:
-    bool handleOneMsg();
+    bool handleOneMsg_();
 
     // -------------------------------------------------------------------------------------------
     deque<MsgCB> msgQueues_[EMsgPri_MAX];

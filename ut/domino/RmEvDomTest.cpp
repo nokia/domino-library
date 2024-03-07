@@ -52,7 +52,7 @@ TYPED_TEST_P(RmDomTest, GOLD_rm_dom_resrc)
 
 TYPED_TEST_P(RmDomTest, GOLD_reuse_ev)
 {
-    PARA_DOM->setPrev("e2", {{"e1", true}});  // create e2 before e1 to inc cov of recycleEv()
+    PARA_DOM->setPrev("e2", {{"e1", true}});  // create e2 before e1 to inc cov of recycleEv_()
     const auto e1 = PARA_DOM->setPrev("e1", {{"e0", false}});
 
     EXPECT_TRUE (PARA_DOM->rmEvOK("e1"));

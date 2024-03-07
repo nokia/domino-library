@@ -52,8 +52,8 @@ public:
     size_t nHdlr(const Domino::EvName& aEN) const override;
 
 protected:
-    void effect(const Domino::Event) override;  // key/min change other Dominos
-    void innerRmEv(const Domino::Event) override;
+    void effect_(const Domino::Event) override;  // key/min change other Dominos
+    void rmEv_(const Domino::Event) override;
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -64,9 +64,9 @@ public:
 
 // ***********************************************************************************************
 template<class aDominoType>
-void MultiHdlrDomino<aDominoType>::effect(const Domino::Event aEv)
+void MultiHdlrDomino<aDominoType>::effect_(const Domino::Event aEv)
 {
-    aDominoType::effect(aEv);
+    aDominoType::effect_(aEv);
 
     auto&& itEv = multiHdlrs_.find(aEv);
     if (itEv == multiHdlrs_.end())
@@ -74,18 +74,10 @@ void MultiHdlrDomino<aDominoType>::effect(const Domino::Event aEv)
     for (auto&& itHdlr = itEv->second.begin(); itHdlr != itEv->second.end();)
     {
         auto&& itNext = next(itHdlr);
-        DBG("(MultiHdlrDom) Succeed to trigger 1 hdlr=" << itHdlr->first << " of EvName=" << this->evName(aEv));
-        this->triggerHdlr(itHdlr->second, aEv);  // may rm itHdlr in FreeHdlrDomino
+        DBG("(MultiHdlrDom) Succeed to trigger 1 hdlr=" << itHdlr->first << " of EvName=" << this->evName_(aEv));
+        this->triggerHdlr_(itHdlr->second, aEv);  // may rm itHdlr in FreeHdlrDomino
         itHdlr = itNext;
     }
-}
-
-// ***********************************************************************************************
-template<typename aDominoType>
-void MultiHdlrDomino<aDominoType>::innerRmEv(const Domino::Event aEv)
-{
-    multiHdlrs_.erase(aEv);
-    aDominoType::innerRmEv(aEv);
 }
 
 // ***********************************************************************************************
@@ -116,10 +108,10 @@ Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvNa
     }
     HID("(MultiHdlrDom) Succeed for EvName=" << aEvName << ", HdlrName=" << aHdlrName);
 
-    if (this->state(event))
+    if (this->state_(event))
     {
         DBG("(MultiHdlrDom) Trigger the new hdlr=" << aHdlrName << "of EvName=" << aEvName);
-        this->triggerHdlr(hdlr, event);
+        this->triggerHdlr_(hdlr, event);
     }
 
     return event;
@@ -141,6 +133,14 @@ void MultiHdlrDomino<aDominoType>::rmAllHdlr(const Domino::EvName& aEN)
     aDominoType::rmOneHdlrOK(aEN);
 
     multiHdlrs_.erase(this->getEventBy(aEN));
+}
+
+// ***********************************************************************************************
+template<typename aDominoType>
+void MultiHdlrDomino<aDominoType>::rmEv_(const Domino::Event aEv)
+{
+    multiHdlrs_.erase(aEv);
+    aDominoType::rmEv_(aEv);
 }
 
 // ***********************************************************************************************
@@ -172,7 +172,7 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::Event& aEv, const S
         if (itHdlr->second != aHdlr)
             continue;
 
-        HID("(MultiHdlrDom) Will remove HdlrName=" << itHdlr->first << " of EvName=" << this->evName(aEv)
+        HID("(MultiHdlrDom) Will remove HdlrName=" << itHdlr->first << " of EvName=" << this->evName_(aEv)
             << ", nHdlrRef=" << itHdlr->second.use_count());
         itEv->second.erase(itHdlr);
         return true;

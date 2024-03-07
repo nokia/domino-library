@@ -20,7 +20,7 @@ MtInQueue::~MtInQueue()
 }
 
 // ***********************************************************************************************
-size_t MtInQueue::handleCacheEle()
+size_t MtInQueue::handleCacheEle_()
 {
     const auto nEle = cache_.size();
     while (! cache_.empty())
@@ -42,7 +42,7 @@ size_t MtInQueue::handleCacheEle()
 // ***********************************************************************************************
 size_t MtInQueue::handleAllEle()
 {
-    const auto nEle = handleCacheEle();
+    const auto nEle = handleCacheEle_();
 
     {
         unique_lock<mutex> guard(mutex_, try_to_lock);  // avoid block main thread
@@ -54,7 +54,7 @@ size_t MtInQueue::handleAllEle()
         }
         cache_.swap(queue_);
     }
-    return nEle + handleCacheEle();
+    return nEle + handleCacheEle_();
 }
 
 // ***********************************************************************************************

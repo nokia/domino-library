@@ -35,10 +35,10 @@ public:
     bool isRepeatHdlr(const Domino::Event) const;
 
 protected:
-    void triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event) override;
-    using aDominoType::effect;
+    void triggerHdlr_(const SharedMsgCB& aHdlr, const Domino::Event) override;
+    using aDominoType::effect_;
 
-    void innerRmEv(const Domino::Event) override;
+    void rmEv_(const Domino::Event) override;
 
     // -------------------------------------------------------------------------------------------
 private:
@@ -48,16 +48,6 @@ private:
 public:
     using aDominoType::oneLog;
 };
-
-// ***********************************************************************************************
-template<typename aDominoType>
-void FreeHdlrDomino<aDominoType>::innerRmEv(const Domino::Event aEv)
-{
-    if (aEv < isRepeatHdlr_.size())
-        isRepeatHdlr_[aEv] = false;
-
-    aDominoType::innerRmEv(aEv);
-}
 
 // ***********************************************************************************************
 template<class aDominoType>
@@ -80,10 +70,20 @@ Domino::Event FreeHdlrDomino<aDominoType>::repeatedHdlr(const Domino::EvName& aE
 }
 
 // ***********************************************************************************************
-template<class aDominoType>
-void FreeHdlrDomino<aDominoType>::triggerHdlr(const SharedMsgCB& aHdlr, const Domino::Event aEv)
+template<typename aDominoType>
+void FreeHdlrDomino<aDominoType>::rmEv_(const Domino::Event aEv)
 {
-    aDominoType::triggerHdlr(aHdlr, aEv);
+    if (aEv < isRepeatHdlr_.size())
+        isRepeatHdlr_[aEv] = false;
+
+    aDominoType::rmEv_(aEv);
+}
+
+// ***********************************************************************************************
+template<class aDominoType>
+void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aHdlr, const Domino::Event aEv)
+{
+    aDominoType::triggerHdlr_(aHdlr, aEv);
     if (isRepeatHdlr(aEv))
         return;
 

@@ -298,7 +298,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, rmHdlr_invalid)
 
 #define FORCE_CALL
 // ***********************************************************************************************
-//  call all hdlr(s) since via effect(), state F->T also all hdlr(s))
+//  call all hdlr(s) since via effect_(), state F->T also all hdlr(s))
 // ***********************************************************************************************
 TYPED_TEST_P(MultiHdlrDominoTest, GOLD_force_call)
 {

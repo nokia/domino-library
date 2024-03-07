@@ -60,7 +60,7 @@ public:
     size_t nHdlr() const { return eleHdlrs_.size(); }
 
 private:
-    size_t handleCacheEle();
+    size_t handleCacheEle_();
 
     // -------------------------------------------------------------------------------------------
     deque<ElePair> queue_;  // unlimited ele; most suitable container

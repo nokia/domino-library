@@ -33,7 +33,7 @@ public:
     EMsgPriority  getPriority(const Domino::Event) const override;  // key/min change other Dominos
     Domino::Event setPriority(const Domino::EvName&, const EMsgPriority);
 protected:
-    void innerRmEv(const Domino::Event) override;
+    void rmEv_(const Domino::Event) override;
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -55,10 +55,10 @@ EMsgPriority PriDomino<aDominoType>::getPriority(const Domino::Event aEv) const
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void PriDomino<aDominoType>::innerRmEv(const Domino::Event aEv)
+void PriDomino<aDominoType>::rmEv_(const Domino::Event aEv)
 {
     priorities_.erase(aEv);
-    aDominoType::innerRmEv(aEv);
+    aDominoType::rmEv_(aEv);
 }
 
 // ***********************************************************************************************

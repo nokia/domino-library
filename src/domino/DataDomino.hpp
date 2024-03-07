@@ -47,7 +47,7 @@ public:
     virtual void replaceData(const Domino::EvName&, UniPtr = nullptr);
 
 protected:
-    void innerRmEv(const Domino::Event) override;
+    void rmEv_(const Domino::Event) override;
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -64,20 +64,20 @@ UniPtr DataDomino<aDominoType>::getData(const Domino::EvName& aEvName) const
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void DataDomino<aDominoType>::innerRmEv(const Domino::Event aEv)
-{
-    dataStore_.erase(aEv);
-    aDominoType::innerRmEv(aEv);
-}
-
-// ***********************************************************************************************
-template<typename aDominoType>
 void DataDomino<aDominoType>::replaceData(const Domino::EvName& aEvName, UniPtr aData)
 {
     if (aData.get() == nullptr)
         dataStore_.erase(this->getEventBy(aEvName));  // avoid keep inc dataStore_
     else
         dataStore_[this->newEvent(aEvName)] = aData;
+}
+
+// ***********************************************************************************************
+template<typename aDominoType>
+void DataDomino<aDominoType>::rmEv_(const Domino::Event aEv)
+{
+    dataStore_.erase(aEv);
+    aDominoType::rmEv_(aEv);
 }
 
 
