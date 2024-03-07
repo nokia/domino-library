@@ -196,6 +196,18 @@ TYPED_TEST_P(DominoTest, invalidEvent_retEmpty)
     EXPECT_EQ("[Dom Reserved EvName] whyFalse() found nothing", PARA_DOM->whyFalse(Domino::D_EVENT_FAILED_RET));
     EXPECT_EQ("[Dom Reserved EvName] whyFalse() found nothing", PARA_DOM->whyFalse(0));
 }
+TYPED_TEST_P(DominoTest, incCov_whyFalse_whyTrue)
+{
+    // e12
+    // (T)\
+    //     <- e11 <- (F) <- e10
+    // (F)/
+    // e13
+    PARA_DOM->setPrev("e11", {{"e12", true}, {"e13", false}});
+    PARA_DOM->setState({{"e12", true}});
+    auto e10 = PARA_DOM->setPrev("e10", {{"e11", false}});
+    EXPECT_EQ("e11==true", PARA_DOM->whyFalse(e10)) << "REQ: inc branch coverage";
+}
 
 #define SEARCH_PARTIAL_EVNAME
 // ***********************************************************************************************
@@ -275,6 +287,7 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , trueEvent_retEmpty
     , eventWithoutPrev_retSelf
     , invalidEvent_retEmpty
+    , incCov_whyFalse_whyTrue
 
     , search_partial_evName
 

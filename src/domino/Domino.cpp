@@ -217,6 +217,7 @@ Domino::EvName Domino::whyFalse(const Event aEv) const
     auto&& ev_prevEVs = prev_[true].find(aEv);
     if (ev_prevEVs != prev_[true].end())
     {
+        DBG("(Domino) nTruePrev=" << ev_prevEVs->second.size());
         for (auto&& prevEV : ev_prevEVs->second)
         {
             if (states_[prevEV] == true)
@@ -228,6 +229,7 @@ Domino::EvName Domino::whyFalse(const Event aEv) const
     ev_prevEVs = prev_[false].find(aEv);
     if (ev_prevEVs != prev_[false].end())
     {
+        DBG("(Domino) nFalsePrev=" << ev_prevEVs->second.size());
         for (auto&& prevEV : ev_prevEVs->second)
         {
             if (states_[prevEV] == false)
