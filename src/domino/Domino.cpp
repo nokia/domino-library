@@ -201,8 +201,18 @@ void Domino::setState(const SimuEvents& aSimuEvents)
 // ***********************************************************************************************
 Domino::EvName Domino::whyFalse(const Event aEv) const
 {
-    if (evNames_.find(aEv) == evNames_.end())
+    auto&& ev_en = evNames_.find(aEv);
+    if (ev_en == evNames_.end())
+    {
+        WRN("(Domino) invalid event=" << aEv);
         return EvName(DOM_RESERVED_EVNAME) + " whyFalse() found nothing";
+    }
+    if (state(aEv) == true)
+    {
+        WRN("(Domino) en=" << ev_en->second << ", state=true");
+        return EvName(DOM_RESERVED_EVNAME) + " whyFalse() found nothing";
+    }
+    DBG("(Domino) en=" << ev_en->second);
 
     auto&& ev_prevEVs = prev_[true].find(aEv);
     if (ev_prevEVs != prev_[true].end())
@@ -211,8 +221,7 @@ Domino::EvName Domino::whyFalse(const Event aEv) const
         {
             if (states_[prevEV] == true)
                 continue;
-            auto&& foundEN = whyFalse(prevEV);
-            return (foundEN.find(DOM_RESERVED_EVNAME, 0) == string::npos) ? foundEN : evNames_.at(prevEV) + "==false";
+            return whyFalse(prevEV);
         }
     }
 
@@ -227,7 +236,7 @@ Domino::EvName Domino::whyFalse(const Event aEv) const
         }
     }
 
-    return EvName(DOM_RESERVED_EVNAME) + " whyFalse() found nothing";
+    return ev_en->second + "==false";
     // - doesn't make sense that user define EvName like this
     // - but newEvent() doesn't forbid this kind of EvName to ensure safe of other Domino func
     //   that assume newEvent() always succ
@@ -240,11 +249,12 @@ Domino::EvName Domino::whyTrue(const Event aEv) const
     auto&& ev_falsePrevEVs = prev_[false].find(aEv);
     const size_t nFalsePrev = ev_falsePrevEVs == prev_[false].end() ? 0 : ev_falsePrevEVs->second.size();
 
+    DBG("(Domino en=" << evName(aEv) << ", nTruePrev=" << nTruePrev << ", nFalsePrev=" << nFalsePrev);
     if (nTruePrev == 1 && nFalsePrev == 0)
         return whyTrue(*(ev_truePrevEVs->second.begin()));
     if (nTruePrev == 0 && nFalsePrev == 1)
-        return whyTrue(*(ev_falsePrevEVs->second.begin()));
-    return evNames_.at(aEv) + (states_[aEv] ? "==true" : "==false");  // futhest unique prev
+        return whyFalse(*(ev_falsePrevEVs->second.begin()));
+    return evNames_.at(aEv) + "==true";  // futhest unique prev
 }
 
 }  // namespace

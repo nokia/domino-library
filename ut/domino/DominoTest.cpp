@@ -150,9 +150,9 @@ TYPED_TEST_P(DominoTest, strangeLoop_prevBothTrueAndFalse)
     // e31 <--------------- (F) <- e30
     // (F)\                       /(F)
     //     <- e33 <- (T) <- e32 <-
-    auto e30 = PARA_DOM->setPrev("e30", {{"e31", false}, {"e32", false}});
-    PARA_DOM->setPrev("e32", {{"e33", true}});
     PARA_DOM->setPrev("e33", {{"e31", false}});
+    PARA_DOM->setPrev("e32", {{"e33", true}});
+    auto e30 = PARA_DOM->setPrev("e30", {{"e31", false}, {"e32", false}});
     EXPECT_EQ("e31==false", PARA_DOM->whyFalse(e30)) << "REQ: simply found the futhest root cause";
     PARA_DOM->setState({{"e31", true}});
     EXPECT_EQ("e31==true",  PARA_DOM->whyFalse(e30)) << "REQ: simply found the futhest root cause";
@@ -185,11 +185,11 @@ TYPED_TEST_P(DominoTest, trueEvent_retEmpty)
     EXPECT_TRUE(PARA_DOM->state("master succ"));
     EXPECT_EQ("[Dom Reserved EvName] whyFalse() found nothing", PARA_DOM->whyFalse(master));
 }
-TYPED_TEST_P(DominoTest, eventWithoutPrev_retEmpty)
+TYPED_TEST_P(DominoTest, eventWithoutPrev_retSelf)
 {
     auto no_prev_ev = PARA_DOM->newEvent("no prev ev");
     EXPECT_FALSE(PARA_DOM->state("no prev ev"));
-    EXPECT_EQ("[Dom Reserved EvName] whyFalse() found nothing", PARA_DOM->whyFalse(no_prev_ev));
+    EXPECT_EQ("no prev ev==false", PARA_DOM->whyFalse(no_prev_ev));
 }
 TYPED_TEST_P(DominoTest, invalidEvent_retEmpty)
 {
@@ -273,7 +273,7 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
 
     , GOLD_multi_retOne
     , trueEvent_retEmpty
-    , eventWithoutPrev_retEmpty
+    , eventWithoutPrev_retSelf
     , invalidEvent_retEmpty
 
     , search_partial_evName
