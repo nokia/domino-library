@@ -47,12 +47,12 @@ public:
 
     using aDominoType::rmOneHdlrOK;  // rm HdlrDom's by EvName
     bool rmOneHdlrOK(const Domino::EvName&, const HdlrName&);  // rm MultiDom's by HdlrName
-    bool rmOneHdlrOK(const Domino::Event&, const SharedMsgCB& aHdlr) override;  // rm by aHdlr
     void rmAllHdlr(const Domino::EvName&);
     size_t nHdlr(const Domino::EvName& aEN) const override;
 
 protected:
     void effect_(const Domino::Event) override;  // key/min change other Dominos
+    bool rmOneHdlrOK_(const Domino::Event&, const SharedMsgCB& aHdlr) override;  // rm by aHdlr
     void rmEv_(const Domino::Event) override;
 
 private:
@@ -157,9 +157,9 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName, co
 
 // ***********************************************************************************************
 template<class aDominoType>
-bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::Event& aEv, const SharedMsgCB& aHdlr)
+bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aEv, const SharedMsgCB& aHdlr)
 {
-    if (aDominoType::rmOneHdlrOK(aEv, aHdlr))
+    if (aDominoType::rmOneHdlrOK_(aEv, aHdlr))
         return true;
 
     // req: "ret true" means real rm

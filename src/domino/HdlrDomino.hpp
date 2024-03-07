@@ -47,7 +47,6 @@ public:
 
     Domino::Event setHdlr(const Domino::EvName&, const MsgCB& aHdlr);
     bool rmOneHdlrOK(const Domino::EvName&);  // rm by EvName
-    virtual bool rmOneHdlrOK(const Domino::Event&, const SharedMsgCB& aHdlr);  // rm by aHdlr
     void forceAllHdlr(const Domino::EvName& aEN) { effect_(this->getEventBy(aEN)); }  // can't const as FreeDom rm hdlr
     virtual size_t nHdlr(const Domino::EvName& aEN) const { return hdlrs_.count(this->getEventBy(aEN)); }
 
@@ -64,6 +63,7 @@ public:
 protected:
     void effect_(const Domino::Event) override;
     virtual void triggerHdlr_(const SharedMsgCB& aHdlr, const Domino::Event aEv);
+    virtual bool rmOneHdlrOK_(const Domino::Event&, const SharedMsgCB& aHdlr);  // rm by aHdlr
 
     void rmEv_(const Domino::Event) override;
 
@@ -110,7 +110,15 @@ void HdlrDomino<aDominoType>::rmEv_(const Domino::Event aEv)
 
 // ***********************************************************************************************
 template<class aDominoType>
-bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::Event& aEv, const SharedMsgCB& aHdlr)
+bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName)
+{
+    HID("(HdlrDom) EvName=" << aEvName);
+    return hdlrs_.erase(this->getEventBy(aEvName));
+}
+
+// ***********************************************************************************************
+template<class aDominoType>
+bool HdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aEv, const SharedMsgCB& aHdlr)
 {
     auto&& itHdlr = hdlrs_.find(aEv);
     if (itHdlr == hdlrs_.end())
@@ -124,14 +132,6 @@ bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::Event& aEv, const Shared
         << ", nHdlrRef=" << itHdlr->second.use_count());
     hdlrs_.erase(itHdlr);
     return true;
-}
-
-// ***********************************************************************************************
-template<class aDominoType>
-bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName)
-{
-    HID("(HdlrDom) EvName=" << aEvName);
-    return hdlrs_.erase(this->getEventBy(aEvName));
 }
 
 // ***********************************************************************************************

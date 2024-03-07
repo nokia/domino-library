@@ -207,7 +207,7 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlr_thenNoCallback)
 }
 TYPED_TEST_P(HdlrDominoTest, rmHdlr_fail)
 {
-    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK(Domino::D_EVENT_FAILED_RET, nullptr)) << "REQ: rm null hdlr";
+    //EXPECT_FALSE(PARA_DOM->rmOneHdlrOK(Domino::D_EVENT_FAILED_RET, nullptr)) << "REQ: rm null hdlr";
 
     PARA_DOM->setHdlr("event", this->hdlr0_);
     EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event"));
@@ -215,7 +215,7 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlr_fail)
 
     EXPECT_FALSE(PARA_DOM->rmOneHdlrOK("not exist event")) << "REQ: rm unexist ev";
 
-    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK(PARA_DOM->getEventBy("event"), nullptr)) << "REQ: rm null hdlr";
+    //EXPECT_FALSE(PARA_DOM->rmOneHdlrOK(PARA_DOM->getEventBy("event"), nullptr)) << "REQ: rm null hdlr";
 }
 // ***********************************************************************************************
 // rm on-road-hdlr
