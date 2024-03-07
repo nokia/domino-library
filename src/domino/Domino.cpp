@@ -212,12 +212,12 @@ Domino::EvName Domino::whyFalse(const Event aEv) const
         WRN("(Domino) en=" << ev_en->second << ", state=true");
         return EvName(DOM_RESERVED_EVNAME) + " whyFalse() found nothing";
     }
-    DBG("(Domino) en=" << ev_en->second);
+    HID("(Domino) en=" << ev_en->second);
 
     auto&& ev_prevEVs = prev_[true].find(aEv);
     if (ev_prevEVs != prev_[true].end())
     {
-        DBG("(Domino) nTruePrev=" << ev_prevEVs->second.size());
+        HID("(Domino) nTruePrev=" << ev_prevEVs->second.size());
         for (auto&& prevEV : ev_prevEVs->second)
         {
             if (states_[prevEV] == true)
@@ -229,7 +229,7 @@ Domino::EvName Domino::whyFalse(const Event aEv) const
     ev_prevEVs = prev_[false].find(aEv);
     if (ev_prevEVs != prev_[false].end())
     {
-        DBG("(Domino) nFalsePrev=" << ev_prevEVs->second.size());
+        HID("(Domino) nFalsePrev=" << ev_prevEVs->second.size());
         for (auto&& prevEV : ev_prevEVs->second)
         {
             if (states_[prevEV] == false)
@@ -251,7 +251,7 @@ Domino::EvName Domino::whyTrue(const Event aEv) const
     auto&& ev_falsePrevEVs = prev_[false].find(aEv);
     const size_t nFalsePrev = ev_falsePrevEVs == prev_[false].end() ? 0 : ev_falsePrevEVs->second.size();
 
-    DBG("(Domino en=" << evName(aEv) << ", nTruePrev=" << nTruePrev << ", nFalsePrev=" << nFalsePrev);
+    HID("(Domino en=" << evName(aEv) << ", nTruePrev=" << nTruePrev << ", nFalsePrev=" << nFalsePrev);
     if (nTruePrev == 1 && nFalsePrev == 0)
         return whyTrue(*(ev_truePrevEVs->second.begin()));
     if (nTruePrev == 0 && nFalsePrev == 1)
