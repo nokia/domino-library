@@ -162,10 +162,9 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, c
     if (aDominoType::rmOneHdlrOK_(aValidEv, aHdlr))
         return true;
 
-    // req: "ret true" means real rm
     auto&& itEv = multiHdlrs_.find(aValidEv);
-    if (itEv == multiHdlrs_.end())
-        return false;
+    if (itEv == multiHdlrs_.end())  // can't cov since impossible if valid aHdlr; keep it for future safe
+        return false;  // req: "ret true" means real rm
 
     for (auto&& itHdlr = itEv->second.begin(); itHdlr != itEv->second.end(); ++itHdlr)
     {
@@ -177,7 +176,7 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, c
         itEv->second.erase(itHdlr);
         return true;
     }
-    return false;
+    return false;  // can't cov since impossible if valid aHdlr; keep it for future safe
 }
 
 }  // namespace

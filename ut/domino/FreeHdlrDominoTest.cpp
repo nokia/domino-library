@@ -168,7 +168,7 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_multiCallbackOnRoad_noCrash_noMulti
     PARA_DOM->setState({{"e1", true}});  // 2nd h2_ on road
 
     PARA_DOM->setHdlr("e1", this->h1_);  // h1_ on road
-    PARA_DOM->multiHdlrOnSameEv("e1", this->h3_, "h3_");  // h3_ on road; inc cov
+    PARA_DOM->multiHdlrOnSameEv("e1", this->h3_, "h3_");  // h3_ on road
 
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
     EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_);  // req: no more cb since auto-rm

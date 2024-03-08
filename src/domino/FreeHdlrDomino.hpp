@@ -94,7 +94,7 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aHdlr, const D
     this->msgSelf_->newMsg([this, aEv, weakHdlr = WeakMsgCB(aHdlr)]()  // weak_ptr to avoid fail rmHdlr
         {
             if (weakHdlr.expired())
-                return;
+                return;  // otherwise crash
             this->rmOneHdlrOK_(aEv, weakHdlr.lock());  // is valid "this" since still own aHdlr
         },
         this->getPriority(aEv)
