@@ -35,7 +35,7 @@ public:
     bool isRepeatHdlr(const Domino::Event) const;
 
 protected:
-    void triggerHdlr_(const SharedMsgCB& aHdlr, const Domino::Event) override;
+    void triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv) override;
     using aDominoType::effect_;
 
     void rmEv_(const Domino::Event) override;
@@ -81,23 +81,23 @@ void FreeHdlrDomino<aDominoType>::rmEv_(const Domino::Event aEv)
 
 // ***********************************************************************************************
 template<class aDominoType>
-void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aHdlr, const Domino::Event aEv)
+void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv)
 {
-    aDominoType::triggerHdlr_(aHdlr, aEv);
-    if (isRepeatHdlr(aEv))
+    aDominoType::triggerHdlr_(aValidHdlr, aValidEv);
+    if (isRepeatHdlr(aValidEv))
         return;
 
-    // auto free aHdlr
+    // auto free aValidHdlr
     // - simple solution (FreeHdlrDomino is not crucial but convenient user)
     // - higher priority hdlr can't insert between hdlr & its auto-free since single thread
     HID("(FreeHdlrDom) trigger a new msg.");
-    this->msgSelf_->newMsg([this, aEv, weakHdlr = WeakMsgCB(aHdlr)]()  // weak_ptr to avoid fail rmHdlr
+    this->msgSelf_->newMsg([this, aValidEv, weakHdlr = WeakMsgCB(aValidHdlr)]()  // weak_ptr to avoid fail rmHdlr
         {
             if (weakHdlr.expired())
                 return;  // otherwise crash
-            this->rmOneHdlrOK_(aEv, weakHdlr.lock());  // is valid "this" since still own aHdlr
+            this->rmOneHdlrOK_(aValidEv, weakHdlr.lock());  // is valid "this" since still own valid aValidHdlr
         },
-        this->getPriority(aEv)
+        this->getPriority(aValidEv)
     );
 }
 

@@ -61,9 +61,9 @@ public:
     virtual EMsgPriority getPriority(const Domino::Event) const { return EMsgPri_NORM; }
 
 protected:
-    void effect_(const Domino::Event) override;
-    virtual void triggerHdlr_(const SharedMsgCB& aHdlr, const Domino::Event aEv);
-    virtual bool rmOneHdlrOK_(const Domino::Event&, const SharedMsgCB& aHdlr);  // rm by aHdlr
+    void effect_(const Domino::Event aValidEv) override;
+    virtual void triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv);
+    virtual bool rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr);  // rm by aValidHdlr
 
     void rmEv_(const Domino::Event) override;
 
@@ -78,14 +78,14 @@ public:
 
 // ***********************************************************************************************
 template<class aDominoType>
-void HdlrDomino<aDominoType>::effect_(const Domino::Event aEv)
+void HdlrDomino<aDominoType>::effect_(const Domino::Event aValidEv)
 {
-    auto&& it = hdlrs_.find(aEv);
+    auto&& it = hdlrs_.find(aValidEv);
     if (it == hdlrs_.end())
         return;
 
-    DBG("(HdlrDom) Succeed to trigger 1 hdlr of EvName=" << this->evName_(aEv));
-    triggerHdlr_(it->second, aEv);
+    DBG("(HdlrDom) Succeed to trigger 1 hdlr of EvName=" << this->evName_(aValidEv));
+    triggerHdlr_(it->second, aValidEv);
 }
 
 // ***********************************************************************************************
@@ -102,10 +102,10 @@ Domino::Event HdlrDomino<aDominoType>::multiHdlrByAliasEv(const Domino::EvName& 
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void HdlrDomino<aDominoType>::rmEv_(const Domino::Event aEv)
+void HdlrDomino<aDominoType>::rmEv_(const Domino::Event aValidEv)
 {
-    hdlrs_.erase(aEv);
-    aDominoType::rmEv_(aEv);
+    hdlrs_.erase(aValidEv);
+    aDominoType::rmEv_(aValidEv);
 }
 
 // ***********************************************************************************************
@@ -118,14 +118,14 @@ bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName)
 
 // ***********************************************************************************************
 template<class aDominoType>
-bool HdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aHdlr)
+bool HdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr)
 {
     auto&& itHdlr = hdlrs_.find(aValidEv);
     if (itHdlr == hdlrs_.end())
         return false;
 
     // req: must match
-    if (itHdlr->second != aHdlr)
+    if (itHdlr->second != aValidHdlr)
         return false;
 
     HID("(HdlrDom) Will remove hdlr of EvName=" << this->evName_(aValidEv)
@@ -144,38 +144,38 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
         return Domino::D_EVENT_FAILED_RET;
     }
 
-    auto&& event = this->newEvent(aEvName);
-    if (hdlrs_.find(event) != hdlrs_.end())
+    auto&& newEv = this->newEvent(aEvName);
+    if (hdlrs_.find(newEv) != hdlrs_.end())
     {
         WRN("(HdlrDom) Failed!!! Not support overwrite hdlr for " << aEvName << ". Use MultiHdlrDomino instead.");
         return Domino::D_EVENT_FAILED_RET;
     }
 
-    auto hdlr = make_shared<MsgCB>(aHdlr);
-    hdlrs_[event] = hdlr;
+    auto newHdlr = make_shared<MsgCB>(aHdlr);
+    hdlrs_[newEv] = newHdlr;
     HID("(HdlrDom) Succeed for EvName=" << aEvName);
 
-    if (this->state_(event) == true)
+    if (this->state_(newEv) == true)
     {
         DBG("(HdlrDom) Trigger the new hdlr of EvName=" << aEvName);
-        triggerHdlr_(hdlr, event);
+        triggerHdlr_(newHdlr, newEv);
     }
-    return event;
+    return newEv;
 }
 
 // ***********************************************************************************************
 template<class aDominoType>
-void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aHdlr, const Domino::Event aEv)
+void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv)
 {
     HID("(HdlrDom) trigger a new msg.");
     msgSelf_->newMsg(
-        [weakMsgCB = WeakMsgCB(aHdlr)]() mutable  // WeakMsgCB is to support rm hdlr
+        [weakMsgCB = WeakMsgCB(aValidHdlr)]() mutable  // WeakMsgCB is to support rm hdlr
         {
             auto cb = weakMsgCB.lock();
             if (cb)
-                (*cb)();  // doesn't make sense that domino stores *cb==null
+                (*cb)();  // setHdlr() forbid cb==null
         },
-        getPriority(aEv)
+        getPriority(aValidEv)
     );
 }
 
