@@ -90,28 +90,28 @@ public:
     bool  state(const EvName& aEvName) const { return state_(getEventBy(aEvName)); }
     void  setState(const SimuEvents&);
     Event setPrev(const EvName&, const SimuEvents&);
-    EvName whyFalse(const Event) const;
+    EvName whyFalse(const Event&) const;
 
 protected:
-    const EvName& evName_(const Event aEv) const { return evNames_.at(aEv); }  // aEv must valid
-    bool          state_ (const Event aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
-    virtual void  effect_(const Event) {}  // can't const since FreeDom will rm hdlr
+    const EvName& evName_(const Event& aEv) const { return evNames_.at(aEv); }  // aEv must valid
+    bool          state_ (const Event& aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
+    virtual void  effect_(const Event& aValidEv) {}  // can't const since FreeDom will rm hdlr
 
     // - rm self dom's resource (RISK: aEv's leaf(s) may become orphan!!!)
     // - virtual for each dom (& trigger base to free its resource)
-    virtual void  rmEv_(const Event aEv);
+    virtual void  rmEv_(const Event& aValidEv);
     virtual Event recycleEv_() { return D_EVENT_FAILED_RET; }
 
 private:
-    void deduceState_(const Event);
-    void pureSetState_(const Event, const bool aNewState);
-    void pureRmLink_(const Event, EvLinks& aMyLinks, EvLinks& aNeighborLinks);
-    void pureSetPrev_(const Event, const SimuEvents&);
+    void deduceState_(const Event& aValidEv);
+    void pureSetState_(const Event& aValidEv, const bool aNewState);
+    void pureRmLink_(const Event& aValidEv, EvLinks& aMyLinks, EvLinks& aNeighborLinks);
+    void pureSetPrev_(const Event&, const SimuEvents&);
 
-    bool isNextFromTo_   (const Event aFromEv, const Event aToEv) const;
-    bool isNextFromToVia_(const Event aFromEv, const Event aToEv, const EvLinks& aViaEvLinks) const;
+    bool isNextFromTo_   (const Event& aFromValidEv, const Event& aToValidEv) const;
+    bool isNextFromToVia_(const Event& aFromValidEv, const Event& aToValidEv, const EvLinks& aViaEvLinks) const;
 
-    EvName whyTrue_(const Event) const;
+    EvName whyTrue_(const Event& aValidEv) const;
 
     // -------------------------------------------------------------------------------------------
     vector<bool>                 states_;               // bitmap & dyn expand, [event]=t/f

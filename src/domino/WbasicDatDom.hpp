@@ -34,7 +34,7 @@ public:
     void wbasic_replaceData(const Domino::EvName&, UniPtr aData = nullptr);
 
 protected:
-    void rmEv_(const Domino::Event) override;
+    void rmEv_(const Domino::Event& aValidEv) override;
 
 private:
     // forbid ouside usage
@@ -77,12 +77,12 @@ void WbasicDatDom<aDominoType>::replaceData(const Domino::EvName& aEvName, UniPt
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void WbasicDatDom<aDominoType>::rmEv_(const Domino::Event aEv)
+void WbasicDatDom<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 {
-    if (aEv < wrCtrl_.size())
-        wrCtrl_[aEv] = false;
+    if (aValidEv < wrCtrl_.size())
+        wrCtrl_[aValidEv] = false;
 
-    aDominoType::rmEv_(aEv);
+    aDominoType::rmEv_(aValidEv);
 }
 
 // ***********************************************************************************************

@@ -10,23 +10,23 @@
 namespace RLib
 {
 // ***********************************************************************************************
-void Domino::deduceState_(const Event aEv)
+void Domino::deduceState_(const Event& aValidEv)
 {
-    HID("(Domino) en=" << evName_(aEv));
+    HID("(Domino) en=" << evName_(aValidEv));
 
-    auto&& ev_prevEVs = prev_[true].find(aEv);
+    auto&& ev_prevEVs = prev_[true].find(aValidEv);
     if (ev_prevEVs != prev_[true].end())  // true br
         for (auto&& prevEV : ev_prevEVs->second)
             if (states_[prevEV] != true)  // 1 prev not satisfied
                 return;
-    ev_prevEVs = prev_[false].find(aEv);
+    ev_prevEVs = prev_[false].find(aValidEv);
     if (ev_prevEVs != prev_[false].end())  // false br
         for (auto&& prevEV : ev_prevEVs->second)
             if (states_[prevEV] != false)  // 1 prev not satisfied
                 return;
 
-    pureSetState_(aEv, true);
-    auto&& ev_nextEVs = next_[true].find(aEv);
+    pureSetState_(aValidEv, true);
+    auto&& ev_nextEVs = next_[true].find(aValidEv);
     if (ev_nextEVs == next_[true].end())  // no more next
         return;
     for (auto&& nextEV : ev_nextEVs->second)
@@ -34,24 +34,24 @@ void Domino::deduceState_(const Event aEv)
 }
 
 // ***********************************************************************************************
-bool Domino::isNextFromTo_(const Event aFromEv, const Event aToEv) const
+bool Domino::isNextFromTo_(const Event& aFromValidEv, const Event& aToValidEv) const
 {
-    if (aFromEv == aToEv)
+    if (aFromValidEv == aToValidEv)
         return true;
-    if (isNextFromToVia_(aFromEv, aToEv, next_[true]))
+    if (isNextFromToVia_(aFromValidEv, aToValidEv, next_[true]))
         return true;
-    return isNextFromToVia_(aFromEv, aToEv, next_[false]);
+    return isNextFromToVia_(aFromValidEv, aToValidEv, next_[false]);
 }
-bool Domino::isNextFromToVia_(const Event aFromEv, const Event aToEv, const EvLinks& aViaEvLinks) const
+bool Domino::isNextFromToVia_(const Event& aFromValidEv, const Event& aToValidEv, const EvLinks& aViaEvLinks) const
 {
-    auto&& ev_nextEVs = aViaEvLinks.find(aFromEv);
+    auto&& ev_nextEVs = aViaEvLinks.find(aFromValidEv);
     if (ev_nextEVs != aViaEvLinks.end())
     {
         for (auto&& nextEV : ev_nextEVs->second)
         {
-            if (nextEV == aToEv)
+            if (nextEV == aToValidEv)
                 return true;
-            else if (isNextFromTo_(nextEV, aToEv))
+            else if (isNextFromTo_(nextEV, aToValidEv))
                 return true;
         }  // for
     }  // if
@@ -70,88 +70,88 @@ Domino::Event Domino::getEventBy(const EvName& aEvName) const
 // ***********************************************************************************************
 Domino::Event Domino::newEvent(const EvName& aEvName)
 {
-    auto&& event = getEventBy(aEvName);
-    if (event != D_EVENT_FAILED_RET)
-        return event;
+    auto&& newEv = getEventBy(aEvName);
+    if (newEv != D_EVENT_FAILED_RET)
+        return newEv;
 
-    event = recycleEv_();
-    if (event == D_EVENT_FAILED_RET)
-        event = states_.size();
+    newEv = recycleEv_();
+    if (newEv == D_EVENT_FAILED_RET)
+        newEv = states_.size();
 
-    HID("(Domino) Succeed, EvName=" << aEvName << ", event=" << event);
-    events_.emplace(aEvName, event);
-    evNames_[event] = aEvName;
+    HID("(Domino) Succeed, EvName=" << aEvName << ", new event=" << newEv);
+    events_.emplace(aEvName, newEv);
+    evNames_[newEv] = aEvName;
     states_.push_back(false);
-    return event;
+    return newEv;
 }
 
 // ***********************************************************************************************
-void Domino::pureRmLink_(const Event aEv, EvLinks& aMyLinks, EvLinks& aNeighborLinks)
+void Domino::pureRmLink_(const Event& aValidEv, EvLinks& aMyLinks, EvLinks& aNeighborLinks)
 {
-    auto itMyLinks = aMyLinks.find(aEv);
-    if (itMyLinks == aMyLinks.end())  // not found
+    auto myEv_peerEVs = aMyLinks.find(aValidEv);
+    if (myEv_peerEVs == aMyLinks.end())  // not found
         return;
 
-    for (auto&& peerEv : itMyLinks->second)
+    for (auto&& peerEv : myEv_peerEVs->second)
     {
         auto&& neighborLinks = aNeighborLinks[peerEv];
         if (neighborLinks.size() <= 1)
             aNeighborLinks.erase(peerEv);  // erase entire
         else
-            neighborLinks.erase(aEv);  // erase 1
+            neighborLinks.erase(aValidEv);  // erase 1
     }
-    aMyLinks.erase(itMyLinks);
+    aMyLinks.erase(myEv_peerEVs);
 }
 
 // ***********************************************************************************************
-void Domino::pureSetPrev_(const Event aEvent, const SimuEvents& aSimuPrevEvents)
+void Domino::pureSetPrev_(const Event& aValidEv, const SimuEvents& aSimuPrevEvents)
 {
     HID("(Domino) before: nPrev[true]=" << prev_[true].size() << ", nNext[true]=" << next_[true].size()
         << ", nPrev[false]=" << prev_[false].size() << ", nNext[false]=" << next_[false].size());
     for (auto&& prevEn_state : aSimuPrevEvents)
     {
         auto&& prevEv = newEvent(prevEn_state.first);
-        prev_[prevEn_state.second][aEvent].insert(prevEv);
-        next_[prevEn_state.second][prevEv].insert(aEvent);
+        prev_[prevEn_state.second][aValidEv].insert(prevEv);
+        next_[prevEn_state.second][prevEv].insert(aValidEv);
     }
     HID("(Domino) after: nPrev[true]=" << prev_[true].size() << ", nNext[true]=" << next_[true].size()
         << ", nPrev[false]=" << prev_[false].size() << ", nNext[false]=" << next_[false].size());
 }
 
 // ***********************************************************************************************
-void Domino::pureSetState_(const Event aEv, const bool aNewState)
+void Domino::pureSetState_(const Event& aValidEv, const bool aNewState)
 {
-    if (states_[aEv] != aNewState)
+    if (states_[aValidEv] != aNewState)
     {
-        states_[aEv] = aNewState;
-        HID("(Domino) Succeed, EvName=" << evNames_[aEv] << " newState=" << aNewState);
+        states_[aValidEv] = aNewState;
+        HID("(Domino) Succeed, EvName=" << evNames_[aValidEv] << " newState=" << aNewState);
         if (aNewState == true)
-            effect_(aEv);
+            effect_(aValidEv);
 
         sthChanged_ = true;
     }
 }
 
 // ***********************************************************************************************
-void Domino::rmEv_(const Event aEv)
+void Domino::rmEv_(const Event& aValidEv)
 {
     // for later deduceState_()
-    auto&& ev_nextEVs = next_[true].find(aEv);
+    auto&& ev_nextEVs = next_[true].find(aValidEv);
     auto&& trueNextEVs = (ev_nextEVs == next_[true].end()) ? Events() : ev_nextEVs->second;
-    ev_nextEVs = next_[false].find(aEv);
+    ev_nextEVs = next_[false].find(aValidEv);
     auto&& falseNextEVs = (ev_nextEVs == next_[false].end()) ? Events() : ev_nextEVs->second;
-    HID("(Domino) en=" << evName_(aEv) << ", nT=" << trueNextEVs.size() << ", nF=" << falseNextEVs.size());
+    HID("(Domino) en=" << evName_(aValidEv) << ", nT=" << trueNextEVs.size() << ", nF=" << falseNextEVs.size());
 
-    pureRmLink_(aEv, prev_[true],  next_[true]);
-    pureRmLink_(aEv, prev_[false], next_[false]);
-    pureRmLink_(aEv, next_[true],  prev_[true]);
-    pureRmLink_(aEv, next_[false], prev_[false]);
+    pureRmLink_(aValidEv, prev_[true],  next_[true]);
+    pureRmLink_(aValidEv, prev_[false], next_[false]);
+    pureRmLink_(aValidEv, next_[true],  prev_[true]);
+    pureRmLink_(aValidEv, next_[false], prev_[false]);
 
-    pureSetState_(aEv, false);  // must before clean evNames_
+    pureSetState_(aValidEv, false);  // must before clean evNames_
 
-    events_.erase(evNames_[aEv]);
-    auto ret = evNames_.erase(aEv);
-    HID("[Domino] aEv=" << aEv << ", ret=" << ret);
+    events_.erase(evNames_[aValidEv]);
+    auto ret = evNames_.erase(aValidEv);
+    HID("[Domino] ev=" << aValidEv << ", ret=" << ret);
 
     for (auto&& ev : trueNextEVs)
         deduceState_(ev);
@@ -162,19 +162,19 @@ void Domino::rmEv_(const Event aEv)
 // ***********************************************************************************************
 Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrevEvents)
 {
-    auto&& event = newEvent(aEvName);
+    auto&& newEv = newEvent(aEvName);
     for (auto&& prevEn_state : aSimuPrevEvents)
     {
-        if (isNextFromTo_(event, newEvent(prevEn_state.first)))
+        if (isNextFromTo_(newEv, newEvent(prevEn_state.first)))
         {
             WRN("(Domino) !!!Failed, avoid loop between " << aEvName << " & " << prevEn_state.first);
             return D_EVENT_FAILED_RET;
         }
     }
 
-    pureSetPrev_(event, aSimuPrevEvents);
-    deduceState_(event);
-    return event;
+    pureSetPrev_(newEv, aSimuPrevEvents);
+    deduceState_(newEv);
+    return newEv;
 }
 
 // ***********************************************************************************************
@@ -199,7 +199,7 @@ void Domino::setState(const SimuEvents& aSimuEvents)
 }
 
 // ***********************************************************************************************
-Domino::EvName Domino::whyFalse(const Event aEv) const
+Domino::EvName Domino::whyFalse(const Event& aEv) const
 {
     auto&& ev_en = evNames_.find(aEv);
     if (ev_en == evNames_.end())
@@ -243,20 +243,20 @@ Domino::EvName Domino::whyFalse(const Event aEv) const
     // - but newEvent() doesn't forbid this kind of EvName to ensure safe of other Domino func
     //   that assume newEvent() always succ
 }
-Domino::EvName Domino::whyTrue_(const Event aEv) const
+Domino::EvName Domino::whyTrue_(const Event& aValidEv) const
 {
-    auto&& ev_truePrevEVs = prev_[true].find(aEv);
+    auto&& ev_truePrevEVs = prev_[true].find(aValidEv);
     const size_t nTruePrev = ev_truePrevEVs == prev_[true].end() ? 0 : ev_truePrevEVs->second.size();
 
-    auto&& ev_falsePrevEVs = prev_[false].find(aEv);
+    auto&& ev_falsePrevEVs = prev_[false].find(aValidEv);
     const size_t nFalsePrev = ev_falsePrevEVs == prev_[false].end() ? 0 : ev_falsePrevEVs->second.size();
 
-    HID("(Domino en=" << evName_(aEv) << ", nTruePrev=" << nTruePrev << ", nFalsePrev=" << nFalsePrev);
+    HID("(Domino en=" << evName_(aValidEv) << ", nTruePrev=" << nTruePrev << ", nFalsePrev=" << nFalsePrev);
     if (nTruePrev == 1 && nFalsePrev == 0)
         return whyTrue_(*(ev_truePrevEVs->second.begin()));
     if (nTruePrev == 0 && nFalsePrev == 1)
         return whyFalse(*(ev_falsePrevEVs->second.begin()));
-    return evNames_.at(aEv) + "==true";  // futhest unique prev
+    return evNames_.at(aValidEv) + "==true";  // futhest unique prev
 }
 
 }  // namespace

@@ -47,7 +47,7 @@ public:
     virtual void replaceData(const Domino::EvName&, UniPtr = nullptr);
 
 protected:
-    void rmEv_(const Domino::Event) override;
+    void rmEv_(const Domino::Event& aValidEv) override;
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -74,10 +74,10 @@ void DataDomino<aDominoType>::replaceData(const Domino::EvName& aEvName, UniPtr 
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void DataDomino<aDominoType>::rmEv_(const Domino::Event aEv)
+void DataDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 {
-    dataStore_.erase(aEv);
-    aDominoType::rmEv_(aEv);
+    dataStore_.erase(aValidEv);
+    aDominoType::rmEv_(aValidEv);
 }
 
 

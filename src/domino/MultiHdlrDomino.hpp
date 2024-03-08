@@ -51,9 +51,9 @@ public:
     size_t nHdlr(const Domino::EvName& aEN) const override;
 
 protected:
-    void effect_(const Domino::Event aValidEv) override;  // key/min change other Dominos
+    void effect_(const Domino::Event& aValidEv) override;  // key/min change other Dominos
     bool rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr) override;  // rm by aValidHdlr
-    void rmEv_(const Domino::Event aValidEv) override;
+    void rmEv_(const Domino::Event& aValidEv) override;
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ public:
 
 // ***********************************************************************************************
 template<class aDominoType>
-void MultiHdlrDomino<aDominoType>::effect_(const Domino::Event aValidEv)
+void MultiHdlrDomino<aDominoType>::effect_(const Domino::Event& aValidEv)
 {
     aDominoType::effect_(aValidEv);
 
@@ -74,7 +74,7 @@ void MultiHdlrDomino<aDominoType>::effect_(const Domino::Event aValidEv)
     for (auto&& name_hdlr = ev_hdlrs->second.begin(); name_hdlr != ev_hdlrs->second.end();)
     {
         auto&& itNext = next(name_hdlr);
-        DBG("(MultiHdlrDom) Succeed to trigger 1 hdlr=" << name_hdlr->first << " of EvName=" << this->evName_(aValidEv));
+        DBG("(MultiHdlrDom) trigger 1 hdlr=" << name_hdlr->first << " of EvName=" << this->evName_(aValidEv));
         this->triggerHdlr_(name_hdlr->second, aValidEv);  // may rm name_hdlr in FreeHdlrDomino
         name_hdlr = itNext;
     }
@@ -137,7 +137,7 @@ void MultiHdlrDomino<aDominoType>::rmAllHdlr(const Domino::EvName& aEN)
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void MultiHdlrDomino<aDominoType>::rmEv_(const Domino::Event aValidEv)
+void MultiHdlrDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 {
     multiHdlrs_.erase(aValidEv);
     aDominoType::rmEv_(aValidEv);

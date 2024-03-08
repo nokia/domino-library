@@ -58,14 +58,14 @@ public:
     Domino::Event multiHdlrByAliasEv(const Domino::EvName& aAliasEN, const MsgCB& aHdlr,
         const Domino::EvName& aHostEN);
 
-    virtual EMsgPriority getPriority(const Domino::Event) const { return EMsgPri_NORM; }
+    virtual EMsgPriority getPriority(const Domino::Event&) const { return EMsgPri_NORM; }
 
 protected:
-    void effect_(const Domino::Event aValidEv) override;
+    void effect_(const Domino::Event& aValidEv) override;
     virtual void triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv);
     virtual bool rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr);  // rm by aValidHdlr
 
-    void rmEv_(const Domino::Event) override;
+    void rmEv_(const Domino::Event& aValidEv) override;
 
     // -------------------------------------------------------------------------------------------
 private:
@@ -78,7 +78,7 @@ public:
 
 // ***********************************************************************************************
 template<class aDominoType>
-void HdlrDomino<aDominoType>::effect_(const Domino::Event aValidEv)
+void HdlrDomino<aDominoType>::effect_(const Domino::Event& aValidEv)
 {
     auto&& it = hdlrs_.find(aValidEv);
     if (it == hdlrs_.end())
@@ -93,8 +93,8 @@ template<class aDominoType>
 Domino::Event HdlrDomino<aDominoType>::multiHdlrByAliasEv(const Domino::EvName& aAliasEN,
     const MsgCB& aHdlr, const Domino::EvName& aHostEN)
 {
-    auto&& event = this->setHdlr(aAliasEN, aHdlr);
-    if (event == Domino::D_EVENT_FAILED_RET)
+    auto&& newEv = this->setHdlr(aAliasEN, aHdlr);
+    if (newEv == Domino::D_EVENT_FAILED_RET)
         return Domino::D_EVENT_FAILED_RET;
 
     return this->setPrev(aAliasEN, {{aHostEN, true}});
@@ -102,7 +102,7 @@ Domino::Event HdlrDomino<aDominoType>::multiHdlrByAliasEv(const Domino::EvName& 
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void HdlrDomino<aDominoType>::rmEv_(const Domino::Event aValidEv)
+void HdlrDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 {
     hdlrs_.erase(aValidEv);
     aDominoType::rmEv_(aValidEv);

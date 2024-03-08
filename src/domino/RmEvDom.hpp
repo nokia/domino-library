@@ -41,9 +41,9 @@ public:
     explicit RmEvDom(const LogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
 
     bool rmEvOK(const Domino::EvName& aEN);
-    bool isRemoved(const Domino::Event aEv) const { return isRemovedEv_.count(aEv); }
+    bool isRemoved(const Domino::Event& aEv) const { return isRemovedEv_.count(aEv); }
 protected:
-    void rmEv_(const Domino::Event) override;
+    void rmEv_(const Domino::Event& aValidEv) override;
     Domino::Event recycleEv_() override;
 
 private:
@@ -71,21 +71,21 @@ Domino::Event RmEvDom<aDominoType>::recycleEv_()
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void RmEvDom<aDominoType>::rmEv_(const Domino::Event aEv)
+void RmEvDom<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 {
-    aDominoType::rmEv_(aEv);
-    isRemovedEv_.insert(aEv);
+    aDominoType::rmEv_(aValidEv);
+    isRemovedEv_.insert(aValidEv);
 }
 
 // ***********************************************************************************************
 template<typename aDominoType>
 bool RmEvDom<aDominoType>::rmEvOK(const Domino::EvName& aEN)
 {
-    const auto ev = this->getEventBy(aEN);
-    if (ev == Domino::D_EVENT_FAILED_RET)  // invalid; most beginning check, avoid useless exe
+    const auto validEv = this->getEventBy(aEN);
+    if (validEv == Domino::D_EVENT_FAILED_RET)  // invalid; most beginning check, avoid useless exe
         return false;
 
-    rmEv_(ev);
+    rmEv_(validEv);
     return true;
 }
 

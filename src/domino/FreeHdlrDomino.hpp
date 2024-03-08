@@ -32,13 +32,13 @@ public:
     explicit FreeHdlrDomino(const LogName& aUniLogName = ULN_DEFAULT) {}
 
     Domino::Event repeatedHdlr(const Domino::EvName&, const bool isRepeated = true);  // set false = simple rm
-    bool isRepeatHdlr(const Domino::Event) const;
+    bool isRepeatHdlr(const Domino::Event&) const;
 
 protected:
     void triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv) override;
     using aDominoType::effect_;
 
-    void rmEv_(const Domino::Event) override;
+    void rmEv_(const Domino::Event& aValidEv) override;
 
     // -------------------------------------------------------------------------------------------
 private:
@@ -51,7 +51,7 @@ public:
 
 // ***********************************************************************************************
 template<class aDominoType>
-bool FreeHdlrDomino<aDominoType>::isRepeatHdlr(const Domino::Event aEv) const
+bool FreeHdlrDomino<aDominoType>::isRepeatHdlr(const Domino::Event& aEv) const
 {
     return aEv < isRepeatHdlr_.size()
         ? isRepeatHdlr_[aEv]
@@ -62,21 +62,21 @@ bool FreeHdlrDomino<aDominoType>::isRepeatHdlr(const Domino::Event aEv) const
 template<class aDominoType>
 Domino::Event FreeHdlrDomino<aDominoType>::repeatedHdlr(const Domino::EvName& aEvName, const bool isRepeated)
 {
-    auto&& event = this->newEvent(aEvName);
-    if (event >= isRepeatHdlr_.size())
-        isRepeatHdlr_.resize(event + 1);
-    isRepeatHdlr_[event] = isRepeated;
-    return event;
+    auto&& newEv = this->newEvent(aEvName);
+    if (newEv >= isRepeatHdlr_.size())
+        isRepeatHdlr_.resize(newEv + 1);
+    isRepeatHdlr_[newEv] = isRepeated;
+    return newEv;
 }
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void FreeHdlrDomino<aDominoType>::rmEv_(const Domino::Event aEv)
+void FreeHdlrDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 {
-    if (aEv < isRepeatHdlr_.size())
-        isRepeatHdlr_[aEv] = false;
+    if (aValidEv < isRepeatHdlr_.size())
+        isRepeatHdlr_[aValidEv] = false;
 
-    aDominoType::rmEv_(aEv);
+    aDominoType::rmEv_(aValidEv);
 }
 
 // ***********************************************************************************************
