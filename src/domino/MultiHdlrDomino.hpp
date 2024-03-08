@@ -173,7 +173,10 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, c
 
         HID("(MultiHdlrDom) Will remove HdlrName=" << itHdlr->first << " of EvName=" << this->evName_(aValidEv)
             << ", nHdlrRef=" << itHdlr->second.use_count());
-        itEv->second.erase(itHdlr);
+        if (itEv->second.size() > 1)
+            itEv->second.erase(itHdlr);
+        else
+            multiHdlrs_.erase(itEv);  // min mem (mem safe)
         return true;
     }
     return false;  // can't cov since impossible if valid aHdlr; keep it for future safe

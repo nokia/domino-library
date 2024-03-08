@@ -118,9 +118,9 @@ bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName)
 
 // ***********************************************************************************************
 template<class aDominoType>
-bool HdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aEv, const SharedMsgCB& aHdlr)
+bool HdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aHdlr)
 {
-    auto&& itHdlr = hdlrs_.find(aEv);
+    auto&& itHdlr = hdlrs_.find(aValidEv);
     if (itHdlr == hdlrs_.end())
         return false;
 
@@ -128,7 +128,7 @@ bool HdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aEv, const Share
     if (itHdlr->second != aHdlr)
         return false;
 
-    HID("(HdlrDom) Will remove hdlr of EvName=" << this->evName_(aEv)
+    HID("(HdlrDom) Will remove hdlr of EvName=" << this->evName_(aValidEv)
         << ", nHdlrRef=" << itHdlr->second.use_count());
     hdlrs_.erase(itHdlr);
     return true;
