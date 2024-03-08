@@ -151,26 +151,27 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_disorderAutoRm_ok)
 TYPED_TEST_P(FreeHdlrDominoTest, multiCallbackOnRoad_noCrash_noMultiCall)
 {
     PARA_DOM->setHdlr("e1", this->h1_);
-    PARA_DOM->setState({{"e1", true}});                   // 1st on road
+    PARA_DOM->setState({{"e1", true}});  // 1st on road
 
     PARA_DOM->setState({{"e1", false}});
-    PARA_DOM->setState({{"e1", true}});                   // 2nd on road
+    PARA_DOM->setState({{"e1", true}});  // 2nd on road
 
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
-    EXPECT_EQ(multiset<int>({1}), this->hdlrIDs_);        // req: no more cb since auto-rm
+    EXPECT_EQ(multiset<int>({1}), this->hdlrIDs_); // req: no more cb since auto-rm
 }
 TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_multiCallbackOnRoad_noCrash_noMultiCall)
 {
     PARA_DOM->multiHdlrOnSameEv("e1", this->h2_, "h2_");
-    PARA_DOM->setState({{"e1", true}});                   // 1st h2_ on road
+    PARA_DOM->setState({{"e1", true}});  // 1st h2_ on road
 
     PARA_DOM->setState({{"e1", false}});
-    PARA_DOM->setState({{"e1", true}});                   // 2nd h2_ on road
+    PARA_DOM->setState({{"e1", true}});  // 2nd h2_ on road
 
-    PARA_DOM->setHdlr("e1", this->h1_);                   // h1_ on road
+    PARA_DOM->setHdlr("e1", this->h1_);  // h1_ on road
+    PARA_DOM->multiHdlrOnSameEv("e1", this->h3_, "h3_");  // h3_ on road; inc cov
 
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
-    EXPECT_EQ(multiset<int>({1, 2}), this->hdlrIDs_);     // req: no more cb since auto-rm
+    EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_);  // req: no more cb since auto-rm
 }
 
 #define MEM_LEAK

@@ -89,7 +89,7 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aHdlr, const D
 
     // auto free aHdlr
     // - simple solution (FreeHdlrDomino is not crucial but convenient user)
-    // - gap: higher priority hdlr may insert between hdlr & its auto-free
+    // - higher priority hdlr can't insert between hdlr & its auto-free since single thread
     HID("(FreeHdlrDom) trigger a new msg.");
     this->msgSelf_->newMsg([this, aEv, weakHdlr = WeakMsgCB(aHdlr)]()  // weak_ptr to avoid fail rmHdlr
         {

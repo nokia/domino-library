@@ -157,13 +157,13 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName, co
 
 // ***********************************************************************************************
 template<class aDominoType>
-bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aEv, const SharedMsgCB& aHdlr)
+bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aHdlr)
 {
-    if (aDominoType::rmOneHdlrOK_(aEv, aHdlr))
+    if (aDominoType::rmOneHdlrOK_(aValidEv, aHdlr))
         return true;
 
     // req: "ret true" means real rm
-    auto&& itEv = multiHdlrs_.find(aEv);
+    auto&& itEv = multiHdlrs_.find(aValidEv);
     if (itEv == multiHdlrs_.end())
         return false;
 
@@ -172,7 +172,7 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aEv, const 
         if (itHdlr->second != aHdlr)
             continue;
 
-        HID("(MultiHdlrDom) Will remove HdlrName=" << itHdlr->first << " of EvName=" << this->evName_(aEv)
+        HID("(MultiHdlrDom) Will remove HdlrName=" << itHdlr->first << " of EvName=" << this->evName_(aValidEv)
             << ", nHdlrRef=" << itHdlr->second.use_count());
         itEv->second.erase(itHdlr);
         return true;
