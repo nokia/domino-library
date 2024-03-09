@@ -155,7 +155,7 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
     hdlrs_[newEv] = newHdlr;
     HID("(HdlrDom) Succeed for EvName=" << aEvName);
 
-    if (this->state_(newEv) == true)
+    if (this->state(newEv) == true)
     {
         DBG("(HdlrDom) Trigger the new hdlr of EvName=" << aEvName);
         triggerHdlr_(newHdlr, newEv);

@@ -207,7 +207,7 @@ Domino::EvName Domino::whyFalse(const Event& aEv) const
         WRN("(Domino) invalid event=" << aEv);
         return EvName(DOM_RESERVED_EVNAME) + " whyFalse() found nothing";
     }
-    if (state_(aEv) == true)
+    if (state(aEv) == true)
     {
         WRN("(Domino) en=" << ev_en->second << ", state=true");
         return EvName(DOM_RESERVED_EVNAME) + " whyFalse() found nothing";

@@ -108,7 +108,7 @@ Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvNa
     }
     HID("(MultiHdlrDom) Succeed for EvName=" << aEvName << ", HdlrName=" << aHdlrName);
 
-    if (this->state_(newEv))
+    if (this->state(newEv))
     {
         DBG("(MultiHdlrDom) Trigger the new hdlr=" << aHdlrName << "of EvName=" << aEvName);
         this->triggerHdlr_(newHdlr, newEv);

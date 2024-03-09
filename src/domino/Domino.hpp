@@ -87,14 +87,15 @@ public:
     Event getEventBy(const EvName&) const;
     const EvNames evNames() const { return evNames_; }
 
-    bool  state(const EvName& aEvName) const { return state_(getEventBy(aEvName)); }
+    bool  state(const EvName& aEvName) const { return state(getEventBy(aEvName)); }
+    bool  state(const Event& aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
     void  setState(const SimuEvents&);
-    Event setPrev(const EvName&, const SimuEvents&);
+
+    Event  setPrev(const EvName&, const SimuEvents&);
     EvName whyFalse(const Event&) const;
 
 protected:
-    const EvName& evName_(const Event& aEv) const { return evNames_.at(aEv); }  // aEv must valid
-    bool          state_ (const Event& aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
+    const EvName& evName_(const Event& aValidEv) const { return evNames_.at(aValidEv); }
     virtual void  effect_(const Event& aValidEv) {}  // can't const since FreeDom will rm hdlr
 
     // - rm self dom's resource (RISK: aEv's leaf(s) may become orphan!!!)
@@ -106,7 +107,7 @@ private:
     void deduceState_(const Event& aValidEv);
     void pureSetState_(const Event& aValidEv, const bool aNewState);
     void pureRmLink_(const Event& aValidEv, EvLinks& aMyLinks, EvLinks& aNeighborLinks);
-    void pureSetPrev_(const Event&, const SimuEvents&);
+    void pureSetPrev_(const Event& aValidEv, const SimuEvents&);
 
     bool isNextFromTo_   (const Event& aFromValidEv, const Event& aToValidEv) const;
     bool isNextFromToVia_(const Event& aFromValidEv, const Event& aToValidEv, const EvLinks& aViaEvLinks) const;
