@@ -297,6 +297,11 @@ TYPED_TEST_P(NofreeHdlrDominoTest, repeat_force_call)
     PARA_DOM->forceAllHdlr("e1");
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
+TYPED_TEST_P(HdlrDominoTest, force_call_invalidEv)
+{
+    PARA_DOM->forceAllHdlr("invalid ev");
+    EXPECT_EQ(0, MSG_SELF->nMsg()) << "inc code cov";
+}
 
 #define N_HDLR
 // ***********************************************************************************************
@@ -369,6 +374,7 @@ REGISTER_TYPED_TEST_SUITE_P(HdlrDominoTest
     , rmHdlrOnRoad_noCallback
 
     , GOLD_force_call
+    , force_call_invalidEv
     , n_hdlr
 
     , nonConstInterface_shall_createUnExistEvent_withStateFalse

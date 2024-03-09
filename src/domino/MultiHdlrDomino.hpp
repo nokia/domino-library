@@ -122,8 +122,8 @@ template<class aDominoType>
 size_t MultiHdlrDomino<aDominoType>::nHdlr(const Domino::EvName& aEN) const
 {
     HID("(MultiHdlrDom) aEN=" << aEN);
-    auto&& it = multiHdlrs_.find(this->getEventBy(aEN));
-    return (it == multiHdlrs_.end() ? 0 : it->second.size()) + aDominoType::nHdlr(aEN);
+    auto&& ev_hdlrs = multiHdlrs_.find(this->getEventBy(aEN));
+    return (ev_hdlrs == multiHdlrs_.end() ? 0 : ev_hdlrs->second.size()) + aDominoType::nHdlr(aEN);
 }
 
 // ***********************************************************************************************
@@ -147,12 +147,12 @@ void MultiHdlrDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 template<class aDominoType>
 bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName, const HdlrName& aHdlrName)
 {
-    auto&& itEv = multiHdlrs_.find(this->getEventBy(aEvName));
-    if (itEv == multiHdlrs_.end())
+    auto&& ev_hdlrs = multiHdlrs_.find(this->getEventBy(aEvName));
+    if (ev_hdlrs == multiHdlrs_.end())
         return false;
 
     DBG("(MultiHdlrDom) Succeed to remove HdlrName=" << aHdlrName << " of EvName=" << aEvName);
-    return itEv->second.erase(aHdlrName);
+    return ev_hdlrs->second.erase(aHdlrName);
 }
 
 // ***********************************************************************************************
@@ -162,21 +162,21 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, c
     if (aDominoType::rmOneHdlrOK_(aValidEv, aValidHdlr))
         return true;
 
-    auto&& itEv = multiHdlrs_.find(aValidEv);
-    //if (itEv == multiHdlrs_.end()) return false;  // impossible if valid aValidHdlr
+    auto&& ev_hdlrs = multiHdlrs_.find(aValidEv);
+    //if (ev_hdlrs == multiHdlrs_.end()) return false;  // impossible if valid aValidHdlr
 
 
-    for (auto&& itHdlr = itEv->second.begin(); itHdlr != itEv->second.end(); ++itHdlr)
+    for (auto&& name_hdlr = ev_hdlrs->second.begin(); name_hdlr != ev_hdlrs->second.end(); ++name_hdlr)
     {
-        if (itHdlr->second != aValidHdlr)
+        if (name_hdlr->second != aValidHdlr)
             continue;
 
-        HID("(MultiHdlrDom) Will remove HdlrName=" << itHdlr->first << " of EvName=" << this->evName_(aValidEv)
-            << ", nHdlrRef=" << itHdlr->second.use_count());
-        if (itEv->second.size() > 1)
-            itEv->second.erase(itHdlr);
+        HID("(MultiHdlrDom) Will remove HdlrName=" << name_hdlr->first << " of EvName=" << this->evName_(aValidEv)
+            << ", nHdlrRef=" << name_hdlr->second.use_count());
+        if (ev_hdlrs->second.size() > 1)
+            ev_hdlrs->second.erase(name_hdlr);
         else
-            multiHdlrs_.erase(itEv);  // min mem (mem safe)
+            multiHdlrs_.erase(ev_hdlrs);  // min mem (mem safe)
         return true;
     }
     return false;  // impossible if valid aValidHdlr

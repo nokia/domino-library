@@ -43,11 +43,11 @@ class HdlrDomino : public aDominoType
 {
 public:
     explicit HdlrDomino(const LogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
-    void setMsgSelf(const PTR<MsgSelf>& aMsgSelf) { msgSelf_ = aMsgSelf; }  // can replace default
+    void setMsgSelf(const PTR<MsgSelf>& aMsgSelf) { msgSelf_ = aMsgSelf; }  // replace default; TODO: need safer?
 
     Domino::Event setHdlr(const Domino::EvName&, const MsgCB& aHdlr);
     bool rmOneHdlrOK(const Domino::EvName&);  // rm by EvName
-    void forceAllHdlr(const Domino::EvName& aEN) { effect_(this->getEventBy(aEN)); }  // can't const as FreeDom rm hdlr
+    void forceAllHdlr(const Domino::EvName&);
     virtual size_t nHdlr(const Domino::EvName& aEN) const { return hdlrs_.count(this->getEventBy(aEN)); }
 
     // -------------------------------------------------------------------------------------------
@@ -90,6 +90,15 @@ void HdlrDomino<aDominoType>::effect_(const Domino::Event& aValidEv)
 
 // ***********************************************************************************************
 template<class aDominoType>
+void HdlrDomino<aDominoType>::forceAllHdlr(const Domino::EvName& aEN)
+{
+    auto&& validEv = this->getEventBy(aEN);
+    if (validEv != Domino::D_EVENT_FAILED_RET)
+        effect_(validEv);
+}
+
+// ***********************************************************************************************
+template<class aDominoType>
 Domino::Event HdlrDomino<aDominoType>::multiHdlrByAliasEv(const Domino::EvName& aAliasEN,
     const MsgCB& aHdlr, const Domino::EvName& aHostEN)
 {
@@ -120,17 +129,17 @@ bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName)
 template<class aDominoType>
 bool HdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr)
 {
-    auto&& itHdlr = hdlrs_.find(aValidEv);
-    if (itHdlr == hdlrs_.end())
+    auto&& ev_hdlr = hdlrs_.find(aValidEv);
+    if (ev_hdlr == hdlrs_.end())
         return false;
 
     // req: must match
-    if (itHdlr->second != aValidHdlr)
+    if (ev_hdlr->second != aValidHdlr)
         return false;
 
     HID("(HdlrDom) Will remove hdlr of EvName=" << this->evName_(aValidEv)
-        << ", nHdlrRef=" << itHdlr->second.use_count());
-    hdlrs_.erase(itHdlr);
+        << ", nHdlrRef=" << ev_hdlr->second.use_count());
+    hdlrs_.erase(ev_hdlr);
     return true;
 }
 
@@ -147,7 +156,7 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
     auto&& newEv = this->newEvent(aEvName);
     if (hdlrs_.find(newEv) != hdlrs_.end())
     {
-        WRN("(HdlrDom) Failed!!! Not support overwrite hdlr for " << aEvName << ". Use MultiHdlrDomino instead.");
+        WRN("(HdlrDom) Failed!!! Can't overwrite hdlr for " << aEvName << ". Rm old or Use MultiHdlrDomino instead.");
         return Domino::D_EVENT_FAILED_RET;
     }
 
