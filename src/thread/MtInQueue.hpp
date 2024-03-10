@@ -80,6 +80,7 @@ public:
 template<class aEleType>
 void MtInQueue::hdlr(const EleHdlr& aHdlr)
 {
+    // TODO: WRN() or forbid hdlr replacement to enhance safe?
     if (aHdlr)
       eleHdlrs_[typeid(aEleType).hash_code()] = aHdlr;
 }

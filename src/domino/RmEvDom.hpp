@@ -7,8 +7,9 @@
 // - why/VALUE:
 //   * rm Ev and all its resource, so Dom can run very long time
 //   * REQ:
-//     * as simple as possible
-//     * de-couple as much as possible
+//     . as simple as possible
+//     . de-couple as much as possible
+//     * rm completely so safe for future (eg rm-then-callback, ret ev/en then rm)
 //
 // - how:
 //   . each dom can rm its own resource independently as public interface (de-couple)
