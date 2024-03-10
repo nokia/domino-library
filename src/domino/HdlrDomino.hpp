@@ -176,9 +176,7 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
 template<class aDominoType>
 bool HdlrDomino<aDominoType>::setMsgSelfOK(const PTR<MsgSelf>& aMsgSelf)
 {
-    const auto nMsgUnhandled = (msgSelf_.get() == nullptr)
-        ? 0
-        : msgSelf_->nMsg();
+    const auto nMsgUnhandled = msgSelf_->nMsg();  // HdlrDomino ensure msgSelf_ always NOT null
     if (nMsgUnhandled > 0)
     {
         ERR("(MsgSelf) failed!!! since old msgSelf is not empty, nMsgUnhandled=" << nMsgUnhandled);
@@ -225,4 +223,5 @@ void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, const 
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2023-01-23  CSZ       - rename pureRmHdlrOK to rmOneHdlrOK
 // 2023-05-24  CSZ       - support force call hdlr
+// 2024-03-10  CSZ       - enhance safe eg setMsgSelf()
 // ***********************************************************************************************
