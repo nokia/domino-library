@@ -355,6 +355,21 @@ TYPED_TEST_P(HdlrDominoTest, nonConstInterface_shall_createUnExistEvent_withStat
     EXPECT_EQ(4u, this->uniqueEVs_.size());
 }
 
+#define MSG_SELF_RELATED
+// ***********************************************************************************************
+TYPED_TEST_P(HdlrDominoTest, replace_msgSelf)  // checked by CI valgrind
+{
+    ASSERT_FALSE(PARA_DOM->setMsgSelfOK(nullptr)) << "REQ: msgSelf=null is not safe for HdlrDomino";
+
+    PARA_DOM->setHdlr("event", this->hdlr0_);
+    PARA_DOM->setState({{"event", true}});  // 1 msg in old msgSelf
+    auto msgSelf = MAKE_PTR<MsgSelf>(this->uniLogName());
+    ASSERT_FALSE(PARA_DOM->setMsgSelfOK(msgSelf)) << "REQ: can NOT set new msgSelf when unhandled msg in old";
+
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    ASSERT_TRUE(PARA_DOM->setMsgSelfOK(msgSelf)) << "REQ: can set new msgSelf";
+}
+
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(HdlrDominoTest
     , GOLD_add_and_call
@@ -378,6 +393,8 @@ REGISTER_TYPED_TEST_SUITE_P(HdlrDominoTest
     , n_hdlr
 
     , nonConstInterface_shall_createUnExistEvent_withStateFalse
+
+    , replace_msgSelf
 );
 using AnyHdlrDom = Types<MinHdlrDom, MinMhdlrDom, MinFreeDom, MinPriDom, MaxNofreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, HdlrDominoTest, AnyHdlrDom);

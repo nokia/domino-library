@@ -150,6 +150,7 @@ TEST_F(MsgSelfTest, destructMsgSelf_noCallback_noMemLeak_noCrash)  // mem leak i
 
     auto valid = msgSelf_->getValid();
     msgSelf_.reset();  // rm msgSelf
+    INF("~MsgSelf() shall print msg discarded");
     msgSelf_->handleAllMsg(valid);  // req: no crash
 }
 

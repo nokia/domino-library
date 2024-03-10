@@ -176,21 +176,6 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_multiCallbackOnRoad_noCrash_noMulti
 
 #define MEM_LEAK
 // ***********************************************************************************************
-TYPED_TEST_P(FreeHdlrDominoTest, BugFix_noMemLeak_whenRmMsgSelf)  // checked by CI valgrind
-{
-    auto msgSelf = MAKE_PTR<MsgSelf>(this->uniLogName());
-    PARA_DOM->setMsgSelf(msgSelf);
-
-    EXPECT_CALL(*this, h7()).Times(0);
-    PARA_DOM->setHdlr("e1", [&](){ this->h7(); });
-    PARA_DOM->setState({{"e1", true}});
-    ASSERT_TRUE(msgSelf->nMsg());
-
-    // req: no mem leak when rm MsgSelf with h7 in msg queue
-    PARA_DOM->setMsgSelf(nullptr);
-    msgSelf = nullptr;
-    DBG("~MsgSelf() shall print msg discarded");
-}
 TYPED_TEST_P(FreeHdlrDominoTest, BugFix_noCrash_whenRmDom)
 {
     EXPECT_CALL(*this, h7()).Times(0);
@@ -224,7 +209,6 @@ REGISTER_TYPED_TEST_SUITE_P(FreeHdlrDominoTest
     , GOLD_afterCallback_autoRmHdlr
     , afterCallback_autoRmHdlr_aliasMultiHdlr
     , multiCallbackOnRoad_noCrash_noMultiCall
-    , BugFix_noMemLeak_whenRmMsgSelf
     , BugFix_noCrash_whenRmDom
 
     , nonConstInterface_shall_createUnExistEvent_withStateFalse

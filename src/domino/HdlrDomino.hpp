@@ -28,12 +28,12 @@
 #define HDLR_DOMINO_HPP_
 
 #include <functional>
-#include <memory>  // for shared_ptr
 #include <unordered_map>
 
 #include "MsgSelf.hpp"
 #include "ObjAnywhere.hpp"
 #include "UniLog.hpp"
+#include "UniPtr.hpp"
 
 namespace RLib
 {
@@ -43,7 +43,7 @@ class HdlrDomino : public aDominoType
 {
 public:
     explicit HdlrDomino(const LogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
-    void setMsgSelf(const PTR<MsgSelf>& aMsgSelf) { msgSelf_ = aMsgSelf; }  // replace default; TODO: need safer?
+    bool setMsgSelfOK(const PTR<MsgSelf>& aMsgSelf);  // replace default
 
     Domino::Event setHdlr(const Domino::EvName&, const MsgCB& aHdlr);
     bool rmOneHdlrOK(const Domino::EvName&);  // rm by EvName
@@ -170,6 +170,29 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
         triggerHdlr_(newHdlr, newEv);
     }
     return newEv;
+}
+
+// ***********************************************************************************************
+template<class aDominoType>
+bool HdlrDomino<aDominoType>::setMsgSelfOK(const PTR<MsgSelf>& aMsgSelf)
+{
+    const auto nMsgUnhandled = (msgSelf_.get() == nullptr)
+        ? 0
+        : msgSelf_->nMsg();
+    if (nMsgUnhandled > 0)
+    {
+        ERR("(MsgSelf) failed!!! since old msgSelf is not empty, nMsgUnhandled=" << nMsgUnhandled);
+        return false;
+    }
+
+    if (aMsgSelf.get() == nullptr)
+    {
+        ERR("Failed!!! since HdlrDomino unsafe when msgSelf==nullptr");
+        return false;
+    }
+
+    msgSelf_ = aMsgSelf;
+    return true;
 }
 
 // ***********************************************************************************************
