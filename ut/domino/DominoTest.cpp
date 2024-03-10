@@ -161,6 +161,7 @@ TYPED_TEST_P(DominoTest, strangeLoop_prevBothTrueAndFalse)
     //   . when occur, the end-event can't be satisfied forever (user's fault, not Domino)
     // - not find a simple way (reasonable cost-benefit) to prevent it
     //   . whyFalse() is simple to detect it (but not prevent so not perfect)
+    //   . TODO: need partial forbid simple t/f-loop? avoid complex/risk impl
     // - so setPrev() is safe in 2/3 cases but NOT in 1/3 cases
 }
 

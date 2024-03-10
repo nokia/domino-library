@@ -39,7 +39,7 @@
 //       . reasonable cost-benefit
 //         . so little impact runtime (debug can be HID_CODE)
 //         . next-loop can be prevented simply
-//         . true-false-loop can NOT  (refer UT strange_loop)
+//         . true-false-loop can NOT (refer UT strange_loop)
 //     . so setPrev() is simple safe, NOT perfect safe
 // ***********************************************************************************************
 #pragma once
