@@ -55,7 +55,7 @@ public:
     void   mt_clear();
 
     // shall be called in main thread ONLY!!!
-    template<class aEleType> void hdlr(const EleHdlr&);
+    template<class aEleType> bool setHdlrOK(const EleHdlr&);
     size_t handleAllEle();
     size_t nHdlr() const { return eleHdlrs_.size(); }
 
@@ -78,11 +78,23 @@ public:
 
 // ***********************************************************************************************
 template<class aEleType>
-void MtInQueue::hdlr(const EleHdlr& aHdlr)
+bool MtInQueue::setHdlrOK(const EleHdlr& aHdlr)
 {
-    // TODO: WRN() or forbid hdlr replacement to enhance safe?
-    if (aHdlr)
-      eleHdlrs_[typeid(aEleType).hash_code()] = aHdlr;
+    if (! aHdlr)
+    {
+        WRN("(MtInQueue) why set null hdlr?");
+        return false;
+    }
+
+    const auto hash = typeid(aEleType).hash_code();
+    if (eleHdlrs_.find(hash) != eleHdlrs_.end())
+    {
+        ERR("(MtInQueue) failed!!! overwrite hdlr may unsafe existing data");
+        return false;
+    }
+
+    eleHdlrs_[hash] = aHdlr;
+    return true;
 }
 
 // ***********************************************************************************************
@@ -125,4 +137,5 @@ MtInQueue& mt_getQ();
 // 2023-10-26  CSZ       - replace mt_notifyFn_() by mt_pingMainTH()
 // 2023-10-29  CSZ       - integrate handler
 // 2024-02-15  CSZ       3)use SafeAdr (mem-safe); shared_ptr is not mem-safe
+// 2024-03-10  CSZ       - enhance safe of setHdlrOK()
 // ***********************************************************************************************

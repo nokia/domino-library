@@ -165,7 +165,7 @@ TEST_F(MtInQueueTest, clear)
     mt_getQ().mt_push<void>(nullptr);
     mt_getQ().pop();
     mt_getQ().mt_push<void>(nullptr);
-    mt_getQ().hdlr<void>([](UniPtr){});
+    mt_getQ().setHdlrOK<void>([](UniPtr){});
 
     mt_getQ().mt_clear();
     ASSERT_EQ(0u, mt_getQ().mt_sizeQ()) << "REQ: clear all ele";
@@ -201,7 +201,7 @@ TEST_F(MtInQueueTest, GOLD_shallHandle_bothCacheAndQueue_ifPossible)
 {
     // init
     size_t nCalled = 0;
-    mt_getQ().hdlr<void>([&nCalled](UniPtr){ ++nCalled; });
+    mt_getQ().setHdlrOK<void>([&nCalled](UniPtr){ ++nCalled; });
     mt_getQ().mt_push<void>(nullptr);
     mt_getQ().mt_push<void>(nullptr);
     mt_getQ().pop();  // still 1 ele in cache_
@@ -224,15 +224,19 @@ TEST_F(MtInQueueTest, handle_emptyQ)
     EXPECT_EQ(0u, mt_getQ().mt_sizeQ()) << "REQ: can handle empty Q";
     mt_getQ().handleAllEle();
 }
+TEST_F(MtInQueueTest, safe_set_hdlr)
+{
+    EXPECT_FALSE(mt_getQ().setHdlrOK<void>(nullptr));
+    EXPECT_EQ(0, mt_getQ().nHdlr()) << "REQ: hdlr=null doesn't make sense";
+
+    EXPECT_TRUE(mt_getQ().setHdlrOK<void>([](UniPtr){}));
+    EXPECT_EQ(1, mt_getQ().nHdlr()) << "REQ: can set new hdlr";
+
+    EXPECT_FALSE(mt_getQ().setHdlrOK<void>([](UniPtr){})) << "REQ: can NOT overwrite hdlr";
+}
 
 #define SAFE
 // ***********************************************************************************************
-TEST_F(MtInQueueTest, invalid_hdlr)
-{
-    mt_getQ().hdlr<void>(nullptr);
-    EXPECT_EQ(0, mt_getQ().nHdlr());
-}
-
 TEST_F(MtInQueueTest, GOLD_push_takeover_toEnsureMtSafe)
 {
     auto ele = MAKE_PTR<int>(1);

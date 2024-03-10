@@ -45,7 +45,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
 
     // setup msg handler table for mt_getQ()
     EXPECT_EQ(0u, mt_getQ().nHdlr())  << "REQ: init no hdlr";
-    mt_getQ().hdlr<string>([this, &cb_info](UniPtr aMsg)
+    mt_getQ().setHdlrOK<string>([this, &cb_info](UniPtr aMsg)
     {
         msgSelf_->newMsg(  // REQ: via MsgSelf
             [aMsg, &cb_info]
@@ -56,7 +56,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         );
     });
     EXPECT_EQ(1u, mt_getQ().nHdlr())  << "REQ: count hdlr";
-    mt_getQ().hdlr<int>([this, &cb_info](UniPtr aMsg)
+    mt_getQ().setHdlrOK<int>([this, &cb_info](UniPtr aMsg)
     {
         msgSelf_->newMsg(
             [aMsg, &cb_info]
