@@ -19,8 +19,8 @@
 //     . let user take care his rm rather than complex dom
 //
 // - RISK:
-//   . rm ev may break links (then user shall take care)
-//   . rm ev impact/complex domino
+//   . rm ev may break links (duty-bound of user than dom classes)
+//   . rm ev impact/complex dom
 //   . so use RmEvDom when necessary
 //
 // - mem safe: yes with limit

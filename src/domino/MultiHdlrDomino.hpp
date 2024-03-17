@@ -17,8 +17,7 @@
 //
 // - mem safe: yes
 // ***********************************************************************************************
-#ifndef MULTI_HDLR_DOMINO_HPP_
-#define MULTI_HDLR_DOMINO_HPP_
+#pragma once
 
 #include <map>
 #include <string>
@@ -183,7 +182,6 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, c
 }
 
 }  // namespace
-#endif  // MULTI_HDLR_DOMINO_HPP_
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................

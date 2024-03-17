@@ -17,8 +17,7 @@
 //
 // - mem safe: yes
 // ***********************************************************************************************
-#ifndef FREE_HDLR_DOMINO_HPP_
-#define FREE_HDLR_DOMINO_HPP_
+#pragma once
 
 #include <vector>
 
@@ -102,7 +101,6 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, co
 }
 
 }  // namespace
-#endif  // FREE_HDLR_DOMINO_HPP_
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   ......................................................................

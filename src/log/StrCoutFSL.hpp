@@ -18,8 +18,7 @@
 //
 // mem safe: yes if stringstream is
 // ***********************************************************************************************
-#ifndef STREAM2COUT_FORMATTED_SMART_LOG_HPP_
-#define STREAM2COUT_FORMATTED_SMART_LOG_HPP_
+#pragma once
 
 #include <iostream>
 #include <sstream>  //stringstream
@@ -59,8 +58,8 @@ void StrCoutFSL::forceSave() const
 {
     cout << rdbuf() << endl;  // internet says rdbuf() is faster than str()
 }
+
 }  // namespace
-#endif//STREAM2COUT_FORMATTED_SMART_LOG_HPP_
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................

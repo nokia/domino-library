@@ -14,8 +14,7 @@
 //
 // - core : needLog_ (soul of smart log)
 // ***********************************************************************************************
-#ifndef BASE_SMART_LOG_HPP_
-#define BASE_SMART_LOG_HPP_
+#pragma once
 
 namespace RLib
 {
@@ -34,8 +33,8 @@ protected:    // derive use only
 private:
     bool needLog_ = false;  // init=false is smartlog, =true is legacy(full log always)
 };
+
 }  // namespace
-#endif // #ifndef BASE_SMART_LOG_HPP_
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................

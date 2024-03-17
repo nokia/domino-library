@@ -6,8 +6,7 @@
 // ***********************************************************************************************
 // - why: simplify multi UT cases' init
 // ***********************************************************************************************
-#ifndef SWM_UT_INIT_SVC_CLOUD_HPP_
-#define SWM_UT_INIT_SVC_CLOUD_HPP_
+#pragma once
 
 #include <gtest/gtest.h>
 #include <memory>  // shared_ptr
@@ -80,4 +79,3 @@ struct UtInitObjAnywhere : public UniLog, public Test
 };
 
 }  // namespace
-#endif  // SWM_UT_INIT_SVC_CLOUD_HPP_

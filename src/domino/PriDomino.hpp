@@ -11,8 +11,7 @@
 // - core: priorities_
 // - mem safe: yes
 // ***********************************************************************************************
-#ifndef PRI_DOMINO_HPP_
-#define PRI_DOMINO_HPP_
+#pragma once
 
 #include <unordered_map>
 #include "UniLog.hpp"
@@ -75,7 +74,6 @@ Domino::Event PriDomino<aDominoType>::setPriority(const Domino::EvName& aEvName,
 }
 
 }  // namespace
-#endif  // PRI_DOMINO_HPP_
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   ......................................................................

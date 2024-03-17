@@ -162,7 +162,13 @@ TYPED_TEST_P(DominoTest, strangeLoop_prevBothTrueAndFalse)
     // - not find a simple way (reasonable cost-benefit) to prevent it
     //   . whyFalse() is simple to detect it (but not prevent so not perfect)
     //   . TODO: need partial forbid simple t/f-loop? avoid complex/risk impl
-    // - so setPrev() is safe in 2/3 cases but NOT in 1/3 cases
+    // - so is setPrev() safe?
+    //   . Domino will not dead-loop; end-event always false, it's not Domino's fault
+    //   . so yes, setPrev() is safe (& risky)
+    // - how to define safe? if calling a class' interface,
+    //   . no crash, no mem-leak, no dead loop, etc under normal/required scenaria
+    //   . and it does what's expected reasonably
+    //   . then it's safe (as LTD company)
 }
 
 #define WHY_FALSE

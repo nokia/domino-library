@@ -24,8 +24,7 @@
 //     . HdlrDomino ensures safely usage of shared_ptr
 //     . principle: safe class can base on unsafe materials
 // ***********************************************************************************************
-#ifndef HDLR_DOMINO_HPP_
-#define HDLR_DOMINO_HPP_
+#pragma once
 
 #include <functional>
 #include <unordered_map>
@@ -210,7 +209,6 @@ void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, const 
 }
 
 }  // namespace
-#endif  // HDLR_DOMINO_HPP_
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   ......................................................................

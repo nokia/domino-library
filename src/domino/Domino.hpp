@@ -91,7 +91,7 @@ public:
     bool  state(const Event& aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
     void  setState(const SimuEvents&);
 
-    Event  setPrev(const EvName&, const SimuEvents&);
+    Event  setPrev(const EvName&, const SimuEvents&);  // be careful not create eg ttue-false loop
     EvName whyFalse(const Event&) const;
 
 protected:

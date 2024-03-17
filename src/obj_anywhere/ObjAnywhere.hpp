@@ -30,8 +30,7 @@
 //   . and DataDomino will be more complex to manage sharing/static store_
 //   . = merge DataDomino & ObjAnywhere, so now giveup
 // ***********************************************************************************************
-#ifndef SERVICE_ANYWHERE_HPP_
-#define SERVICE_ANYWHERE_HPP_
+#pragma once
 
 #include <unordered_map>
 #include <typeinfo>  // typeid()
@@ -112,8 +111,8 @@ void ObjAnywhere::set(PTR<aObjType> aSharedObj, UniLog& oneLog)
         INF("(ObjAnywhere) !!!Replace obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
     (*objStore_)[objIndex] = aSharedObj;
 }
+
 }  // namespace
-#endif  // SERVICE_ANYWHERE_HPP_
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
