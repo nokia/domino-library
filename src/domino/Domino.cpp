@@ -181,9 +181,9 @@ Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrev
 void Domino::setState(const SimuEvents& aSimuEvents)
 {
     sthChanged_ = false;
-
     for (auto&& en_state : aSimuEvents)
         pureSetState_(newEvent(en_state.first), en_state.second);
+
     for (auto&& en_state : aSimuEvents)
     {
         auto&& ev_nextEVs = next_[en_state.second].find(events_[en_state.first]);
@@ -195,7 +195,7 @@ void Domino::setState(const SimuEvents& aSimuEvents)
     }
 
     if (!sthChanged_)
-        DBG("(Domino) nothing changed for all nEvent=" << aSimuEvents.size());
+        HID("(Domino) no state change but force deduce");
 }
 
 // ***********************************************************************************************
