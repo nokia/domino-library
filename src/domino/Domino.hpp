@@ -104,6 +104,8 @@ protected:
 
 private:
     void deduceState_(const Event& aValidEv);
+    bool deduceState_(const Event& aValidEv, bool aPrevType) const;
+
     void pureSetState_(const Event& aValidEv, const bool aNewState);
     void pureRmLink_(const Event& aValidEv, EvLinks& aMyLinks, EvLinks& aNeighborLinks);
     void pureSetPrev_(const Event& aValidEv, const SimuEvents&);

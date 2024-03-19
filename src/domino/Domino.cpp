@@ -14,23 +14,27 @@ void Domino::deduceState_(const Event& aValidEv)
 {
     HID("(Domino) en=" << evName_(aValidEv));
 
-    auto&& ev_prevEVs = prev_[true].find(aValidEv);
-    if (ev_prevEVs != prev_[true].end())  // true br
-        for (auto&& prevEV : ev_prevEVs->second)
-            if (states_[prevEV] != true)  // 1 prev not satisfied
-                return;
-    ev_prevEVs = prev_[false].find(aValidEv);
-    if (ev_prevEVs != prev_[false].end())  // false br
-        for (auto&& prevEV : ev_prevEVs->second)
-            if (states_[prevEV] != false)  // 1 prev not satisfied
-                return;
+    auto newState = deduceState_(aValidEv, true)
+        ? deduceState_(aValidEv, false)
+        : false;
 
-    pureSetState_(aValidEv, true);
+    pureSetState_(aValidEv, newState);
     auto&& ev_nextEVs = next_[true].find(aValidEv);
     if (ev_nextEVs == next_[true].end())  // no more next
         return;
     for (auto&& nextEV : ev_nextEVs->second)
         deduceState_(nextEV);
+}
+
+// ***********************************************************************************************
+bool Domino::deduceState_(const Event& aValidEv, bool aPrevType) const
+{
+    auto&& ev_prevEVs = prev_[aPrevType].find(aValidEv);
+    if (ev_prevEVs != prev_[aPrevType].end())
+        for (auto&& prevEV : ev_prevEVs->second)
+            if (states_[prevEV] != aPrevType)  // 1 prev not satisfied
+                return false;
+    return true;
 }
 
 // ***********************************************************************************************
