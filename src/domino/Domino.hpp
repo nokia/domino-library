@@ -26,11 +26,10 @@
 //   . EvName index
 //   . template extension (PriDomino, etc)
 //
-// - mem safe: yes with limit
-//   . no use-up mem which is impossible in most cases
-//   . user shall not loop link ev - hard, expensive & unreasonable
 // - MT safe: no
 // - class safe: yes (all-safe include mem-safe, no-ev-link-loop, no exception, etc, exclude MT safe)
+//   . no use-up mem which is impossible in most cases
+//   . user shall not loop link ev - hard, expensive & unreasonable
 //   . ev-link-loop:
 //     . REQ:
 //       . no-loop to ensure safe
