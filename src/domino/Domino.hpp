@@ -13,10 +13,12 @@
 //   . each hdlr relies on limited event(s), each event may also rely on some ohter event(s)
 //   . whenever an event occurred, following event(s) can be auto-triggered, so on calling hdlr(s)
 //   . this will go till end (like domino)
-// - Q&A: (below; lots)
-// - assmuption:
+// - clarify:
 //   . each event-hdlr is called only when event state F->T
-//   . repeated event/hdlr is complex, be careful(eg DominoTests.newTriggerViaChain)
+//   . 1-go domino is like SW upgrade - 1-go then discard, next will use new domino
+//     . n-go domino is like IM - repeat working till reboot
+//     . after 024-03-19 domino supports n-go
+// - Q&A: (below; lots)
 //
 // - core: states_
 //
@@ -87,9 +89,9 @@ public:
     Event getEventBy(const EvName&) const;
     const EvNames evNames() const { return ev_en_; }
 
-    bool state(const EvName& aEvName) const { return state(getEventBy(aEvName)); }
-    bool state(const Event& aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
-    bool setStateOK(const SimuEvents&);
+    bool   state(const EvName& aEvName) const { return state(getEventBy(aEvName)); }
+    bool   state(const Event& aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
+    size_t setState(const SimuEvents&);  // ret real changed ev#
 
     Event  setPrev(const EvName&, const SimuEvents&);  // be careful not create eg ttue-false loop
     EvName whyFalse(const Event&) const;

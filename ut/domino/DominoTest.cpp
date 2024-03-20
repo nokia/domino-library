@@ -28,11 +28,15 @@ TYPED_TEST_P(DominoTest, GOLD_setState_thenGetIt)
     PARA_DOM->newEvent("e1");
     EXPECT_FALSE(PARA_DOM->state("e1")) << "REQ: new ev's state=F";
 
-    EXPECT_TRUE(PARA_DOM->setStateOK({{"e1", true}})) << "REQ: set T succ";
+    EXPECT_EQ(1u, PARA_DOM->setState({{"e1", true}})) << "REQ: set T succ";
     EXPECT_TRUE(PARA_DOM->state("e1")) << "REQ: set T then get it";
+    EXPECT_EQ(0u, PARA_DOM->setState({{"e1", true}})) << "REQ: no state change";
+    EXPECT_TRUE(PARA_DOM->state("e1")) << "REQ: no state change";
 
-    EXPECT_TRUE (PARA_DOM->setStateOK({{"e1", false}})) << "REQ: set F succ";
+    EXPECT_EQ(1u, PARA_DOM->setState({{"e1", false}})) << "REQ: set F succ";
     EXPECT_FALSE(PARA_DOM->state("e1")) << "REQ: set F then get it";
+    EXPECT_EQ(0u, PARA_DOM->setState({{"e1", false}})) << "REQ: no state change";
+    EXPECT_FALSE(PARA_DOM->state("e1")) << "REQ: no state change";
 }
 
 #define BROADCAST_STATE
@@ -46,31 +50,15 @@ TYPED_TEST_P(DominoTest, GOLD_forward_broadcast_trueLink)
     EXPECT_FALSE(PARA_DOM->state("e2"));
     EXPECT_FALSE(PARA_DOM->state("e3"));
 
-    PARA_DOM->setStateOK({{"e1", true}});  // set beginning
+    PARA_DOM->setState({{"e1", true}});  // set beginning
     EXPECT_TRUE(PARA_DOM->state("e1"));
     EXPECT_TRUE(PARA_DOM->state("e2")) << "REQ: broadcast T e1->e2";
     EXPECT_TRUE(PARA_DOM->state("e3")) << "REQ: broadcast T e2->e3";
 
-    PARA_DOM->setStateOK({{"e1", false}});
+    PARA_DOM->setState({{"e1", false}});
     EXPECT_FALSE(PARA_DOM->state("e1"));
     EXPECT_FALSE(PARA_DOM->state("e2")) << "REQ: broadcast F e1->e2";
     EXPECT_FALSE(PARA_DOM->state("e3")) << "REQ: broadcast F e2->e3";
-}
-TYPED_TEST_P(DominoTest, setState_onlyAtChainHead)
-{
-    // e1->e2->e3
-    PARA_DOM->setPrev("e2", {{"e1", true}});
-    PARA_DOM->setPrev("e3", {{"e2", true}});
-
-    EXPECT_FALSE(PARA_DOM->setStateOK({{"e2", true}})) << "REQ: fail set middle";
-    EXPECT_FALSE(PARA_DOM->state("e1"));
-    EXPECT_FALSE(PARA_DOM->state("e2")) << "REQ: fail set middle";
-    EXPECT_FALSE(PARA_DOM->state("e3"));
-
-    EXPECT_FALSE(PARA_DOM->setStateOK({{"e3", true}})) << "REQ: fail set end";
-    EXPECT_FALSE(PARA_DOM->state("e1"));
-    EXPECT_FALSE(PARA_DOM->state("e2"));
-    EXPECT_FALSE(PARA_DOM->state("e3")) << "REQ: fail set end";
 }
 TYPED_TEST_P(DominoTest, GOLD_forward_broadcast_falseLink)
 {
@@ -81,15 +69,34 @@ TYPED_TEST_P(DominoTest, GOLD_forward_broadcast_falseLink)
     EXPECT_TRUE (PARA_DOM->state("e2")) << "REQ: broadcast F e1->e2";
     EXPECT_FALSE(PARA_DOM->state("e3")) << "REQ: broadcast T e2->e3";
 
-    PARA_DOM->setStateOK({{"e1", true}});  // set beginning
+    PARA_DOM->setState({{"e1", true}});  // set beginning
     EXPECT_TRUE (PARA_DOM->state("e1"));
     EXPECT_FALSE(PARA_DOM->state("e2")) << "REQ: broadcast T e1->e2";
     EXPECT_TRUE (PARA_DOM->state("e3")) << "REQ: broadcast F e2->e3";
 }
+TYPED_TEST_P(DominoTest, setState_onlyAtChainHead)
+{
+    // e1->e2->e3
+    PARA_DOM->setPrev("e3", {{"e2", true}});
+    PARA_DOM->setPrev("e2", {{"e1", false}});
+    EXPECT_FALSE(PARA_DOM->state("e1"));
+    EXPECT_TRUE (PARA_DOM->state("e2"));
+    EXPECT_TRUE (PARA_DOM->state("e3"));
+
+    EXPECT_EQ(0u, PARA_DOM->setState({{"e2", true}})) << "REQ: fail set middle";
+    EXPECT_FALSE(PARA_DOM->state("e1"));
+    EXPECT_TRUE (PARA_DOM->state("e2")) << "REQ: fail set middle";
+    EXPECT_TRUE (PARA_DOM->state("e3"));
+
+    EXPECT_EQ(0u, PARA_DOM->setState({{"e3", true}})) << "REQ: fail set end";
+    EXPECT_FALSE(PARA_DOM->state("e1"));
+    EXPECT_TRUE (PARA_DOM->state("e2"));
+    EXPECT_TRUE (PARA_DOM->state("e3")) << "REQ: fail set end";
+}
 TYPED_TEST_P(DominoTest, bugFix_shallDeduceAll)
 {
     PARA_DOM->setPrev("e2", {{"e1", true}});
-    PARA_DOM->setStateOK({
+    PARA_DOM->setState({
         {"e0", false},  // no-next e0 shall not abort deducing e1
         {"e1", true},
         {"e0", false}});
@@ -127,7 +134,7 @@ TYPED_TEST_P(DominoTest, strangeLoop_prevBothTrueAndFalse)
     auto e10 = PARA_DOM->setPrev("e10", {{"e11", true }});
     PARA_DOM->setPrev("e10", {{"e11", false}});
     EXPECT_EQ("e11==false", PARA_DOM->whyFalse(e10)) << "REQ: simply found the root cause";
-    PARA_DOM->setStateOK({{"e11", true}});
+    PARA_DOM->setState({{"e11", true}});
     EXPECT_EQ("e11==true",  PARA_DOM->whyFalse(e10)) << "REQ: simply found the root cause";
 
     // e21 <- (F) <- e20
@@ -136,7 +143,7 @@ TYPED_TEST_P(DominoTest, strangeLoop_prevBothTrueAndFalse)
     auto e20 = PARA_DOM->setPrev("e20", {{"e21", false}, {"e22", true}});
     PARA_DOM->setPrev("e22", {{"e21", true}});
     EXPECT_EQ("e21==false", PARA_DOM->whyFalse(e20)) << "REQ: simply found the futhest root cause";
-    PARA_DOM->setStateOK({{"e21", true}});
+    PARA_DOM->setState({{"e21", true}});
     EXPECT_EQ("e21==true",  PARA_DOM->whyFalse(e20)) << "REQ: simply found the futhest root cause";
 
     // e31 <--------------- (F) <- e30
@@ -146,7 +153,7 @@ TYPED_TEST_P(DominoTest, strangeLoop_prevBothTrueAndFalse)
     PARA_DOM->setPrev("e32", {{"e33", true}});
     auto e30 = PARA_DOM->setPrev("e30", {{"e31", false}, {"e32", false}});
     EXPECT_EQ("e31==false", PARA_DOM->whyFalse(e30)) << "REQ: simply found the futhest root cause";
-    PARA_DOM->setStateOK({{"e31", true}});
+    PARA_DOM->setState({{"e31", true}});
     EXPECT_EQ("e31==true",  PARA_DOM->whyFalse(e30)) << "REQ: simply found the futhest root cause";
 
     // - this kind of loop can be very long & complex (much more than above examples)
@@ -174,13 +181,13 @@ TYPED_TEST_P(DominoTest, GOLD_multi_retOne)
     auto master = PARA_DOM->setPrev("master succ", {{"all agents succ", true}, {"user abort", false}});
     EXPECT_EQ("all agents succ==false", PARA_DOM->whyFalse(master)) << "REQ: get 1 root cause";
 
-    PARA_DOM->setStateOK({{"all agents succ", true}, {"user abort", true}});  // REQ: simultaneous state
+    PARA_DOM->setState({{"all agents succ", true}, {"user abort", true}});  // REQ: simultaneous state
     EXPECT_EQ("user abort==true", PARA_DOM->whyFalse(master)) << "REQ: get diff root cause";
 }
 TYPED_TEST_P(DominoTest, trueEvent_retEmpty)
 {
     auto master = PARA_DOM->setPrev("master succ", {{"all agents succ", true}, {"user abort", false}});
-    PARA_DOM->setStateOK({{"all agents succ", true}});
+    PARA_DOM->setState({{"all agents succ", true}});
     EXPECT_TRUE(PARA_DOM->state("master succ"));
     EXPECT_EQ("[Dom Reserved EvName] whyFalse() found nothing", PARA_DOM->whyFalse(master));
 }
@@ -203,7 +210,7 @@ TYPED_TEST_P(DominoTest, incCov_whyFalse_whyTrue)
     // (F)/
     // e13
     PARA_DOM->setPrev("e11", {{"e12", true}, {"e13", false}});
-    PARA_DOM->setStateOK({{"e12", true}});
+    PARA_DOM->setState({{"e12", true}});
     auto e10 = PARA_DOM->setPrev("e10", {{"e11", false}});
     EXPECT_EQ("e11==true", PARA_DOM->whyFalse(e10)) << "REQ: inc branch coverage";
 }
@@ -242,10 +249,10 @@ TYPED_TEST_P(DominoTest, nonConstInterface_shall_createUnExistEvent_withStateFal
     this->uniqueEVs_.insert(PARA_DOM->newEvent(""));  // REQ: no dup
     EXPECT_EQ(1u, this->uniqueEVs_.size());
 
-    // req: new ID by setStateOK()
-    PARA_DOM->setStateOK({{"", false}, {"e2", false}});
+    // req: new ID by setState()
+    PARA_DOM->setState({{"", false}, {"e2", false}});
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e2"));
-    PARA_DOM->setStateOK({{"", false}, {"e2", false}});
+    PARA_DOM->setState({{"", false}, {"e2", false}});
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e2"));
     EXPECT_EQ(2u, this->uniqueEVs_.size());
 
@@ -271,8 +278,8 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , GOLD_setState_thenGetIt
 
     , GOLD_forward_broadcast_trueLink
-    , setState_onlyAtChainHead
     , GOLD_forward_broadcast_falseLink
+    , setState_onlyAtChainHead
     , bugFix_shallDeduceAll
 
     , invalid_loopSelf

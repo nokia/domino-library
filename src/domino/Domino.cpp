@@ -211,7 +211,7 @@ Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrev
 }
 
 // ***********************************************************************************************
-bool Domino::setStateOK(const SimuEvents& aSimuEvents)
+size_t Domino::setState(const SimuEvents& aSimuEvents)
 {
     // validate
     for (auto&& en_state : aSimuEvents)
@@ -222,7 +222,7 @@ bool Domino::setStateOK(const SimuEvents& aSimuEvents)
         if (prev_[true].find(ev) != prev_[true].end() || prev_[false].find(ev) != prev_[false].end())
         {
             ERR("(Domino) refuse since en=" << en_state.first << " has prev (avoid break its prev logic)");
-            return false;
+            return 0;
         }
     }
 
@@ -249,8 +249,9 @@ bool Domino::setStateOK(const SimuEvents& aSimuEvents)
     }
 
     // call hdlr(s)
+    const auto nEvChg = evs.size();
     effect_();
-    return true;
+    return nEvChg;
 }
 
 // ***********************************************************************************************
