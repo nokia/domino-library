@@ -156,12 +156,12 @@ TYPED_TEST_P(RmHdlrDomTest, GOLD_rm_HdlrDom_resrc)
 {
     multiset<int> hdlrIDs;
     auto e1 = PARA_DOM->setHdlr("e1", [&hdlrIDs](){ hdlrIDs.insert(1); });
-    auto e2 = PARA_DOM->multiHdlrByAliasEv("e2", [&hdlrIDs](){ hdlrIDs.insert(2); }, "e1");
-
     PARA_DOM->setPriority("e1", EMsgPriority::EMsgPri_LOW);
-    PARA_DOM->setPriority("e2", EMsgPriority::EMsgPri_LOW);
-
     PARA_DOM->setState({{"e1", true}});
+    EXPECT_EQ(1u, MSG_SELF->nMsg()) << "REQ: e1's hdlr on road.";
+
+    PARA_DOM->setPriority("e2", EMsgPriority::EMsgPri_LOW);
+    auto e2 = PARA_DOM->multiHdlrByAliasEv("e2", [&hdlrIDs](){ hdlrIDs.insert(2); }, "e1");
     EXPECT_EQ(2u, MSG_SELF->nMsg()) << "REQ: 2 hdlrs on road.";
     EXPECT_EQ(0u, hdlrIDs.size()) << "REQ: not callback yet.";
 

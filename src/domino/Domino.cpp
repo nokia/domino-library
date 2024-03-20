@@ -38,6 +38,15 @@ bool Domino::deduceState_(const Event& aValidEv, bool aPrevType) const
 }
 
 // ***********************************************************************************************
+void Domino::effect_()
+{
+    for (auto&& ev : effectEVs_)
+        if (state(ev) == true)  // avoid multi-change
+            effect_(ev);
+    effectEVs_.clear();
+}
+
+// ***********************************************************************************************
 bool Domino::isNextFromTo_(const Event& aFromValidEv, const Event& aToValidEv) const
 {
     if (aFromValidEv == aToValidEv)
@@ -130,9 +139,7 @@ void Domino::pureSetState_(const Event& aValidEv, const bool aNewState)
         states_[aValidEv] = aNewState;
         HID("(Domino) Succeed, EvName=" << ev_en_[aValidEv] << " newState=" << aNewState);
         if (aNewState == true)
-            effect_(aValidEv);
-
-        sthChanged_ = true;
+            effectEVs_.insert(aValidEv);
     }
 }
 
@@ -161,6 +168,7 @@ void Domino::rmEv_(const Event& aValidEv)
         deduceState_(ev);
     for (auto&& ev : falseNextEVs)
         deduceState_(ev);
+    effect_();
 }
 
 // ***********************************************************************************************
@@ -175,16 +183,16 @@ Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrev
             return D_EVENT_FAILED_RET;
         }
     }
-
     pureSetPrev_(newEv, aSimuPrevEvents);
+
     deduceState_(newEv);
+    effect_();
     return newEv;
 }
 
 // ***********************************************************************************************
 void Domino::setState(const SimuEvents& aSimuEvents)
 {
-    sthChanged_ = false;
     for (auto&& en_state : aSimuEvents)
         pureSetState_(newEvent(en_state.first), en_state.second);
 
@@ -197,9 +205,7 @@ void Domino::setState(const SimuEvents& aSimuEvents)
         for (auto&& nextEV : ev_nextEVs->second)
             deduceState_(nextEV);
     }
-
-    if (!sthChanged_)
-        HID("(Domino) no state change but force deduce");
+    effect_();
 }
 
 // ***********************************************************************************************

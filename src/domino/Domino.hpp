@@ -47,6 +47,7 @@
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "UniLog.hpp"
@@ -105,6 +106,7 @@ protected:
 private:
     void deduceState_(const Event& aValidEv);
     bool deduceState_(const Event& aValidEv, bool aPrevType) const;
+    void effect_();
 
     void pureSetState_(const Event& aValidEv, const bool aNewState);
     void pureRmLink_(const Event& aValidEv, EvLinks& aMyLinks, EvLinks& aNeighborLinks);
@@ -122,8 +124,7 @@ private:
     EvLinks                      next_[N_EVENT_STATE];  // not unordered-map since most traversal
     unordered_map<EvName, Event> en_ev_;                // [evName]=event
     EvNames                      ev_en_;                // [event]=evName for easy debug
-    bool                         sthChanged_ = false;   // for debug
-//    unordered_set<Event>
+    unordered_set<Event>         effectEVs_;
 };
 
 }  // namespace
