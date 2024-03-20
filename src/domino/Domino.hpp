@@ -84,7 +84,7 @@ public:
 
     Event newEvent(const EvName&);
     Event getEventBy(const EvName&) const;
-    const EvNames evNames() const { return evNames_; }
+    const EvNames evNames() const { return ev_en_; }
 
     bool  state(const EvName& aEvName) const { return state(getEventBy(aEvName)); }
     bool  state(const Event& aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
@@ -94,7 +94,7 @@ public:
     EvName whyFalse(const Event&) const;
 
 protected:
-    const EvName& evName_(const Event& aValidEv) const { return evNames_.at(aValidEv); }
+    const EvName& evName_(const Event& aValidEv) const { return ev_en_.at(aValidEv); }
     virtual void  effect_(const Event& aValidEv) {}  // can't const since FreeDom will rm hdlr
 
     // - rm self dom's resource (RISK: aEv's leaf(s) may become orphan!!!)
@@ -120,9 +120,10 @@ private:
 
     EvLinks                      prev_[N_EVENT_STATE];  // not unordered-map since most traversal
     EvLinks                      next_[N_EVENT_STATE];  // not unordered-map since most traversal
-    unordered_map<EvName, Event> events_;               // [evName]=event
-    EvNames                      evNames_;              // [event]=evName for easy debug
+    unordered_map<EvName, Event> en_ev_;                // [evName]=event
+    EvNames                      ev_en_;                // [event]=evName for easy debug
     bool                         sthChanged_ = false;   // for debug
+//    unordered_set<Event>
 };
 
 }  // namespace
