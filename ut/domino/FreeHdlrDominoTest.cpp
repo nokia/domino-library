@@ -56,12 +56,12 @@ TYPED_TEST_P(FreeHdlrDominoTest, GOLD_afterCallback_autoRmHdlr)
     auto e1 = PARA_DOM->setHdlr("e1", this->h1_);
     EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e1)) << "REQ: default false (most hdlr used once)";
 
-    PARA_DOM->setState({{"e1", true}});
+    PARA_DOM->setStateOK({{"e1", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
     EXPECT_EQ(multiset<int>({1}), this->hdlrIDs_);  // cb
 
-    PARA_DOM->setState({{"e1", false}});
-    PARA_DOM->setState({{"e1", true}});
+    PARA_DOM->setStateOK({{"e1", false}});
+    PARA_DOM->setStateOK({{"e1", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid()) ;
     EXPECT_EQ(multiset<int>({1}), this->hdlrIDs_) << "REQ: no more cb since auto-rm";
 }
@@ -70,12 +70,12 @@ TYPED_TEST_P(FreeHdlrDominoTest, afterCallback_autoRmHdlr_aliasMultiHdlr)
     auto aliasE1 = PARA_DOM->multiHdlrByAliasEv("alias e1", this->h3_, "e1");
     EXPECT_FALSE(PARA_DOM->isRepeatHdlr(aliasE1));
 
-    PARA_DOM->setState({{"e1", true}});
+    PARA_DOM->setStateOK({{"e1", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
     EXPECT_EQ(multiset<int>({3}), this->hdlrIDs_);  // cb
 
-    PARA_DOM->setState({{"e1", false}});
-    PARA_DOM->setState({{"e1", true}});
+    PARA_DOM->setStateOK({{"e1", false}});
+    PARA_DOM->setStateOK({{"e1", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid()) ;
     EXPECT_EQ(multiset<int>({3}), this->hdlrIDs_) << "REQ: no more cb since auto-rm";
 }
@@ -87,12 +87,12 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, afterCallback_autoRmHdlr_multiHdlr)
     EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e1));
     EXPECT_FALSE(PARA_DOM->isRepeatHdlr(aliasE1));
 
-    PARA_DOM->setState({{"e1", true}});
+    PARA_DOM->setStateOK({{"e1", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
     EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_);  // cb
 
-    PARA_DOM->setState({{"e1", false}});
-    PARA_DOM->setState({{"e1", true}});
+    PARA_DOM->setStateOK({{"e1", false}});
+    PARA_DOM->setStateOK({{"e1", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid()) ;
     EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_) << "REQ: no more cb since auto-rm";
 
@@ -103,8 +103,8 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, afterCallback_autoRmHdlr_multiHdlr)
     MSG_SELF->handleAllMsg(MSG_SELF->getValid()) ;
     EXPECT_EQ(multiset<int>({1, 2, 3, 4, 5, 6}), this->hdlrIDs_) << "REQ: re-add ok";
 
-    PARA_DOM->setState({{"e1", false}});
-    PARA_DOM->setState({{"e1", true}});
+    PARA_DOM->setStateOK({{"e1", false}});
+    PARA_DOM->setStateOK({{"e1", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid()) ;
     EXPECT_EQ(multiset<int>({1, 2, 3, 4, 5, 6}), this->hdlrIDs_) << "REQ: no more cb since auto-rm";
 }
@@ -118,12 +118,12 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, afterCallback_notRmHdlr)
     EXPECT_TRUE(PARA_DOM->isRepeatHdlr(e1));
     EXPECT_TRUE(PARA_DOM->isRepeatHdlr(aliasE1));
 
-    PARA_DOM->setState({{"e1", true}});
+    PARA_DOM->setStateOK({{"e1", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());  // 1st cb
-    EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_) << "REQ: not auto-rm";
+    EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_);
 
-    PARA_DOM->setState({{"e1", false}, {"alias e1", false}});  // SameEv simpler than AliasEv
-    PARA_DOM->setState({{"e1", true}});
+    PARA_DOM->setStateOK({{"e1", false}});
+    PARA_DOM->setStateOK({{"e1", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());  // 2nd cb
     EXPECT_EQ(multiset<int>({1, 2, 3, 1, 2, 3}), this->hdlrIDs_) << "REQ: not auto-rm";
 
@@ -132,15 +132,15 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, afterCallback_notRmHdlr)
     PARA_DOM->multiHdlrOnSameEv("e1", this->h5_, "h2_");
     PARA_DOM->multiHdlrByAliasEv("alias e1", this->h6_, "e1");
 
-    PARA_DOM->setState({{"e1", false}, {"alias e1", false}});
-    PARA_DOM->setState({{"e1", true}});
+    PARA_DOM->setStateOK({{"e1", false}});
+    PARA_DOM->setStateOK({{"e1", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid()) ;
     EXPECT_EQ(multiset<int>({1, 2, 3, 1, 2, 3, 1, 2, 3}), this->hdlrIDs_) << "REQ: re-add nok";
 }
 TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_disorderAutoRm_ok)
 {
     PARA_DOM->multiHdlrOnSameEv("e1", this->h3_, "h3_");  // req: will rm before h1_ & h2_/h4_
-    PARA_DOM->setState({{"e1", true}});                   // h3_ on road
+    PARA_DOM->setStateOK({{"e1", true}});                 // h3_ on road
     PARA_DOM->setHdlr("e1", this->h1_);                   // h1_ on road
     PARA_DOM->multiHdlrOnSameEv("e1", this->h2_, "h2_");  // h2_ on road
     PARA_DOM->multiHdlrOnSameEv("e1", this->h4_, "h4_");  // h4_ on road
@@ -151,10 +151,10 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_disorderAutoRm_ok)
 TYPED_TEST_P(FreeHdlrDominoTest, multiCallbackOnRoad_noCrash_noMultiCall)
 {
     PARA_DOM->setHdlr("e1", this->h1_);
-    PARA_DOM->setState({{"e1", true}});  // 1st on road
+    PARA_DOM->setStateOK({{"e1", true}});  // 1st on road
 
-    PARA_DOM->setState({{"e1", false}});
-    PARA_DOM->setState({{"e1", true}});  // 2nd on road
+    PARA_DOM->setStateOK({{"e1", false}});
+    PARA_DOM->setStateOK({{"e1", true}});  // 2nd on road
 
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
     EXPECT_EQ(multiset<int>({1}), this->hdlrIDs_); // req: no more cb since auto-rm
@@ -162,10 +162,10 @@ TYPED_TEST_P(FreeHdlrDominoTest, multiCallbackOnRoad_noCrash_noMultiCall)
 TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_multiCallbackOnRoad_noCrash_noMultiCall)
 {
     PARA_DOM->multiHdlrOnSameEv("e1", this->h2_, "h2_");
-    PARA_DOM->setState({{"e1", true}});  // 1st h2_ on road
+    PARA_DOM->setStateOK({{"e1", true}});  // 1st h2_ on road
 
-    PARA_DOM->setState({{"e1", false}});
-    PARA_DOM->setState({{"e1", true}});  // 2nd h2_ on road
+    PARA_DOM->setStateOK({{"e1", false}});
+    PARA_DOM->setStateOK({{"e1", true}});  // 2nd h2_ on road
 
     PARA_DOM->setHdlr("e1", this->h1_);  // h1_ on road
     PARA_DOM->multiHdlrOnSameEv("e1", this->h3_, "h3_");  // h3_ on road
@@ -180,7 +180,7 @@ TYPED_TEST_P(FreeHdlrDominoTest, BugFix_noCrash_whenRmDom)
 {
     EXPECT_CALL(*this, h7()).Times(0);
     PARA_DOM->setHdlr("e1", [&](){ this->h7(); });
-    PARA_DOM->setState({{"e1", true}});
+    PARA_DOM->setStateOK({{"e1", true}});
     ASSERT_TRUE(MSG_SELF->nMsg());
     ObjAnywhere::set<TypeParam>(nullptr, *this);  // req: no mem leak when rm MsgSelf with h7 in msg queue
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());

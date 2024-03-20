@@ -87,9 +87,9 @@ public:
     Event getEventBy(const EvName&) const;
     const EvNames evNames() const { return ev_en_; }
 
-    bool  state(const EvName& aEvName) const { return state(getEventBy(aEvName)); }
-    bool  state(const Event& aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
-    void  setState(const SimuEvents&);
+    bool state(const EvName& aEvName) const { return state(getEventBy(aEvName)); }
+    bool state(const Event& aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
+    bool setStateOK(const SimuEvents&);
 
     Event  setPrev(const EvName&, const SimuEvents&);  // be careful not create eg ttue-false loop
     EvName whyFalse(const Event&) const;
@@ -108,7 +108,7 @@ private:
     bool deduceState_(const Event& aValidEv, bool aPrevType) const;
     void effect_();
 
-    void pureSetState_(const Event& aValidEv, const bool aNewState);
+    bool pureSetStateOK_(const Event& aValidEv, const bool aNewState);
     void pureRmLink_(const Event& aValidEv, EvLinks& aMyLinks, EvLinks& aNeighborLinks);
     void pureSetPrev_(const Event& aValidEv, const SimuEvents&);
 
@@ -172,6 +172,7 @@ private:
 // 2024-02-29  CSZ       8)setPrev() is simple-all-safe
 // 2024-03-03  CSZ       - enhance safe of rm ev (shall deduceState_(next))
 //                       - enhance safe of whyFalse() while keep safe of newEvent()
+// 2024-03-19  CSZ       9)1-go domino -> n-go domino
 // ***********************************************************************************************
 // - where:
 //   . start using domino for time-cost events

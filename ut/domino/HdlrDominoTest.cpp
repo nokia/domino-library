@@ -40,24 +40,24 @@ TYPED_TEST_P(HdlrDominoTest, GOLD_add_and_call)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);  // req: add hdlr
     EXPECT_CALL(*this, hdlr0());
-    PARA_DOM->setState({{"event", true}});  // req: F->T trigger the call
+    PARA_DOM->setStateOK({{"event", true}});   // req: F->T trigger the call
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     EXPECT_CALL(*this, hdlr1()).Times(0);  // REQ: T->T no call (only F->T is trigger)
-    PARA_DOM->setState({{"event", true}});
+    PARA_DOM->setStateOK({{"event", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     EXPECT_CALL(*this, hdlr1()).Times(0);  // REQ: T->F no call
-    PARA_DOM->setState({{"event", false}});
+    PARA_DOM->setStateOK({{"event", false}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     EXPECT_CALL(*this, hdlr1()).Times(0);  // REQ: F->F no call
-    PARA_DOM->setState({{"event", false}});
+    PARA_DOM->setStateOK({{"event", false}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(HdlrDominoTest, immediate_call)
 {
-    PARA_DOM->setState({{"event", true}});
+    PARA_DOM->setStateOK({{"event", true}});
     EXPECT_CALL(*this, hdlr0());
     PARA_DOM->setHdlr("event", this->hdlr0_);  // req: immediate call since already T from default (always=F)
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
@@ -66,9 +66,9 @@ TYPED_TEST_P(NofreeHdlrDominoTest, UC_reTrigger_reCall)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);
     EXPECT_CALL(*this, hdlr0()).Times(2);
-    PARA_DOM->setState({{"event", true}});     // 1st trigger
-    PARA_DOM->setState({{"event", false}});
-    PARA_DOM->setState({{"event", true}});     // 2nd trigger
+    PARA_DOM->setStateOK({{"event", true}});  // 1st trigger
+    PARA_DOM->setStateOK({{"event", false}});
+    PARA_DOM->setStateOK({{"event", true}});  // 2nd trigger
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 
@@ -82,13 +82,13 @@ TYPED_TEST_P(HdlrDominoTest, GOLD_trigger_chain_call)
     PARA_DOM->setPrev("event", {{"prev", true}});  // upstream
 
     EXPECT_CALL(*this, hdlr0());  // REQ: upstream trigger downstream call
-    PARA_DOM->setState({{"prev", true}});
+    PARA_DOM->setStateOK({{"prev", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(HdlrDominoTest, immediate_chain_call)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);
-    PARA_DOM->setState({{"prev", true}});
+    PARA_DOM->setStateOK({{"prev", true}});
     EXPECT_CALL(*this, hdlr0());  // REQ: immediate call
     PARA_DOM->setPrev("event", {{"prev", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
@@ -102,25 +102,14 @@ TYPED_TEST_P(NofreeHdlrDominoTest, GOLD_trigger_chain_many_calls)
     EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2());
-    PARA_DOM->setState({{"e0", true}});     // T->T->T, req: trigger all calls
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
-
-    EXPECT_CALL(*this, hdlr0()).Times(0);
-    EXPECT_CALL(*this, hdlr1()).Times(0);
-    EXPECT_CALL(*this, hdlr2()).Times(0);
-    PARA_DOM->setState({{"e2", false}});    // T,T,TF, req: not trigger any
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
-
-    EXPECT_CALL(*this, hdlr0()).Times(0);
-    EXPECT_CALL(*this, hdlr1()).Times(0);
-    EXPECT_CALL(*this, hdlr2()).Times(0);
-    PARA_DOM->setState({{"e0", false}});    // FT,T,F
+    PARA_DOM->setStateOK({{"e0", true}});  // T->T->T, req: trigger all calls
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     EXPECT_CALL(*this, hdlr0());
-    EXPECT_CALL(*this, hdlr1()).Times(0);
+    EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2());
-    PARA_DOM->setState({{"e0", true}});     // FT->T->FT, req: trigger only FT
+    PARA_DOM->setStateOK({{"e0", false}});  // F->F->F
+    PARA_DOM->setStateOK({{"e0", true}});   // T->T->T, req: trigger all calls
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(HdlrDominoTest, wrongOrderPrev_wrongCallback)
@@ -146,7 +135,7 @@ TYPED_TEST_P(HdlrDominoTest, multiHdlr_onOneEvent_nok)
 
     EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1()).Times(0);
-    PARA_DOM->setState({{"event", true}});
+    PARA_DOM->setStateOK({{"event", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(HdlrDominoTest, GOLD_multiHdlr_onDiffEvent_ok)
@@ -158,7 +147,7 @@ TYPED_TEST_P(HdlrDominoTest, GOLD_multiHdlr_onDiffEvent_ok)
     EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2());
-    PARA_DOM->setState({{"event", true}});
+    PARA_DOM->setStateOK({{"event", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(HdlrDominoTest, multiHdlr_onOneAliasEvent_nok)
@@ -170,7 +159,7 @@ TYPED_TEST_P(HdlrDominoTest, multiHdlr_onOneAliasEvent_nok)
     EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2()).Times(0);
-    PARA_DOM->setState({{"event", true}});
+    PARA_DOM->setStateOK({{"event", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(HdlrDominoTest, BugFix_invalidHdlr_noCrash)
@@ -181,7 +170,7 @@ TYPED_TEST_P(HdlrDominoTest, BugFix_invalidHdlr_noCrash)
     PARA_DOM->multiHdlrByAliasEv("alias e1", nullptr, "e1");
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("alias e1")) << "REQ: not create new Ev";
 
-    PARA_DOM->setState({{"e1", true}});  // req: no crash
+    PARA_DOM->setStateOK({{"e1", true}});  // req: no crash
 
     EXPECT_CALL(*this, hdlr0());  // REQ: can add hdlr upon null
     PARA_DOM->setHdlr("e1", this->hdlr0_);
@@ -202,7 +191,7 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlr_thenNoCallback)
     ASSERT_TRUE(PARA_DOM->rmOneHdlrOK("event"));
 
     EXPECT_CALL(*this, hdlr0()).Times(0);  // REQ: no call since rm
-    PARA_DOM->setState({{"event", true}});
+    PARA_DOM->setStateOK({{"event", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(HdlrDominoTest, rmHdlr_fail)
@@ -224,7 +213,7 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlrOnRoad_noCallback)
 {
     PARA_DOM->multiHdlrByAliasEv("e0", this->hdlr0_, "e");
     PARA_DOM->multiHdlrByAliasEv("e1", this->hdlr1_, "e");
-    PARA_DOM->setState({{"e", true}});  // cb on road
+    PARA_DOM->setStateOK({{"e", true}});  // cb on road
     EXPECT_TRUE(MSG_SELF->nMsg());
     EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("e0")) << "REQ: rm hdlr on-road";
 
@@ -235,22 +224,22 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlrOnRoad_noCallback)
 TYPED_TEST_P(NofreeHdlrDominoTest, rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigger)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);
-    PARA_DOM->setState({{"event", true}});
+    PARA_DOM->setStateOK({{"event", true}});
     EXPECT_EQ(1U, MSG_SELF->nMsg(EMsgPri_NORM));  // 1 cb on road
 
-    PARA_DOM->setState({{"event", false}});
-    PARA_DOM->setState({{"event", true}});
+    PARA_DOM->setStateOK({{"event", false}});
+    PARA_DOM->setStateOK({{"event", true}});
     EXPECT_EQ(2U, MSG_SELF->nMsg(EMsgPri_NORM));  // 2 cb on road
 
     EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event")) << "REQ: rm hdlr include all on-road";
 
-    PARA_DOM->setState({{"event", false}});    // not auto-cb
+    PARA_DOM->setStateOK({{"event", false}});  // not auto-cb
     PARA_DOM->setHdlr("event", this->hdlr0_);  // re-add hdlr
 
     EXPECT_CALL(*this, hdlr0()).Times(0);  // REQ: no cb since rm-ed
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
-    PARA_DOM->setState({{"event", true}});
+    PARA_DOM->setStateOK({{"event", true}});
     ASSERT_TRUE(MSG_SELF->nMsg());
     EXPECT_CALL(*this, hdlr0());  // REQ: new cb
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
@@ -258,7 +247,7 @@ TYPED_TEST_P(NofreeHdlrDominoTest, rmHdlrOnRoad_thenReAdd_noCallbackUntilReTrigg
 TYPED_TEST_P(NofreeHdlrDominoTest, hdlrOnRoad_thenRmDom_noCrash_noLeak)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);
-    PARA_DOM->setState({{"event", true}});
+    PARA_DOM->setStateOK({{"event", true}});
     EXPECT_EQ(1U, MSG_SELF->nMsg(EMsgPri_NORM));  // 1 cb on road
 
     ObjAnywhere::set<TypeParam>(nullptr, *this);  // rm dom
@@ -362,7 +351,7 @@ TYPED_TEST_P(HdlrDominoTest, replace_msgSelf)  // checked by CI valgrind
     ASSERT_FALSE(PARA_DOM->setMsgSelfOK(nullptr)) << "REQ: msgSelf=null is not safe for HdlrDomino";
 
     PARA_DOM->setHdlr("event", this->hdlr0_);
-    PARA_DOM->setState({{"event", true}});  // 1 msg in old msgSelf
+    PARA_DOM->setStateOK({{"event", true}});  // 1 msg in old msgSelf
     auto msgSelf = MAKE_PTR<MsgSelf>(this->uniLogName());
     ASSERT_FALSE(PARA_DOM->setMsgSelfOK(msgSelf)) << "REQ: can NOT set new msgSelf when unhandled msg in old";
 

@@ -14,16 +14,24 @@ void Domino::deduceState_(const Event& aValidEv)
 {
     HID("(Domino) en=" << evName_(aValidEv));
 
+    // recalc self state
     auto newState = deduceState_(aValidEv, true)
         ? deduceState_(aValidEv, false)
         : false;
+    if (pureSetStateOK_(aValidEv, newState))
+    {
+        // deduce impacted (true branch)
+        auto&& ev_nextEVs = next_[true].find(aValidEv);
+        if (ev_nextEVs != next_[true].end())
+            for (auto&& nextEV : ev_nextEVs->second)
+                deduceState_(nextEV);
 
-    pureSetState_(aValidEv, newState);
-    auto&& ev_nextEVs = next_[true].find(aValidEv);
-    if (ev_nextEVs == next_[true].end())  // no more next
-        return;
-    for (auto&& nextEV : ev_nextEVs->second)
-        deduceState_(nextEV);
+        // deduce impacted (false branch)
+        ev_nextEVs = next_[false].find(aValidEv);
+        if (ev_nextEVs != next_[false].end())
+            for (auto&& nextEV : ev_nextEVs->second)
+                deduceState_(nextEV);
+    }
 }
 
 // ***********************************************************************************************
@@ -132,7 +140,7 @@ void Domino::pureSetPrev_(const Event& aValidEv, const SimuEvents& aSimuPrevEven
 }
 
 // ***********************************************************************************************
-void Domino::pureSetState_(const Event& aValidEv, const bool aNewState)
+bool Domino::pureSetStateOK_(const Event& aValidEv, const bool aNewState)
 {
     if (states_[aValidEv] != aNewState)
     {
@@ -140,7 +148,9 @@ void Domino::pureSetState_(const Event& aValidEv, const bool aNewState)
         HID("(Domino) Succeed, EvName=" << ev_en_[aValidEv] << " newState=" << aNewState);
         if (aNewState == true)
             effectEVs_.insert(aValidEv);
+        return true;
     }
+    return false;
 }
 
 // ***********************************************************************************************
@@ -153,27 +163,32 @@ void Domino::rmEv_(const Event& aValidEv)
     auto&& falseNextEVs = (ev_nextEVs == next_[false].end()) ? Events() : ev_nextEVs->second;
     HID("(Domino) en=" << evName_(aValidEv) << ", nT=" << trueNextEVs.size() << ", nF=" << falseNextEVs.size());
 
+    // rm link
     pureRmLink_(aValidEv, prev_[true],  next_[true]);
     pureRmLink_(aValidEv, prev_[false], next_[false]);
     pureRmLink_(aValidEv, next_[true],  prev_[true]);
     pureRmLink_(aValidEv, next_[false], prev_[false]);
 
-    pureSetState_(aValidEv, false);  // must before clean ev_en_
-
+    // rm self resrc
+    pureSetStateOK_(aValidEv, false);  // must before clean ev_en_
     en_ev_.erase(ev_en_[aValidEv]);
     auto ret = ev_en_.erase(aValidEv);
     HID("[Domino] ev=" << aValidEv << ", ret=" << ret);
 
+    // deduce impacted
     for (auto&& ev : trueNextEVs)
         deduceState_(ev);
     for (auto&& ev : falseNextEVs)
         deduceState_(ev);
+
+    // call hdlr
     effect_();
 }
 
 // ***********************************************************************************************
 Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrevEvents)
 {
+    // validate
     auto&& newEv = newEvent(aEvName);
     for (auto&& prevEn_state : aSimuPrevEvents)
     {
@@ -183,29 +198,59 @@ Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrev
             return D_EVENT_FAILED_RET;
         }
     }
+
+    // set prev
     pureSetPrev_(newEv, aSimuPrevEvents);
 
+    // deduce all impacted
     deduceState_(newEv);
+
+    // call hdlr
     effect_();
     return newEv;
 }
 
 // ***********************************************************************************************
-void Domino::setState(const SimuEvents& aSimuEvents)
+bool Domino::setStateOK(const SimuEvents& aSimuEvents)
 {
-    for (auto&& en_state : aSimuEvents)
-        pureSetState_(newEvent(en_state.first), en_state.second);
-
+    // validate
     for (auto&& en_state : aSimuEvents)
     {
-        auto&& ev_nextEVs = next_[en_state.second].find(en_ev_[en_state.first]);
-        if (ev_nextEVs == next_[en_state.second].end())
+        const auto ev = getEventBy(en_state.first);  // not create new ev if validation fail
+        if (ev == D_EVENT_FAILED_RET)
             continue;
-        HID("(Domino) en=" << en_state.first << ", nNext=" << ev_nextEVs->second.size());
-        for (auto&& nextEV : ev_nextEVs->second)
-            deduceState_(nextEV);
+        if (prev_[true].find(ev) != prev_[true].end() || prev_[false].find(ev) != prev_[false].end())
+        {
+            ERR("(Domino) refuse since en=" << en_state.first << " has prev (avoid break its prev logic)");
+            return false;
+        }
     }
+
+    // set state(s)
+    set<Event> evs;
+    for (auto&& en_state : aSimuEvents)
+    {
+        const auto ev = newEvent(en_state.first);
+        if (pureSetStateOK_(ev, en_state.second))  // real changed
+            evs.insert(ev);
+    }
+
+    // decude state(s)
+    for (auto&& ev : evs)
+    {
+        auto&& ev_nextEVs = next_[true].find(ev);
+        if (ev_nextEVs != next_[true].end())
+            for (auto&& nextEV : ev_nextEVs->second)
+                deduceState_(nextEV);
+        ev_nextEVs = next_[false].find(ev);
+        if (ev_nextEVs != next_[false].end())
+            for (auto&& nextEV : ev_nextEVs->second)
+                deduceState_(nextEV);
+    }
+
+    // call hdlr(s)
     effect_();
+    return true;
 }
 
 // ***********************************************************************************************

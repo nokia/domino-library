@@ -46,7 +46,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, GOLD_multiAddHdlr_ok)
     EXPECT_CALL(*this, hdlr0());  // req: legacy
     EXPECT_CALL(*this, hdlr1());  // req: multi-hdlr
     EXPECT_CALL(*this, hdlr2());  // req: multi-hdlr
-    PARA_DOM->setState({{"event", true}});
+    PARA_DOM->setStateOK({{"event", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(MultiHdlrDominoTest, aloneAddHdlr_ok)
@@ -54,7 +54,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, aloneAddHdlr_ok)
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr1_, "this->hdlr1_");  // req: alone add & call
 
     EXPECT_CALL(*this, hdlr1());
-    PARA_DOM->setState({{"event", true}});
+    PARA_DOM->setStateOK({{"event", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(MultiHdlrDominoTest, multiAddHdlr_bySameHdlrName_nok)
@@ -63,7 +63,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, multiAddHdlr_bySameHdlrName_nok)
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr2_, "this->hdlr1_");  // req: same HdlrName -> fail
     EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2()).Times(0);
-    PARA_DOM->setState({{"event", true}});
+    PARA_DOM->setStateOK({{"event", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 // ***********************************************************************************************
@@ -72,7 +72,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, multiAddHdlr_bySameHdlrName_nok)
 TYPED_TEST_P(MultiHdlrDominoTest, immediateCallback_ok)
 {
     EXPECT_CALL(*this, hdlr1());
-    PARA_DOM->setState({{"event", true}});
+    PARA_DOM->setStateOK({{"event", true}});
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr1_, "this->hdlr1_");  // req: immediate call
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
@@ -83,13 +83,13 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, repeatCallback_ok)
 
     EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1());
-    PARA_DOM->setState({{"event", true}});  // req: samultaneous call
+    PARA_DOM->setStateOK({{"event", true}});  // req: samultaneous call
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
-    PARA_DOM->setState({{"event", false}});
+    PARA_DOM->setStateOK({{"event", false}});
     EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1());
-    PARA_DOM->setState({{"event", true}});  // req: repeat call
+    PARA_DOM->setStateOK({{"event", true}});  // req: repeat call
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(MultiHdlrDominoTest, BugFix_invalidHdlr_noCrash)
@@ -100,14 +100,14 @@ TYPED_TEST_P(MultiHdlrDominoTest, BugFix_invalidHdlr_noCrash)
     PARA_DOM->multiHdlrOnSameEv("e1", nullptr, "e1 multi");
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1")) << "REQ: not create new Ev";
 
-    PARA_DOM->setState({{"e1", true}});  // req: no crash
+    PARA_DOM->setStateOK({{"e1", true}});  // req: no crash
 
-    PARA_DOM->setState({{"e1", false}});
+    PARA_DOM->setStateOK({{"e1", false}});
     PARA_DOM->setHdlr("e1", this->hdlr0_);
     PARA_DOM->multiHdlrOnSameEv("e1", this->hdlr1_, "e1 multi");
     EXPECT_CALL(*this, hdlr0());  // req: can add hdlr
     EXPECT_CALL(*this, hdlr1());  // req: can add hdlr
-    PARA_DOM->setState({{"e1", true}});
+    PARA_DOM->setStateOK({{"e1", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 
@@ -125,7 +125,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, chain_callbackAllHdlr)
     EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1());
     EXPECT_CALL(*this, hdlr2());
-    PARA_DOM->setState({{"prev", true}});
+    PARA_DOM->setStateOK({{"prev", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(MultiHdlrDominoTest, newChain_immediateCallbackAll)
@@ -133,7 +133,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, newChain_immediateCallbackAll)
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr1_, "this->hdlr1_");
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr2_, "this->hdlr2_");
-    PARA_DOM->setState({{"prev", true}});
+    PARA_DOM->setStateOK({{"prev", true}});
 
     EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1());
@@ -149,10 +149,10 @@ TYPED_TEST_P(MultiHdlrDominoTest, newChain_dupSatisfy_callbackOnce)
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr1_, "this->hdlr1_");
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr2_, "this->hdlr2_");
-    PARA_DOM->setState({{"event", true}});         // 1st satisfy
+    PARA_DOM->setStateOK({{"event", true}});  // 1st satisfy
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
-    PARA_DOM->setState({{"prev", true}});
+    PARA_DOM->setStateOK({{"prev", true}});
     PARA_DOM->setPrev("event", {{"prev", true}});  // 2nd satisfy
     EXPECT_EQ(0u, MSG_SELF->nMsg());
 }
@@ -170,7 +170,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, chain_sameHdlrOnDiffEvent_callbackEach)
     EXPECT_CALL(*this, hdlr0()).Times(2);
     EXPECT_CALL(*this, hdlr1()).Times(2);
     EXPECT_CALL(*this, hdlr2()).Times(2);
-    PARA_DOM->setState({{"prev prev", true}});
+    PARA_DOM->setStateOK({{"prev prev", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(MultiHdlrDominoTest, multiPrev_onlyAllSatisfy_thenCallback)
@@ -192,7 +192,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, multiPrev_onlyAllSatisfy_thenCallback)
     PARA_DOM->setPrev("event2", {{"prev2", true}});
     EXPECT_EQ(0u, MSG_SELF->nMsg());
 
-    PARA_DOM->setState({{"prev1", true}, {"prev2", true}});
+    PARA_DOM->setStateOK({{"prev1", true}, {"prev2", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 
@@ -208,7 +208,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, rmHdlr_byHdlrName)
 
     EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1()).Times(0);
-    PARA_DOM->setState({{"event", true}});
+    PARA_DOM->setStateOK({{"event", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
     EXPECT_FALSE(PARA_DOM->rmOneHdlrOK("event", "this->hdlr1_")) << "REQ: rm unexist hdlr";
@@ -222,7 +222,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, rmLegacyHdlr_byNoHdlrName)
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1());
-    PARA_DOM->setState({{"event", true}});
+    PARA_DOM->setStateOK({{"event", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 // - easier than name-by-name rm
@@ -236,7 +236,7 @@ TYPED_TEST_P(MultiHdlrDominoTest, rmHdlr_all)
     PARA_DOM->rmAllHdlr("event");
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1()).Times(0);
-    PARA_DOM->setState({{"event", true}});
+    PARA_DOM->setStateOK({{"event", true}});
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 }
 TYPED_TEST_P(MultiHdlrDominoTest, rmHdlr_subtree)
@@ -264,7 +264,7 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, rmHdlrOnRoad)
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr1_, "this->hdlr1_");
     PARA_DOM->multiHdlrOnSameEv("event", this->hdlr2_, "this->hdlr2_");
-    PARA_DOM->setState({{"event", true}});  // 3 cb on road
+    PARA_DOM->setStateOK({{"event", true}});  // 3 cb on road
     EXPECT_TRUE(MSG_SELF->nMsg());
     EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event")) << "REQ: invalidate HdlrDom";
     EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("event", "this->hdlr2_")) << "REQ: invalidate MultiDom";
@@ -274,8 +274,8 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, rmHdlrOnRoad)
     EXPECT_CALL(*this, hdlr2()).Times(0);
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
 
-    PARA_DOM->setState({{"event", false}});
-    PARA_DOM->setState({{"event", true}});  // retrigger
+    PARA_DOM->setStateOK({{"event", false}});
+    PARA_DOM->setStateOK({{"event", true}});  // retrigger
 
     EXPECT_CALL(*this, hdlr0()).Times(0);
     EXPECT_CALL(*this, hdlr1());

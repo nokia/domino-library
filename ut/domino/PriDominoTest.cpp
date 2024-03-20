@@ -24,7 +24,7 @@ struct PriDominoTest : public UtInitObjAnywhere
     {
         hdlrIDs_.push(5);
 
-        ObjAnywhere::get<aParaDom>(*this)->setState({{"e2", true}});
+        ObjAnywhere::get<aParaDom>(*this)->setStateOK({{"e2", true}});
         ObjAnywhere::get<aParaDom>(*this)->setPriority("e2", EMsgPri_HIGH);
         ObjAnywhere::get<aParaDom>(*this)->setHdlr("e2", d2EventHdlr_);          // raise when d5() is exe
     };
@@ -63,23 +63,23 @@ TYPED_TEST_P(PriDominoTest, defaultPriority)
 // ***********************************************************************************************
 TYPED_TEST_P(PriDominoTest, GOLD_setPriority_thenPriorityFifoCallback)
 {
-    PARA_DOM->setState({{"e1", true}});
+    PARA_DOM->setStateOK({{"e1", true}});
     PARA_DOM->setHdlr("e1", this->d1EventHdlr_);
 
-    PARA_DOM->setState({{"e5", true}});
+    PARA_DOM->setStateOK({{"e5", true}});
     PARA_DOM->setPriority("e5", EMsgPri_HIGH);  // req: higher firstly, & derived callback
     PARA_DOM->setHdlr("e5", this->d5EventHdlr_);
 
-    PARA_DOM->setState({{"e3", true}});
+    PARA_DOM->setStateOK({{"e3", true}});
     PARA_DOM->setHdlr("e3", this->d3EventHdlr_);  // req: fifo same priority
 
-    PARA_DOM->setState({{"e4", true}});
+    PARA_DOM->setStateOK({{"e4", true}});
     PARA_DOM->setPriority("e4", EMsgPri_HIGH);
     PARA_DOM->setHdlr("e4", this->d4EventHdlr_);
 
     PARA_DOM->setPriority("e4", EMsgPri_NORM);  // req: new pri effective immediately, but no impact on road
-    PARA_DOM->setState({{"e4", false}});
-    PARA_DOM->setState({{"e4", true}});
+    PARA_DOM->setStateOK({{"e4", false}});
+    PARA_DOM->setStateOK({{"e4", true}});
 
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
     if (this->hdlrIDs_.size() == 6) EXPECT_EQ(queue<int>({5, 4, 2, 1, 3, 4}), this->hdlrIDs_);

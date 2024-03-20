@@ -36,12 +36,12 @@ TYPED_TEST_P(RmDomTest, GOLD_rm_dom_resrc)
 
     EXPECT_FALSE(PARA_DOM->state("e1")) << "REQ: reset state of removed Ev.";
 
-    PARA_DOM->setState({{"e0", true}});
-    PARA_DOM->setState({{"e0", false}});
+    PARA_DOM->setStateOK({{"e0", true}});
+    PARA_DOM->setStateOK({{"e0", false}});
     EXPECT_FALSE(PARA_DOM->state("e1")) << "REQ: e1's uplink is removed.";
 
     EXPECT_FALSE(PARA_DOM->state("e2"));
-    PARA_DOM->setState({{"e1b", true}});
+    PARA_DOM->setStateOK({{"e1b", true}});
     EXPECT_TRUE(PARA_DOM->state("e2")) << "REQ: e1's downlink is removed.";
 
     EXPECT_EQ(0u, PARA_DOM->evNames().count(e1)) << "REQ: EN is removed.";
@@ -157,7 +157,7 @@ TYPED_TEST_P(RmHdlrDomTest, GOLD_rm_HdlrDom_resrc)
     multiset<int> hdlrIDs;
     auto e1 = PARA_DOM->setHdlr("e1", [&hdlrIDs](){ hdlrIDs.insert(1); });
     PARA_DOM->setPriority("e1", EMsgPriority::EMsgPri_LOW);
-    PARA_DOM->setState({{"e1", true}});
+    PARA_DOM->setStateOK({{"e1", true}});
     EXPECT_EQ(1u, MSG_SELF->nMsg()) << "REQ: e1's hdlr on road.";
 
     PARA_DOM->setPriority("e2", EMsgPriority::EMsgPri_LOW);
@@ -196,7 +196,7 @@ TYPED_TEST_P(RmHdlrDomTest, rmFalsePrev_callHdlr_ifSatisfied)
     multiset<int> hdlrIDs;
     PARA_DOM->setHdlr("e0", [&hdlrIDs](){ hdlrIDs.insert(0); });
     PARA_DOM->setPrev("e0", {{"e1", true}, {"e2", false}});
-    PARA_DOM->setState({{"e1", true}, {"e2", true}});
+    PARA_DOM->setStateOK({{"e1", true}, {"e2", true}});
     EXPECT_FALSE(PARA_DOM->state("e0"));
 
     EXPECT_TRUE(PARA_DOM->rmEvOK("e2")) << "req: rm succ";
@@ -270,7 +270,7 @@ TYPED_TEST_P(RmMhdlrDomTest, GOLD_rm_MhdlrDom_resrc)
     auto e1 = PARA_DOM->setHdlr("e1", [&hdlrIDs](){ hdlrIDs.insert(1); });
     PARA_DOM->multiHdlrOnSameEv("e1", [&hdlrIDs](){ hdlrIDs.insert(2); }, "h2");
 
-    PARA_DOM->setState({{"e1", true}});
+    PARA_DOM->setStateOK({{"e1", true}});
     EXPECT_EQ(2u, MSG_SELF->nMsg()) << "REQ: 2 hdlrs on road.";
     EXPECT_EQ(0u, hdlrIDs.size()) << "REQ: not callback yet.";
 
