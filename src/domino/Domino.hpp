@@ -119,6 +119,8 @@ private:
 
     EvName whyTrue_(const Event& aValidEv) const;
 
+    static const Events& findPeerEVs(const Event&, const EvLinks&);
+
     // -------------------------------------------------------------------------------------------
     vector<bool>                 states_;               // bitmap & dyn expand, [event]=t/f
 
