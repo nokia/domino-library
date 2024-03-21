@@ -57,11 +57,11 @@ void Domino::effect_()
 // ***********************************************************************************************
 bool Domino::isNextFromTo_(const Event& aFromValidEv, const Event& aToValidEv) const
 {
-    if (aFromValidEv == aToValidEv)
+    if (aFromValidEv == aToValidEv)  // self loop
         return true;
-    if (isNextFromToVia_(aFromValidEv, aToValidEv, next_[true]))
+    if (isNextFromToVia_(aFromValidEv, aToValidEv, next_[true]))  // loop via T-br
         return true;
-    return isNextFromToVia_(aFromValidEv, aToValidEv, next_[false]);
+    return isNextFromToVia_(aFromValidEv, aToValidEv, next_[false]);  // may loop via F-br
 }
 bool Domino::isNextFromToVia_(const Event& aFromValidEv, const Event& aToValidEv, const EvLinks& aViaEvLinks) const
 {
@@ -176,10 +176,10 @@ void Domino::rmEv_(const Event& aValidEv)
     HID("[Domino] ev=" << aValidEv << ", ret=" << ret);
 
     // deduce impacted
-    for (auto&& ev : trueNextEVs)
-        deduceState_(ev);
-    for (auto&& ev : falseNextEVs)
-        deduceState_(ev);
+    for (auto&& nextEV : trueNextEVs)
+        deduceState_(nextEV);
+    for (auto&& nextEV : falseNextEVs)
+        deduceState_(nextEV);
 
     // call hdlr
     effect_();
@@ -189,10 +189,10 @@ void Domino::rmEv_(const Event& aValidEv)
 Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrevEvents)
 {
     // validate
-    auto&& newEv = newEvent(aEvName);
+    auto fromEv = newEvent(aEvName);  // complex by getEventBy(), not worth
     for (auto&& prevEn_state : aSimuPrevEvents)
     {
-        if (isNextFromTo_(newEv, newEvent(prevEn_state.first)))
+        if (isNextFromTo_(fromEv, newEvent(prevEn_state.first)))
         {
             WRN("(Domino) !!!Failed, avoid loop between " << aEvName << " & " << prevEn_state.first);
             return D_EVENT_FAILED_RET;
@@ -200,14 +200,14 @@ Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrev
     }
 
     // set prev
-    pureSetPrev_(newEv, aSimuPrevEvents);
+    pureSetPrev_(fromEv, aSimuPrevEvents);
 
     // deduce all impacted
-    deduceState_(newEv);
+    deduceState_(fromEv);
 
     // call hdlr
     effect_();
-    return newEv;
+    return fromEv;
 }
 
 // ***********************************************************************************************
@@ -249,9 +249,8 @@ size_t Domino::setState(const SimuEvents& aSimuEvents)
     }
 
     // call hdlr(s)
-    const auto nEvChg = evs.size();
     effect_();
-    return nEvChg;
+    return evs.size();
 }
 
 // ***********************************************************************************************

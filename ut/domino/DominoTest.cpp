@@ -107,7 +107,7 @@ TYPED_TEST_P(DominoTest, bugFix_shallDeduceAll)
 // ***********************************************************************************************
 TYPED_TEST_P(DominoTest, invalid_loopSelf)
 {
-    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e1", {{"e1", true}})) << "REQ: can't loop self";
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e1", {{"e1", true }})) << "REQ: can't loop self";
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e1", {{"e1", false}})) << "REQ: can't loop self";
 }
 TYPED_TEST_P(DominoTest, invalid_deepLoop)
@@ -155,6 +155,16 @@ TYPED_TEST_P(DominoTest, strangeLoop_prevBothTrueAndFalse)
     EXPECT_EQ("e31==false", PARA_DOM->whyFalse(e30)) << "REQ: simply found the futhest root cause";
     PARA_DOM->setState({{"e31", true}});
     EXPECT_EQ("e31==true",  PARA_DOM->whyFalse(e30)) << "REQ: simply found the futhest root cause";
+
+    // e44 <-(F)- e43 <-(T)- e41 <-(T)- e40
+    //               \                 /
+    //                <-(T)- e42 <-(F)-
+    auto e40 = PARA_DOM->setPrev("e40", {{"e41", true}, {"e42", false}});
+    PARA_DOM->setPrev("e41", {{"e43", true}});
+    PARA_DOM->setPrev("e42", {{"e43", true}});
+    EXPECT_EQ("e43==false", PARA_DOM->whyFalse(e40));
+    PARA_DOM->setPrev("e43", {{"e44", false}});
+    EXPECT_EQ("e44==false", PARA_DOM->whyFalse(e40)) << "inc cov: e40=T via e41, then =F via e42";
 
     // - this kind of loop can be very long & complex (much more than above examples)
     //   . when occur, the end-event can't be satisfied forever (user's fault, not Domino)
