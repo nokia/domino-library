@@ -87,10 +87,9 @@ template<typename From>
 SafeAdr<T>::SafeAdr(const SafeAdr<From>& aSafeFrom)
     : pT_(aSafeFrom.template cast_get<T>())
 {
-    HID(typeid(From).name() << " to " << typeid(T).name());
     if (! pT_)
     {
-        HID("pT_ == nullptr");  // HID: ut debug only
+        HID("pT_ == nullptr");  // HID: ut debug only in MT env
         return;
     }
     realType_ = aSafeFrom.realType();
@@ -98,10 +97,10 @@ SafeAdr<T>::SafeAdr(const SafeAdr<From>& aSafeFrom)
     preVoidType_ = aSafeFrom.preVoidType();
     if (! is_same<T, void>::value)
     {
-        HID("valid cast to non-void");
+        //HID("Valid cast " << typeid(From).name() << " to " << typeid(T).name());
         return;
     }
-    HID("cast non-void to void (void-to-void is covered by copy constructor)");
+    //HID("cast non-void to void (void-to-void is covered by copy constructor)");
     preVoidType_ = &typeid(From);
 }
 
@@ -109,7 +108,7 @@ SafeAdr<T>::SafeAdr(const SafeAdr<From>& aSafeFrom)
 template<typename T>
 shared_ptr<T> SafeAdr<T>::cast_get() const  // most common usage, standalone is faster
 {
-    HID("(SafeAdr) to self");
+    //HID("(SafeAdr) to self");
     return pT_;
 }
 template<typename T>
@@ -118,22 +117,22 @@ shared_ptr<To> SafeAdr<T>::cast_get() const
 {
     if (is_base_of<To, T>::value)  // is_convertible is not safe to static_pointer_cast eg int* to float*
     {
-        HID("(SafeAdr) Derive to Base (include to self)");
+        //HID("(SafeAdr) Derive to Base (include to self)");
         return static_pointer_cast<To>(pT_);
     }
     if (&typeid(To) == realType_)
     {
-        HID("(SafeAdr) any to origin");
+        //HID("(SafeAdr) any to origin");
         return static_pointer_cast<To>(pT_);
     }
     if (&typeid(To) == preVoidType_)
     {
-        HID("(SafeAdr) any to type-before-cast-to-void");
+        //HID("(SafeAdr) any to type-before-cast-to-void");
         return static_pointer_cast<To>(pT_);
     }
     if (is_same<To, void>::value)
     {
-        HID("(SafeAdr) any to void (for container to store diff types)");
+        //HID("(SafeAdr) any to void (for container to store diff types)");
         return static_pointer_cast<To>(pT_);
     }
     HID("(SafeAdr) unsupported cast");

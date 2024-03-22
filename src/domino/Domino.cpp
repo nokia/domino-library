@@ -9,6 +9,8 @@
 
 namespace RLib
 {
+static const Domino::Events defaultEVs;  // internal use only
+
 // ***********************************************************************************************
 void Domino::deduceState_(const Event& aValidEv)
 {
@@ -49,7 +51,6 @@ void Domino::effect_()
 // ***********************************************************************************************
 const Domino::Events& Domino::findPeerEVs(const Event& aEv, const EvLinks& aLinks)
 {
-    static const Events defaultEVs;
     auto ev_peerEVs = aLinks.find(aEv);
     return ev_peerEVs == aLinks.end()
         ? defaultEVs
@@ -108,6 +109,7 @@ Domino::Event Domino::newEvent(const EvName& aEvName)
 // ***********************************************************************************************
 void Domino::pureRmLink_(const Event& aValidEv, EvLinks& aMyLinks, EvLinks& aNeighborLinks)
 {
+    // rm neighbor's link
     for (auto&& peerEv : findPeerEVs(aValidEv, aMyLinks))
     {
         auto&& neighborLinks = aNeighborLinks[peerEv];
@@ -116,6 +118,8 @@ void Domino::pureRmLink_(const Event& aValidEv, EvLinks& aMyLinks, EvLinks& aNei
         else
             neighborLinks.erase(aValidEv);  // erase 1
     }
+
+    // rm my link
     aMyLinks.erase(aValidEv);
 }
 
@@ -151,10 +155,10 @@ bool Domino::pureSetStateOK_(const Event& aValidEv, const bool aNewState)
 // ***********************************************************************************************
 void Domino::rmEv_(const Event& aValidEv)
 {
-    // for later deduceState_()
-    auto&& trueNextEVs  = findPeerEVs(aValidEv, next_[true]);
-    auto&& falseNextEVs = findPeerEVs(aValidEv, next_[false]);
-    HID("(Domino) en=" << evName_(aValidEv) << ", nT=" << trueNextEVs.size() << ", nF=" << falseNextEVs.size());
+    // cp for later deduceState_(next)
+    auto trueNextEVs  = findPeerEVs(aValidEv, next_[true]);
+    auto falseNextEVs = findPeerEVs(aValidEv, next_[false]);
+    HID("(Domino) en=" << evName_(aValidEv) << ", nNextT=" << trueNextEVs.size() << ", nNextF=" << falseNextEVs.size());
 
     // rm link
     pureRmLink_(aValidEv, prev_[true],  next_[true]);
