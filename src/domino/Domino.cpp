@@ -12,26 +12,26 @@ namespace RLib
 static const Domino::Events defaultEVs;  // internal use only
 
 // ***********************************************************************************************
-void Domino::deduceState_(const Event& aValidEv)
+void Domino::deduceStateFrom_(const Event& aValidEv)
 {
     HID("(Domino) en=" << evName_(aValidEv));
 
     // recalc self state
-    auto newState = deduceState_(aValidEv, true) && deduceState_(aValidEv, false);
+    auto newState = deduceStateSelf_(aValidEv, true) && deduceStateSelf_(aValidEv, false);
     if (pureSetStateOK_(aValidEv, newState))
     {
         // deduce impacted (true branch)
         for (auto&& nextEV : findPeerEVs(aValidEv, next_[true]))
-            deduceState_(nextEV);
+            deduceStateFrom_(nextEV);
 
         // deduce impacted (false branch)
         for (auto&& nextEV : findPeerEVs(aValidEv, next_[false]))
-            deduceState_(nextEV);
+            deduceStateFrom_(nextEV);
     }
 }
 
 // ***********************************************************************************************
-bool Domino::deduceState_(const Event& aValidEv, bool aPrevType) const
+bool Domino::deduceStateSelf_(const Event& aValidEv, bool aPrevType) const
 {
     for (auto&& prevEV : findPeerEVs(aValidEv, prev_[aPrevType]))
         if (states_[prevEV] != aPrevType)  // 1 prev not satisfied
@@ -68,14 +68,13 @@ bool Domino::isNextFromTo_(const Event& aFromValidEv, const Event& aToValidEv) c
 }
 bool Domino::isNextFromToVia_(const Event& aFromValidEv, const Event& aToValidEv, const EvLinks& aViaEvLinks) const
 {
-    auto&& ev_nextEVs = aViaEvLinks.find(aFromValidEv);
     for (auto&& nextEV : findPeerEVs(aFromValidEv, aViaEvLinks))
     {
         if (nextEV == aToValidEv)
             return true;
         else if (isNextFromTo_(nextEV, aToValidEv))
             return true;
-    }  // for
+    }
     return false;
 }
 
@@ -91,15 +90,17 @@ Domino::Event Domino::getEventBy(const EvName& aEvName) const
 // ***********************************************************************************************
 Domino::Event Domino::newEvent(const EvName& aEvName)
 {
+    // exist?
     auto&& newEv = getEventBy(aEvName);
     if (newEv != D_EVENT_FAILED_RET)
         return newEv;
 
+    // new from rm-ed
     newEv = recycleEv_();
     if (newEv == D_EVENT_FAILED_RET)
         newEv = states_.size();
 
-    HID("(Domino) Succeed, EvName=" << aEvName << ", new event=" << newEv);
+    HID("(Domino) init new EvName=" << aEvName << ", event=" << newEv);
     en_ev_.emplace(aEvName, newEv);
     ev_en_[newEv] = aEvName;
     states_.push_back(false);
@@ -141,7 +142,7 @@ void Domino::pureSetPrev_(const Event& aValidEv, const SimuEvents& aSimuPrevEven
 // ***********************************************************************************************
 bool Domino::pureSetStateOK_(const Event& aValidEv, const bool aNewState)
 {
-    if (states_[aValidEv] != aNewState)
+    if (states_[aValidEv] != aNewState) // do need change
     {
         states_[aValidEv] = aNewState;
         HID("(Domino) Succeed, EvName=" << ev_en_[aValidEv] << " newState=" << aNewState);
@@ -155,7 +156,7 @@ bool Domino::pureSetStateOK_(const Event& aValidEv, const bool aNewState)
 // ***********************************************************************************************
 void Domino::rmEv_(const Event& aValidEv)
 {
-    // cp for later deduceState_(next)
+    // cp for later deduceStateFrom_(next)
     auto trueNextEVs  = findPeerEVs(aValidEv, next_[true]);
     auto falseNextEVs = findPeerEVs(aValidEv, next_[false]);
     HID("(Domino) en=" << evName_(aValidEv) << ", nNextT=" << trueNextEVs.size() << ", nNextF=" << falseNextEVs.size());
@@ -174,9 +175,9 @@ void Domino::rmEv_(const Event& aValidEv)
 
     // deduce impacted
     for (auto&& nextEV : trueNextEVs)
-        deduceState_(nextEV);
+        deduceStateFrom_(nextEV);
     for (auto&& nextEV : falseNextEVs)
-        deduceState_(nextEV);
+        deduceStateFrom_(nextEV);
 
     // call hdlr
     effect_();
@@ -200,7 +201,7 @@ Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrev
     pureSetPrev_(fromEv, aSimuPrevEvents);
 
     // deduce all impacted
-    deduceState_(fromEv);
+    deduceStateFrom_(fromEv);
 
     // call hdlr
     effect_();
@@ -236,9 +237,9 @@ size_t Domino::setState(const SimuEvents& aSimuEvents)
     for (auto&& ev : evs)
     {
         for (auto&& nextEV : findPeerEVs(ev, next_[true]))
-            deduceState_(nextEV);
+            deduceStateFrom_(nextEV);
         for (auto&& nextEV : findPeerEVs(ev, next_[false]))
-            deduceState_(nextEV);
+            deduceStateFrom_(nextEV);
     }
 
     // call hdlr(s)
@@ -262,6 +263,7 @@ Domino::EvName Domino::whyFalse(const Event& aEv) const
     }
     HID("(Domino) en=" << ev_en->second);
 
+    // root T-br
     for (auto&& prevEV : findPeerEVs(aEv, prev_[true]))
     {
         if (states_[prevEV] == true)
@@ -269,6 +271,7 @@ Domino::EvName Domino::whyFalse(const Event& aEv) const
         return whyFalse(prevEV);
     }
 
+    // root F-br
     for (auto&& prevEV : findPeerEVs(aEv, prev_[false]))
     {
         if (states_[prevEV] == false)
@@ -294,7 +297,7 @@ Domino::EvName Domino::whyTrue_(const Event& aValidEv) const
         return whyTrue_(*(truePrevEVs.begin()));
     if (nTruePrev == 0 && nFalsePrev == 1)
         return whyFalse(*(falsePrevEVs.begin()));
-    return ev_en_.at(aValidEv) + "==true";  // futhest unique prev
+    return ev_en_.at(aValidEv) + "==true";  // here is the futhest unique prev
 }
 
 }  // namespace

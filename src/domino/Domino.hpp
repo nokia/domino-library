@@ -106,8 +106,8 @@ protected:
     virtual Event recycleEv_() { return D_EVENT_FAILED_RET; }
 
 private:
-    void deduceState_(const Event& aValidEv);
-    bool deduceState_(const Event& aValidEv, bool aPrevType) const;
+    void deduceStateFrom_(const Event& aValidEv);
+    bool deduceStateSelf_(const Event& aValidEv, bool aPrevType) const;
     void effect_();
 
     bool pureSetStateOK_(const Event& aValidEv, const bool aNewState);
