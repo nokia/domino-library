@@ -54,7 +54,7 @@ struct ThreadBackTest : public Test, public UniLog
 TEST_F(ThreadBackTest, GOLD_entryFn_inNewThread_thenBackFn_inMainThread_withSemaphore)
 {
     atomic<thread::id> mt_threadID(this_thread::get_id());
-    DBG("main thread id=" << mt_threadID);
+    INF("main thread id=" << mt_threadID);
     ThreadBack::newThread(
         // MT_ThreadEntryFN
         [&mt_threadID, this]() -> bool
@@ -69,7 +69,7 @@ TEST_F(ThreadBackTest, GOLD_entryFn_inNewThread_thenBackFn_inMainThread_withSema
         {
             EXPECT_NE(this_thread::get_id(), mt_threadID) << "REQ: in diff thread";
             mt_threadID = this_thread::get_id();
-            DBG("ThreadBackFN thread id=" << mt_threadID);
+            INF("ThreadBackFN thread id=" << mt_threadID);
         }
     );
 
@@ -77,7 +77,7 @@ TEST_F(ThreadBackTest, GOLD_entryFn_inNewThread_thenBackFn_inMainThread_withSema
     {
         if (ThreadBack::hdlFinishedThreads() == 0)
         {
-            DBG("new thread not end yet, wait... mt_threadID=" << mt_threadID)
+            INF("new thread not end yet, wait... mt_threadID=" << mt_threadID)
             timedwait();  // REQ: semaphore is more efficient than keep hdlFinishedThreads()
             continue;
         }
@@ -108,7 +108,7 @@ TEST_F(ThreadBackTest, GOLD_entryFnResult_toBackFn_withoutSem)
     // req: call all ThreadBackFN
     for (size_t nHandled = 0; nHandled < maxThread; nHandled += ThreadBack::hdlFinishedThreads())
     {
-        DBG("nHandled=" << nHandled);
+        INF("nHandled=" << nHandled);
     }
 }
 TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
@@ -138,14 +138,14 @@ TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
 
     while (ThreadBack::hdlFinishedThreads() == 0)
     {
-        DBG("both threads not end yet, wait...");
+        INF("both threads not end yet, wait...");
         this_thread::yield();
     }
 
     canEnd = true;  // 1st thread keep running while 2nd is done
     while (ThreadBack::hdlFinishedThreads() == 0)
     {
-        DBG("2nd thread done, wait 1st done...")
+        INF("2nd thread done, wait 1st done...")
         this_thread::yield();
     }
 }

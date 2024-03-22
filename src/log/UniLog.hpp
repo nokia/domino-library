@@ -16,8 +16,8 @@
 //   . func_d(..., UniLog  conLog)     // alt/copy, copy name must be "oneLog"
 //
 // - VALUE:
-//   * unified logging interface: DBG/INF/WRN/ERR/HID
-//   . min oneLog() to DBG/etc in all scenarios: inner class & func, default global log
+//   * unified logging interface: INF/INF/WRN/ERR/HID
+//   . min oneLog() to INF/etc in all scenarios: inner class & func, default global log
 //   . get-log-by-name to avoid para/UniLog travel (from creator, to mid ..., to end-usr)
 //
 // - File include:
@@ -45,9 +45,9 @@
 //         UniSmartLogTest.cpp          UniCoutLogTest.cpp
  //
 // - REQ:
-//   * uni-interface (DBG/...) for all users (eg DomLib, swm, rfsw)
-//     * easily support DBG/etc macros
-//     * uni-interface for DBG/etc macros
+//   * uni-interface (INF/...) for all users (eg DomLib, swm, rfsw)
+//     * easily support INF/etc macros
+//     * uni-interface for INF/etc macros
 //   . clean logStore_: del smartlog from logStore_ when no user
 //   . readable: log name as log prefix
 //   . low couple:

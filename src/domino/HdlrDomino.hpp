@@ -83,7 +83,7 @@ void HdlrDomino<aDominoType>::effect_(const Domino::Event& aValidEv)
     if (it == hdlrs_.end())
         return;
 
-    DBG("(HdlrDom) Succeed to trigger 1 hdlr of EvName=" << this->evName_(aValidEv));
+    HID("(HdlrDom) Succeed to trigger 1 hdlr of EvName=" << this->evName_(aValidEv));
     triggerHdlr_(it->second, aValidEv);
 }
 
@@ -165,7 +165,7 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
 
     if (this->state(newEv) == true)
     {
-        DBG("(HdlrDom) Trigger the new hdlr of EvName=" << aEvName);
+        HID("(HdlrDom) Trigger the new hdlr of EvName=" << aEvName);
         triggerHdlr_(newHdlr, newEv);
     }
     return newEv;

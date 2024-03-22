@@ -38,20 +38,20 @@ struct UNI_LOG_TEST : public Test
         // req: can log
         ClassUsr(const LogName& aUniLogName = ULN_DEFAULT) : UNI_LOG(aUniLogName)
         {
-            DBG("hello, this=" << this << ", nLog=" << nLog());
+            INF("hello, this=" << this << ", nLog=" << nLog());
         }
         ClassUsr(const ClassUsr& rhs) : UNI_LOG(rhs)
         {
-            DBG("hello copy=" << this << " from=" << &rhs << ", nLog=" << nLog());
+            INF("hello copy=" << this << " from=" << &rhs << ", nLog=" << nLog());
         }
         ClassUsr(ClassUsr&& rhs) : UNI_LOG(move(rhs))
         {
-            DBG("hello move=" << this << " from=" << &rhs << ", nLog=" << nLog());
+            INF("hello move=" << this << " from=" << &rhs << ", nLog=" << nLog());
             mvCalled_ = true;
         }
         ~ClassUsr()
         {
-            DBG("bye, this=" << this << ", nLog=" << nLog());
+            INF("bye, this=" << this << ", nLog=" << nLog());
         }
 
         bool mvCalled_ = false;
@@ -59,19 +59,19 @@ struct UNI_LOG_TEST : public Test
 
     static void funcUsr(UNI_LOG& oneLog = UNI_LOG::defaultUniLog_)
     {
-        DBG("hello");                          // req: can log, same API
+        INF("hello");                          // req: can log, same API
     }
 
     // -------------------------------------------------------------------------------------------
     struct ClassUseDefaultLog
     {
-        ClassUseDefaultLog() { DBG("hello"); } // req: can log
-        ~ClassUseDefaultLog() { DBG("bye"); }  // req: can log
+        ClassUseDefaultLog() { INF("hello"); } // req: can log
+        ~ClassUseDefaultLog() { INF("bye"); }  // req: can log
     };
 
     static void funcUseDefaultLog()
     {
-        DBG("hello");                          // req: can log, same API
+        INF("hello");                          // req: can log, same API
     }
 };
 
@@ -152,7 +152,7 @@ TEST_F(UNI_LOG_TEST, withinOneCell_decouple_callbackFuncs)
     const auto len_1 = UNI_LOG::logLen(logName_);
     ASSERT_GT(len_1, 0) << "REQ: can log";
 
-    function<void()> cb = [oneLog = *classUsr]() mutable { DBG("hello world, I'm a callback func"); };
+    function<void()> cb = [oneLog = *classUsr]() mutable { INF("hello world, I'm a callback func"); };
     const auto len_2 = UNI_LOG::logLen(logName_);
     ASSERT_GT(len_2, len_1) << "REQ: log still there (more log since no move-construct of ClassUsr)";
 

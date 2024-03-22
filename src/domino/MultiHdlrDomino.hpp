@@ -73,7 +73,7 @@ void MultiHdlrDomino<aDominoType>::effect_(const Domino::Event& aValidEv)
     for (auto&& name_hdlr = ev_hdlrs->second.begin(); name_hdlr != ev_hdlrs->second.end();)
     {
         auto&& itNext = next(name_hdlr);
-        DBG("(MultiHdlrDom) trigger 1 hdlr=" << name_hdlr->first << " of EvName=" << this->evName_(aValidEv));
+        HID("(MultiHdlrDom) trigger 1 hdlr=" << name_hdlr->first << " of EvName=" << this->evName_(aValidEv));
         this->triggerHdlr_(name_hdlr->second, aValidEv);  // may rm name_hdlr in FreeHdlrDomino
         name_hdlr = itNext;
     }
@@ -109,7 +109,7 @@ Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvNa
 
     if (this->state(newEv))
     {
-        DBG("(MultiHdlrDom) Trigger the new hdlr=" << aHdlrName << "of EvName=" << aEvName);
+        HID("(MultiHdlrDom) Trigger the new hdlr=" << aHdlrName << "of EvName=" << aEvName);
         this->triggerHdlr_(newHdlr, newEv);
     }
 
@@ -150,7 +150,7 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName, co
     if (ev_hdlrs == multiHdlrs_.end())
         return false;
 
-    DBG("(MultiHdlrDom) Succeed to remove HdlrName=" << aHdlrName << " of EvName=" << aEvName);
+    INF("(MultiHdlrDom) Succeed to remove HdlrName=" << aHdlrName << " of EvName=" << aEvName);
     return ev_hdlrs->second.erase(aHdlrName);
 }
 

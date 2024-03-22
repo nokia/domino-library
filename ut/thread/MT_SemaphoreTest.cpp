@@ -108,21 +108,21 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     for (;;)
     {
         // handle all done Thread
-        DBG("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
         ThreadBack::hdlFinishedThreads();
 
         // handle all existing in mt_getQ()
-        DBG("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
         mt_getQ().handleAllEle();
 
-        DBG("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
         msgSelf_->handleAllMsg(msgSelf_->getValid());
 
-        DBG("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
         if (expect == cb_info)
             return;
 
-        DBG("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
         timedwait();
     }
 }
@@ -149,9 +149,9 @@ TEST_F(MT_SemaphoreTest, timeout)
     timedwait(0, size_t(-1));  // REQ: invalid ns>=1000ms, no die (& clear previous mt_notify if existed)
 
     auto now = high_resolution_clock::now();
-    DBG("start");
+    INF("start");
     timedwait();
-    DBG("end");
+    INF("end");
     auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - now);
     EXPECT_GE(dur.count(), 100) << "REQ: default timeout=100ms";
 
