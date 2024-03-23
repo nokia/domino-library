@@ -46,7 +46,7 @@ public:
 
     Domino::Event setHdlr(const Domino::EvName&, const MsgCB& aHdlr);
     bool rmOneHdlrOK(const Domino::EvName&);  // rm by EvName
-    void forceAllHdlr(const Domino::EvName&);
+    void forceAllHdlr(const Domino::EvName& aEN) { effect_(this->getEventBy(aEN)); }
     virtual size_t nHdlr(const Domino::EvName& aEN) const { return hdlrs_.count(this->getEventBy(aEN)); }
 
     // -------------------------------------------------------------------------------------------
@@ -60,7 +60,7 @@ public:
     virtual EMsgPriority getPriority(const Domino::Event&) const { return EMsgPri_NORM; }
 
 protected:
-    void effect_(const Domino::Event& aValidEv) override;
+    void effect_(const Domino::Event& aEv) override;
     virtual void triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv);
     virtual bool rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr);  // rm by aValidHdlr
 
@@ -77,23 +77,15 @@ public:
 
 // ***********************************************************************************************
 template<class aDominoType>
-void HdlrDomino<aDominoType>::effect_(const Domino::Event& aValidEv)
+void HdlrDomino<aDominoType>::effect_(const Domino::Event& aEv)
 {
-    auto&& it = hdlrs_.find(aValidEv);
+    // validate
+    auto&& it = hdlrs_.find(aEv);
     if (it == hdlrs_.end())
         return;
 
-    HID("(HdlrDom) Succeed to trigger 1 hdlr of EvName=" << this->evName_(aValidEv));
-    triggerHdlr_(it->second, aValidEv);
-}
-
-// ***********************************************************************************************
-template<class aDominoType>
-void HdlrDomino<aDominoType>::forceAllHdlr(const Domino::EvName& aEN)
-{
-    auto&& validEv = this->getEventBy(aEN);
-    if (validEv != Domino::D_EVENT_FAILED_RET)
-        effect_(validEv);
+    HID("(HdlrDom) Succeed to trigger 1 hdlr of EvName=" << this->evName_(aEv));
+    triggerHdlr_(it->second, aEv);
 }
 
 // ***********************************************************************************************
@@ -155,12 +147,12 @@ bool HdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, const 
 template<class aDominoType>
 Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, const MsgCB& aHdlr)
 {
+    // validate
     if (! aHdlr)
     {
         WRN("(HdlrDom) Failed!!! not accept aHdlr=nullptr.");
         return Domino::D_EVENT_FAILED_RET;
     }
-
     auto&& newEv = this->newEvent(aEvName);
     if (hdlrs_.find(newEv) != hdlrs_.end())
     {
@@ -168,10 +160,12 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
         return Domino::D_EVENT_FAILED_RET;
     }
 
+    // set
     auto newHdlr = make_shared<MsgCB>(aHdlr);
     hdlrs_[newEv] = newHdlr;
     HID("(HdlrDom) Succeed for EvName=" << aEvName);
 
+    // call
     if (this->state(newEv) == true)
     {
         HID("(HdlrDom) Trigger the new hdlr of EvName=" << aEvName);
@@ -184,19 +178,20 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
 template<class aDominoType>
 bool HdlrDomino<aDominoType>::setMsgSelfOK(const PTR<MsgSelf>& aMsgSelf)
 {
+    // validate
     const auto nMsgUnhandled = msgSelf_->nMsg();  // HdlrDomino ensure msgSelf_ always NOT null
     if (nMsgUnhandled > 0)
     {
         ERR("(MsgSelf) failed!!! since old msgSelf is not empty, nMsgUnhandled=" << nMsgUnhandled);
         return false;
     }
-
     if (aMsgSelf.get() == nullptr)
     {
         ERR("Failed!!! since HdlrDomino unsafe when msgSelf==nullptr");
         return false;
     }
 
+    // set
     msgSelf_ = aMsgSelf;
     return true;
 }

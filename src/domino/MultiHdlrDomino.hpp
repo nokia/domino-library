@@ -50,7 +50,7 @@ public:
     size_t nHdlr(const Domino::EvName& aEN) const override;
 
 protected:
-    void effect_(const Domino::Event& aValidEv) override;  // key/min change other Dominos
+    void effect_(const Domino::Event& aEv) override;  // key/min change other Dominos
     bool rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr) override;  // rm by aValidHdlr
     void rmEv_(const Domino::Event& aValidEv) override;
 
@@ -63,18 +63,22 @@ public:
 
 // ***********************************************************************************************
 template<class aDominoType>
-void MultiHdlrDomino<aDominoType>::effect_(const Domino::Event& aValidEv)
+void MultiHdlrDomino<aDominoType>::effect_(const Domino::Event& aEv)
 {
-    aDominoType::effect_(aValidEv);
+    // call parent's hdlr
+    aDominoType::effect_(aEv);
 
-    auto&& ev_hdlrs = multiHdlrs_.find(aValidEv);
+    // validate
+    auto&& ev_hdlrs = multiHdlrs_.find(aEv);
     if (ev_hdlrs == multiHdlrs_.end())
         return;
+
+    // call my hdlr(s)
     for (auto&& name_hdlr = ev_hdlrs->second.begin(); name_hdlr != ev_hdlrs->second.end();)
     {
         auto&& itNext = next(name_hdlr);
-        HID("(MultiHdlrDom) trigger 1 hdlr=" << name_hdlr->first << " of EvName=" << this->evName_(aValidEv));
-        this->triggerHdlr_(name_hdlr->second, aValidEv);  // may rm name_hdlr in FreeHdlrDomino
+        HID("(MultiHdlrDom) trigger 1 hdlr=" << name_hdlr->first << " of EvName=" << this->evName_(aEv));
+        this->triggerHdlr_(name_hdlr->second, aEv);  // may rm name_hdlr in FreeHdlrDomino
         name_hdlr = itNext;
     }
 }

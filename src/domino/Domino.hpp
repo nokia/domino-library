@@ -98,7 +98,7 @@ public:
 
 protected:
     const EvName& evName_(const Event& aValidEv) const { return ev_en_.at(aValidEv); }
-    virtual void  effect_(const Event& aValidEv) {}  // can't const since FreeDom will rm hdlr
+    virtual void  effect_(const Event& aEv) {}  // can't const since FreeDom will rm hdlr
 
     // - rm self dom's resource (RISK: aEv's leaf(s) may become orphan!!!)
     // - virtual for each dom (& trigger base to free its resource)
