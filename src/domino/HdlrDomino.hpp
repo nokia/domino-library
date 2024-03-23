@@ -18,7 +18,7 @@
 //
 // - core: hdlrs_
 //
-// - mem safe: yes
+// - safe: yes
 //   . no duty to hdlr itself's any unsafe behavior
 //   . why shared_ptr rather than SafeAdr to store hdlr?
 //     . HdlrDomino ensures safely usage of shared_ptr
@@ -101,10 +101,19 @@ template<class aDominoType>
 Domino::Event HdlrDomino<aDominoType>::multiHdlrByAliasEv(const Domino::EvName& aAliasEN,
     const MsgCB& aHdlr, const Domino::EvName& aHostEN)
 {
+    if (this->getEventBy(aAliasEN) != Domino::D_EVENT_FAILED_RET)
+    {
+        ERR("(HdlrDom) fail since already exist en=" << aAliasEN << " to avoid complex scenario"
+            " eg setHdlr() ok but setPrev() failed, or setHdlr() cb but setPrev() unsatisfied");
+        return Domino::D_EVENT_FAILED_RET;
+    }
+
+    // set hdlr
     auto&& newEv = this->setHdlr(aAliasEN, aHdlr);
-    if (newEv == Domino::D_EVENT_FAILED_RET)
+    if (newEv == Domino::D_EVENT_FAILED_RET)  // setHdlr failed
         return Domino::D_EVENT_FAILED_RET;
 
+    // auto set prev
     return this->setPrev(aAliasEN, {{aHostEN, true}});
 }
 

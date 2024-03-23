@@ -97,7 +97,7 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, afterCallback_autoRmHdlr_multiHdlr)
     EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_) << "REQ: no more cb since auto-rm";
 
     // re-add hdlr
-    PARA_DOM->multiHdlrByAliasEv("alias e1", this->h6_, "e1");
+    PARA_DOM->setHdlr("alias e1", this->h6_);
     PARA_DOM->multiHdlrOnSameEv("e1", this->h5_, "h2_");
     PARA_DOM->setHdlr("e1", this->h4_);  // reverse order to inc coverage
     MSG_SELF->handleAllMsg(MSG_SELF->getValid()) ;

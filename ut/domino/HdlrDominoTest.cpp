@@ -154,7 +154,11 @@ TYPED_TEST_P(HdlrDominoTest, multiHdlr_onOneAliasEvent_nok)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->multiHdlrByAliasEv("alias event", this->hdlr1_, "event");
-    PARA_DOM->multiHdlrByAliasEv("alias event", this->hdlr2_, "event");  // req: refuse
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->multiHdlrByAliasEv("alias event", this->hdlr2_, "event"))
+        << "REQ: refuse overwrite hdlr";
+    PARA_DOM->newEvent("create alias");
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->multiHdlrByAliasEv("create alias", this->hdlr2_, "event"))
+        << "REQ: refuse existing ev as alias to avoid handling complex scenario";
 
     EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1());

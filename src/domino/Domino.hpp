@@ -27,6 +27,7 @@
 //   . share state & hdlr
 //   . EvName index
 //   . template extension (PriDomino, etc)
+//   . n-go domino
 //
 // - MT safe: no
 // - class safe: yes (all-safe include mem-safe, no-ev-link-loop, no exception, etc, exclude MT safe)
@@ -41,7 +42,6 @@
 //         . so little impact runtime (debug can be HID_CODE)
 //         . next-loop can be prevented simply
 //         . true-false-loop can NOT (refer UT strange_loop)
-//     . so setPrev() is simple safe, NOT perfect safe
 // ***********************************************************************************************
 #pragma once
 

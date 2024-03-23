@@ -156,27 +156,20 @@ TYPED_TEST_P(RmHdlrDomTest, GOLD_rm_HdlrDom_resrc)
 {
     multiset<int> hdlrIDs;
     auto e1 = PARA_DOM->setHdlr("e1", [&hdlrIDs](){ hdlrIDs.insert(1); });
-    PARA_DOM->setPriority("e1", EMsgPriority::EMsgPri_LOW);
-    PARA_DOM->setState({{"e1", true}});
-    EXPECT_EQ(1u, MSG_SELF->nMsg()) << "REQ: e1's hdlr on road.";
-
-    PARA_DOM->setPriority("e2", EMsgPriority::EMsgPri_LOW);
     auto e2 = PARA_DOM->multiHdlrByAliasEv("e2", [&hdlrIDs](){ hdlrIDs.insert(2); }, "e1");
+    PARA_DOM->setState({{"e1", true}});
     EXPECT_EQ(2u, MSG_SELF->nMsg()) << "REQ: 2 hdlrs on road.";
     EXPECT_EQ(0u, hdlrIDs.size()) << "REQ: not callback yet.";
 
     EXPECT_TRUE(PARA_DOM->rmEvOK("e1"));
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());  // handle 1 low priority msg once
-    EXPECT_EQ(multiset<int>{}, hdlrIDs) << "REQ: not exe e1 hdlr since removed.";
-
     EXPECT_EQ(e1, PARA_DOM->setHdlr("another e1", [&hdlrIDs](){ hdlrIDs.insert(3); }))  << "REQ: reuse e1.";
     PARA_DOM->forceAllHdlr("another e1");
     EXPECT_NE(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e2")) << "REQ: rm ev not impact its alias.";
-    EXPECT_EQ(2u, MSG_SELF->nMsg()) << "REQ: another e1's hdlr is on road while alias hdlr still on road.";
+    EXPECT_EQ(3u, MSG_SELF->nMsg()) << "REQ: another e1's hdlr is on road.";
 
     EXPECT_TRUE(PARA_DOM->rmEvOK("e2")) << "REQ: can rm alias Ev.";
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
-    EXPECT_EQ(multiset<int>{3}, hdlrIDs) << "REQ: not exe e2 hdlr since removed; exe another e1's hdlr.";
+    EXPECT_EQ(multiset<int>{3}, hdlrIDs) << "REQ: no 2 removed evs' hdlrs";
 }
 
 TYPED_TEST_P(RmHdlrDomTest, rmTruePrev_callHdlr_ifSatisfied)
