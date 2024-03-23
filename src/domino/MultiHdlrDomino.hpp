@@ -88,17 +88,22 @@ template<class aDominoType>
 Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvName& aEvName,
     const MsgCB& aHdlr, const HdlrName& aHdlrName)
 {
+    // validate
     if (aHdlr == nullptr)
     {
         WRN("(MultiHdlrDom) Failed!!! not accept aHdlr=nullptr.");
         return Domino::D_EVENT_FAILED_RET;
     }
 
+    // set hdlr
     auto&& newHdlr = make_shared<MsgCB>(aHdlr);
-    auto&& newEv = this->newEvent(aEvName);
-    auto&& ev_hdlrs = multiHdlrs_.find(newEv);
+    auto&& ev = this->getEventBy(aEvName);
+    auto&& ev_hdlrs = multiHdlrs_.find(ev);
     if (ev_hdlrs == multiHdlrs_.end())
-        multiHdlrs_[newEv][aHdlrName] = newHdlr;
+    {
+        ev = this->newEvent(aEvName);
+        multiHdlrs_[ev][aHdlrName] = newHdlr;
+    }
     else
     {
         auto&& name_hdlr = ev_hdlrs->second.find(aHdlrName);
@@ -111,13 +116,13 @@ Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvNa
     }
     HID("(MultiHdlrDom) Succeed for EvName=" << aEvName << ", HdlrName=" << aHdlrName);
 
-    if (this->state(newEv))
+    if (this->state(ev))
     {
         HID("(MultiHdlrDom) Trigger the new hdlr=" << aHdlrName << "of EvName=" << aEvName);
-        this->triggerHdlr_(newHdlr, newEv);
+        this->triggerHdlr_(newHdlr, ev);
     }
 
-    return newEv;
+    return ev;
 }
 
 // ***********************************************************************************************
