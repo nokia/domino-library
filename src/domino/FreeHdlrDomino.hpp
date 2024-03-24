@@ -5,14 +5,17 @@
  */
 // ***********************************************************************************************
 // - what: auto rm hdlr after calling it
-//   * not-repeated hdlr can not be triggered more than once
-//   * whenever hdlr on road, rm hdlr still can cancel it
-//   . FreeHdlrDomino need not child of all *HdlrDomino, still can rm/invalidate hdlr
-//   . no req if allow to add new hdlr during previous on road; current impl will reject new-add
-//
-// - why: free mem (eg when huge hdlrs)
+// - why:
+//   . free mem (eg when huge hdlrs)
 //   . save manual-del-hdlr code (MOST SWM hdlrs are not repeated hdlr)
-//   . safer to reduce wrong call, etc. [MUST-HAVE!]
+//   * safer to reduce wrong call, etc. [MUST-HAVE!]
+//
+// - REQ:
+//   * facilitate user so must be safe-simple (avoid complex/dangeous, manual can handle them)
+//   . whenever hdlr on road, rm hdlr still can cancel it
+//   * no gap between call-hdlr & rm-hdlr - safe as user's expectation
+
+//   . no req if allow to add new hdlr during previous on road; current impl will reject new-add
 //   . why can't reset flag? this class is to convient user, shall not complex on-road, rmHdlr etc
 //
 // - mem safe: yes
@@ -82,19 +85,21 @@ void FreeHdlrDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 template<class aDominoType>
 void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv)
 {
-    aDominoType::triggerHdlr_(aValidHdlr, aValidEv);
+    // repeated hdlr
     if (isRepeatHdlr(aValidEv))
+    {
+        aDominoType::triggerHdlr_(aValidHdlr, aValidEv);
         return;
+    }
 
-    // auto free aValidHdlr
-    // - simple solution (FreeHdlrDomino is not crucial but convenient user)
-    // - higher priority hdlr can't insert between hdlr & its auto-free since single thread
-    HID("(FreeHdlrDom) trigger a new msg.");
-    this->msgSelf_->newMsg([this, aValidEv, weakHdlr = WeakMsgCB(aValidHdlr)]()  // weak_ptr to avoid fail rmHdlr
+    HID("(FreeHdlrDom) trigger a call-then-rm msg for en=" << this->evName_(aValidEv));
+    this->msgSelf_->newMsg([this, aValidEv, weakHdlr = WeakMsgCB(aValidHdlr)]()
         {
-            if (weakHdlr.expired())
+            if (weakHdlr.expired())  // validate
                 return;  // otherwise crash
-            this->rmOneHdlrOK_(aValidEv, weakHdlr.lock());  // is valid "this" since still own valid aValidHdlr
+            auto hdlr = weakHdlr.lock();  // get
+            this->rmOneHdlrOK_(aValidEv, hdlr);  // safer to rm first to avoid hdlr does sth strange
+            (*hdlr)();  // call; setHdlr() forbid cb==null
         },
         this->getPriority(aValidEv)
     );

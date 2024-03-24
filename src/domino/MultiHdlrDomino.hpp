@@ -33,7 +33,7 @@ class MultiHdlrDomino : public aDominoType
 {
 public:
     using HdlrName  = string;
-    using MultiHdlr = map<HdlrName, SharedMsgCB>;
+    using HName_Hdlr_S = map<HdlrName, SharedMsgCB>;
 
     explicit MultiHdlrDomino(const LogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
 
@@ -56,7 +56,7 @@ protected:
 
 private:
     // -------------------------------------------------------------------------------------------
-    unordered_map<Domino::Event, MultiHdlr> multiHdlrs_;
+    unordered_map<Domino::Event, HName_Hdlr_S> ev_hdlrs_S_;
 public:
     using aDominoType::oneLog;
 };
@@ -69,8 +69,8 @@ void MultiHdlrDomino<aDominoType>::effect_(const Domino::Event& aEv)
     aDominoType::effect_(aEv);
 
     // validate
-    auto&& ev_hdlrs = multiHdlrs_.find(aEv);
-    if (ev_hdlrs == multiHdlrs_.end())
+    auto&& ev_hdlrs = ev_hdlrs_S_.find(aEv);
+    if (ev_hdlrs == ev_hdlrs_S_.end())
         return;
 
     // call my hdlr(s)
@@ -98,11 +98,11 @@ Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvNa
     // set hdlr
     auto&& newHdlr = make_shared<MsgCB>(aHdlr);
     auto&& ev = this->getEventBy(aEvName);
-    auto&& ev_hdlrs = multiHdlrs_.find(ev);
-    if (ev_hdlrs == multiHdlrs_.end())
+    auto&& ev_hdlrs = ev_hdlrs_S_.find(ev);
+    if (ev_hdlrs == ev_hdlrs_S_.end())
     {
         ev = this->newEvent(aEvName);
-        multiHdlrs_[ev][aHdlrName] = newHdlr;
+        ev_hdlrs_S_[ev][aHdlrName] = newHdlr;
     }
     else
     {
@@ -130,8 +130,8 @@ Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvNa
 template<class aDominoType>
 size_t MultiHdlrDomino<aDominoType>::nHdlr(const Domino::EvName& aEN) const
 {
-    auto&& ev_hdlrs = multiHdlrs_.find(this->getEventBy(aEN));
-    return (ev_hdlrs == multiHdlrs_.end() ? 0 : ev_hdlrs->second.size()) + aDominoType::nHdlr(aEN);
+    auto&& ev_hdlrs = ev_hdlrs_S_.find(this->getEventBy(aEN));
+    return (ev_hdlrs == ev_hdlrs_S_.end() ? 0 : ev_hdlrs->second.size()) + aDominoType::nHdlr(aEN);
 }
 
 // ***********************************************************************************************
@@ -140,14 +140,14 @@ void MultiHdlrDomino<aDominoType>::rmAllHdlr(const Domino::EvName& aEN)
 {
     aDominoType::rmOneHdlrOK(aEN);
 
-    multiHdlrs_.erase(this->getEventBy(aEN));
+    ev_hdlrs_S_.erase(this->getEventBy(aEN));
 }
 
 // ***********************************************************************************************
 template<typename aDominoType>
 void MultiHdlrDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 {
-    multiHdlrs_.erase(aValidEv);
+    ev_hdlrs_S_.erase(aValidEv);
     aDominoType::rmEv_(aValidEv);
 }
 
@@ -156,8 +156,8 @@ template<class aDominoType>
 bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName, const HdlrName& aHdlrName)
 {
     // find
-    auto&& ev_hdlrs = multiHdlrs_.find(this->getEventBy(aEvName));
-    if (ev_hdlrs == multiHdlrs_.end())
+    auto&& ev_hdlrs = ev_hdlrs_S_.find(this->getEventBy(aEvName));
+    if (ev_hdlrs == ev_hdlrs_S_.end())
         return false;
 
     // rm
@@ -174,8 +174,8 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, c
         return true;
 
     // rm
-    auto&& ev_hdlrs = multiHdlrs_.find(aValidEv);
-    //if (ev_hdlrs == multiHdlrs_.end()) return false;  // impossible if valid aValidHdlr
+    auto&& ev_hdlrs = ev_hdlrs_S_.find(aValidEv);
+    //if (ev_hdlrs == ev_hdlrs_S_.end()) return false;  // impossible if valid aValidHdlr
     for (auto&& name_hdlr = ev_hdlrs->second.begin(); name_hdlr != ev_hdlrs->second.end(); ++name_hdlr)
     {
         if (name_hdlr->second != aValidHdlr)
@@ -186,7 +186,7 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, c
         if (ev_hdlrs->second.size() > 1)
             ev_hdlrs->second.erase(name_hdlr);
         else
-            multiHdlrs_.erase(ev_hdlrs);  // min mem (mem safe)
+            ev_hdlrs_S_.erase(ev_hdlrs);  // min mem (mem safe)
         return true;
     }
     return false;  // impossible if valid aValidHdlr
