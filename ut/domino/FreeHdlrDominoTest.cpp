@@ -173,6 +173,31 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_multiCallbackOnRoad_noCrash_noMulti
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
     EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_);  // req: no more cb since auto-rm
 }
+TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_noGapBetween_hdlr_and_autoRm)
+{
+    auto e1 = PARA_DOM->setHdlr("e1", [this]{ PARA_DOM->setHdlr("e1", this->h1_); });
+    PARA_DOM->multiHdlrOnSameEv("e1", [this]{ PARA_DOM->multiHdlrOnSameEv("e1", this->h2_, "h2_"); }, "h2_");
+    auto aliasE1 = PARA_DOM->multiHdlrByAliasEv("alias e1", [this]{ PARA_DOM->setHdlr("alias e1", this->h3_); }, "e1");
+    PARA_DOM->setPriority("e1", EMsgPri_LOW);  // legacy has gap between hdlr call & autoRm so can't set new hdlr
+    PARA_DOM->setPriority("alias e1", EMsgPri_LOW);
+
+    EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e1));
+    EXPECT_FALSE(PARA_DOM->isRepeatHdlr(aliasE1));
+    PARA_DOM->setState({{"e1", true}});
+    EXPECT_EQ(3u, MSG_SELF->nMsg()) << "req: 3 hdlrs on road";
+
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    EXPECT_EQ(3u, MSG_SELF->nMsg()) << "req: 3 hdlrs called that gen 3 new hdlrs";
+    EXPECT_EQ(multiset<int>({}), this->hdlrIDs_);
+
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    EXPECT_EQ(0u, MSG_SELF->nMsg()) << "req: all called";
+    EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_);
+}
 
 #define MEM_LEAK
 // ***********************************************************************************************
@@ -222,6 +247,7 @@ REGISTER_TYPED_TEST_SUITE_P(FreeMultiHdlrDominoTest
     , afterCallback_notRmHdlr
     , BugFix_disorderAutoRm_ok
     , BugFix_multiCallbackOnRoad_noCrash_noMultiCall
+    , BugFix_noGapBetween_hdlr_and_autoRm
 );
 using AnyFreeMultiDom = Types<MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, FreeMultiHdlrDominoTest, AnyFreeMultiDom);
