@@ -204,9 +204,8 @@ void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, const 
     msgSelf_->newMsg(
         [weakMsgCB = WeakMsgCB(aValidHdlr)]() mutable  // WeakMsgCB is to support rm hdlr
         {
-            auto cb = weakMsgCB.lock();
-            if (cb)
-                (*cb)();  // setHdlr() forbid cb==null
+            if (! weakMsgCB.expired())
+                (*weakMsgCB.lock())();  // setHdlr() forbid cb==null
         },
         getPriority(aValidEv)
     );

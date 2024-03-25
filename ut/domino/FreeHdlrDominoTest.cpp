@@ -188,15 +188,15 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_noGapBetween_hdlr_and_autoRm)
 
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    MSG_SELF->handleAllMsg(MSG_SELF->getValid());  // each process 1 low hdlr
     EXPECT_EQ(3u, MSG_SELF->nMsg()) << "req: 3 hdlrs called that gen 3 new hdlrs";
-    EXPECT_EQ(multiset<int>({}), this->hdlrIDs_);
+    EXPECT_EQ(multiset<int>({}), this->hdlrIDs_) << "1st 3 hdlrs not insert multiset but create new hdlr";
 
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
     EXPECT_EQ(0u, MSG_SELF->nMsg()) << "req: all called";
-    EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_);
+    EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_) << "REQ: autoRm in time so 3 new hdlrs added succ";
 }
 
 #define MEM_LEAK
