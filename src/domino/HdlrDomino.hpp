@@ -18,7 +18,7 @@
 //
 // - core: ev_hdlr_S_
 //
-// - safe: yes
+// - class safe: yes
 //   . no duty to hdlr itself's any unsafe behavior
 //   . why shared_ptr rather than SafeAdr to store hdlr?
 //     . HdlrDomino ensures safely usage of shared_ptr

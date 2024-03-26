@@ -12,13 +12,11 @@
 //
 // - REQ:
 //   * facilitate user so must be safe-simple (avoid complex/dangeous, manual can handle them)
+//     . forbid change flag when hdlr available, avoid complex/dangeous scenario
 //   . whenever hdlr on road, rm hdlr still can cancel it
 //   * no gap between call-hdlr & rm-hdlr - safe as user's expectation
-
-//   . no req if allow to add new hdlr during previous on road; current impl will reject new-add
-//   . why can't reset flag? this class is to convient user, shall not complex on-road, rmHdlr etc
 //
-// - mem safe: yes
+// - class safe: yes
 // ***********************************************************************************************
 #pragma once
 
@@ -38,7 +36,6 @@ public:
 
 protected:
     void triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv) override;
-    using aDominoType::effect_;
 
     void rmEv_(const Domino::Event& aValidEv) override;
 
@@ -64,6 +61,14 @@ bool FreeHdlrDomino<aDominoType>::isRepeatHdlr(const Domino::Event& aEv) const
 template<class aDominoType>
 Domino::Event FreeHdlrDomino<aDominoType>::repeatedHdlr(const Domino::EvName& aEvName, const bool isRepeated)
 {
+    // validate
+    if (this->nHdlr(aEvName) > 0)
+    {
+        ERR("(FreeHdlrDom) FAILED when exist hdlr(s), avoid complex/risk scenario");
+        return Domino::D_EVENT_FAILED_RET;
+    }
+
+    // set flag
     auto&& newEv = this->newEvent(aEvName);
     if (newEv >= isRepeatHdlr_.size())
         isRepeatHdlr_.resize(newEv + 1);
