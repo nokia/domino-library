@@ -21,9 +21,10 @@
 // - RISK:
 //   . rm ev may break links (duty-bound of user than dom classes)
 //   . rm ev impact/complex dom
-//   . so use RmEvDom when necessary
+//   . so use RmEvDom only when necessary
 //
-// - mem safe: yes with limit
+// - class safe: yes
+//   . each Dom can't fail rmEv_()
 //   . no use-up mem (too many removed events; impossible in most cases)
 // ***********************************************************************************************
 #pragma once

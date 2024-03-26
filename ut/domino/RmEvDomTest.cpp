@@ -68,6 +68,9 @@ TYPED_TEST_P(RmDomTest, GOLD_reuse_ev)
     EXPECT_EQ(1u, evs.count(PARA_DOM->newEvent("e3"))) << "REQ: can reuse removed ev.";
     EXPECT_EQ(1u, evs.count(PARA_DOM->newEvent("e4"))) << "REQ: can reuse removed ev.";
     EXPECT_NE(PARA_DOM->getEventBy("e3"), PARA_DOM->getEventBy("e4")) << "REQ: diff reused ev.";
+
+    evs.insert(e1);
+    EXPECT_EQ(0u, evs.count(PARA_DOM->newEvent("e100"))) << "REQ: recycle used-up, create new.";
 }
 
 REGISTER_TYPED_TEST_SUITE_P(RmDomTest
