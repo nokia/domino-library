@@ -52,7 +52,7 @@ TYPED_TEST_P(FreeHdlrDominoTest, forbid_changeFlag)
 {
     auto e1 = PARA_DOM->setHdlr("e1", this->h1_);
     EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e1));
-    PARA_DOM->repeatedHdlr("e2", true);
+    PARA_DOM->repeatedHdlr("e1", true);
     EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e1)) << "REQ: forbid set when hdlr available";
 }
 
