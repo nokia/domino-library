@@ -10,6 +10,7 @@
 //   * priority call hdlr rather than FIFO in Domino [MUST-HAVE!]
 // - core: ev_pri_S_
 // - class safe: yes
+//   . forbid change flag when hdlr available, avoid confusing scenario eg  hdlr on-road
 // ***********************************************************************************************
 #pragma once
 

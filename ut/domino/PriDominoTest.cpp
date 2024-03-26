@@ -60,13 +60,14 @@ TYPED_TEST_P(PriDominoTest, defaultPriority)
 }
 TYPED_TEST_P(PriDominoTest, forbid_changePri)
 {
-    auto e1 = PARA_DOM->setHdlr("e1", this->d1EventHdlr_);
     PARA_DOM->setPriority("e1", EMsgPri_LOW);
-    EXPECT_NE(EMsgPri_LOW, PARA_DOM->getPriority(e1)) << "REQ: forbid change pri when hdlr available";
+    auto e1 = PARA_DOM->setHdlr("e1", this->d1EventHdlr_);
+    PARA_DOM->setPriority("e1", EMsgPri_NORM);
+    EXPECT_NE(EMsgPri_NORM, PARA_DOM->getPriority(e1)) << "REQ: forbid change pri when hdlr available";
 
     PARA_DOM->rmOneHdlrOK("e1");
-    PARA_DOM->setPriority("e1", EMsgPri_LOW);
-    EXPECT_EQ(EMsgPri_LOW, PARA_DOM->getPriority(e1)) << "REQ: allow change pri when no hdlr";
+    PARA_DOM->setPriority("e1", EMsgPri_NORM);  // EMsgPri_NORM is also to inc cov
+    EXPECT_EQ(EMsgPri_NORM, PARA_DOM->getPriority(e1)) << "REQ: allow change pri when no hdlr";
 }
 
 #define PRI_FIFO

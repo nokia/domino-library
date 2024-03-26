@@ -12,11 +12,11 @@
 //
 // - REQ:
 //   * facilitate user so must be safe-simple (avoid complex/dangeous, manual can handle them)
-//     . forbid change flag when hdlr available, avoid complex/dangeous scenario
 //   . whenever hdlr on road, rm hdlr still can cancel it
 //   * no gap between call-hdlr & rm-hdlr - safe as user's expectation
 //
 // - class safe: yes
+//   . forbid change flag when hdlr available, avoid complex scenario eg hdlr on-road
 // ***********************************************************************************************
 #pragma once
 
