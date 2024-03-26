@@ -8,8 +8,8 @@
 // - why/VALUE:
 //   . separate class to lighten Domino (let PriDomino & Domin to focus it own)
 //   * priority call hdlr rather than FIFO in Domino [MUST-HAVE!]
-// - core: priorities_
-// - mem safe: yes
+// - core: ev_pri_S_
+// - class safe: yes
 // ***********************************************************************************************
 #pragma once
 
@@ -36,7 +36,7 @@ protected:
 
 private:
     // -------------------------------------------------------------------------------------------
-    unordered_map<Domino::Event, EMsgPriority> priorities_;    // [event]=priority
+    unordered_map<Domino::Event, EMsgPriority> ev_pri_S_;  // [event]=priority
 public:
     using aDominoType::oneLog;
 };
@@ -45,8 +45,8 @@ public:
 template<class aDominoType>
 EMsgPriority PriDomino<aDominoType>::getPriority(const Domino::Event& aEv) const
 {
-    auto&& ev_pri = priorities_.find(aEv);
-    if (ev_pri == priorities_.end())
+    auto&& ev_pri = ev_pri_S_.find(aEv);
+    if (ev_pri == ev_pri_S_.end())
         return aDominoType::getPriority(aEv);  // default
     else
         return ev_pri->second;
@@ -56,7 +56,7 @@ EMsgPriority PriDomino<aDominoType>::getPriority(const Domino::Event& aEv) const
 template<typename aDominoType>
 void PriDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 {
-    priorities_.erase(aValidEv);
+    ev_pri_S_.erase(aValidEv);
     aDominoType::rmEv_(aValidEv);
 }
 
@@ -64,12 +64,19 @@ void PriDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 template<class aDominoType>
 Domino::Event PriDomino<aDominoType>::setPriority(const Domino::EvName& aEvName, const EMsgPriority aPri)
 {
+    // validate
+    if (this->nHdlr(aEvName) > 0)
+    {
+        ERR("(PriDom) FAILED since exist hdlr(s) in en=" << aEvName << ", avoid complex/mislead result");
+        return Domino::D_EVENT_FAILED_RET;
+    }
+
     HID("(PriDom) EvName=" << aEvName << ", newPri=" << size_t(aPri));
     auto&& event = this->newEvent(aEvName);
     if (aPri == aDominoType::getPriority(event))
-        priorities_.erase(event);  // less mem & faster searching
+        ev_pri_S_.erase(event);  // less mem & faster searching
     else if (aPri < EMsgPri_MAX)
-        priorities_[event] = aPri;
+        ev_pri_S_[event] = aPri;
     return event;
 }
 

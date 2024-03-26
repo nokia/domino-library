@@ -58,6 +58,16 @@ TYPED_TEST_P(PriDominoTest, defaultPriority)
 
     EXPECT_EQ(EMsgPri_NORM, PARA_DOM->getPriority(Domino::D_EVENT_FAILED_RET)) << "REQ: invalid event";
 }
+TYPED_TEST_P(PriDominoTest, forbid_changePri)
+{
+    auto e1 = PARA_DOM->setHdlr("e1", this->d1EventHdlr_);
+    PARA_DOM->setPriority("e1", EMsgPri_LOW);
+    EXPECT_NE(EMsgPri_LOW, PARA_DOM->getPriority(e1)) << "REQ: forbid change pri when hdlr available";
+
+    PARA_DOM->rmOneHdlrOK("e1");
+    PARA_DOM->setPriority("e1", EMsgPri_LOW);
+    EXPECT_EQ(EMsgPri_LOW, PARA_DOM->getPriority(e1)) << "REQ: allow change pri when no hdlr";
+}
 
 #define PRI_FIFO
 // ***********************************************************************************************
@@ -77,13 +87,8 @@ TYPED_TEST_P(PriDominoTest, GOLD_setPriority_thenPriorityFifoCallback)
     PARA_DOM->setPriority("e4", EMsgPri_HIGH);
     PARA_DOM->setHdlr("e4", this->d4EventHdlr_);
 
-    PARA_DOM->setPriority("e4", EMsgPri_NORM);  // req: new pri effective immediately, but no impact on road
-    PARA_DOM->setState({{"e4", false}});
-    PARA_DOM->setState({{"e4", true}});
-
     MSG_SELF->handleAllMsg(MSG_SELF->getValid());
-    if (this->hdlrIDs_.size() == 6) EXPECT_EQ(queue<int>({5, 4, 2, 1, 3, 4}), this->hdlrIDs_);
-    else EXPECT_EQ(queue<int>({5, 4, 2, 1, 3}), this->hdlrIDs_);  // auto-rm-hdlr dom
+    EXPECT_EQ(queue<int>({5, 4, 2, 1, 3}), this->hdlrIDs_);  // auto-rm-hdlr dom
 }
 
 #define ID_STATE
@@ -106,6 +111,7 @@ TYPED_TEST_P(PriDominoTest, nonConstInterface_shall_createUnExistEvent_withState
 REGISTER_TYPED_TEST_SUITE_P(PriDominoTest
     , setPriority_thenGetIt
     , defaultPriority
+    , forbid_changePri
     , nonConstInterface_shall_createUnExistEvent_withStateFalse
     , GOLD_setPriority_thenPriorityFifoCallback
 );
