@@ -88,7 +88,7 @@ TYPED_TEST_P(PriDominoTest, GOLD_setPriority_thenPriorityFifoCallback)
     PARA_DOM->setPriority("e4", EMsgPri_HIGH);
     PARA_DOM->setHdlr("e4", this->d4EventHdlr_);
 
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    this->pongMsgSelf_();
     EXPECT_EQ(queue<int>({5, 4, 2, 1, 3}), this->hdlrIDs_);  // auto-rm-hdlr dom
 }
 

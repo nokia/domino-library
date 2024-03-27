@@ -68,12 +68,19 @@ struct UtInitObjAnywhere : public UniLog, public Test
 
         ObjAnywhere::set(MAKE_PTR<MaxDom>         (uniLogName()), *this);
         ObjAnywhere::set(MAKE_PTR<MaxNofreeDom>   (uniLogName()), *this);
+
+        // - example how main() callback MsgSelf to handle all msgs
+        // - this lambda hides all impl details but a common interface = function<void()>
+        pongMsgSelf_ = [msgSelf = MSG_SELF]{ msgSelf->handleAllMsg(); };
     }
     ~UtInitObjAnywhere()
     {
         ObjAnywhere::deinit(*this);
         GTEST_LOG_FAIL
     }
+
+    // -------------------------------------------------------------------------------------------
+    MsgCB pongMsgSelf_;
 };
 
 }  // namespace

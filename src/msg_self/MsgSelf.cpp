@@ -12,23 +12,8 @@ namespace RLib
 // ***********************************************************************************************
 MsgSelf::~MsgSelf()
 {
-    *isValid_ = false;
     if (nMsg_)
         WRN("discard nMsg=" << nMsg_);
-}
-
-// ***********************************************************************************************
-void MsgSelf::handleAllMsg(const shared_ptr<bool> aValidMsgSelf)
-{
-    if (!aValidMsgSelf || !*aValidMsgSelf)
-    {
-        HID("This MsgSelf failed validation!");  // can't ERR() when MsgSelf is invalid
-        return;
-    }
-
-    // UniLog also req valid MsgSelf
-    HID("(MsgSelf) How many reference to this MsgSelf? " << aValidMsgSelf.use_count());
-    while (handleOneMsg_());  // handleOneMsg_() may create new high priority msg(s)
 }
 
 // ***********************************************************************************************

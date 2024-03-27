@@ -74,12 +74,11 @@ class MsgSelf : public UniLog
 public:
     MsgSelf(const LogName& aUniLogName = ULN_DEFAULT) : UniLog(aUniLogName) {}
     ~MsgSelf();
-    const shared_ptr<bool> getValid() const { return isValid_; }
 
     void   newMsg(const MsgCB&, const EMsgPriority = EMsgPri_NORM);  // can't withdraw CB but easier usage
     size_t nMsg() const { return nMsg_; }
     size_t nMsg(const EMsgPriority aPri) const { return aPri < EMsgPri_MAX ?  msgQueues_[aPri].size() : 0; }
-    void   handleAllMsg(const shared_ptr<bool> aValidMsgSelf);
+    void   handleAllMsg() { while (handleOneMsg_()); }  // handleOneMsg_() may create new high priority msg(s)
 
     static bool isLowPri(const EMsgPriority aPri) { return aPri < EMsgPri_NORM; }
 
@@ -88,9 +87,7 @@ private:
 
     // -------------------------------------------------------------------------------------------
     deque<MsgCB> msgQueues_[EMsgPri_MAX];
-
-    shared_ptr<bool> isValid_ = make_shared<bool>(true);  // MsgSelf is still valid?
-    size_t           nMsg_ = 0;
+    size_t nMsg_ = 0;
 };
 }  // namespace
 // ***********************************************************************************************

@@ -171,7 +171,7 @@ TYPED_TEST_P(RmHdlrDomTest, GOLD_rm_HdlrDom_resrc)
     EXPECT_EQ(3u, MSG_SELF->nMsg()) << "REQ: another e1's hdlr is on road.";
 
     EXPECT_TRUE(PARA_DOM->rmEvOK("e2")) << "REQ: can rm alias Ev.";
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    this->pongMsgSelf_();
     EXPECT_EQ(multiset<int>{3}, hdlrIDs) << "REQ: no 2 removed evs' hdlrs";
 }
 
@@ -184,7 +184,7 @@ TYPED_TEST_P(RmHdlrDomTest, rmTruePrev_callHdlr_ifSatisfied)
 
     EXPECT_TRUE(PARA_DOM->rmEvOK("e1")) << "req: rm succ";
     EXPECT_TRUE(PARA_DOM->state("e0")) << "REQ: deduce related next";
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    this->pongMsgSelf_();
     EXPECT_EQ(multiset<int>{0}, hdlrIDs) << "REQ: prerequisite satisfied -> call hdlr.";
 }
 TYPED_TEST_P(RmHdlrDomTest, rmFalsePrev_callHdlr_ifSatisfied)
@@ -197,7 +197,7 @@ TYPED_TEST_P(RmHdlrDomTest, rmFalsePrev_callHdlr_ifSatisfied)
 
     EXPECT_TRUE(PARA_DOM->rmEvOK("e2")) << "req: rm succ";
     EXPECT_TRUE(PARA_DOM->state("e0")) << "REQ: deduce related next";
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    this->pongMsgSelf_();
     EXPECT_EQ(multiset<int>{0}, hdlrIDs) << "REQ: prerequisite satisfied -> call hdlr.";
 }
 
@@ -271,12 +271,12 @@ TYPED_TEST_P(RmMhdlrDomTest, GOLD_rm_MhdlrDom_resrc)
     EXPECT_EQ(0u, hdlrIDs.size()) << "REQ: not callback yet.";
 
     EXPECT_TRUE(PARA_DOM->rmEvOK("e1"));
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    this->pongMsgSelf_();
     EXPECT_EQ(multiset<int>{}, hdlrIDs) << "REQ: not exe e2 hdlr since removed.";
 
     EXPECT_EQ(e1, PARA_DOM->multiHdlrOnSameEv("reuse e1", [&hdlrIDs](){ hdlrIDs.insert(3); }, "h3"));
     PARA_DOM->forceAllHdlr("reuse e1");
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    this->pongMsgSelf_();
     EXPECT_EQ(multiset<int>{3}, hdlrIDs) << "REQ: exe new hdlr.";
 }
 

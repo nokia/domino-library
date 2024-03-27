@@ -52,7 +52,7 @@ TEST_F(MsgSelfTest, GOLD_sendMsg)
     EXPECT_EQ(1u, msgSelf_->nMsg());
     EXPECT_EQ(queue<int>(), hdlrIDs_) << "REQ: not immediate call d1MsgHdlr_ but wait msg-to-self";
 
-    msgSelf_->handleAllMsg(msgSelf_->getValid());  // simulate main() callback
+    msgSelf_->handleAllMsg();  // simulate main() callback
     EXPECT_EQ(queue<int>({1}), hdlrIDs_) << "REQ: call d1MsgHdlr_";
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM));
     EXPECT_FALSE(msgSelf_->nMsg());
@@ -64,20 +64,20 @@ TEST_F(MsgSelfTest, dupSendMsg)
     EXPECT_EQ(2u, msgSelf_->nMsg(EMsgPri_NORM));
     EXPECT_EQ(queue<int>(), hdlrIDs_);
 
-    msgSelf_->handleAllMsg(msgSelf_->getValid());
+    msgSelf_->handleAllMsg();
     EXPECT_EQ(queue<int>({1, 1}), hdlrIDs_);      // req: call all
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM));
 }
 TEST_F(MsgSelfTest, sendInvalidMsg_noCrash)
 {
     msgSelf_->newMsg(d1MsgHdlr_);  // valid cb to get pongMainFN_
-    msgSelf_->handleAllMsg(msgSelf_->getValid());
+    msgSelf_->handleAllMsg();
     EXPECT_EQ(queue<int>({1}), hdlrIDs_);
 
     msgSelf_->newMsg(MsgCB());                     // invalid cb
     msgSelf_->newMsg(d1MsgHdlr_, EMsgPri_MAX);     // invalid priority
     msgSelf_->newMsg(nullptr, EMsgPriority(-1));   // both invalid
-    msgSelf_->handleAllMsg(msgSelf_->getValid());  // req: no crash (& inc cov of empty queue)
+    msgSelf_->handleAllMsg();  // req: no crash (& inc cov of empty queue)
     EXPECT_EQ(queue<int>({1}), hdlrIDs_);
     EXPECT_EQ(0, msgSelf_->nMsg());
 }
@@ -94,18 +94,18 @@ TEST_F(MsgSelfTest, GOLD_loopback_handleAll_butOneByOneLowPri)
     EXPECT_EQ(2u, msgSelf_->nMsg(EMsgPri_HIGH));
     EXPECT_EQ(3u, msgSelf_->nMsg(EMsgPri_LOW));
 
-    msgSelf_->handleAllMsg(msgSelf_->getValid());
+    msgSelf_->handleAllMsg();
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM)) << "REQ: all normal";
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_HIGH)) << "REQ: all high";
     EXPECT_EQ(2u, msgSelf_->nMsg(EMsgPri_LOW))  << "REQ: 1/loopback()";
 
-    msgSelf_->handleAllMsg(msgSelf_->getValid());
+    msgSelf_->handleAllMsg();
     EXPECT_EQ(1u, msgSelf_->nMsg(EMsgPri_LOW));
 
-    msgSelf_->handleAllMsg(msgSelf_->getValid());
+    msgSelf_->handleAllMsg();
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_LOW));
 
-    msgSelf_->handleAllMsg(msgSelf_->getValid());
+    msgSelf_->handleAllMsg();
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_LOW));
 }
 
@@ -116,7 +116,7 @@ TEST_F(MsgSelfTest, GOLD_highPriority_first)
     msgSelf_->newMsg(d1MsgHdlr_);
     msgSelf_->newMsg(d2MsgHdlr_, EMsgPri_HIGH);
 
-    msgSelf_->handleAllMsg(msgSelf_->getValid());
+    msgSelf_->handleAllMsg();
     EXPECT_EQ(queue<int>({2, 1}), hdlrIDs_);
 }
 TEST_F(MsgSelfTest, GOLD_samePriority_fifo)
@@ -126,7 +126,7 @@ TEST_F(MsgSelfTest, GOLD_samePriority_fifo)
     msgSelf_->newMsg(d3MsgHdlr_);
     msgSelf_->newMsg(d4MsgHdlr_, EMsgPri_HIGH);
 
-    msgSelf_->handleAllMsg(msgSelf_->getValid());
+    msgSelf_->handleAllMsg();
     EXPECT_EQ(queue<int>({2, 4, 1, 3}), hdlrIDs_);
 }
 TEST_F(MsgSelfTest, newHighPri_first)
@@ -136,22 +136,8 @@ TEST_F(MsgSelfTest, newHighPri_first)
     msgSelf_->newMsg(d3MsgHdlr_);
     msgSelf_->newMsg(d4MsgHdlr_, EMsgPri_HIGH);
 
-    msgSelf_->handleAllMsg(msgSelf_->getValid());
+    msgSelf_->handleAllMsg();
     EXPECT_EQ(queue<int>({5, 4, 2, 1, 3}), hdlrIDs_);
-}
-
-#define DESTRUCT_MSGSELF
-// ***********************************************************************************************
-TEST_F(MsgSelfTest, destructMsgSelf_noCallback_noMemLeak_noCrash)  // mem leak is checked by valgrind upon UT
-{
-    EXPECT_CALL(*this, d6MsgHdlr()).Times(0);  // req: no call
-    msgSelf_->newMsg([&](){ this->d6MsgHdlr(); });
-    EXPECT_EQ(1u, msgSelf_->nMsg(EMsgPri_NORM));
-
-    auto valid = msgSelf_->getValid();
-    msgSelf_.reset();  // rm msgSelf
-    INF("~MsgSelf() shall print msg discarded");
-    msgSelf_->handleAllMsg(valid);  // req: no crash
 }
 
 #define WAIT_NOTIFY
@@ -164,7 +150,7 @@ TEST_F(MsgSelfTest, wait_notify)
     auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - start);
     EXPECT_LT(dur.count(), 100) << "REQ: newMsg() shall notify instead of timeout";
 
-    msgSelf_->handleAllMsg(msgSelf_->getValid());  // clear msg queue
+    msgSelf_->handleAllMsg();  // clear msg queue
 }
 
 #define SAFE

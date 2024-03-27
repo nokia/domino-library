@@ -73,12 +73,12 @@ TYPED_TEST_P(FreeHdlrDominoTest, GOLD_afterCallback_autoRmHdlr)
     EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e1)) << "REQ: default false (most hdlr used once)";
 
     PARA_DOM->setState({{"e1", true}});
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    this->pongMsgSelf_();
     EXPECT_EQ(multiset<int>({1}), this->hdlrIDs_);  // cb
 
     PARA_DOM->setState({{"e1", false}});
     PARA_DOM->setState({{"e1", true}});
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid()) ;
+    this->pongMsgSelf_();
     EXPECT_EQ(multiset<int>({1}), this->hdlrIDs_) << "REQ: no more cb since auto-rm";
 }
 TYPED_TEST_P(FreeHdlrDominoTest, afterCallback_autoRmHdlr_aliasMultiHdlr)
@@ -87,12 +87,12 @@ TYPED_TEST_P(FreeHdlrDominoTest, afterCallback_autoRmHdlr_aliasMultiHdlr)
     EXPECT_FALSE(PARA_DOM->isRepeatHdlr(aliasE1));
 
     PARA_DOM->setState({{"e1", true}});
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    this->pongMsgSelf_();
     EXPECT_EQ(multiset<int>({3}), this->hdlrIDs_);  // cb
 
     PARA_DOM->setState({{"e1", false}});
     PARA_DOM->setState({{"e1", true}});
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid()) ;
+    this->pongMsgSelf_() ;
     EXPECT_EQ(multiset<int>({3}), this->hdlrIDs_) << "REQ: no more cb since auto-rm";
 }
 TYPED_TEST_P(FreeMultiHdlrDominoTest, afterCallback_autoRmHdlr_multiHdlr)
@@ -104,24 +104,24 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, afterCallback_autoRmHdlr_multiHdlr)
     EXPECT_FALSE(PARA_DOM->isRepeatHdlr(aliasE1));
 
     PARA_DOM->setState({{"e1", true}});
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    this->pongMsgSelf_();
     EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_);  // cb
 
     PARA_DOM->setState({{"e1", false}});
     PARA_DOM->setState({{"e1", true}});
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid()) ;
+    this->pongMsgSelf_() ;
     EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_) << "REQ: no more cb since auto-rm";
 
     // re-add hdlr
     PARA_DOM->setHdlr("alias e1", this->h6_);
     PARA_DOM->multiHdlrOnSameEv("e1", this->h5_, "h2_");
     PARA_DOM->setHdlr("e1", this->h4_);  // reverse order to inc coverage
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid()) ;
+    this->pongMsgSelf_() ;
     EXPECT_EQ(multiset<int>({1, 2, 3, 4, 5, 6}), this->hdlrIDs_) << "REQ: re-add ok";
 
     PARA_DOM->setState({{"e1", false}});
     PARA_DOM->setState({{"e1", true}});
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid()) ;
+    this->pongMsgSelf_() ;
     EXPECT_EQ(multiset<int>({1, 2, 3, 4, 5, 6}), this->hdlrIDs_) << "REQ: no more cb since auto-rm";
 }
 TYPED_TEST_P(FreeMultiHdlrDominoTest, afterCallback_notRmHdlr)
@@ -132,12 +132,12 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, afterCallback_notRmHdlr)
     EXPECT_TRUE(PARA_DOM->isRepeatHdlr(e1));
 
     PARA_DOM->setState({{"e1", true}});
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());  // 1st cb
+    this->pongMsgSelf_();  // 1st cb
     EXPECT_EQ(multiset<int>({1, 2}), this->hdlrIDs_);
 
     PARA_DOM->setState({{"e1", false}});
     PARA_DOM->setState({{"e1", true}});
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());  // 2nd cb
+    this->pongMsgSelf_();  // 2nd cb
     EXPECT_EQ(multiset<int>({1, 2, 1, 2}), this->hdlrIDs_) << "REQ: not auto-rm";
 
     // re-add hdlr
@@ -146,7 +146,7 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, afterCallback_notRmHdlr)
 
     PARA_DOM->setState({{"e1", false}});
     PARA_DOM->setState({{"e1", true}});
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid()) ;
+    this->pongMsgSelf_() ;
     EXPECT_EQ(multiset<int>({1, 2, 1, 2, 1, 2}), this->hdlrIDs_) << "REQ: re-add nok";
 }
 TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_disorderAutoRm_ok)
@@ -157,7 +157,7 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_disorderAutoRm_ok)
     PARA_DOM->multiHdlrOnSameEv("e1", this->h2_, "h2_");  // h2_ on road
     PARA_DOM->multiHdlrOnSameEv("e1", this->h4_, "h4_");  // h4_ on road
 
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    this->pongMsgSelf_();
     EXPECT_EQ(multiset<int>({1, 2, 3, 4}), this->hdlrIDs_);
 }
 TYPED_TEST_P(FreeHdlrDominoTest, multiCallbackOnRoad_noCrash_noMultiCall)
@@ -168,7 +168,7 @@ TYPED_TEST_P(FreeHdlrDominoTest, multiCallbackOnRoad_noCrash_noMultiCall)
     PARA_DOM->setState({{"e1", false}});
     PARA_DOM->setState({{"e1", true}});  // 2nd on road
 
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    this->pongMsgSelf_();
     EXPECT_EQ(multiset<int>({1}), this->hdlrIDs_); // req: no more cb since auto-rm
 }
 TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_multiCallbackOnRoad_noCrash_noMultiCall)
@@ -182,7 +182,7 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_multiCallbackOnRoad_noCrash_noMulti
     PARA_DOM->setHdlr("e1", this->h1_);  // h1_ on road
     PARA_DOM->multiHdlrOnSameEv("e1", this->h3_, "h3_");  // h3_ on road
 
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    this->pongMsgSelf_();
     EXPECT_EQ(multiset<int>({1, 2, 3}), this->hdlrIDs_);  // req: no more cb since auto-rm
 }
 TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_noGapBetween_hdlr_and_autoRm)
@@ -195,13 +195,13 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_noGapBetween_hdlr_and_autoRm)
     PARA_DOM->setState({{"e1", true}});
     EXPECT_EQ(2u, MSG_SELF->nMsg()) << "req: 2 hdlrs on road";
 
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());  // each process 1 low hdlr
+    this->pongMsgSelf_();
+    this->pongMsgSelf_();  // each process 1 low hdlr
     EXPECT_EQ(2u, MSG_SELF->nMsg()) << "req: 3 hdlrs called that gen 2 new hdlrs";
     EXPECT_EQ(multiset<int>({}), this->hdlrIDs_) << "1st 3 hdlrs not insert multiset but create new hdlr";
 
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    this->pongMsgSelf_();
+    this->pongMsgSelf_();
     EXPECT_EQ(0u, MSG_SELF->nMsg()) << "req: all called";
     EXPECT_EQ(multiset<int>({1, 2}), this->hdlrIDs_) << "REQ: autoRm in time so 2 new hdlrs added succ";
 }
@@ -215,7 +215,7 @@ TYPED_TEST_P(FreeHdlrDominoTest, BugFix_noCrash_whenRmDom)
     PARA_DOM->setState({{"e1", true}});
     ASSERT_TRUE(MSG_SELF->nMsg());
     ObjAnywhere::set<TypeParam>(nullptr, *this);  // req: no mem leak when rm MsgSelf with h7 in msg queue
-    MSG_SELF->handleAllMsg(MSG_SELF->getValid());
+    this->pongMsgSelf_();
 }
 
 #define ID_STATE

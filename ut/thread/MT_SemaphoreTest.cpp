@@ -116,7 +116,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         mt_getQ().handleAllEle();
 
         INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
-        msgSelf_->handleAllMsg(msgSelf_->getValid());
+        msgSelf_->handleAllMsg();
 
         INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_sizeQ() << ", nTh=" << ThreadBack::nThread());
         if (expect == cb_info)
