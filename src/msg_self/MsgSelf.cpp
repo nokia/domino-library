@@ -10,13 +10,6 @@
 namespace RLib
 {
 // ***********************************************************************************************
-MsgSelf::~MsgSelf()
-{
-    if (nMsg_)
-        WRN("discard nMsg=" << nMsg_);
-}
-
-// ***********************************************************************************************
 // - performance optimization need 5 lines code, with a little benfit in most cases
 //   . so giveup until real need
 bool MsgSelf::handleOneMsg_()

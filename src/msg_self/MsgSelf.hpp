@@ -30,10 +30,11 @@
 //   . while only a few want to be able to withdraw cb in msgQueues_ (eg HdlrDomino; so WeakMsgCB is better)
 //
 // - class safe: yes
-//   . no duty to MsgCB itself's any unsafe behavior
+//   . not responsible for MsgCB itself's any unsafe behavior
 //   . why shared_ptr rather than SafeAdr to store MsgCB?
 //     . MsgSelf ensures safely usage of shared_ptr
-//   . destruct MsgSelf shall not call MsgCB in msgQueues_, & no mem-leak
+//   . not support callback after ~MsgSelf() since all msg discarded when ~MsgSelf()
+//     . UtInitObjAnywhere gives example how to provide a common callback for main()
 // ***********************************************************************************************
 #pragma once
 
@@ -73,7 +74,7 @@ class MsgSelf : public UniLog
 {
 public:
     MsgSelf(const LogName& aUniLogName = ULN_DEFAULT) : UniLog(aUniLogName) {}
-    ~MsgSelf();
+    ~MsgSelf() { if (nMsg_) WRN("discard nMsg=" << nMsg_); }
 
     void   newMsg(const MsgCB&, const EMsgPriority = EMsgPri_NORM);  // can't withdraw CB but easier usage
     size_t nMsg() const { return nMsg_; }
