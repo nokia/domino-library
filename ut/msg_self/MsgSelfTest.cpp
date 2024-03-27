@@ -140,6 +140,18 @@ TEST_F(MsgSelfTest, newHighPri_first)
     EXPECT_EQ(queue<int>({5, 4, 2, 1, 3}), hdlrIDs_);
 }
 
+#define DESTRUCT_MSGSELF
+// ***********************************************************************************************
+TEST_F(MsgSelfTest, destructMsgSelf_noCallback_noMemLeak_noCrash)  // mem leak is checked by valgrind upon UT
+{
+    EXPECT_CALL(*this, d6MsgHdlr()).Times(0);  // REQ: no call
+    msgSelf_->newMsg([&](){ this->d6MsgHdlr(); });
+    EXPECT_EQ(1u, msgSelf_->nMsg(EMsgPri_NORM));
+
+    msgSelf_.reset();  // rm msgSelf
+    INF("~MsgSelf() shall print msg discarded");
+}
+
 #define WAIT_NOTIFY
 // ***********************************************************************************************
 TEST_F(MsgSelfTest, wait_notify)
