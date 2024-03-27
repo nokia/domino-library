@@ -6,15 +6,15 @@
 // ***********************************************************************************************
 // - ISSUE/why:
 //   . implement UniLog based on SmartLog
-//   * so can log only failed UT case(s) - no log for all succ case(s)
+//   * so can log eg only failed UT case(s) - no log for all succ case(s)
 //
 // - CORE:
 //   . smartLog_
 //
-// - MT safe: NO!!! since eg logStore_; so shall NOT cross-thread use
+// - MT safe: NO!!! since eg name_log_S_; so shall NOT cross-thread use
 //   . SmartLog is to min log scope for better debug
 //   . cross-thread is not SmartLog purpose, but user can add mutex if really need
-// - mem safe: yes except
+// - class safe: yes except
 //   . keep ret of oneLog() - doesn't make sense, but then may use-after-free
 //     . UniSmartLog can provide template<T/...Args> operator<<() but both can't deduce endl, etc
 //     . so it's much simpler to ret SmartLog&/ref instead of UniSmartLog/copy
@@ -40,21 +40,21 @@ class UniSmartLog
 {
 public:
     explicit UniSmartLog(const LogName& = ULN_DEFAULT);
-    ~UniSmartLog() { if (smartLog_.use_count() == 2) logStore_.erase(uniLogName_); }
+    ~UniSmartLog() { if (smartLog_.use_count() == 2) name_log_S_.erase(uniLogName_); }
 
     SmartLog& oneLog() const;  // for logging; ret ref is not mem-safe when use the ref after del
     SmartLog& operator()() const { return oneLog(); }  // not mem-safe as oneLog()
     void needLog() { smartLog_->needLog(); }  // flag to dump
     LogName uniLogName() const { return uniLogName_; }
 
-    static size_t nLog() { return logStore_.size(); }
+    static size_t nLog() { return name_log_S_.size(); }
 
 private:
     // -------------------------------------------------------------------------------------------
     shared_ptr<SmartLog> smartLog_;
     const LogName        uniLogName_;
 
-    static LogStore logStore_;
+    static LogStore name_log_S_;
 public:
     static UniSmartLog defaultUniLog_;
 
@@ -67,15 +67,15 @@ public:
     static void dumpAll_forUt()  // for ut case clean at the end; mem-risk=use-after-free, so ut ONLY
     {
         defaultUniLog_.oneLog().forceSave();  // dump
-        logStore_.clear();  // simplest way to dump
+        name_log_S_.clear();  // simplest way to dump
     }
 
     static size_t logLen(const LogName& aUniLogName = ULN_DEFAULT)
     {
-        auto&& it = logStore_.find(aUniLogName);
-        return it == logStore_.end()
+        auto&& name_log = name_log_S_.find(aUniLogName);
+        return name_log == name_log_S_.end()
             ? 0
-            : it->second->str().size();
+            : name_log->second->str().size();
     }
 #endif
 };

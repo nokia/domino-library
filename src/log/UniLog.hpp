@@ -48,7 +48,7 @@
 //   * uni-interface (INF/...) for all users (eg DomLib, swm, rfsw)
 //     * easily support INF/etc macros
 //     * uni-interface for INF/etc macros
-//   . clean logStore_: del smartlog from logStore_ when no user
+//   . clean name_log_S_: del smartlog from name_log_S_ when no user
 //   . readable: log name as log prefix
 //   . low couple:
 //     . 2 obj sharing 1 log, del 1 obj, another obj still can log
