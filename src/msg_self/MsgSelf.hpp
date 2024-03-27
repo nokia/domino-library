@@ -5,17 +5,16 @@
  */
 // ***********************************************************************************************
 // - Issue/why: not callback directly but wait current function return to main() then callback
-//   . avoid loop callbacks, but exe after all executing/in-stack func returned
+//   . avoid callback-loop, but exe after all func in-stack returned
 //   * avoid logic surprise when immediate callback [MUST-HAVE!]
 //   * priority FIFO msg (eg "abort" is higher priority)
-//   . single thread (in main thread)
-//   * support diff cb mechanism (async, IM, syscom, etc)
 //   . can withdraw on-road MsgCB (eg HdlrDomino.rmHdlr())
-//   . destruct MsgSelf shall not call MsgCB in msgQueues_, & no mem-leak
 //
 // - how:
 //   . newMsg(): send msgHdlr into msgQueues_ (all info are in msgHdlr so func<void()> is enough)
 //   . handleAllMsg(): call all msgHdlr in msgQueues_, priority then FIFO
+//   . single thread (in main thread)
+//   * support diff cb mechanism (async, IM, syscom, etc)
 //
 // - core: msgQueues_[priority][FIFO]
 //   . msgQueues_ is a 2D array, 1st dim is priority, 2nd dim is FIFO
@@ -30,15 +29,16 @@
 //   . most users want MsgSelf (instead of themselves) to store cb (naturally; so MsgCB is better)
 //   . while only a few want to be able to withdraw cb in msgQueues_ (eg HdlrDomino; so WeakMsgCB is better)
 //
-// - mem safe: yes
+// - class safe: yes
 //   . no duty to MsgCB itself's any unsafe behavior
 //   . why shared_ptr rather than SafeAdr to store MsgCB?
 //     . MsgSelf ensures safely usage of shared_ptr
+//   . destruct MsgSelf shall not call MsgCB in msgQueues_, & no mem-leak
 // ***********************************************************************************************
 #pragma once
 
 #include <functional>
-#include <memory>  // shared_ptr<>
+#include <memory>  // shared_ptr
 #include <deque>
 
 #include "UniLog.hpp"

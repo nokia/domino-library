@@ -20,12 +20,15 @@ MsgSelf::~MsgSelf()
 // ***********************************************************************************************
 void MsgSelf::handleAllMsg(const shared_ptr<bool> aValidMsgSelf)
 {
-    if (*aValidMsgSelf)  // impossible aValidMsgSelf==nullptr since 022-Mar-11
+    if (!aValidMsgSelf || !*aValidMsgSelf)
     {
-        // UniLog also req valid MsgSelf
-        HID("(MsgSelf) How many reference to this MsgSelf? " << aValidMsgSelf.use_count());
-        while (handleOneMsg_());  // handleOneMsg_() may create new high priority msg(s)
+        HID("This MsgSelf failed validation!");  // can't ERR() when MsgSelf is invalid
+        return;
     }
+
+    // UniLog also req valid MsgSelf
+    HID("(MsgSelf) How many reference to this MsgSelf? " << aValidMsgSelf.use_count());
+    while (handleOneMsg_());  // handleOneMsg_() may create new high priority msg(s)
 }
 
 // ***********************************************************************************************
@@ -58,6 +61,7 @@ bool MsgSelf::handleOneMsg_()
 // ***********************************************************************************************
 void MsgSelf::newMsg(const MsgCB& aMsgCB, const EMsgPriority aMsgPri)
 {
+    // validate
     if (! aMsgCB)
     {
         WRN("(MsgSelf) failed!!! aMsgCB=nullptr doesn't make sense.");
@@ -68,10 +72,13 @@ void MsgSelf::newMsg(const MsgCB& aMsgCB, const EMsgPriority aMsgPri)
         WRN("(MsgSelf) failed!!! outbound aMsgPri=" << aMsgPri);
         return;
     }
+
+    // store
     msgQueues_[aMsgPri].push_back(aMsgCB);
     ++nMsg_;
     HID("(MsgSelf) nMsg=" << nMsg_);
 
+    // ping main thread
     mt_pingMainTH();
 }
 
