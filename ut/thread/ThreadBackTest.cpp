@@ -41,16 +41,16 @@ struct ThreadBackTest : public Test, public UniLog
 
 #define THREAD_AND_BACK
 // ***********************************************************************************************
-//                               [main thread]
-//                                     |
-//                                     | std::async()    [new thread]
-//             ThreadBack::newThread() |--------------------->| MT_ThreadEntryFN()
-// [future, ThreadBackFN]->allThreads_ |                      |
-//                                     |                      |
-//                                     |                      |
-//                                     |<.....................| future<>
-//    ThreadBack::hdlFinishedThreads() |
-//                                     |
+//                                 [main thread]
+//                                       |
+//                                       | std::async()    [new thread]
+//               ThreadBack::newThread() |--------------------->| MT_ThreadEntryFN()
+// [future, ThreadBackFN]->fut_backFN_S_ |                      |
+//                                       |                      |
+//                                       |                      |
+//                                       |<.....................| future<>
+//      ThreadBack::hdlFinishedThreads() |
+//                                       |
 TEST_F(ThreadBackTest, GOLD_entryFn_inNewThread_thenBackFn_inMainThread_withSemaphore)
 {
     atomic<thread::id> mt_threadID(this_thread::get_id());
@@ -182,6 +182,25 @@ TEST_F(ThreadBackTest, emptyThreadList_ok)
 {
     size_t nHandled = ThreadBack::hdlFinishedThreads();
     EXPECT_EQ(0u, nHandled);
+}
+
+#define MAIN_THREAD
+// ***********************************************************************************************
+TEST_F(ThreadBackTest, can_debug_usr_code)
+{
+    EXPECT_TRUE(ThreadBack::inMyMainThread()) << "REQ: OK in main thread";
+
+    ThreadBack::newThread(
+        // entryFn
+        []
+        {
+            EXPECT_FALSE(ThreadBack::inMyMainThread()) << "REQ: NOK in other thread";
+            return true;
+        },
+        // backFn
+        [](bool) {}
+    );
+    while (ThreadBack::hdlFinishedThreads() == 0);  // clear all threads
 }
 
 }  // namespace

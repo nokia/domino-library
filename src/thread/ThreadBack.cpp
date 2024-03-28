@@ -17,20 +17,20 @@ namespace RLib
 size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
 {
     size_t nHandled = 0;
-    for (auto&& it = allThreads_.begin(); it != allThreads_.end();)
+    for (auto&& fut_backFN = fut_backFN_S_.begin(); fut_backFN != fut_backFN_S_.end();)
     {
         // safer to check valid here than in newThread(), eg bug after newThread()
-        auto&& threadFut = it->first;
+        auto&& threadFut = fut_backFN->first;
         const bool threadOver = ! threadFut.valid() || (threadFut.wait_for(0s) == future_status::ready);
-        HID("(ThreadBack) nHandled=" << nHandled << ", valid=" << threadFut.valid() << ", backFn=" << &(it->second));
+        HID("(ThreadBack) nHandled=" << nHandled << ", valid=" << threadFut.valid() << ", backFn=" << &(fut_backFN->second));
         if (threadOver)
         {
-            it->second(threadFut.valid() && threadFut.get());  // callback
-            it = allThreads_.erase(it);
+            fut_backFN->second(threadFut.valid() && threadFut.get());  // callback
+            fut_backFN = fut_backFN_S_.erase(fut_backFN);
             ++nHandled;
         }
         else
-            ++it;
+            ++fut_backFN;
     }  // 1 loop, simple & safe
     return nHandled;
 }
@@ -38,18 +38,20 @@ size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
 // ***********************************************************************************************
 void ThreadBack::newThread(const MT_ThreadEntryFN& mt_aEntryFn, const ThreadBackFN& aBackFn, UniLog& oneLog)
 {
+    // validate
     if (! mt_aEntryFn)
     {
-        ERR("mt_aEntryFn can't be empty!!!");
+        ERR("(ThreadBack) mt_aEntryFn can't be empty!!!");
         return;
     }
     if (! aBackFn)
     {
-        ERR("aBackFn can't be empty!!!");
+        ERR("(ThreadBack) aBackFn can't be empty!!!");
         return;
     }
 
-    allThreads_.emplace_back(  // save future<> & aBackFn()
+    // create new thread
+    fut_backFN_S_.emplace_back(  // save future<> & aBackFn()
         async(
             launch::async,
             [mt_aEntryFn]()  // must cp than ref, otherwise dead loop
@@ -61,10 +63,10 @@ void ThreadBack::newThread(const MT_ThreadEntryFN& mt_aEntryFn, const ThreadBack
         ),
         aBackFn
     );
-    HID("(ThreadBack) valid=" << allThreads_.back().first.valid() << ", backFn=" << &(allThreads_.back().second));
+    HID("(ThreadBack) valid=" << fut_backFN_S_.back().first.valid() << ", backFn=" << &(fut_backFN_S_.back().second));
 }
 
 // ***********************************************************************************************
-StoreThreadBack ThreadBack::allThreads_;
+StoreThreadBack ThreadBack::fut_backFN_S_;
 
 }  // namespace

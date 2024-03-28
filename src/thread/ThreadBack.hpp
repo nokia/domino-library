@@ -18,28 +18,33 @@
 //                         |
 //
 // - core: ThreadBackFN
-//   . after MT_ThreadEntryFN() over in "other thread", ThreadBackFN() is run in MAIN THREAD - key diff vs async()
+//   . after MT_ThreadEntryFN() end in "other thread", ThreadBackFN() is auto-run in MAIN THREAD - key diff vs async()
 //
 // - VALUE/why:
 //   * keep all logic in main thread / single thread (simple, eg no lock/deadlock, no complex logic)
 //     . while time-consuming tasks in other threads
-//
-// - REQ:
-//   * run MT_ThreadEntryFN() in new thread by ThreadBack::newThread()
-//   * run ThreadBackFN() in main thread after MT_ThreadEntryFN() done by ThreadBack::hdlFinishedThreads()
-//   * MT_ThreadEntryFN()'s result as ThreadBackFN()'s para so succ(true) or fail(false)
-//   . eg newThread() must be called in main thread (or at least 1 same thread), no defense code to protect
-//   . MT_ThreadEntryFN & ThreadBackFN shall NOT throw exception
-//     . they can try-catch all exception & leave RLib simple/focus
-//     . exception is bug to be fixed than pretected
 //   . cross platform:
 //     . std::async
 //     . std::future (to msg from other thread back to main thread)
-//   . most info in main thread, eg allThreads_, easy handle ThreadBackFN() by diff ways
-//   * align with MsgSelf since all "msg" shall queue in MsgSelf
+//
+// - REQ:
+//   * run MT_ThreadEntryFN() in new thread
+//   * when MT_ThreadEntryFN() finished, auto trigger main thread to run ThreadBackFN()
+//   * MT_ThreadEntryFN()'s result as ThreadBackFN()'s para - succ(true) or fail(false)
+//   . align with MsgSelf since all "msg" shall queue in MsgSelf
 //     . aovid complex MsgSelf: ThreadBack provides 1 func to fill aBack into MsgSelf
 //     . avoid complex ThreadBack (viaMsgSelf() in new hpp)
 //     . avoid block main thread
+//
+// - class safe: yes
+//   * all ThreadBack func must run in 1 thread (best in main thread)
+//     . ThreadBack can afford but whole RLib can NOT (make no sense to validate thread in all func)
+//     * so giveup but assmue all in main thread (except MT_/mt_ prefix that MT safe)
+//       . provide inMyMainThread() for user debug - any main-thread func shall ret T if call inMyMainThread()
+//     * same for exception - assume no exception from any hdlr provided to RLib
+//   . no duty to any unsafe behavior of MT_ThreadEntryFN or ThreadBackFN (eg throw exception)
+//     . MT_ThreadEntryFN & ThreadBackFN shall NOT throw exception
+//     . they can try-catch all exception & leave RLib simple/focus
 //   . limit thread#?
 //     . eg linsee's /proc/sys/kernel/threads-max=154w, cloud=35w
 //     . /proc/sys/kernel/threads-max is for each process
@@ -48,9 +53,6 @@
 // - support multi-thread
 //   . MT_/mt_ prefix: yes
 //   . others: NO (only use in main thread - most dom lib code shall in main thread - simple & easy)
-//
-// - mem safe: yes with limit
-//   . no duty to any unsafe behavior of MT_ThreadEntryFN or ThreadBackFN
 // ***********************************************************************************************
 #pragma once
 
@@ -76,11 +78,17 @@ public:
     static void newThread(const MT_ThreadEntryFN&, const ThreadBackFN&, UniLog& = UniLog::defaultUniLog_);
     static size_t hdlFinishedThreads(UniLog& = UniLog::defaultUniLog_);
 
-    static size_t nThread() { return allThreads_.size(); }
+    static size_t nThread() { return fut_backFN_S_.size(); }
+
+    static bool inMyMainThread()
+    {
+        static const auto s_myMainThread = this_thread::get_id();
+        return s_myMainThread == this_thread::get_id();
+    }
 
 private:
     // -------------------------------------------------------------------------------------------
-    static StoreThreadBack allThreads_;
+    static StoreThreadBack fut_backFN_S_;
 
 
     // -------------------------------------------------------------------------------------------
@@ -88,7 +96,7 @@ private:
 public:
     static void invalidNewThread(const ThreadBackFN& aBack)
     {
-        allThreads_.emplace_back(future<bool>(), aBack);  // invalid future
+        fut_backFN_S_.emplace_back(future<bool>(), aBack);  // invalid future
     }
 #endif
 };
