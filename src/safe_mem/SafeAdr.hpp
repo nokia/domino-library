@@ -5,18 +5,16 @@
  */
 // ***********************************************************************************************
 // - ISSUE:
-//   . c++ mem bugs are 1 of the most challenge (eg use Rust to replace c++)
-// - REQ: this class is to impl
-//   . safe create   : null & make_safe only
-//   . safe ship     : cp/mv/= base<-derive(s); short->int?
-//   . safe store    : cast any<->void
-//   . safe use      : cast to real / before void
+//   . c++ mem bugs are 1 of the most challenge (eg US gov suggest to replace c++ by Rust)
+// - REQ: this class is to enhance safety of shared_ptr:
+//   . safe create   : null / make_safe only (not allow unsafe create eg via raw ptr)
+//   . safe ship     : cp/mv/assign only among self, base & void
 //   . safe lifecycle: by shared_ptr (auto mem-mgmt, no use-after-free)
-//   . safe ptr array:
+//   . safe ptr array: TODO
 // - DUTY-BOUND:
 //   . ensure ptr address is safe: legal created, not freed, not wild, etc
 //   . ensure ptr type is valid: origin*, or base*, or void*
-//   . not ensure T's content which is T's duty bound
+//   . not SafeAdr but T to ensure T's inner safety (eg no exception within T's constructor)
 //   . hope cooperate with tool to ensure/track SafeAdr, all T, all code's mem safe
 // - suggest:
 //   . any class ensure mem-safe (like MT safe)
@@ -87,28 +85,25 @@ template<typename From>
 SafeAdr<T>::SafeAdr(const SafeAdr<From>& aSafeFrom)
     : pT_(aSafeFrom.template cast_get<T>())
 {
-    if (! pT_)
+    // validate
+    if (pT_ == nullptr)
     {
-        HID("pT_ == nullptr");  // HID: ut debug only in MT env
+        HID("pT_ == nullptr");  // only HID() is multi-thread safe
         return;
     }
-    realType_ = aSafeFrom.realType();
 
-    preVoidType_ = aSafeFrom.preVoidType();
-    if (! is_same<T, void>::value)
-    {
-        //HID("Valid cast " << typeid(From).name() << " to " << typeid(T).name());
-        return;
-    }
-    //HID("cast non-void to void (void-to-void is covered by copy constructor)");
-    preVoidType_ = &typeid(From);
+    // continue cp
+    realType_ = aSafeFrom.realType();
+    preVoidType_ = is_same<T, void>::value
+        ? preVoidType_ = &typeid(From)  // cast-to-void (impossible void->void covered by another cp constructor)
+        : aSafeFrom.preVoidType();      // cast-to-nonVoid
 }
 
 // ***********************************************************************************************
 template<typename T>
 shared_ptr<T> SafeAdr<T>::cast_get() const  // most common usage, standalone is faster
 {
-    //HID("(SafeAdr) to self");
+    //HID("(SafeAdr) to self");  // comment-out since too many
     return pT_;
 }
 template<typename T>
@@ -127,7 +122,7 @@ shared_ptr<To> SafeAdr<T>::cast_get() const
     }
     if (&typeid(To) == preVoidType_)
     {
-        //HID("(SafeAdr) any to type-before-cast-to-void");
+        //HID("(SafeAdr) any to type-before-castToVoid");
         return static_pointer_cast<To>(pT_);
     }
     if (is_same<To, void>::value)
@@ -135,7 +130,7 @@ shared_ptr<To> SafeAdr<T>::cast_get() const
         //HID("(SafeAdr) any to void (for container to store diff types)");
         return static_pointer_cast<To>(pT_);
     }
-    HID("(SafeAdr) unsupported cast");
+    HID("(SafeAdr) unsupported cast");  // ERR() may not be multi-thread safe
     return nullptr;
 }
 

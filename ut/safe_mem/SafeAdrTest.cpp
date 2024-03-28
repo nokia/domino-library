@@ -161,12 +161,12 @@ TEST(SafeAdrTest, GOLD_const_and_back)
     EXPECT_EQ(100, const_share_d->value()) << "call NON-const since all members are NON-const except 'this'";
 }
 
-#define SAFE_GET
+#define SAFE
 // ***********************************************************************************************
-TEST(SafeAdrTest, GOLD_get_isMemSafe_afterDelOrigin)
+TEST(SafeAdrTest, get_isMemSafe_afterDelOrigin)
 {
-    auto safe = make_safe<string>("hello");
-    auto get = safe.get();
+    SafeAdr<string> safe = make_safe<string>("hello");
+    shared_ptr<string> get = safe.get();
     EXPECT_EQ("hello", *get) << "REQ: get succ";
 
     safe = nullptr;
@@ -175,10 +175,10 @@ TEST(SafeAdrTest, GOLD_get_isMemSafe_afterDelOrigin)
     get = safe.get();
     EXPECT_EQ(nullptr, get) << "REQ: get nullptr OK";
 }
-TEST(SafeAdrTest, GOLD_getPtr_isMemSafe_afterDelOrigin)
+TEST(SafeAdrTest, getPtr_isMemSafe_afterDelOrigin)
 {
-    auto safe = make_safe<string>("hello");
-    auto get = safe.operator->();
+    SafeAdr<string> safe = make_safe<string>("hello");
+    shared_ptr<string> get = safe.operator->();  // diff
     EXPECT_EQ("hello", *get) << "REQ: get succ";
 
     safe = nullptr;
