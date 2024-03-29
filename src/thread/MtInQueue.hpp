@@ -5,20 +5,22 @@
  */
 // ***********************************************************************************************
 // - what:
-//   * multi-thread-safe queue - FIFO
+//   * multi-thread-safe queue - multi-thread in & main-thread out - FIFO
 //   . can store any type data
+//     . pop fail = no pop (natural)
+//     . hdlr can handle PTR<base>, PTR<void>
 //   . high performance by pop-cache
 //
 // - why:
 //   . multi-thread msg into MtInQueue, main thread read & handle (so call "In"Queue)
-//   . req to "Out"Queue is not clear: seems main thread can send directly w/o block or via ThreadBack
-//   . fetch() is not common, let class simple (eg std::queue than list)
+//     . "Out"Queue is not clear: eg main thread can write socket directly w/o block or via ThreadBack
+//   . fetch() in the middle of the queue is not common, let class simple (eg std::queue than list)
 //   . cache_: if mt_push() heavily, cache_ avoid ~all mutex from pop()
 //
 // - core:
 //   . queue_
 //
-// - mem-safe: true (when use SafeAdr instead of shared_ptr)
+// - class safe: true (when use SafeAdr instead of shared_ptr)
 // ***********************************************************************************************
 #pragma once
 
@@ -36,7 +38,7 @@ using namespace std;
 namespace RLib
 {
 // ele & its typeid.hash_code
-using ElePair = pair<UniPtr, size_t>;  // <ele, ID>
+using ELE_ID = pair<UniPtr, size_t>;  // <ele, ID>
 using EleHdlr = function<void(UniPtr)>;
 
 // ***********************************************************************************************
@@ -48,8 +50,8 @@ public:
     template<class aEleType> void mt_push(PTR<aEleType> aEle);
 
     // shall be called in main thread ONLY!!!
-    ElePair pop();  // high performance
-    template<class aEleType> PTR<aEleType> pop() { return static_pointer_cast<aEleType>(pop().first); }
+    ELE_ID pop();  // high performance
+    template<class aEleType> PTR<aEleType> pop();
 
     size_t mt_sizeQ();
     void   mt_clear();
@@ -63,8 +65,8 @@ private:
     size_t handleCacheEle_();
 
     // -------------------------------------------------------------------------------------------
-    deque<ElePair> queue_;  // unlimited ele; most suitable container
-    deque<ElePair> cache_;
+    deque<ELE_ID> queue_;  // unlimited ele; most suitable container
+    deque<ELE_ID> cache_;
     mutex mutex_;
 
     unordered_map<size_t, EleHdlr> eleHdlrs_;  // <ID, hdlr>
@@ -75,6 +77,32 @@ public:
     mutex& backdoor() { return mutex_; }
 #endif
 };
+
+// ***********************************************************************************************
+template<class aEleType>
+void MtInQueue::mt_push(PTR<aEleType> aEle)
+{
+    // - for MT safe: mt_push shall take over aEle's content (so sender can't touch the content)
+    if (aEle.use_count() > 1)
+    {
+        HID("!!! push failed since use_count=" << aEle.use_count());  // ERR() is not MT safe
+        return;
+    }
+
+    {
+        lock_guard<mutex> guard(mutex_);
+        queue_.push_back(ELE_ID(aEle, typeid(aEleType).hash_code()));
+        HID("(MtQ) ptr=" << aEle.get() << ", nRef=" << aEle.use_count());  // HID supports MT
+    }   // unlock then mt_notifyFn()
+    mt_pingMainTH();
+}
+
+// ***********************************************************************************************
+template<class aEleType>
+PTR<aEleType> MtInQueue::pop()
+{
+    return static_pointer_cast<aEleType>(pop().first);
+}
 
 // ***********************************************************************************************
 template<class aEleType>
@@ -95,25 +123,6 @@ bool MtInQueue::setHdlrOK(const EleHdlr& aHdlr)
 
     eleHdlrs_[hash] = aHdlr;
     return true;
-}
-
-// ***********************************************************************************************
-template<class aEleType>
-void MtInQueue::mt_push(PTR<aEleType> aEle)
-{
-    // - for MT safe: mt_push shall take over aEle's content (so sender can't touch the content)
-    if (aEle.use_count() > 1)
-    {
-        HID("!!! push failed since use_count=" << aEle.use_count());  // ERR() is not MT safe
-        return;
-    }
-
-    {
-        lock_guard<mutex> guard(mutex_);
-        queue_.push_back(ElePair(aEle, typeid(aEleType).hash_code()));
-        HID("(MtQ) ptr=" << aEle.get() << ", nRef=" << aEle.use_count());  // HID supports MT
-    }   // unlock then mt_notifyFn()
-    mt_pingMainTH();
 }
 
 

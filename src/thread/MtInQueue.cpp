@@ -74,7 +74,7 @@ size_t MtInQueue::mt_sizeQ()
 }
 
 // ***********************************************************************************************
-ElePair MtInQueue::pop()
+ELE_ID MtInQueue::pop()
 {
     if (cache_.empty())
     {
@@ -83,10 +83,10 @@ ElePair MtInQueue::pop()
         {
             mt_pingMainTH();  // since waste this wakeup as not own the lock
             this_thread::yield();  // avoid main thread keep checking
-            return ElePair(nullptr, typeid(void).hash_code());
+            return ELE_ID(nullptr, typeid(void).hash_code());
         }
         if (queue_.empty())
-            return ElePair(nullptr, typeid(void).hash_code());
+            return ELE_ID(nullptr, typeid(void).hash_code());
         cache_.swap(queue_);  // fast & for at most ele
     }
     // unlocked

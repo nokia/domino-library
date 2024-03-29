@@ -30,7 +30,8 @@
 // - REQ:
 //   * run MT_ThreadEntryFN() in new thread
 //   * when MT_ThreadEntryFN() finished, auto trigger main thread to run ThreadBackFN()
-//   * MT_ThreadEntryFN()'s result as ThreadBackFN()'s para - succ(true) or fail(false)
+//   . MT_ThreadEntryFN() ret T(succ)/F(fail)
+//     . this ret is as input para of ThreadBackFN(); if eg async() fail, this para also F
 //   . align with MsgSelf since all "msg" shall queue in MsgSelf
 //     . aovid complex MsgSelf: ThreadBack provides 1 func to fill aBack into MsgSelf
 //     . avoid complex ThreadBack (viaMsgSelf() in new hpp)
@@ -38,9 +39,10 @@
 //
 // - class safe: yes
 //   * all ThreadBack func must run in 1 thread (best in main thread)
-//     . ThreadBack can afford but whole RLib can NOT (make no sense to validate thread in all func)
-//     * so giveup but assmue all in main thread (except MT_/mt_ prefix that MT safe)
-//       . provide inMyMainThread() for user debug - any main-thread func shall ret T if call inMyMainThread()
+//     . ThreadBack can call inMyMainThread() to ensure this
+//     . but can all RLib func call inMyMainThread()? little benefit so giveup
+//     * common sense/principle: RLib (include ThreadBack) not call inMyMainThread()
+//       . inMyMainThread() for user debug - any main-thread func shall ret T if call inMyMainThread()
 //     * same for exception - assume no exception from any hdlr provided to RLib
 //   . no duty to any unsafe behavior of MT_ThreadEntryFN or ThreadBackFN (eg throw exception)
 //     . MT_ThreadEntryFN & ThreadBackFN shall NOT throw exception
@@ -52,7 +54,7 @@
 //
 // - support multi-thread
 //   . MT_/mt_ prefix: yes
-//   . others: NO (only use in main thread - most dom lib code shall in main thread - simple & easy)
+//   . others: NO (only use in main thread - most dom lib code shall in main thread - simple & nsesilbe)
 // ***********************************************************************************************
 #pragma once
 

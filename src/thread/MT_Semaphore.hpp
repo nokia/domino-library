@@ -5,18 +5,18 @@
  */
 // ***********************************************************************************************
 // - why/REQ:
-//   * let main thread timedwait() other thread's input (eg from MsgSelf, ThreadBack, MtInQueue)
-//   * let other thread mt_notify() to wakeup main thread from timedwait()
+//   * let main thread timedwait() other's input (eg from MsgSelf, ThreadBack, MtInQueue)
+//   * let other thread mt_notify() to wakeup main thread upon timedwait()
 //   . base on semaphore that is simple enough
 //     . std::latch/etc need c++20, too high vs semaphore (POSIX)
 //     * sem_wait() doesn't miss afterwards sem_post()
-//   * support timeout to prevent missing sem_post() that may hang main thread
+//   * support timeout to prevent sleep forever by eg missing sem_post()
 //
 // - core:
 //   . mt_sem_
 //
 // - MT safe: YES (since all mt_sem_*() are mt safety)
-// - mem safe: yes
+// - class safe: yes
 // ***********************************************************************************************
 #pragma once
 

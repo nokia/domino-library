@@ -237,7 +237,7 @@ TEST_F(MtInQueueTest, safe_set_hdlr)
 
 #define SAFE
 // ***********************************************************************************************
-TEST_F(MtInQueueTest, GOLD_push_takeover_toEnsureMtSafe)
+TEST_F(MtInQueueTest, push_takeover_toEnsureMtSafe)
 {
     auto ele = MAKE_PTR<int>(1);
     auto e2  = ele;
@@ -252,6 +252,16 @@ TEST_F(MtInQueueTest, GOLD_push_takeover_toEnsureMtSafe)
     mt_getQ().mt_push<int>(move(ele));
     EXPECT_EQ(1, mt_getQ().mt_sizeQ()) << "REQ: push succ since takeover";
     EXPECT_EQ(0, ele.use_count())      << "REQ: own nothing after push";
+}
+TEST_F(MtInQueueTest, invalid_pop)
+{
+    mt_getQ().mt_push<int>(MAKE_PTR<int>(1));
+    EXPECT_EQ(nullptr, mt_getQ().pop<unsigned>().get()) << "REQ: pop diff type is invalid";
+
+    struct Base {};
+    struct Derive : public Base {};
+    mt_getQ().mt_push<Base>(MAKE_PTR<Base>());
+    EXPECT_EQ(nullptr, mt_getQ().pop<Derive>().get()) << "REQ: pop derive type is invalid";
 }
 
 }  // namespace
