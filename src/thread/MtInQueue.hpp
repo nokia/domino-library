@@ -9,6 +9,8 @@
 //   . can store any type data
 //     . pop fail = no pop (natural)
 //     . hdlr can handle PTR<base>, PTR<void>
+//     . can't push nullptr since pop empty ret nullptr
+//     .
 //   . high performance by pop-cache
 //
 // - why:
@@ -38,7 +40,7 @@ using namespace std;
 namespace RLib
 {
 // ele & its typeid.hash_code
-using ELE_ID = pair<UniPtr, size_t>;  // <ele, ID>
+using ELE_TID = pair<UniPtr, size_t>;  // <ele, ID>
 using EleHdlr = function<void(UniPtr)>;
 
 // ***********************************************************************************************
@@ -49,8 +51,9 @@ public:
 
     template<class aEleType> void mt_push(PTR<aEleType> aEle);
 
-    // shall be called in main thread ONLY!!!
-    ELE_ID pop();  // high performance
+    // - shall be called in main thread ONLY!!!
+    // - high performance
+    ELE_TID pop();
     template<class aEleType> PTR<aEleType> pop();
 
     size_t mt_sizeQ();
@@ -62,11 +65,12 @@ public:
     size_t nHdlr() const { return eleHdlrs_.size(); }
 
 private:
-    size_t handleCacheEle_();
+    deque<ELE_TID>::iterator begin_();
+    size_t  handleCacheEle_();
 
     // -------------------------------------------------------------------------------------------
-    deque<ELE_ID> queue_;  // unlimited ele; most suitable container
-    deque<ELE_ID> cache_;
+    deque<ELE_TID> queue_;  // unlimited ele; most suitable container
+    deque<ELE_TID> cache_;
     mutex mutex_;
 
     unordered_map<size_t, EleHdlr> eleHdlrs_;  // <ID, hdlr>
@@ -77,6 +81,25 @@ public:
     mutex& backdoor() { return mutex_; }
 #endif
 };
+
+// ***********************************************************************************************
+template<class aEleType>
+PTR<aEleType> MtInQueue::pop()
+{
+    // nothing
+    auto&& it = begin_();
+    if (it == cache_.end())
+        return nullptr;
+
+    // mismatch
+    if (it->second != typeid(aEleType).hash_code())
+        return nullptr;
+
+    // pop
+    auto ele_id = *it;  // must copy
+    cache_.pop_front();
+    return static_pointer_cast<aEleType>(ele_id.first);
+}
 
 // ***********************************************************************************************
 template<class aEleType>
@@ -91,17 +114,10 @@ void MtInQueue::mt_push(PTR<aEleType> aEle)
 
     {
         lock_guard<mutex> guard(mutex_);
-        queue_.push_back(ELE_ID(aEle, typeid(aEleType).hash_code()));
+        queue_.push_back(ELE_TID(aEle, typeid(aEleType).hash_code()));
         HID("(MtQ) ptr=" << aEle.get() << ", nRef=" << aEle.use_count());  // HID supports MT
     }   // unlock then mt_notifyFn()
     mt_pingMainTH();
-}
-
-// ***********************************************************************************************
-template<class aEleType>
-PTR<aEleType> MtInQueue::pop()
-{
-    return static_pointer_cast<aEleType>(pop().first);
 }
 
 // ***********************************************************************************************
