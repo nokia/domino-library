@@ -47,16 +47,16 @@ size_t MtInQueue::handleCacheEle_()
     const auto nEle = cache_.size();
     while (! cache_.empty())
     {
-        auto ele_id = cache_.front();
+        auto ele_tid = cache_.front();
         cache_.pop_front();
 
-        auto&& id_hdlr = eleHdlrs_.find(ele_id.second);
-        if (id_hdlr == eleHdlrs_.end())
+        auto&& id_hdlr = tid_hdlr_S_.find(ele_tid.second);
+        if (id_hdlr == tid_hdlr_S_.end())
         {
-            WRN("(MtQ) discard 1 ele(id=" << ele_id.second << ") since no handler.")
+            WRN("(MtQ) discard 1 ele(tid=" << ele_tid.second->name() << ") since no handler.")
             continue;
         }
-        id_hdlr->second(ele_id.first);
+        id_hdlr->second(ele_tid.first);
     }  // while
     return nEle;
 }
@@ -85,7 +85,7 @@ void MtInQueue::mt_clear()
     lock_guard<mutex> guard(mutex_);
     queue_.clear();
     cache_.clear();
-    eleHdlrs_.clear();
+    tid_hdlr_S_.clear();
 }
 
 // ***********************************************************************************************
@@ -104,9 +104,9 @@ ELE_TID MtInQueue::pop()
         return ELE_TID(nullptr, 0);
 
     // pop
-    auto ele_id = *it;  // must copy
+    auto ele_tid = *it;  // must copy
     cache_.pop_front();
-    return ele_id;
+    return ele_tid;
 }
 
 

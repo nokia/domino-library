@@ -40,7 +40,7 @@ using namespace std;
 namespace RLib
 {
 // ele & its typeid.hash_code
-using ELE_TID = pair<UniPtr, size_t>;  // <ele, ID>
+using ELE_TID = pair<UniPtr, const type_info*>;
 using EleHdlr = function<void(UniPtr)>;
 
 // ***********************************************************************************************
@@ -62,7 +62,7 @@ public:
     // shall be called in main thread ONLY!!!
     template<class aEleType> bool setHdlrOK(const EleHdlr&);
     size_t handleAllEle();
-    size_t nHdlr() const { return eleHdlrs_.size(); }
+    size_t nHdlr() const { return tid_hdlr_S_.size(); }
 
 private:
     deque<ELE_TID>::iterator begin_();
@@ -73,7 +73,7 @@ private:
     deque<ELE_TID> cache_;
     mutex mutex_;
 
-    unordered_map<size_t, EleHdlr> eleHdlrs_;  // <ID, hdlr>
+    unordered_map<const type_info*, EleHdlr> tid_hdlr_S_;
 
     // -------------------------------------------------------------------------------------------
 #ifdef RLIB_UT
@@ -92,7 +92,7 @@ PTR<aEleType> MtInQueue::pop()
         return nullptr;
 
     // mismatch
-    if (it->second != typeid(aEleType).hash_code())
+    if (it->second != &typeid(aEleType))
         return nullptr;
 
     // pop
@@ -114,7 +114,7 @@ void MtInQueue::mt_push(PTR<aEleType> aEle)
 
     {
         lock_guard<mutex> guard(mutex_);
-        queue_.push_back(ELE_TID(aEle, typeid(aEleType).hash_code()));
+        queue_.push_back(ELE_TID(aEle, &typeid(aEleType)));
         HID("(MtQ) ptr=" << aEle.get() << ", nRef=" << aEle.use_count());  // HID supports MT
     }   // unlock then mt_notifyFn()
     mt_pingMainTH();
@@ -130,14 +130,14 @@ bool MtInQueue::setHdlrOK(const EleHdlr& aHdlr)
         return false;
     }
 
-    const auto hash = typeid(aEleType).hash_code();
-    if (eleHdlrs_.find(hash) != eleHdlrs_.end())
+    const type_info* tid = &typeid(aEleType);
+    if (tid_hdlr_S_.find(tid) != tid_hdlr_S_.end())
     {
         ERR("(MtInQueue) failed!!! overwrite hdlr may unsafe existing data");
         return false;
     }
 
-    eleHdlrs_[hash] = aHdlr;
+    tid_hdlr_S_[tid] = aHdlr;
     return true;
 }
 
