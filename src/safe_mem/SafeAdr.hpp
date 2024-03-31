@@ -59,7 +59,8 @@ public:
     constexpr SafeAdr(nullptr_t) noexcept : SafeAdr() {}  // implicit nullptr -> SafeAdr()
 
     // safe-only cast (vs shared_ptr, eg static_pointer_cast<any> is not safe)
-    template<typename From> SafeAdr(const SafeAdr<From>&) noexcept;
+    template<typename From> SafeAdr(const SafeAdr<From>&) noexcept;  // cp
+    template<typename From> SafeAdr(SafeAdr<From>&&) noexcept;  // mv
     shared_ptr<T> cast_get() const noexcept;
     template<typename To> shared_ptr<To> cast_get() const noexcept;
 
@@ -82,7 +83,7 @@ private:
 // ***********************************************************************************************
 template<typename T>
 template<typename From>
-SafeAdr<T>::SafeAdr(const SafeAdr<From>& aSafeFrom)
+SafeAdr<T>::SafeAdr(const SafeAdr<From>& aSafeFrom)  // cp
     : pT_(aSafeFrom.template cast_get<T>())
 {
     // validate
@@ -97,6 +98,16 @@ SafeAdr<T>::SafeAdr(const SafeAdr<From>& aSafeFrom)
     preVoidType_ = is_same<T, void>::value
         ? preVoidType_ = &typeid(From)  // cast-to-void (impossible void->void covered by another cp constructor)
         : aSafeFrom.preVoidType();      // cast-to-nonVoid
+}
+
+// ***********************************************************************************************
+template<typename T>
+template<typename From>
+SafeAdr<T>::SafeAdr(SafeAdr<From>&& aSafeFrom)  // mv
+    : SafeAdr(aSafeFrom)
+{
+    if (pT_ != nullptr)
+        aSafeFrom = SafeAdr();
 }
 
 // ***********************************************************************************************

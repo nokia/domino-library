@@ -14,7 +14,7 @@ namespace RLib
 // ***********************************************************************************************
 MtInQueue::~MtInQueue()
 {
-    const auto nEle = mt_sizeQ();
+    const auto nEle = mt_sizeQ(true);
     if (nEle)
         WRN("discard nEle=" << nEle);  // main thread can WRN()
 }
@@ -89,10 +89,20 @@ void MtInQueue::mt_clear()
 }
 
 // ***********************************************************************************************
-size_t MtInQueue::mt_sizeQ()
+size_t MtInQueue::mt_sizeQ(bool canBlock)
 {
-    lock_guard<mutex> guard(mutex_);
-    return queue_.size() + cache_.size();
+    if (canBlock)
+    {
+        lock_guard<mutex> guard(mutex_);
+        return queue_.size() + cache_.size();
+    }
+
+    // non block
+    unique_lock<mutex> tryGuard(mutex_, try_to_lock);
+    HID(__LINE__ << " owns=" << tryGuard.owns_lock());
+    return tryGuard.owns_lock()
+        ? queue_.size() + cache_.size()
+        : cache_.size();
 }
 
 // ***********************************************************************************************

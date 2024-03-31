@@ -7,10 +7,6 @@
 // - what:
 //   * multi-thread-safe queue - multi-thread in & main-thread out - FIFO
 //   . can store any type data
-//     . pop fail = no pop (natural)
-//     . hdlr can handle PTR<base>, PTR<void>
-//     . can't push nullptr since pop empty ret nullptr
-//     .
 //   . high performance by pop-cache
 //
 // - why:
@@ -49,14 +45,14 @@ class MtInQueue
 public:
     ~MtInQueue();
 
-    template<class aEleType> void mt_push(PTR<aEleType> aEle);
+    template<class aEleType> void mt_push(PTR<aEleType>&& aEle);
 
     // - shall be called in main thread ONLY!!!
     // - high performance
     ELE_TID pop();
     template<class aEleType> PTR<aEleType> pop();
 
-    size_t mt_sizeQ();
+    size_t mt_sizeQ(bool canBlock);
     void   mt_clear();
 
     // shall be called in main thread ONLY!!!
@@ -84,6 +80,34 @@ public:
 
 // ***********************************************************************************************
 template<class aEleType>
+void MtInQueue::mt_push(PTR<aEleType>&& aEle)
+{
+    // validate aEle
+    if (aEle.get() == nullptr)
+    {
+        HID("!!! can't push nullptr since pop empty will ret nullptr");
+        return;
+    }
+    // for MT safe: mt_push shall take over aEle's content (so sender can't touch the content)
+    if (aEle.use_count() > 1)
+    {
+        HID("!!! push failed since use_count=" << aEle.use_count());  // ERR() is not MT safe
+        return;
+    }
+
+    // push
+    {
+        lock_guard<mutex> guard(mutex_);
+        queue_.push_back(ELE_TID(move(aEle), &typeid(aEleType)));
+        HID("(MtQ) ptr=" << aEle.get() << ", nRef=" << aEle.use_count());  // HID supports MT
+    }
+
+    // unlock then notify main thread
+    mt_pingMainTH();
+}
+
+// ***********************************************************************************************
+template<class aEleType>
 PTR<aEleType> MtInQueue::pop()
 {
     // nothing
@@ -99,25 +123,6 @@ PTR<aEleType> MtInQueue::pop()
     auto ele_id = *it;  // must copy
     cache_.pop_front();
     return static_pointer_cast<aEleType>(ele_id.first);
-}
-
-// ***********************************************************************************************
-template<class aEleType>
-void MtInQueue::mt_push(PTR<aEleType> aEle)
-{
-    // - for MT safe: mt_push shall take over aEle's content (so sender can't touch the content)
-    if (aEle.use_count() > 1)
-    {
-        HID("!!! push failed since use_count=" << aEle.use_count());  // ERR() is not MT safe
-        return;
-    }
-
-    {
-        lock_guard<mutex> guard(mutex_);
-        queue_.push_back(ELE_TID(aEle, &typeid(aEleType)));
-        HID("(MtQ) ptr=" << aEle.get() << ", nRef=" << aEle.use_count());  // HID supports MT
-    }   // unlock then mt_notifyFn()
-    mt_pingMainTH();
 }
 
 // ***********************************************************************************************
