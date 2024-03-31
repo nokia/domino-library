@@ -119,6 +119,11 @@ TEST_F(MtInQueueTest, pushWakeup_popNoBlockAndWakeup)
     ASSERT_EQ("2nd", *(mt_getQ().pop<string>().get())) << "REQ: no-blocked pop from cache";
     mt_getQ().backdoor().unlock();
 }
+TEST_F(MtInQueueTest, push_null_NOK)
+{
+    mt_getQ().mt_push<void>(nullptr);
+    EXPECT_EQ(0, mt_getQ().mt_sizeQ(true)) << "REQ: can't push nullptr since pop empty will ret nullptr";
+}
 TEST_F(MtInQueueTest, push_takeover_toEnsureMtSafe)
 {
     auto ele = MAKE_PTR<int>(1);
@@ -205,6 +210,13 @@ TEST_F(MtInQueueTest, clear_queue_cache_hdlr)
     mt_getQ().mt_clear();
     EXPECT_EQ(0u, mt_getQ().mt_sizeQ(true)) << "REQ: clear all ele";
     EXPECT_EQ(0u, mt_getQ().nHdlr()) << "REQ: clear all hdlr";
+}
+TEST_F(MtInQueueTest, cov_destructor)
+{
+    MtInQueue mtQ;  // cov destructor with ele left
+    mt_getQ().mt_push<int>(make_safe<int>(1));
+
+    MtInQueue mtQ2;  // cov destructor without ele left
 }
 
 #define HDLR
