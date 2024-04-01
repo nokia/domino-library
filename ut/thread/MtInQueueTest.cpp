@@ -214,7 +214,7 @@ TEST_F(MtInQueueTest, clear_queue_cache_hdlr)
 TEST_F(MtInQueueTest, cov_destructor)
 {
     MtInQueue mtQ;  // cov destructor with ele left
-    mt_getQ().mt_push<int>(make_safe<int>(1));
+    mtQ.mt_push<int>(MAKE_PTR<int>(1));
 
     MtInQueue mtQ2;  // cov destructor without ele left
 }

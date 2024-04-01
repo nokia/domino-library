@@ -98,6 +98,10 @@ SafeAdr<T>::SafeAdr(const SafeAdr<From>& aSafeFrom)  // cp
     preVoidType_ = is_same<T, void>::value
         ? preVoidType_ = &typeid(From)  // cast-to-void (impossible void->void covered by another cp constructor)
         : aSafeFrom.preVoidType();      // cast-to-nonVoid
+
+    /*HID("cp from=" << typeid(From).name() << " to=" << typeid(T).name()
+        << ", pre=" << (preVoidType_ == nullptr ? "null" : preVoidType_->name())
+        << ", real=" << (realType_ == nullptr ? "null" : realType_->name()));*/
 }
 
 // ***********************************************************************************************
@@ -106,8 +110,12 @@ template<typename From>
 SafeAdr<T>::SafeAdr(SafeAdr<From>&& aSafeFrom)  // mv
     : SafeAdr(aSafeFrom)
 {
+    /*HID("mv from=" << typeid(From).name() << " to=" << typeid(T).name()
+        << ", pre=" << (preVoidType_ == nullptr ? "null" : preVoidType_->name())
+        << ", real=" << (realType_ == nullptr ? "null" : realType_->name()));*/
+
     if (pT_ != nullptr)
-        aSafeFrom = SafeAdr();
+        aSafeFrom = SafeAdr<From>();
 }
 
 // ***********************************************************************************************
@@ -141,7 +149,7 @@ shared_ptr<To> SafeAdr<T>::cast_get() const
         //HID("(SafeAdr) any to void (for container to store diff types)");
         return static_pointer_cast<To>(pT_);
     }
-    HID("(SafeAdr) unsupported cast");  // ERR() may not be multi-thread safe
+    HID("(SafeAdr) unsupported cast from=" << typeid(T).name() << " to=" << typeid(To).name());  // ERR() not MT safe
     return nullptr;
 }
 
