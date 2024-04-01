@@ -188,7 +188,7 @@ TEST(SafeAdrTest, getPtr_isMemSafe_afterDelOrigin)
     EXPECT_EQ(nullptr, get) << "REQ: get nullptr OK";
 }
 
-#define MAP
+#define SUPPORT_MAP
 // ***********************************************************************************************
 TEST(SafeAdrTest, GOLD_asKeyOf_unorderedMap)
 {

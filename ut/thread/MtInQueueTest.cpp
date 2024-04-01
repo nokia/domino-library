@@ -101,7 +101,7 @@ TEST_F(MtInQueueTest, GOLD_surgePush_fifo)
     INF("REQ: loop cost 2576us now, previously no cache & lock cost 4422us")
 }
 
-#define PUSH_POP
+#define PUSH
 // ***********************************************************************************************
 TEST_F(MtInQueueTest, pushWakeup_popNoBlockAndWakeup)
 {
@@ -136,11 +136,17 @@ TEST_F(MtInQueueTest, push_takeover_toEnsureMtSafe)
     EXPECT_EQ(1, mt_getQ().mt_sizeQ(true)) << "REQ: push succ since takeover";
     EXPECT_EQ(0, ele.use_count())      << "REQ: own nothing after push";
 }
-TEST_F(MtInQueueTest, popEmpty_popMismatchType)
+
+#define POP
+// ***********************************************************************************************
+TEST_F(MtInQueueTest, popEmpty)
 {
     EXPECT_EQ(0u, mt_getQ().mt_sizeQ(true)) << "empty MtQ";
     EXPECT_EQ(nullptr, mt_getQ().pop<void>().get()) << "REQ: can pop empty";
-
+    EXPECT_EQ(nullptr, mt_getQ().pop().first.get()) << "REQ: can pop empty (diff pop)";
+}
+TEST_F(MtInQueueTest, popMismatchType)
+{
     mt_getQ().mt_push<int>(MAKE_PTR<int>(10));
     EXPECT_EQ(nullptr, mt_getQ().pop<void>().get()) << "REQ: pop failed since type mismatch";
     EXPECT_EQ(1u, mt_getQ().mt_sizeQ(true)) << "REQ: pop fail = no pop - natural";
@@ -268,12 +274,15 @@ TEST_F(MtInQueueTest, handle_via_base)
 {
     struct Base { virtual int value() { return 1; } };
     struct Derive : public Base { int value() override { return 2; } };
+    mt_getQ().mt_push<Derive>(MAKE_PTR<Base>());
+    EXPECT_EQ(0u, mt_getQ().mt_sizeQ(true)) << "REQ: cannot push Base to Derive";
+
     mt_getQ().mt_push<Base>(MAKE_PTR<Base>());
     EXPECT_EQ(nullptr, mt_getQ().pop<Derive>().get()) << "REQ: pop derive type is invalid";
 
     auto d = MAKE_PTR<Derive>();
     mt_getQ().mt_push<Base>(move(d));
-    EXPECT_EQ(2u, mt_getQ().mt_sizeQ(true)) << "REQ: can store Derive obj as Base";
+    EXPECT_EQ(2u, mt_getQ().mt_sizeQ(true)) << "REQ: can push Derive to Base";
 
     EXPECT_TRUE(mt_getQ().setHdlrOK<Base>([](UniPtr aEle)
     {
@@ -283,7 +292,7 @@ TEST_F(MtInQueueTest, handle_via_base)
         EXPECT_EQ(exp++, ele.get()->value());
     }));
     mt_getQ().handleAllEle();
-    EXPECT_EQ(0u, mt_getQ().mt_sizeQ(true)) << "req: all ele handled";
+    EXPECT_EQ(0u, mt_getQ().mt_sizeQ(true)) << "req: Base & Derive are handled correctly";
 }
 
 }  // namespace

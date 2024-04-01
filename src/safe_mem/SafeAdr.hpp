@@ -108,13 +108,13 @@ SafeAdr<T>::SafeAdr(const SafeAdr<From>& aSafeFrom)  // cp
 template<typename T>
 template<typename From>
 SafeAdr<T>::SafeAdr(SafeAdr<From>&& aSafeFrom)  // mv
-    : SafeAdr(aSafeFrom)
+    : SafeAdr(aSafeFrom)  // cp
 {
     /*HID("mv from=" << typeid(From).name() << " to=" << typeid(T).name()
         << ", pre=" << (preVoidType_ == nullptr ? "null" : preVoidType_->name())
         << ", real=" << (realType_ == nullptr ? "null" : realType_->name()));*/
 
-    if (pT_ != nullptr)
+    if (pT_ != nullptr)  // cp succ, clear src
         aSafeFrom = SafeAdr<From>();
 }
 
