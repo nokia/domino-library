@@ -54,14 +54,13 @@ class SafeAdr
 {
 public:
     // safe-only creation (vs shared_ptr, eg shared_ptr<U>(U*) is not safe)
-    template<typename U, typename... Args> friend SafeAdr<U> make_safe(Args&&... aArgs);  // U::U(Args) SHALL mem-safe
     constexpr SafeAdr() = default;  // must explicit since below converter constructor
     constexpr SafeAdr(nullptr_t) noexcept : SafeAdr() {}  // implicit nullptr -> SafeAdr()
+    template<typename U, typename... Args> friend SafeAdr<U> make_safe(Args&&... aArgs);  // U::U(Args) SHALL mem-safe
 
     // safe-only cast (vs shared_ptr, eg static_pointer_cast<any> is not safe)
     template<typename From> SafeAdr(const SafeAdr<From>&) noexcept;  // cp
     template<typename From> SafeAdr(SafeAdr<From>&&) noexcept;  // mv
-    shared_ptr<T> cast_get() const noexcept;
     template<typename To> shared_ptr<To> cast_get() const noexcept;
 
     // safe usage: convenient, equivalent & min (vs shared_ptr)
@@ -95,9 +94,10 @@ SafeAdr<T>::SafeAdr(const SafeAdr<From>& aSafeFrom)  // cp
 
     // continue cp
     realType_ = aSafeFrom.realType();
-    preVoidType_ = is_same<T, void>::value
-        ? preVoidType_ = &typeid(From)  // cast-to-void (impossible void->void covered by another cp constructor)
-        : aSafeFrom.preVoidType();      // cast-to-nonVoid
+    if (is_same<T, void>::value)
+        preVoidType_ = &typeid(From);  // cast-to-void (impossible void->void covered by another cp constructor)
+    else
+        preVoidType_ = aSafeFrom.preVoidType();  // cast-to-nonVoid
 
     /*HID("cp from=" << typeid(From).name() << " to=" << typeid(T).name()
         << ", pre=" << (preVoidType_ == nullptr ? "null" : preVoidType_->name())
@@ -119,12 +119,6 @@ SafeAdr<T>::SafeAdr(SafeAdr<From>&& aSafeFrom)  // mv
 }
 
 // ***********************************************************************************************
-template<typename T>
-shared_ptr<T> SafeAdr<T>::cast_get() const  // most common usage, standalone is faster
-{
-    //HID("(SafeAdr) to self");  // comment-out since too many
-    return pT_;
-}
 template<typename T>
 template<typename To>
 shared_ptr<To> SafeAdr<T>::cast_get() const

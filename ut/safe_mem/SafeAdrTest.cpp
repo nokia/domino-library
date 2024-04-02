@@ -14,50 +14,51 @@ namespace RLib
 {
 #define CREATE_GET
 // ***********************************************************************************************
-TEST(SafeAdrTest, GOLD_construct_get)
+TEST(SafeAdrTest, GOLD_create_get_cast)
 {
+    auto v = SafeAdr<>();
+    EXPECT_EQ(nullptr, v.get()) << "REQ: create default=null";
+    EXPECT_EQ(&typeid(void), v.realType()) << "REQ: default type=void";
+
+    auto c = SafeAdr<char>(nullptr);
+    EXPECT_EQ(nullptr, c.get()) << "REQ: create null";
+    EXPECT_EQ(&typeid(char), c.realType()) << "REQ: type=char";
+
     auto one = make_safe<int>(42);
-    EXPECT_EQ(42, *(one.cast_get())) << "REQ: valid construct & get";
+    EXPECT_EQ(42, *(one.get())) << "REQ: valid construct & get";
+    EXPECT_EQ(&typeid(int), one.realType()) << "REQ: type=int";
 
-    *(one.cast_get()) = 43;
-    EXPECT_EQ(43, *(one.cast_get())) << "REQ: valid update";
-
-    EXPECT_EQ(one.cast_get<void>(), one.cast_get()) << "REQ: valid get (void)";
-    // one.cast_get<unsigned>();  // REQ: invalid cast_get() will fail compile
+    *(one.get()) = 43;
+    EXPECT_EQ(43, *(one.get())) << "REQ: valid update";
 }
 TEST(SafeAdrTest, GOLD_cp_get)
 {
     auto one = make_safe<int>(42);
     auto two(one);
-    EXPECT_EQ(42, *(two.cast_get())) << "REQ: valid cp & get";
+    EXPECT_EQ(42, *(two.get())) << "REQ: valid cp & get";
 
-    *(one.cast_get()) = 43;
-    EXPECT_EQ(43, *(two.cast_get())) << "REQ: valid update via sharing";
+    *(one.get()) = 43;
+    EXPECT_EQ(43, *(two.get())) << "REQ: valid update via sharing";
 }
 TEST(SafeAdrTest, GOLD_assign_get)
 {
     SafeAdr<int> one;
-    EXPECT_EQ(nullptr, one.cast_get()) << "REQ: construct null";
-
     auto two = make_safe<int>(42);
     one = two;
-    EXPECT_EQ(42, *(one.cast_get()))  << "REQ: valid assign & get";
+    EXPECT_EQ(42, *(one.get())) << "REQ: valid assign & get";
 
     two = SafeAdr<int>();
-    EXPECT_EQ(42,    *(one.cast_get())) << "REQ: valid get after shared is reset";
-    EXPECT_EQ(nullptr, two.cast_get())  << "REQ: assign to null";
+    EXPECT_EQ(nullptr, two.get()) << "REQ: assign to null";
+    EXPECT_EQ(42, *(one.get())) << "REQ: valid get after assigner is reset";
 }
 TEST(SafeAdrTest, GOLD_mv_get)
 {
-    SafeAdr<int> one;
-    auto two = make_safe<int>(42);
-    one = move(two);
-    EXPECT_EQ(42,    *(one.cast_get())) << "REQ: valid move assignment & get";
-    EXPECT_EQ(nullptr, two.cast_get())  << "REQ: move src is null";
-
-    SafeAdr<int> three(move(one));
-    EXPECT_EQ(42,    *(three.cast_get())) << "REQ: valid move cp & get";
-    EXPECT_EQ(nullptr, one.cast_get())    << "REQ: move src is null";
+    auto one = make_safe<int>(42);
+    SafeAdr<int> cp(one);
+    SafeAdr<int> mv = move(one);
+    EXPECT_EQ(42, *(mv.get())) << "REQ: valid move assignment & get";
+    EXPECT_EQ(nullptr, one.get()) << "REQ: src is null";
+    EXPECT_EQ(42, *(cp.get())) << "REQ: mv not impact cp";
 }
 
 #define DERIVE_VOID
@@ -76,58 +77,53 @@ TEST(SafeAdrTest, GOLD_base_get)
 TEST(SafeAdrTest, castTo_baseDirection)
 {
     SafeAdr<D2> d2 = make_safe<D2>();
-    EXPECT_EQ(2, d2.cast_get<D2>()    ->value()) << "req: get virtual";
+    EXPECT_EQ(2, d2.cast_get<D2>()    ->value()) << "req: get self";
     EXPECT_EQ(2, d2.cast_get<Derive>()->value()) << "REQ: safe to Base direction";
     EXPECT_EQ(2, d2.cast_get<Base>()  ->value()) << "req: safe to Base direction";
-    EXPECT_EQ(d2.cast_get(), d2.cast_get<D2>())  << "REQ: safe to void";
+    EXPECT_EQ(d2.get(), d2.cast_get<D2>())  << "REQ: safe to void";
 
     SafeAdr<Derive> d = d2;
     EXPECT_EQ(2, d.cast_get<Base>()  ->value()) << "req: safe to Base direction";
     EXPECT_EQ(2, d.cast_get<Derive>()->value()) << "req: safe to self";
     EXPECT_EQ(2, d.cast_get<D2>()    ->value()) << "REQ: safe to origin";
-    EXPECT_EQ(d.cast_get(), d.cast_get<Base>()) << "req: valid to void";
+    EXPECT_EQ(d.get(), d.cast_get<Base>()) << "req: valid to void";
 
     SafeAdr<Base> b = d2;
     EXPECT_EQ(2,   b.cast_get<Base>()  ->value()) << "req: valid self";
     //EXPECT_EQ(2, b.cast_get<Derive>()->value()) << "safe but not support yet, worth to support?";
     EXPECT_EQ(2,   b.cast_get<D2>()    ->value()) << "req: safe to origin";
-    EXPECT_EQ(b.cast_get(), b.cast_get<Base>())   << "req: valid get";
+    EXPECT_EQ(b.get(), b.cast_get<Base>())   << "req: valid get";
 
     SafeAdr<> v = d;
     EXPECT_EQ(2, v.cast_get<D2>()    ->value()) << "req: safe to origin:  (D2->Derive->)void->D2";
     EXPECT_EQ(2, v.cast_get<Derive>()->value()) << "REQ: safe to preVoid: (D2->Derive->)void->Derive";
 }
-TEST(SafeAdrTest, castTo_origin_preVoid)
+TEST(SafeAdrTest, origin_preVoid)
 {
     SafeAdr<> v = make_safe<D2>();
-    EXPECT_EQ(&typeid(D2), v.realType());
-    EXPECT_EQ(&typeid(D2), v.preVoidType());
-    EXPECT_EQ(2, v.cast_get<D2>()->value()) << "REQ: safe to origin/preVoid";
+    EXPECT_EQ(&typeid(D2), v.realType   ()) << "REQ: safe to origin";
+    EXPECT_EQ(&typeid(D2), v.preVoidType()) << "REQ: safe to preVoid";
 
     SafeAdr<> vv = v;
-    EXPECT_EQ(&typeid(D2), vv.realType());
-    EXPECT_EQ(&typeid(D2), vv.preVoidType());
-    EXPECT_EQ(2,   vv.cast_get<D2>()    ->value()) << "REQ: void->void shall not lose origin & preVoid";
-    //EXPECT_EQ(2, vv.cast_get<Derive>()->value()) << "safe but not support yet, worth to support?";
-    //EXPECT_EQ(2, vv.cast_get<Base>()  ->value()) << "safe but not support yet, worth to support?";
+    EXPECT_EQ(&typeid(D2), vv.realType   ()) << "REQ: void->void shall not lose origin";
+    EXPECT_EQ(&typeid(D2), vv.preVoidType()) << "REQ: void->void shall not lose preVoid";
 
     SafeAdr<D2> d2 = vv;
-    EXPECT_EQ(&typeid(D2), d2.realType());
-    EXPECT_EQ(&typeid(D2), d2.preVoidType());
-    EXPECT_EQ(2, d2.cast_get<D2>()->value()) << "REQ: D2->void->void->D2 shall not lose origin & preVoid";
+    EXPECT_EQ(&typeid(D2), d2.realType   ()) << "REQ: D2->void->void->D2 shall not lose origin";
+    EXPECT_EQ(&typeid(D2), d2.preVoidType()) << "REQ: D2->void->void->D2 shall not lose preVoid";
 
     SafeAdr<Derive> d = vv;
-    EXPECT_EQ(&typeid(Derive), d.realType()) << "lose origin - don't know Derive is base via typeid(D2)";
-    EXPECT_EQ(nullptr, d.preVoidType())      << "lose origin so also lose preVoidType_";
-    EXPECT_EQ(nullptr, d.cast_get<void>())   << "lose origin so also lose pT_";
+    EXPECT_EQ(nullptr, d.get()) << "can't (D2->void->)void->Derive so lose pT_";
+    EXPECT_EQ(&typeid(Derive), d.realType   ()) << "REQ: pT_=null so origin=self";
+    EXPECT_EQ(nullptr,         d.preVoidType()) << "REQ: pT_=null so preVoid=null";
 }
-TEST(SafeAdrTest, inc_cov)
+/*TEST(SafeAdrTest, inc_cov)
 {
     SafeAdr<Derive> d;
     SafeAdr<Base> b = d;
+    EXPECT_EQ(&typeid(Base), b.realType   ()) << "REQ: origin type since d is nullptr";
     EXPECT_EQ(nullptr,       b.preVoidType()) << "REQ: type before to void";
-    EXPECT_EQ(&typeid(Base), b.realType())    << "REQ: origin type since d is nullptr";
-}
+}*/
 
 #define CONST_AND_BACK
 // ***********************************************************************************************
