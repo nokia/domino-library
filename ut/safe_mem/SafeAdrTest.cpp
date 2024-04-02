@@ -117,13 +117,6 @@ TEST(SafeAdrTest, origin_preVoid)
     EXPECT_EQ(&typeid(Derive), d.realType   ()) << "REQ: pT_=null so origin=self";
     EXPECT_EQ(nullptr,         d.preVoidType()) << "REQ: pT_=null so preVoid=null";
 }
-/*TEST(SafeAdrTest, inc_cov)
-{
-    SafeAdr<Derive> d;
-    SafeAdr<Base> b = d;
-    EXPECT_EQ(&typeid(Base), b.realType   ()) << "REQ: origin type since d is nullptr";
-    EXPECT_EQ(nullptr,       b.preVoidType()) << "REQ: type before to void";
-}*/
 
 #define CONST_AND_BACK
 // ***********************************************************************************************
@@ -163,7 +156,7 @@ TEST(SafeAdrTest, get_isMemSafe_afterDelOrigin)
 {
     SafeAdr<string> safe = make_safe<string>("hello");
     shared_ptr<string> get = safe.get();
-    EXPECT_EQ("hello", *get) << "REQ: get succ";
+    EXPECT_EQ("hello", *get) << "get succ";
 
     safe = nullptr;
     EXPECT_EQ("hello", *get) << "REQ: what got is still OK";
