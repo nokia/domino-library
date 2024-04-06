@@ -51,7 +51,7 @@ struct ThreadBackTest : public Test, public UniLog
 //                                       |<.....................| future<>
 //      ThreadBack::hdlFinishedThreads() |
 //                                       |
-TEST_F(ThreadBackTest, GOLD_entryFn_inNewThread_thenBackFn_inMainThread_withSemaphore)
+TEST_F(ThreadBackTest, GOLD_entryFn_inNewThread_thenBackFn_inMainThread_withTimedWait)
 {
     atomic<thread::id> mt_threadID(this_thread::get_id());
     INF("main thread id=" << mt_threadID);
@@ -78,14 +78,14 @@ TEST_F(ThreadBackTest, GOLD_entryFn_inNewThread_thenBackFn_inMainThread_withSema
         if (ThreadBack::hdlFinishedThreads() == 0)
         {
             INF("new thread not end yet, wait... mt_threadID=" << mt_threadID)
-            timedwait();  // REQ: semaphore is more efficient than keep hdlFinishedThreads()
+            timedwait();  // REQ: timedwait() is more efficient than keep hdlFinishedThreads()
             continue;
         }
         EXPECT_EQ(mt_threadID, this_thread::get_id()) << "REQ: run ThreadBackFN() in main thread afterwards";
         return;
     }
 }
-TEST_F(ThreadBackTest, GOLD_entryFnResult_toBackFn_withoutSem)
+TEST_F(ThreadBackTest, GOLD_entryFnResult_toBackFn_withoutTimedWait)
 {
     const size_t maxThread = 2;  // req: test entryFn result true(succ) / false(fail)
     for (size_t idxThread = 0; idxThread < maxThread; ++idxThread)
@@ -143,7 +143,7 @@ TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
     }
 
     canEnd = true;  // 1st thread keep running while 2nd is done
-    while (ThreadBack::hdlFinishedThreads() == 0)
+    while (ThreadBack::hdlFinishedThreads() == 0)  // no timedwait() so keep occupy cpu
     {
         INF("2nd thread done, wait 1st done...")
         this_thread::yield();

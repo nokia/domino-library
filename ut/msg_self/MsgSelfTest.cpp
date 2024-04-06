@@ -60,25 +60,21 @@ TEST_F(MsgSelfTest, GOLD_sendMsg)
 TEST_F(MsgSelfTest, dupSendMsg)
 {
     msgSelf_->newMsg(d1MsgHdlr_);
-    msgSelf_->newMsg(d1MsgHdlr_);                 // req: dup
+    msgSelf_->newMsg(d1MsgHdlr_);  // dup
     EXPECT_EQ(2u, msgSelf_->nMsg(EMsgPri_NORM));
     EXPECT_EQ(queue<int>(), hdlrIDs_);
 
     msgSelf_->handleAllMsg();
-    EXPECT_EQ(queue<int>({1, 1}), hdlrIDs_);      // req: call all
+    EXPECT_EQ(queue<int>({1, 1}), hdlrIDs_);  // req: call all
     EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_NORM));
 }
 TEST_F(MsgSelfTest, sendInvalidMsg_noCrash)
 {
-    msgSelf_->newMsg(d1MsgHdlr_);  // valid cb to get pongMainFN_
-    msgSelf_->handleAllMsg();
-    EXPECT_EQ(queue<int>({1}), hdlrIDs_);
-
-    msgSelf_->newMsg(MsgCB());                     // invalid cb
-    msgSelf_->newMsg(d1MsgHdlr_, EMsgPri_MAX);     // invalid priority
-    msgSelf_->newMsg(nullptr, EMsgPriority(-1));   // both invalid
+    msgSelf_->newMsg(MsgCB());  // invalid cb
+    msgSelf_->newMsg(d1MsgHdlr_, EMsgPri_MAX);  // invalid priority
+    msgSelf_->newMsg(nullptr, EMsgPriority(-1));  // both invalid
     msgSelf_->handleAllMsg();  // req: no crash (& inc cov of empty queue)
-    EXPECT_EQ(queue<int>({1}), hdlrIDs_);
+    EXPECT_EQ(queue<int>(), hdlrIDs_);
     EXPECT_EQ(0, msgSelf_->nMsg());
 }
 TEST_F(MsgSelfTest, GOLD_loopback_handleAll_butOneByOneLowPri)
