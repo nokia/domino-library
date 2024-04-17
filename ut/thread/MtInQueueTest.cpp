@@ -200,10 +200,10 @@ TEST_F(MtInQueueTest, destruct_right_type)
 }
 TEST_F(MtInQueueTest, clear_queue_cache_hdlr)
 {
-    mt_getQ().mt_push<int>(make_safe<int>(1));
-    mt_getQ().mt_push<int>(make_safe<int>(2));
+    mt_getQ().mt_push<int>(MAKE_PTR<int>(1));
+    mt_getQ().mt_push<int>(MAKE_PTR<int>(2));
     mt_getQ().pop();
-    mt_getQ().mt_push<int>(make_safe<int>(3));
+    mt_getQ().mt_push<int>(MAKE_PTR<int>(3));
 
     mt_getQ().backdoor().lock();
     ASSERT_EQ(1u, mt_getQ().mt_sizeQ(false)) << "1 in cache_";
@@ -233,10 +233,10 @@ TEST_F(MtInQueueTest, GOLD_handle_bothCacheAndQueue_ifPossible_withoutBlocked)
     // init
     size_t nCalled = 0;
     mt_getQ().setHdlrOK<int>([&nCalled](UniPtr){ ++nCalled; });
-    mt_getQ().mt_push<int>(make_safe<int>(1));
-    mt_getQ().mt_push<int>(make_safe<int>(1));
+    mt_getQ().mt_push<int>(MAKE_PTR<int>(1));
+    mt_getQ().mt_push<int>(MAKE_PTR<int>(1));
     mt_getQ().pop();  // still 1 ele in cache_
-    mt_getQ().mt_push<int>(make_safe<int>(1));  // and 1 ele in queue_
+    mt_getQ().mt_push<int>(MAKE_PTR<int>(1));  // and 1 ele in queue_
     EXPECT_EQ(2u, mt_getQ().mt_sizeQ(true));
 
     mt_getQ().backdoor().lock();
@@ -250,7 +250,7 @@ TEST_F(MtInQueueTest, GOLD_handle_bothCacheAndQueue_ifPossible_withoutBlocked)
 }
 TEST_F(MtInQueueTest, discard_noHdlrEle)
 {
-    mt_getQ().mt_push<int>(make_safe<int>(1));
+    mt_getQ().mt_push<int>(MAKE_PTR<int>(1));
     EXPECT_EQ(1u, mt_getQ().mt_sizeQ(true));
 
     mt_getQ().handleAllEle();
@@ -274,7 +274,7 @@ TEST_F(MtInQueueTest, handle_via_base)
 {
     struct Base { virtual int value() { return 1; } };
     struct Derive : public Base { int value() override { return 2; } };
-    mt_getQ().mt_push<Derive>(MAKE_PTR<Base>());
+    mt_getQ().mt_push<Derive>(MAKE_PTR<Base>());  // shared_ptr will build err
     EXPECT_EQ(0u, mt_getQ().mt_sizeQ(true)) << "REQ: cannot push Base to Derive";
 
     mt_getQ().mt_push<Base>(MAKE_PTR<Base>());

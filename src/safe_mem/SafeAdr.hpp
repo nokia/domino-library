@@ -82,7 +82,7 @@ private:
 // ***********************************************************************************************
 template<typename T>
 template<typename From>
-SafeAdr<T>::SafeAdr(const SafeAdr<From>& aSafeFrom)  // cp
+SafeAdr<T>::SafeAdr(const SafeAdr<From>& aSafeFrom) noexcept  // cp
     : pT_(aSafeFrom.template cast_get<T>())
 {
     // validate
@@ -107,7 +107,7 @@ SafeAdr<T>::SafeAdr(const SafeAdr<From>& aSafeFrom)  // cp
 // ***********************************************************************************************
 template<typename T>
 template<typename From>
-SafeAdr<T>::SafeAdr(SafeAdr<From>&& aSafeFrom)  // mv
+SafeAdr<T>::SafeAdr(SafeAdr<From>&& aSafeFrom) noexcept  // mv
     : SafeAdr(aSafeFrom)  // cp
 {
     /*HID("mv from=" << typeid(From).name() << " to=" << typeid(T).name()
@@ -121,7 +121,7 @@ SafeAdr<T>::SafeAdr(SafeAdr<From>&& aSafeFrom)  // mv
 // ***********************************************************************************************
 template<typename T>
 template<typename To>
-shared_ptr<To> SafeAdr<T>::cast_get() const
+shared_ptr<To> SafeAdr<T>::cast_get() const noexcept
 {
     if (is_base_of<To, T>::value)  // is_convertible is not safe to static_pointer_cast eg int* to float*
     {
