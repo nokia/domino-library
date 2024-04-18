@@ -53,7 +53,8 @@ template<typename T = void>
 class SafeAdr
 {
 public:
-    // safe-only creation (vs shared_ptr, eg shared_ptr<U>(U*) is not safe)
+    // - safe-only creation (eg shared_ptr<U>(U*) is not safe)
+    // - can't construct by shared_ptr that maybe unsafe
     constexpr SafeAdr() = default;  // must explicit since below converter constructor
     constexpr SafeAdr(nullptr_t) noexcept : SafeAdr() {}  // implicit nullptr -> SafeAdr()
     template<typename U, typename... Args> friend SafeAdr<U> make_safe(Args&&... aArgs);  // U::U(Args) SHALL mem-safe
