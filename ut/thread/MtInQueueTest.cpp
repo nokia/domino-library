@@ -274,8 +274,7 @@ TEST_F(MtInQueueTest, handle_via_base)
 {
     struct Base { virtual int value() { return 1; } };
     struct Derive : public Base { int value() override { return 2; } };
-    mt_getQ().mt_push<Derive>(MAKE_PTR<Base>());  // shared_ptr will build err
-    EXPECT_EQ(0u, mt_getQ().mt_sizeQ(true)) << "REQ: cannot push Base to Derive";
+    // mt_getQ().mt_push<Derive>(MAKE_PTR<Base>());  // REQ: build err to push Base to Derive
 
     mt_getQ().mt_push<Base>(MAKE_PTR<Base>());
     EXPECT_EQ(nullptr, mt_getQ().pop<Derive>().get()) << "REQ: pop derive type is invalid";

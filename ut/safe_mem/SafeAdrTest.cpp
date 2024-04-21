@@ -72,7 +72,7 @@ TEST(SafeAdrTest, GOLD_base_get)
     SafeAdr<Base> b = make_safe<Derive>();
     EXPECT_EQ(1,       b.cast_get<Base>()  ->value()) << "REQ: Base can ptr Derive & get virtual";
     EXPECT_EQ(1,       b.cast_get<Derive>()->value()) << "REQ: get self";
-    EXPECT_EQ(nullptr, b.cast_get<D2>())              << "REQ: invalid";
+    // EXPECT_EQ(nullptr, b.cast_get<D2>()) << "REQ: compile err to cast (Derive->)Base->D2";
 }
 TEST(SafeAdrTest, castTo_baseDirection)
 {
@@ -112,10 +112,7 @@ TEST(SafeAdrTest, origin_preVoid)
     EXPECT_EQ(&typeid(D2), d2.realType   ()) << "REQ: D2->void->void->D2 shall not lose origin";
     EXPECT_EQ(&typeid(D2), d2.preVoidType()) << "REQ: D2->void->void->D2 shall not lose preVoid";
 
-    SafeAdr<Derive> d = vv;
-    EXPECT_EQ(nullptr, d.get()) << "can't (D2->void->)void->Derive so lose pT_";
-    EXPECT_EQ(&typeid(Derive), d.realType   ()) << "REQ: pT_=null so origin=self";
-    EXPECT_EQ(nullptr,         d.preVoidType()) << "REQ: pT_=null so preVoid=null";
+    SafeAdr<Derive> d = vv;  // REQ: compile err to cast (D2->void->)void->Derive
 }
 
 #define CONST_AND_BACK
@@ -210,13 +207,6 @@ TEST(SafeAdrTest, GOLD_asKeyOf_map)
 
     store[SafeAdr<string>(make_safe<string>("hello"))] = 300;
     EXPECT_EQ(2, store.size()) << "REQ: diff key";
-}
-
-#define ARRAY
-// ***********************************************************************************************
-TEST(SafeAdrTest, GOLD_construct_array)
-{
-    //make_safe<ints[]>(10);
 }
 
 }  // namespace

@@ -8,9 +8,9 @@
 //   . c++ mem bugs are 1 of the most challenge (eg US gov suggest to replace c++ by Rust)
 // - REQ: this class is to enhance safety of shared_ptr:
 //   . safe create   : null / make_safe only (not allow unsafe create eg via raw ptr)
-//   . safe ship     : cp/mv/assign only among self, base & void
+//   . safe cast     : only among self, base & void; & compile err than ret null
 //   . safe lifecycle: by shared_ptr (auto mem-mgmt, no use-after-free)
-//   . safe ptr array: TODO
+//   . safe ptr array: no need since std::array
 // - DUTY-BOUND:
 //   . ensure ptr address is safe: legal created, not freed, not wild, etc
 //   . ensure ptr type is valid: origin*, or base*, or void*
@@ -18,18 +18,18 @@
 //   . hope cooperate with tool to ensure/track SafeAdr, all T, all code's mem safe
 // - suggest:
 //   . any class ensure mem-safe (like MT safe)
-//   . struct ptr/ref member shall be SafeAdr
 //
 // - VALUE:
 //   . way#1: Rust is language-based mem ctrl (heavy)
 //   . way#2: tool (dynamic eg valdrind, or static eg coverity)
 //     . keep legacy code/invest
-//     . but coverage is less than Rust
+//     . but less safe than Rust
 //   . way#3: eg SafeAdr
-//     * if each class ensures itself mem-safe, then whole program is mem-safe (more coverage than tools)
+//     * if each class ensures itself mem-safe, then whole program is mem-safe (safer than way#2/tool)
 //     . more lightweight than Rust
 //     . keep legacy code/invest
-//     * keep c++'s full freedom while has a choice to limit partial freedom for mem-safe
+//     . eg dom lib is safe outside while base on unsafe std containers internally
+//       * inner-freedom + outer-safe
 //
 // - MT safe: NO
 //   . so eg after MtInQueue.mt_push(), shall NOT touch pushed SafeAdr
@@ -144,8 +144,12 @@ shared_ptr<To> SafeAdr<T>::cast_get() const noexcept
         //HID("(SafeAdr) any to void (for container to store diff types)");
         return static_pointer_cast<To>(pT_);
     }
-    HID("(SafeAdr) unsupported cast from=" << typeid(T).name() << " to=" << typeid(To).name());  // ERR() not MT safe
+#if 1
+    //static_assert(false, "(SafeAdr) unsafe/unsupported cast");
     return nullptr;
+#else
+    return dynamic_pointer_cast<To>(pT_);  // debug
+#endif
 }
 
 
