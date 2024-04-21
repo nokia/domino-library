@@ -124,32 +124,35 @@ template<typename T>
 template<typename To>
 shared_ptr<To> SafeAdr<T>::cast_get() const noexcept
 {
-    if (is_base_of<To, T>::value)  // is_convertible is not safe to static_pointer_cast eg int* to float*
+    if constexpr(is_base_of<To, T>::value)  // safer than is_convertible()
     {
-        //HID("(SafeAdr) Derive to Base (include to self)");
-        return static_pointer_cast<To>(pT_);
+        HID("(SafeAdr) Derive to Base/self");
+        return pT_;
     }
-    if (&typeid(To) == realType_)
+    else if constexpr(is_void<To>::value)  // else if for constexpr
+    {
+        //HID("(SafeAdr) any to void (for container to store diff types)");
+        return pT_;
+    }
+    else if constexpr(!is_void<T>::value)
+    {
+        HID("(SafeAdr) non-void to non-void: ok or compile err");
+        return pT_;
+    }
+    else if (&typeid(To) == realType_)
     {
         //HID("(SafeAdr) any to origin");
         return static_pointer_cast<To>(pT_);
     }
-    if (&typeid(To) == preVoidType_)
+    else if (&typeid(To) == preVoidType_)
     {
         //HID("(SafeAdr) any to type-before-castToVoid");
         return static_pointer_cast<To>(pT_);
     }
-    if (is_same<To, void>::value)
-    {
-        //HID("(SafeAdr) any to void (for container to store diff types)");
-        return static_pointer_cast<To>(pT_);
-    }
-#if 1
-    //static_assert(false, "(SafeAdr) unsafe/unsupported cast");
+    // - ERR() not MT safe
+    // - realType_ & preVoidType_ can't compile-check so now has to ret null
+    HID("(SafeAdr) can't cast from=void/" << typeid(T).name() << " to=" << typeid(To).name());
     return nullptr;
-#else
-    return dynamic_pointer_cast<To>(pT_);  // debug
-#endif
 }
 
 

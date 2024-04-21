@@ -19,34 +19,34 @@ if(COV  STREQUAL  "1")
     add_compile_definitions(WITH_HID_LOG)  # more info to debug ci
 
 elseif(COV  STREQUAL  "asan")
-    set(CMAKE_CXX_STANDARD  14)  # low c++ version for wide usage
+    set(CMAKE_CXX_STANDARD  17)  # low c++ version for wide usage; 17 since "if constexpr()"
     message("!!! SANITIZE for: use-after-free, double-free, out-of-bound")
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -g -fsanitize=address")             # compile
     set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  -fsanitize=address")  # link
     set(lib_san  "-lasan")
 
 elseif(COV  STREQUAL  "lsan")
-    set(CMAKE_CXX_STANDARD  14)
+    set(CMAKE_CXX_STANDARD  17)
     message("!!! SANITIZE for: leak")
     set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS}  -g -fsanitize=leak")
     set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  -fsanitize=leak")
     set(lib_san  "-llsan")
 
 elseif(COV  STREQUAL  "tsan")
-    set(CMAKE_CXX_STANDARD  14)
+    set(CMAKE_CXX_STANDARD  17)
     message("!!! SANITIZE for: thread")
     set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS}  -g -fsanitize=thread")
     set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  -fsanitize=thread")
 
 elseif(COV  STREQUAL  "ubsan")
-    set(CMAKE_CXX_STANDARD  14)
+    set(CMAKE_CXX_STANDARD  17)
     message("!!! SANITIZE for: undefined behavior")
     set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS}  -g -fsanitize=undefined")
     set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  -fsanitize=undefined")
 
 else()
     message("!!! UT only - no cov, no SANITIZE check etc")
-    set(CMAKE_CXX_STANDARD  14)  # low c++ version for wide usage
+    set(CMAKE_CXX_STANDARD  17)
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O1")  # fastest build+ut
     #add_compile_definitions(WITH_HID_LOG)  # cov no HID; easy to turn-on
 endif()

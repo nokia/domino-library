@@ -70,9 +70,9 @@ struct D2     : public Derive { int value() override { return 2; } };
 TEST(SafeAdrTest, GOLD_base_get)
 {
     SafeAdr<Base> b = make_safe<Derive>();
-    EXPECT_EQ(1,       b.cast_get<Base>()  ->value()) << "REQ: Base can ptr Derive & get virtual";
-    EXPECT_EQ(1,       b.cast_get<Derive>()->value()) << "REQ: get self";
-    // EXPECT_EQ(nullptr, b.cast_get<D2>()) << "REQ: compile err to cast (Derive->)Base->D2";
+    EXPECT_EQ(1,    b.cast_get<Base>()  ->value()) << "REQ: Base can ptr Derive & get virtual";
+    // EXPECT_EQ(1, b.cast_get<Derive>()->value()) << "REQ: compile err to cast Base->Derive, safer than ret null";
+    // EXPECT_EQ(nullptr, b.cast_get<D2>())        << "REQ: compile err to cast (Derive->)Base->D2";
 }
 TEST(SafeAdrTest, castTo_baseDirection)
 {
@@ -83,15 +83,15 @@ TEST(SafeAdrTest, castTo_baseDirection)
     EXPECT_EQ(d2.get(), d2.cast_get<D2>())  << "REQ: safe to void";
 
     SafeAdr<Derive> d = d2;
-    EXPECT_EQ(2, d.cast_get<Base>()  ->value()) << "req: safe to Base direction";
-    EXPECT_EQ(2, d.cast_get<Derive>()->value()) << "req: safe to self";
-    EXPECT_EQ(2, d.cast_get<D2>()    ->value()) << "REQ: safe to origin";
+    EXPECT_EQ(2,    d.cast_get<Base>()  ->value()) << "req: safe to Base direction";
+    EXPECT_EQ(2,    d.cast_get<Derive>()->value()) << "req: safe to self";
+    // EXPECT_EQ(2, d.cast_get<D2>()    ->value()) << "req: compile err to cast (D2->)Derive->D2";
     EXPECT_EQ(d.get(), d.cast_get<Base>()) << "req: valid to void";
 
     SafeAdr<Base> b = d2;
-    EXPECT_EQ(2,   b.cast_get<Base>()  ->value()) << "req: valid self";
-    //EXPECT_EQ(2, b.cast_get<Derive>()->value()) << "safe but not support yet, worth to support?";
-    EXPECT_EQ(2,   b.cast_get<D2>()    ->value()) << "req: safe to origin";
+    EXPECT_EQ(2,    b.cast_get<Base>()  ->value()) << "req: valid self";
+    // EXPECT_EQ(2, b.cast_get<Derive>()->value()) << "req: compile err to cast (D2->)Base->Derive";
+    // EXPECT_EQ(2, b.cast_get<D2>()    ->value()) << "req: compile err to cast (D2->)Base->D2";
     EXPECT_EQ(b.get(), b.cast_get<Base>())   << "req: valid get";
 
     SafeAdr<> v = d;
