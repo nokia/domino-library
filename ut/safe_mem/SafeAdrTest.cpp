@@ -97,7 +97,7 @@ TEST(SafeAdrTest, castTo_baseDirection)
     SafeAdr<> v = d;
     EXPECT_EQ(2,       v.cast_get<D2>()    ->value()) << "req: safe to origin:  (D2->Derive->)void->D2";
     EXPECT_EQ(2,       v.cast_get<Derive>()->value()) << "REQ: safe to preVoid: (D2->Derive->)void->Derive";
-    EXPECT_EQ(nullptr, v.cast_get<int>())             << "REQ: void to int is invalid";
+    EXPECT_EQ(nullptr, SafeAdr<int>(v).get())         << "REQ: void to int is invalid";
 }
 TEST(SafeAdrTest, origin_preVoid)
 {
