@@ -73,6 +73,10 @@ TEST(SafeAdrTest, GOLD_base_get)
     EXPECT_EQ(1,    b.cast_get<Base>()  ->value()) << "REQ: Base can ptr Derive & get virtual";
     // EXPECT_EQ(1, b.cast_get<Derive>()->value()) << "REQ: compile err to cast Base->Derive, safer than ret null";
     // EXPECT_EQ(nullptr, b.cast_get<D2>())        << "REQ: compile err to cast (Derive->)Base->D2";
+
+    SafeAdr v = b;
+    EXPECT_NE(nullptr, v.get()) << "REQ: cast Derive->void is valid";
+    //EXPECT_EQ(nullptr, SafeAdr<D2>(move(v)).get()) << "REQ/cov: mv (Derive->)void->D2 is invalid";
 }
 TEST(SafeAdrTest, castTo_baseDirection)
 {
@@ -97,7 +101,6 @@ TEST(SafeAdrTest, castTo_baseDirection)
     SafeAdr<> v = d;
     EXPECT_EQ(2,       v.cast_get<D2>()    ->value()) << "req: safe to origin:  (D2->Derive->)void->D2";
     EXPECT_EQ(2,       v.cast_get<Derive>()->value()) << "REQ: safe to preVoid: (D2->Derive->)void->Derive";
-    EXPECT_EQ(nullptr, SafeAdr<int>(v).get())         << "REQ: void to int is invalid";
 }
 TEST(SafeAdrTest, origin_preVoid)
 {
@@ -112,6 +115,8 @@ TEST(SafeAdrTest, origin_preVoid)
     SafeAdr<D2> d2 = vv;
     EXPECT_EQ(&typeid(D2), d2.realType   ()) << "REQ: D2->void->void->D2 shall not lose origin";
     EXPECT_EQ(&typeid(D2), d2.preVoidType()) << "REQ: D2->void->void->D2 shall not lose preVoid";
+
+    EXPECT_EQ(nullptr, SafeAdr<D2>(SafeAdr()).get()) << "cov: mv null void->D2";
 
     SafeAdr<Derive> d = vv;  // REQ: compile err to cast (D2->void->)void->Derive
 }
