@@ -116,9 +116,7 @@ TEST(SafeAdrTest, origin_preVoid)
     EXPECT_EQ(&typeid(D2), d2.realType   ()) << "REQ: D2->void->void->D2 shall not lose origin";
     EXPECT_EQ(&typeid(D2), d2.preVoidType()) << "REQ: D2->void->void->D2 shall not lose preVoid";
 
-    EXPECT_EQ(nullptr, SafeAdr<D2>(SafeAdr()).get()) << "cov: mv null void->D2";
-
-    SafeAdr<Derive> d = vv;  // REQ: compile err to cast (D2->void->)void->Derive
+    EXPECT_EQ(nullptr, SafeAdr<Derive>(move(v)).get()) << "REQ/cov: mv null (D2->)void->Derive";
 }
 
 #define CONST_AND_BACK
