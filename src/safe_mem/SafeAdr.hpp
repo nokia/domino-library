@@ -100,10 +100,6 @@ template<typename From>
 SafeAdr<T>::SafeAdr(SafeAdr<From>&& aSafeFrom) noexcept  // mv
     : SafeAdr(aSafeFrom)  // cp
 {
-    /*HID("mv from=" << typeid(From).name() << " to=" << typeid(T).name()
-        << ", pre=" << (preVoidType_ == nullptr ? "null" : preVoidType_->name())
-        << ", real=" << (realType_ == nullptr ? "null" : realType_->name()));*/
-
     if (pT_ != nullptr)  // cp succ, clear src
         aSafeFrom = SafeAdr<From>();
 }
@@ -118,20 +114,20 @@ shared_ptr<To> SafeAdr<T>::cast() const noexcept
         HID("(SafeAdr) cast Derive->Base/self");
         return pT_;
     }
-    else if constexpr(is_base_of<T, To>::value)
-    {
-        HID("(SafeAdr) cast Base->Derive");
-        return dynamic_pointer_cast<To>(pT_);
-    }
     else if constexpr(is_void<To>::value)  // else if for constexpr
     {
         //HID("(SafeAdr) cast any->void (for container to store diff types)");
         return pT_;
     }
+    else if constexpr(is_base_of<T, To>::value)
+    {
+        HID("(SafeAdr) cast Base->Derive");
+        return dynamic_pointer_cast<To>(pT_);
+    }
     else if constexpr(!is_void<T>::value)
     {
-        static_assert(!is_void<T>::value, "(SafeAdr) unsupported cast nonVoid->nonVoid");
-        return nullptr;
+        HID("(SafeAdr) can't cast from=" << typeid(T).name() << " to=" << typeid(To).name());  // ERR() not MT safe
+        return this;  // force compile err, safer than ret null
     }
     else if (&typeid(To) == realType_)
     {
@@ -143,7 +139,6 @@ shared_ptr<To> SafeAdr<T>::cast() const noexcept
         //HID("(SafeAdr) cast any->type-before-castToVoid");
         return static_pointer_cast<To>(pT_);
     }
-    // - ERR() not MT safe
     // - realType_ & preVoidType_ can't compile-check so now has to ret null
     HID("(SafeAdr) can't cast from=void/" << typeid(T).name() << " to=" << typeid(To).name());
     return nullptr;
@@ -159,7 +154,7 @@ shared_ptr<To> SafeAdr<T>::cast_strict() const noexcept
         HID("(SafeAdr) cast Derive->Base/self");
         return pT_;
     }
-    else if constexpr(is_void<To>::value)  // else if for constexpr
+    else if constexpr(is_void<To>::value)
     {
         //HID("(SafeAdr) cast any->void (for container to store diff types)");
         return pT_;
