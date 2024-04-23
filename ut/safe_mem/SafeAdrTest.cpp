@@ -108,11 +108,11 @@ TEST(SafeAdrTest, origin_preVoid)
     EXPECT_EQ(&typeid(D2), vv.realType   ()) << "REQ: void->void shall not lose origin";
     EXPECT_EQ(&typeid(D2), vv.preVoidType()) << "REQ: void->void shall not lose preVoid";
 
-    SafeAdr<D2> d2 = vv;
+    auto d2 = static_pointer_cast<D2>(vv);
     EXPECT_EQ(&typeid(D2), d2.realType   ()) << "REQ: D2->void->void->D2 shall not lose origin";
     EXPECT_EQ(&typeid(D2), d2.preVoidType()) << "REQ: D2->void->void->D2 shall not lose preVoid";
 
-    auto d = SafeAdr<Derive>(move(v));
+    auto d = static_pointer_cast<Derive>(move(v));
     EXPECT_EQ(&typeid(D2),     v.realType   ()) << "REQ: keep origin after failed mv";
     EXPECT_EQ(&typeid(D2),     v.preVoidType()) << "REQ: keep preVoid after failed mv";
     EXPECT_EQ(&typeid(Derive), d.realType   ()) << "REQ: no mv origin";
@@ -123,7 +123,7 @@ TEST(SafeAdrTest, origin_preVoid)
     EXPECT_EQ(&typeid(Derive), v.realType   ()) << "REQ: mv origin";
     EXPECT_EQ(&typeid(Derive), v.preVoidType()) << "REQ: set preVoid";
     EXPECT_NE(nullptr, v.get()) << "REQ: cast Derive->void is valid";
-    EXPECT_EQ(nullptr, SafeAdr<D2>(move(v)).get()) << "REQ/cov: mv null (Derive->)void->D2";
+    EXPECT_EQ(nullptr, static_pointer_cast<D2>(move(v)).get()) << "REQ/cov: mv null (Derive->)void->D2";
 }
 
 #define CONST_AND_BACK

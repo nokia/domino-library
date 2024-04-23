@@ -60,9 +60,12 @@ public:
     template<typename U, typename... Args> friend SafeAdr<U> make_safe(Args&&... aArgs);  // U::U(Args) SHALL mem-safe
 
     // safe-only cast (vs shared_ptr, eg static_pointer_cast<any> is not safe)
-    template<typename From> SafeAdr(const SafeAdr<From>&) noexcept;  // cp
-    template<typename From> SafeAdr(SafeAdr<From>&&) noexcept;  // mv
-    template<typename To> shared_ptr<To> cast() const noexcept;
+    template<typename From> SafeAdr(const SafeAdr<From>&) noexcept;          // cp  ok or compile err
+    template<typename From> SafeAdr(SafeAdr<From>&&) noexcept;               // mv  ok or compile err
+    template<typename To> shared_ptr<To> cast_strict() const noexcept;       // ret ok or compile err
+    template<typename To> shared_ptr<To> cast() const noexcept;              // ret ok or null
+    template<typename To, typename From>
+    friend SafeAdr<To> dynamic_pointer_cast(const SafeAdr<From>&) noexcept;  // ret ok or null
 
     // safe usage: convenient, equivalent & min (vs shared_ptr)
     shared_ptr<T> get()        const noexcept { return pT_; }
@@ -74,6 +77,8 @@ public:
     const type_info* realType() const noexcept { return realType_; }
 
 private:
+    template<typename From> void init_(const SafeAdr<From>&) noexcept;
+
     // -------------------------------------------------------------------------------------------
     shared_ptr<T>    pT_;
     const type_info* preVoidType_ = nullptr;  // that before cast to void, can safely cast back
@@ -84,25 +89,9 @@ private:
 template<typename T>
 template<typename From>
 SafeAdr<T>::SafeAdr(const SafeAdr<From>& aSafeFrom) noexcept  // cp
-    : pT_(aSafeFrom.template cast<T>())
+    : pT_(aSafeFrom.template cast_strict<T>())
 {
-    // validate
-    if (pT_ == nullptr)
-    {
-        HID("pT_ == nullptr");  // only HID() is multi-thread safe
-        return;
-    }
-
-    // continue cp
-    realType_ = aSafeFrom.realType();
-    if constexpr(is_same<T, void>::value)
-        preVoidType_ = &typeid(From);  // cast-to-void (impossible void->void covered by another cp constructor)
-    else
-        preVoidType_ = aSafeFrom.preVoidType();  // cast-to-nonVoid
-
-    /*HID("cp from=" << typeid(From).name() << " to=" << typeid(T).name()
-        << ", pre=" << (preVoidType_ == nullptr ? "null" : preVoidType_->name())
-        << ", real=" << (realType_ == nullptr ? "null" : realType_->name()));*/
+    init_(aSafeFrom);
 }
 
 // ***********************************************************************************************
@@ -160,23 +149,72 @@ shared_ptr<To> SafeAdr<T>::cast() const noexcept
     return nullptr;
 }
 
+// ***********************************************************************************************
+template<typename T>
+template<typename To>
+shared_ptr<To> SafeAdr<T>::cast_strict() const noexcept
+{
+    if constexpr(is_base_of<To, T>::value)  // safer than is_convertible()
+    {
+        HID("(SafeAdr) cast Derive->Base/self");
+        return pT_;
+    }
+    else if constexpr(is_void<To>::value)  // else if for constexpr
+    {
+        //HID("(SafeAdr) cast any->void (for container to store diff types)");
+        return pT_;
+    }
+    else
+    {
+        HID("(SafeAdr) can't cast from=void/" << typeid(T).name() << " to=" << typeid(To).name());
+        return this;  // force compile err, safer than ret null
+    }
+}
 
+// ***********************************************************************************************
+template<typename T>
+template<typename From>
+void SafeAdr<T>::init_(const SafeAdr<From>& aSafeFrom) noexcept
+{
+    // validate
+    if (pT_ == nullptr)
+    {
+        HID("pT_ == nullptr");  // only HID() is multi-thread safe
+        return;
+    }
+
+    // init
+    realType_ = aSafeFrom.realType();
+    if constexpr(is_same<T, void>::value)
+        preVoidType_ = &typeid(From);  // cast-to-void (impossible void->void covered by another cp constructor)
+    else
+        preVoidType_ = aSafeFrom.preVoidType();  // cast-to-nonVoid
+
+    /*HID("cp from=" << typeid(From).name() << " to=" << typeid(T).name()
+        << ", pre=" << (preVoidType_ == nullptr ? "null" : preVoidType_->name())
+        << ", real=" << (realType_ == nullptr ? "null" : realType_->name()));*/
+}
+
+
+
+// ***********************************************************************************************
+template<typename To, typename From>
+SafeAdr<To> dynamic_pointer_cast(const SafeAdr<From>& aSafeFrom) noexcept
+{
+    SafeAdr<To> safeTo;
+    safeTo.pT_ = aSafeFrom.template cast<To>();
+    safeTo.init_(aSafeFrom);
+    return safeTo;
+}
 
 // ***********************************************************************************************
 template<typename U, typename... Args>
 SafeAdr<U> make_safe(Args&&... aArgs)
 {
-    SafeAdr<U> sptr;
-    sptr.pT_ = make_shared<U>(forward<Args>(aArgs)...);
-    //HID("new ptr=" << (void*)(sptr.pT_.get()));  // too many print; void* print addr rather than content(dangeous)
-    return sptr;
-}
-
-// ***********************************************************************************************
-template<typename To, typename From>
-SafeAdr<To> static_pointer_cast(const SafeAdr<From>& aFromPtr) noexcept
-{
-    return SafeAdr<To>(aFromPtr);
+    SafeAdr<U> safeU;
+    safeU.pT_ = make_shared<U>(forward<Args>(aArgs)...);
+    //HID("new ptr=" << (void*)(safeU.pT_.get()));  // too many print; void* print addr rather than content(dangeous)
+    return safeU;
 }
 
 // ***********************************************************************************************
@@ -197,7 +235,15 @@ bool operator<(SafeAdr<T> lhs, SafeAdr<U> rhs)
 {
     return lhs.get() < rhs.get();
 }
+
+// ***********************************************************************************************
+template<typename To, typename From>
+SafeAdr<To> static_pointer_cast(const SafeAdr<From>& aFromPtr) noexcept
+{
+    return dynamic_pointer_cast<To>(aFromPtr);
+}
 }  // namespace
+
 template<typename T>
 struct std::hash<RLib::SafeAdr<T>>
 {
