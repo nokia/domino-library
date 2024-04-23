@@ -70,37 +70,33 @@ struct D2     : public Derive { int value() override { return 2; } };
 TEST(SafeAdrTest, GOLD_base_get)
 {
     SafeAdr<Base> b = make_safe<Derive>();
-    EXPECT_EQ(1,    b.cast_get<Base>()  ->value()) << "REQ: Base can ptr Derive & get virtual";
-    // EXPECT_EQ(1, b.cast_get<Derive>()->value()) << "REQ: compile err to cast Base->Derive, safer than ret null";
-    // EXPECT_EQ(nullptr, b.cast_get<D2>())        << "REQ: compile err to cast (Derive->)Base->D2";
-
-    SafeAdr v = b;
-    EXPECT_NE(nullptr, v.get()) << "REQ: cast Derive->void is valid";
-    //EXPECT_EQ(nullptr, SafeAdr<D2>(move(v)).get()) << "REQ/cov: mv (Derive->)void->D2 is invalid";
+    EXPECT_EQ(1, b.cast<Base>()  ->value()) << "REQ: cast self & get virtual";
+    EXPECT_EQ(1, b.cast<Derive>()->value()) << "REQ: dyn-cast Base->Derive";
+    EXPECT_EQ(nullptr, b.cast<D2>())        << "REQ: compile err to cast (Derive->)Base->D2, safer than ret null";
 }
 TEST(SafeAdrTest, castTo_baseDirection)
 {
     SafeAdr<D2> d2 = make_safe<D2>();
-    EXPECT_EQ(2, d2.cast_get<D2>()    ->value()) << "req: get self";
-    EXPECT_EQ(2, d2.cast_get<Derive>()->value()) << "REQ: safe to Base direction";
-    EXPECT_EQ(2, d2.cast_get<Base>()  ->value()) << "req: safe to Base direction";
-    EXPECT_EQ(d2.get(), d2.cast_get<D2>())  << "REQ: safe to void";
+    EXPECT_EQ(2, d2.cast<D2>()    ->value()) << "req: get self";
+    EXPECT_EQ(2, d2.cast<Derive>()->value()) << "REQ: safe to Base direction";
+    EXPECT_EQ(2, d2.cast<Base>()  ->value()) << "req: safe to Base direction";
+    EXPECT_EQ(d2.get(), d2.cast<D2>())  << "REQ: safe to void";
 
     SafeAdr<Derive> d = d2;
-    EXPECT_EQ(2,    d.cast_get<Base>()  ->value()) << "req: safe to Base direction";
-    EXPECT_EQ(2,    d.cast_get<Derive>()->value()) << "req: safe to self";
-    // EXPECT_EQ(2, d.cast_get<D2>()    ->value()) << "req: compile err to cast (D2->)Derive->D2";
-    EXPECT_EQ(d.get(), d.cast_get<Base>()) << "req: valid to void";
+    EXPECT_EQ(2,    d.cast<Base>()  ->value()) << "req: safe to Base direction";
+    EXPECT_EQ(2,    d.cast<Derive>()->value()) << "req: safe to self";
+    // EXPECT_EQ(2, d.cast<D2>()    ->value()) << "req: compile err to cast (D2->)Derive->D2";
+    EXPECT_EQ(d.get(), d.cast<Base>()) << "req: valid to void";
 
     SafeAdr<Base> b = d2;
-    EXPECT_EQ(2,    b.cast_get<Base>()  ->value()) << "req: valid self";
-    // EXPECT_EQ(2, b.cast_get<Derive>()->value()) << "req: compile err to cast (D2->)Base->Derive";
-    // EXPECT_EQ(2, b.cast_get<D2>()    ->value()) << "req: compile err to cast (D2->)Base->D2";
-    EXPECT_EQ(b.get(), b.cast_get<Base>())   << "req: valid get";
+    EXPECT_EQ(2,    b.cast<Base>()  ->value()) << "req: valid self";
+    // EXPECT_EQ(2, b.cast<Derive>()->value()) << "req: compile err to cast (D2->)Base->Derive";
+    // EXPECT_EQ(2, b.cast<D2>()    ->value()) << "req: compile err to cast (D2->)Base->D2";
+    EXPECT_EQ(b.get(), b.cast<Base>())   << "req: valid get";
 
     SafeAdr<> v = d;
-    EXPECT_EQ(2,       v.cast_get<D2>()    ->value()) << "req: safe to origin:  (D2->Derive->)void->D2";
-    EXPECT_EQ(2,       v.cast_get<Derive>()->value()) << "REQ: safe to preVoid: (D2->Derive->)void->Derive";
+    EXPECT_EQ(2,       v.cast<D2>()    ->value()) << "req: safe to origin:  (D2->Derive->)void->D2";
+    EXPECT_EQ(2,       v.cast<Derive>()->value()) << "REQ: safe to preVoid: (D2->Derive->)void->Derive";
 }
 TEST(SafeAdrTest, origin_preVoid)
 {
@@ -116,7 +112,18 @@ TEST(SafeAdrTest, origin_preVoid)
     EXPECT_EQ(&typeid(D2), d2.realType   ()) << "REQ: D2->void->void->D2 shall not lose origin";
     EXPECT_EQ(&typeid(D2), d2.preVoidType()) << "REQ: D2->void->void->D2 shall not lose preVoid";
 
-    EXPECT_EQ(nullptr, SafeAdr<Derive>(move(v)).get()) << "REQ/cov: mv null (D2->)void->Derive";
+    auto d = SafeAdr<Derive>(move(v));
+    EXPECT_EQ(&typeid(D2),     v.realType   ()) << "REQ: keep origin after failed mv";
+    EXPECT_EQ(&typeid(D2),     v.preVoidType()) << "REQ: keep preVoid after failed mv";
+    EXPECT_EQ(&typeid(Derive), d.realType   ()) << "REQ: no mv origin";
+    EXPECT_EQ(nullptr,         d.preVoidType()) << "REQ: no mv preVoid";
+    EXPECT_EQ(nullptr, d.get()) << "REQ/cov: mv null (D2->)void->Derive";
+
+    v = make_safe<Derive>();
+    EXPECT_EQ(&typeid(Derive), v.realType   ()) << "REQ: mv origin";
+    EXPECT_EQ(&typeid(Derive), v.preVoidType()) << "REQ: set preVoid";
+    EXPECT_NE(nullptr, v.get()) << "REQ: cast Derive->void is valid";
+    EXPECT_EQ(nullptr, SafeAdr<D2>(move(v)).get()) << "REQ/cov: mv null (Derive->)void->D2";
 }
 
 #define CONST_AND_BACK
