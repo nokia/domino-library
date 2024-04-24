@@ -60,10 +60,12 @@ TEST(SafeAdrTest, GOLD_safe_cp_toBase_OK)
 TEST(SafeAdrTest, GOLD_safe_cp_toVoid_OK)
 {
     auto b = make_safe<Base>();
-    EXPECT_EQ(b.get(), SafeAdr<void>(b).get()) << "REQ: cp (self-def) Base->void";
+    EXPECT_EQ(b.get(), SafeAdr             <void>(b).get()) << "REQ: cp (self-defined) Base->void";
+    EXPECT_EQ(b.get(), dynamic_pointer_cast<void>(b).get()) << "cov: cast cp";
 
     auto c = make_safe<char>();
-    EXPECT_EQ(c.get(), SafeAdr<void>(c).get()) << "REQ: cp char->void";
+    EXPECT_EQ(c.get(), SafeAdr             <void>(c).get()) << "REQ: cp char->void";
+    EXPECT_EQ(c.get(), dynamic_pointer_cast<void>(c).get()) << "cov: cast cp";
 }
 TEST(SafeAdrTest, safe_cp_toDerive_NOK)
 {
