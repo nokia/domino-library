@@ -32,7 +32,7 @@ TEST(SafeAdrTest, GOLD_safe_create)
     EXPECT_EQ(43, *i.get()) << "REQ: outside del not impact SafeAdr";
 }
 
-#define COPY
+#define COPY_CAST
 // ***********************************************************************************************
 TEST(SafeAdrTest, GOLD_safe_cp_sameType)
 {
@@ -94,9 +94,6 @@ TEST(SafeAdrTest, GOLD_safe_cp_voidToNonVoid)
 
     EXPECT_EQ(nullptr, static_pointer_cast<Derive>(v).get()) << "cast failed since Derive not origin nor preVoid";
 }
-
-#define CAST
-// ***********************************************************************************************
 TEST(SafeAdrTest, bug_fix)
 {
     SafeAdr<Base> b = make_safe<D2>();  // origin is D2
@@ -107,14 +104,27 @@ TEST(SafeAdrTest, bug_fix)
 
 #define MOVE
 // ***********************************************************************************************
-TEST(SafeAdrTest, GOLD_safe_mv)
+TEST(SafeAdrTest, GOLD_mtQ_req_mv)
 {
-    auto one = make_safe<int>(42);
-    SafeAdr<int> cp(one);
-    SafeAdr<int> mv = move(one);
-    EXPECT_EQ(42, *(mv.get())) << "REQ: valid move & get";
-    EXPECT_EQ(nullptr, one.get()) << "REQ: src is null";
-    EXPECT_EQ(42, *(cp.get())) << "REQ: mv not impact cp";
+    auto msg = make_safe<string>("received msg");
+    SafeAdr<void> msgInQ = move(msg);
+    EXPECT_EQ(nullptr, msg.get()) << "REQ: giveup";
+    EXPECT_EQ("received msg", *dynamic_pointer_cast<string>(msgInQ).get()) << "REQ: takeover msg";
+}
+TEST(SafeAdrTest, mv_fail)
+{
+    auto i = make_safe<int>(7);
+    auto src = SafeAdr<void>(i);
+    EXPECT_EQ(&typeid(int), src.realType());
+    EXPECT_EQ(&typeid(int), src.preVoidType());
+
+    auto dst = dynamic_pointer_cast<char>(move(src));
+    EXPECT_NE(nullptr,       src.get()        ) << "REQ: keep content";
+    EXPECT_EQ(&typeid(int),  src.realType()   ) << "REQ: keep origin type";
+    EXPECT_EQ(&typeid(int),  src.preVoidType()) << "REQ: keep pre-void-type";
+    EXPECT_EQ(nullptr,       dst.get()        ) << "REQ: fail to takeover content";
+    EXPECT_EQ(&typeid(char), dst.realType()   ) << "REQ: fail to takeover origin type";
+    EXPECT_EQ(nullptr,       dst.preVoidType()) << "REQ: fail to takeover pre-void-type";
 }
 TEST(SafeAdrTest, GOLD_assign_get)
 {
