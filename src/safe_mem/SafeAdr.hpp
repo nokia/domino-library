@@ -180,8 +180,8 @@ void SafeAdr<T>::init_(const SafeAdr<From>& aSafeFrom) noexcept
 
     // init
     realType_ = aSafeFrom.realType();
-    if constexpr(is_same<T, void>::value)
-        preVoidType_ = &typeid(From);  // cast-to-void (impossible void->void covered by another cp constructor)
+    if constexpr(is_same<T, void>::value && !is_same<From, void>::value)
+        preVoidType_ = &typeid(From);
     else
         preVoidType_ = aSafeFrom.preVoidType();  // cast-to-nonVoid
 

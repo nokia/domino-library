@@ -92,7 +92,17 @@ TEST(SafeAdrTest, GOLD_safe_cp_voidToNonVoid)
 //  EXPECT_EQ(2, SafeAdr            <Base>(v).get()->value()) << "req: cp (D2->Base->)void->Base compile err";
     EXPECT_EQ(2, static_pointer_cast<Base>(v).get()->value()) << "REQ: cast cp can get pre-void-type";
 
-    EXPECT_EQ(nullptr, static_pointer_cast<Derive>(v).get()) << "cast cp failed since not ";
+    EXPECT_EQ(nullptr, static_pointer_cast<Derive>(v).get()) << "cast failed since Derive not origin nor preVoid";
+}
+
+#define CAST
+// ***********************************************************************************************
+TEST(SafeAdrTest, bug_fix)
+{
+    SafeAdr<Base> b = make_safe<D2>();  // origin is D2
+    SafeAdr<void> v = b;  // preVoid is Base
+    auto vv = dynamic_pointer_cast<void>(v);
+    EXPECT_EQ(2, static_pointer_cast<Base>(vv).get()->value()) << "REQ: can get pre-void-type";
 }
 
 #define MOVE
