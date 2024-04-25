@@ -127,7 +127,7 @@ shared_ptr<To> SafeAdr<T>::cast() const noexcept
     else if constexpr(!is_void<T>::value)
     {
         HID("(SafeAdr) can't cast from=" << typeid(T).name() << " to=" << typeid(To).name());  // ERR() not MT safe
-        return this;  // force compile err, safer than ret null
+        return pT_;  // compile-err is safer than ret null
     }
     else if (&typeid(To) == realType_)
     {
@@ -139,8 +139,8 @@ shared_ptr<To> SafeAdr<T>::cast() const noexcept
         //HID("(SafeAdr) cast any->type-before-castToVoid");
         return static_pointer_cast<To>(pT_);
     }
-    // - realType_ & preVoidType_ can't compile-check so now has to ret null
     HID("(SafeAdr) can't cast from=void/" << typeid(T).name() << " to=" << typeid(To).name());
+    // - realType_ & preVoidType_ can't compile-check so now has to ret null (than eg dyn-cast fail compile)
     return nullptr;
 }
 

@@ -94,12 +94,15 @@ TEST(SafeAdrTest, GOLD_safe_cp_voidToNonVoid)
 
     EXPECT_EQ(nullptr, static_pointer_cast<Derive>(v).get()) << "cast failed since Derive not origin nor preVoid";
 }
-TEST(SafeAdrTest, bug_fix)
+TEST(SafeAdrTest, safe_cast_bugFix)
 {
     SafeAdr<Base> b = make_safe<D2>();  // origin is D2
     SafeAdr<void> v = b;  // preVoid is Base
-    auto vv = dynamic_pointer_cast<void>(v);
-    EXPECT_EQ(2, static_pointer_cast<Base>(vv).get()->value()) << "REQ: can get pre-void-type";
+    auto vv = dynamic_pointer_cast<void>(v);  // bug fix for multi-void
+    EXPECT_EQ(2, static_pointer_cast<Base>(vv).get()->value()) << "REQ: can D2->Base->void->void->Base";
+}
+TEST(SafeAdrTest, GOLD_safe_cp_implicitConvert)
+{
 }
 
 #define MOVE
