@@ -62,7 +62,6 @@ public:
     // safe-only cast (vs shared_ptr, eg static_pointer_cast<any> is not safe)
     template<typename From> SafeAdr(const SafeAdr<From>&) noexcept;          // cp  ok or compile err
     template<typename From> SafeAdr(SafeAdr<From>&&) noexcept;               // mv  ok or compile err
-    template<typename To> shared_ptr<To> cast_strict() const noexcept;       // ret ok or compile err
     template<typename To> shared_ptr<To> cast() const noexcept;              // ret ok or null
     template<typename To, typename From>
     friend SafeAdr<To> dynamic_pointer_cast(const SafeAdr<From>&) noexcept;  // ret ok or null
@@ -89,7 +88,7 @@ private:
 template<typename T>
 template<typename From>
 SafeAdr<T>::SafeAdr(const SafeAdr<From>& aSafeFrom) noexcept  // cp
-    : pT_(aSafeFrom.template cast_strict<T>())
+    : pT_(aSafeFrom.get())  // shared_ptr only allow base-derive, till 024-04-25
 {
     init_(aSafeFrom);
 }
@@ -142,28 +141,6 @@ shared_ptr<To> SafeAdr<T>::cast() const noexcept
     HID("(SafeAdr) can't cast from=void/" << typeid(T).name() << " to=" << typeid(To).name());
     // - realType_ & preVoidType_ can't compile-check so now has to ret null (than eg dyn-cast fail compile)
     return nullptr;
-}
-
-// ***********************************************************************************************
-template<typename T>
-template<typename To>
-shared_ptr<To> SafeAdr<T>::cast_strict() const noexcept
-{
-    if constexpr(is_base_of<To, T>::value)  // safer than is_convertible()
-    {
-        HID("(SafeAdr) cast Derive->Base/self");
-        return pT_;
-    }
-    else if constexpr(is_void<To>::value)
-    {
-        //HID("(SafeAdr) cast any->void (for container to store diff types)");
-        return pT_;
-    }
-    else
-    {
-        HID("(SafeAdr) can't cast from=void/" << typeid(T).name() << " to=" << typeid(To).name());
-        return this;  // force compile err, safer than ret null
-    }
 }
 
 // ***********************************************************************************************

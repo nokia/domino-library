@@ -101,9 +101,6 @@ TEST(SafeAdrTest, safe_cast_bugFix)
     auto vv = dynamic_pointer_cast<void>(v);  // bug fix for multi-void
     EXPECT_EQ(2, static_pointer_cast<Base>(vv).get()->value()) << "REQ: can D2->Base->void->void->Base";
 }
-TEST(SafeAdrTest, GOLD_safe_cp_implicitConvert)
-{
-}
 
 #define MOVE
 // ***********************************************************************************************
@@ -130,7 +127,7 @@ TEST(SafeAdrTest, mv_fail)
     EXPECT_EQ(nullptr,       dst.preVoidType()) << "REQ: fail to takeover pre-void-type";
 
     SafeAdr<Base> b = SafeAdr<Derive>();
-    EXPECT_EQ(&typeid(Base), b.realType()) << "REQ/cov: failed/nothing mv so origin is Base instead of Derive";
+    EXPECT_EQ(&typeid(Base), b.realType()) << "REQ/cov: mv-nothing=fail so origin is Base instead of Derive";
 }
 TEST(SafeAdrTest, GOLD_assign_get)
 {
