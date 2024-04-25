@@ -128,6 +128,9 @@ TEST(SafeAdrTest, mv_fail)
     EXPECT_EQ(nullptr,       dst.get()        ) << "REQ: fail to takeover content";
     EXPECT_EQ(&typeid(char), dst.realType()   ) << "REQ: fail to takeover origin type";
     EXPECT_EQ(nullptr,       dst.preVoidType()) << "REQ: fail to takeover pre-void-type";
+
+    SafeAdr<Base> b = SafeAdr<Derive>();
+    EXPECT_EQ(&typeid(Base), b.realType()) << "REQ/cov: failed/nothing mv so origin is Base instead of Derive";
 }
 TEST(SafeAdrTest, GOLD_assign_get)
 {
