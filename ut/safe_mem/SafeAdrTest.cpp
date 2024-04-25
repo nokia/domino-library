@@ -94,6 +94,16 @@ TEST(SafeAdrTest, GOLD_safe_cp_voidToNonVoid)
 
     EXPECT_EQ(nullptr, static_pointer_cast<Derive>(v).get()) << "cast failed since Derive not origin nor preVoid";
 }
+TEST(SafeAdrTest, safe_cp_complex)
+{
+    auto v = SafeAdr<void>(static_pointer_cast<D2>(SafeAdr<Derive>(make_safe<D2>())));
+
+//  EXPECT_EQ(2, SafeAdr            <D2>(v).get()->value()) << "REQ: cp (D2->Derive->D2->)void->D2 compile err";
+    EXPECT_EQ(2, static_pointer_cast<D2>(v).get()->value()) << "req: cast cp is a workaround";
+
+//  EXPECT_EQ(2, SafeAdr            <Derive>(v).get()->value()) << "req: cp (D2->Derive->D2->)void->Derive compile err";
+    EXPECT_EQ(2, static_pointer_cast<Derive>(v).get()->value()) << "REQ: cast cp is a workaround";
+}
 TEST(SafeAdrTest, safe_cast_bugFix)
 {
     SafeAdr<Base> b = make_safe<D2>();  // origin is D2
@@ -145,15 +155,15 @@ TEST(SafeAdrTest, mv_fail)
     auto i = make_safe<int>(7);
     auto src = SafeAdr<void>(i);
     EXPECT_EQ(&typeid(int), src.realType());
-    EXPECT_EQ(&typeid(int), src.preVoidType());
+    EXPECT_EQ(nullptr, src.diffType());
 
     auto dst = dynamic_pointer_cast<char>(move(src));
     EXPECT_NE(nullptr,       src.get()        ) << "REQ: keep content";
     EXPECT_EQ(&typeid(int),  src.realType()   ) << "REQ: keep origin type";
-    EXPECT_EQ(&typeid(int),  src.preVoidType()) << "REQ: keep pre-void-type";
+    EXPECT_EQ(nullptr,       src.diffType()   ) << "REQ: keep last type";
     EXPECT_EQ(nullptr,       dst.get()        ) << "REQ: fail to takeover content";
     EXPECT_EQ(&typeid(char), dst.realType()   ) << "REQ: fail to takeover origin type";
-    EXPECT_EQ(nullptr,       dst.preVoidType()) << "REQ: fail to takeover pre-void-type";
+    EXPECT_EQ(nullptr,       dst.diffType()   ) << "REQ: fail to takeover last type";
 
     SafeAdr<Base> b = SafeAdr<Derive>();
     EXPECT_EQ(&typeid(Base), b.realType()) << "REQ/cov: mv-nothing=fail so origin is Base instead of Derive";

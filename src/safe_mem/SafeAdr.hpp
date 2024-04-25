@@ -72,16 +72,16 @@ public:
     auto          use_count()  const noexcept { return pT_.use_count();  }
 
     // most for debug
-    const type_info* preVoidType() const noexcept { return preVoidType_; }
     const type_info* realType() const noexcept { return realType_; }
+    const type_info* diffType() const noexcept { return diffType_; }
 
 private:
     template<typename From> void init_(const SafeAdr<From>&) noexcept;
 
     // -------------------------------------------------------------------------------------------
     shared_ptr<T>    pT_;
-    const type_info* preVoidType_ = nullptr;  // that before cast to void, can safely cast back
     const type_info* realType_ = &typeid(T);  // that pT_ point to, can safely cast to
+    const type_info* diffType_ = nullptr;  // latest type except realType_ & void
 };
 
 // ***********************************************************************************************
@@ -110,7 +110,7 @@ shared_ptr<To> SafeAdr<T>::cast() const noexcept
 {
     if constexpr(is_base_of<To, T>::value)  // safer than is_convertible()
     {
-        HID("(SafeAdr) cast Derive->Base/self");
+        HID("(SafeAdr) cast derived->base/self");
         return pT_;
     }
     else if constexpr(is_void<To>::value)  // else if for constexpr
@@ -120,7 +120,7 @@ shared_ptr<To> SafeAdr<T>::cast() const noexcept
     }
     else if constexpr(is_base_of<T, To>::value)
     {
-        HID("(SafeAdr) cast Base->Derive");
+        HID("(SafeAdr) cast base->derived");
         return dynamic_pointer_cast<To>(pT_);
     }
     else if constexpr(!is_void<T>::value)
@@ -133,13 +133,13 @@ shared_ptr<To> SafeAdr<T>::cast() const noexcept
         //HID("(SafeAdr) cast any->origin");
         return static_pointer_cast<To>(pT_);
     }
-    else if (&typeid(To) == preVoidType_)
+    else if (&typeid(To) == diffType_)
     {
-        //HID("(SafeAdr) cast any->type-before-castToVoid");
+        //HID("(SafeAdr) cast to last-type-except-void");
         return static_pointer_cast<To>(pT_);
     }
     HID("(SafeAdr) can't cast from=void/" << typeid(T).name() << " to=" << typeid(To).name());
-    // - realType_ & preVoidType_ can't compile-check so now has to ret null (than eg dyn-cast fail compile)
+    // - realType_ & diffType_ can't compile-check so now has to ret null (than eg dyn-cast fail compile)
     return nullptr;
 }
 
@@ -155,15 +155,15 @@ void SafeAdr<T>::init_(const SafeAdr<From>& aSafeFrom) noexcept
         return;
     }
 
-    // init
     realType_ = aSafeFrom.realType();
-    if constexpr(is_same<T, void>::value && !is_same<From, void>::value)  // nonVoid->void
-        preVoidType_ = &typeid(From);
+    // save another useful type
+    if (&typeid(From) != realType_ && !is_same<From, void>::value)
+        diffType_ = &typeid(From);
     else
-        preVoidType_ = aSafeFrom.preVoidType();  // cast-to-nonVoid
+        diffType_ = aSafeFrom.diffType();
 
     /*HID("cp from=" << typeid(From).name() << " to=" << typeid(T).name()
-        << ", pre=" << (preVoidType_ == nullptr ? "null" : preVoidType_->name())
+        << ", diff=" << (diffType_ == nullptr ? "null" : diffType_->name())
         << ", real=" << (realType_ == nullptr ? "null" : realType_->name()));*/
 }
 
