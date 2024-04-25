@@ -88,7 +88,7 @@ private:
 template<typename T>
 template<typename From>
 SafeAdr<T>::SafeAdr(const SafeAdr<From>& aSafeFrom) noexcept  // cp
-    : pT_(aSafeFrom.get())  // shared_ptr only allow base-derive, till 024-04-25
+    : pT_(aSafeFrom.get())  // base-derive only by shared_ptr till 024-04-25
 {
     init_(aSafeFrom);
 }
@@ -157,7 +157,7 @@ void SafeAdr<T>::init_(const SafeAdr<From>& aSafeFrom) noexcept
 
     // init
     realType_ = aSafeFrom.realType();
-    if constexpr(is_same<T, void>::value && !is_same<From, void>::value)
+    if constexpr(is_same<T, void>::value && !is_same<From, void>::value)  // nonVoid->void
         preVoidType_ = &typeid(From);
     else
         preVoidType_ = aSafeFrom.preVoidType();  // cast-to-nonVoid

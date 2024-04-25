@@ -101,6 +101,35 @@ TEST(SafeAdrTest, safe_cast_bugFix)
     auto vv = dynamic_pointer_cast<void>(v);  // bug fix for multi-void
     EXPECT_EQ(2, static_pointer_cast<Base>(vv).get()->value()) << "REQ: can D2->Base->void->void->Base";
 }
+TEST(SafeAdrTest, GOLD_const_and_back)
+{
+    struct D
+    {
+        int value()       { return 100; }
+        int value() const { return 0; }
+    };
+
+    auto safe_d  = make_safe<D>();
+    auto share_d = make_shared<D>();
+
+    EXPECT_EQ(100, safe_d ->value()) << "REQ: call non-const";
+    EXPECT_EQ(100, share_d->value()) << "req: call non-const";
+
+    SafeAdr   <const D> safe_const_d  = safe_d;
+    shared_ptr<const D> share_const_d = share_d;
+
+    EXPECT_EQ(0, safe_const_d ->value()) << "REQ: cp succ & call const)";
+    EXPECT_EQ(0, share_const_d->value()) << "req: cp succ & call const)";
+
+//  SafeAdr<D>    safe_dd  = safe_const_d;   // REQ: compile err to cp from const to non
+//  shared_ptr<D> share_dd = share_const_d;  // REQ: compile err to cp from const to non
+
+    const SafeAdr   <D> const_safe_d  = safe_d;
+    const shared_ptr<D> const_share_d = share_d;
+
+    EXPECT_EQ(100, const_safe_d ->value()) << "REQ: cp succ & call NON-const (same as shared_ptr)";
+    EXPECT_EQ(100, const_share_d->value()) << "call NON-const since all members are NON-const except 'this'";
+}
 
 #define MOVE
 // ***********************************************************************************************
@@ -139,38 +168,6 @@ TEST(SafeAdrTest, GOLD_assign_get)
     two = SafeAdr<int>();
     EXPECT_EQ(nullptr, two.get()) << "REQ: assign to null";
     EXPECT_EQ(42, *(one.get())) << "REQ: valid get after assigner is reset";
-}
-
-#define CONST_AND_BACK
-// ***********************************************************************************************
-struct D
-{
-    int value()       { return 100; }
-    int value() const { return 0; }
-};
-
-TEST(SafeAdrTest, GOLD_const_and_back)
-{
-    auto safe_d  = make_safe<D>();
-    auto share_d = make_shared<D>();
-
-    EXPECT_EQ(100, safe_d ->value()) << "REQ: call non-const";
-    EXPECT_EQ(100, share_d->value()) << "REQ: call non-const";
-
-    SafeAdr   <const D> safe_const_d  = safe_d;
-    shared_ptr<const D> share_const_d = share_d;
-
-    EXPECT_EQ(0, safe_const_d ->value()) << "REQ: cp succ & call const)";
-    EXPECT_EQ(0, share_const_d->value()) << "REQ: cp succ & call const)";
-
-    // SafeAdr<D>    safe_dd  = safe_const_d;   // REQ: compile err to cp from const to non
-    // shared_ptr<D> share_dd = share_const_d;  // REQ: compile err to cp from const to non
-
-    const SafeAdr   <D> const_safe_d  = safe_d;
-    const shared_ptr<D> const_share_d = share_d;
-
-    EXPECT_EQ(100, const_safe_d ->value()) << "REQ: cp succ & call NON-const (same as shared_ptr)";
-    EXPECT_EQ(100, const_share_d->value()) << "call NON-const since all members are NON-const except 'this'";
 }
 
 #define SAFE
