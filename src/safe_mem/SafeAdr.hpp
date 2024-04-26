@@ -80,8 +80,8 @@ private:
 
     // -------------------------------------------------------------------------------------------
     shared_ptr<T>    pT_;
-    const type_info* realType_ = &typeid(T);  // that pT_ really point to, can safely cast to
-    const type_info* diffType_ = nullptr;  // another valid type except realType_ & void
+    const type_info* realType_ = &typeid(T);  // origin type
+    const type_info* diffType_ = nullptr;  // diff valid type than realType_ & void
 };
 
 // ***********************************************************************************************
@@ -227,17 +227,13 @@ struct std::hash<RLib::SafeAdr<T>>
 // ..........  .........   .......................................................................
 // 2024-01-30  CSZ       1)create
 // 2024-02-13  CSZ       2)usage in dom lib
+// 2024-04-17  CSZ       3)strict constructor - illegal->compile-err (while *cast() can ret null)
 // ***********************************************************************************************
 // - Q&A
 //   . must replace shared_ptr in DatDom, ObjAnywhere?
 //     . SafeAdr is simple
-//     . freq cast void-any is dangeous
+//     . freq cast void->any is dangeous
 //     . so worth
-//
-//   . SafeAdr for array:
-//     . shared_ptr: c++11 start support T[], c++17 enhance, c++20 full support
-//     . shared_ptr[out-bound] is NOT safe, so still need SafeAdr to support array
-//     . g++12 full support T[]
 //
 //   . T not ref/ptr/const?
 //   . SafeRef? or like this?

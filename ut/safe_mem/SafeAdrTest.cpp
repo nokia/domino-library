@@ -23,13 +23,15 @@ TEST(SafeAdrTest, GOLD_safe_create)
     EXPECT_EQ(nullptr, c.get()) << "REQ: create null";
 
     auto i = make_safe<int>(42);
-    EXPECT_EQ(42, *i.get()) << "REQ: valid construct & get";
+    auto content = i.get();
+    EXPECT_EQ(42, *content) << "REQ: valid construct & get";
 
-    *i.get() = 43;
+    *content = 43;
     EXPECT_EQ(43, *i.get()) << "REQ: valid update";
 
-    i.get().reset();
-    EXPECT_EQ(43, *i.get()) << "REQ: outside del not impact SafeAdr";
+    content.reset();
+    EXPECT_EQ(nullptr, content) << "REQ: reset OK";
+    EXPECT_EQ(43, *i.get()) << "REQ: outside reset not impact SafeAdr";
 }
 
 #define COPY_CAST
