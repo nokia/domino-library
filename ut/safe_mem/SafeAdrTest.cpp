@@ -168,7 +168,10 @@ TEST(SafeAdrTest, mv_fail)
     SafeAdr<Base> b = SafeAdr<Derive>();
     EXPECT_EQ(&typeid(Base), b.realType()) << "REQ/cov: mv-nothing=fail so origin is Base instead of Derive";
 }
-TEST(SafeAdrTest, GOLD_assign_get)
+
+#define ASSIGN
+// ***********************************************************************************************
+TEST(SafeAdrTest, safe_assign)  // operator=() is auto-gen, just simple test 1 case
 {
     SafeAdr<int> one;
     auto two = make_safe<int>(42);

@@ -8,7 +8,7 @@
 //   . c++ mem bugs are 1 of the most challenge (eg US gov suggest to replace c++ by Rust)
 // - REQ: this class is to enhance safety of shared_ptr:
 //   . safe create   : null / make_safe only (not allow unsafe create eg via raw ptr)
-//   . safe cast     : only among self, base & void; & compile err than ret null
+//   . safe cast     : only among self, base & void; compile-err is safer than ret-null
 //   . safe lifecycle: by shared_ptr (auto mem-mgmt, no use-after-free)
 //   . safe ptr array: no need since std::array
 // - DUTY-BOUND:
@@ -57,7 +57,7 @@ public:
     // - can't construct by shared_ptr that maybe unsafe
     constexpr SafeAdr() = default;  // must explicit since below converter constructor
     constexpr SafeAdr(nullptr_t) noexcept : SafeAdr() {}  // implicit nullptr -> SafeAdr()
-    template<typename U, typename... Args> friend SafeAdr<U> make_safe(Args&&... aArgs);  // U::U(Args) SHALL mem-safe
+    template<typename U, typename... Args> friend SafeAdr<U> make_safe(Args&&... aArgs);  // U(Args) SHALL mem-safe
 
     // safe-only cast (vs shared_ptr, eg static_pointer_cast<any> is not safe)
     template<typename From> SafeAdr(const SafeAdr<From>&) noexcept;          // cp  ok or compile err
@@ -80,15 +80,15 @@ private:
 
     // -------------------------------------------------------------------------------------------
     shared_ptr<T>    pT_;
-    const type_info* realType_ = &typeid(T);  // that pT_ point to, can safely cast to
-    const type_info* diffType_ = nullptr;  // latest type except realType_ & void
+    const type_info* realType_ = &typeid(T);  // that pT_ really point to, can safely cast to
+    const type_info* diffType_ = nullptr;  // another valid type except realType_ & void
 };
 
 // ***********************************************************************************************
 template<typename T>
 template<typename From>
 SafeAdr<T>::SafeAdr(const SafeAdr<From>& aSafeFrom) noexcept  // cp
-    : pT_(aSafeFrom.get())  // base-derive only by shared_ptr till 024-04-25
+    : pT_(aSafeFrom.get())  // to self/base/void only by shared_ptr till 024-04-25
 {
     init_(aSafeFrom);
 }
@@ -96,7 +96,7 @@ SafeAdr<T>::SafeAdr(const SafeAdr<From>& aSafeFrom) noexcept  // cp
 // ***********************************************************************************************
 template<typename T>
 template<typename From>
-SafeAdr<T>::SafeAdr(SafeAdr<From>&& aSafeFrom) noexcept  // mv
+SafeAdr<T>::SafeAdr(SafeAdr<From>&& aSafeFrom) noexcept  // mv - MtQ need
     : SafeAdr(aSafeFrom)  // cp
 {
     if (pT_ != nullptr)  // cp succ, clear src
@@ -110,7 +110,7 @@ shared_ptr<To> SafeAdr<T>::cast() const noexcept
 {
     if constexpr(is_base_of<To, T>::value)  // safer than is_convertible()
     {
-        HID("(SafeAdr) cast derived->base/self");
+        //HID("(SafeAdr) cast derived->base/self");  // ERR() not MT safe
         return pT_;
     }
     else if constexpr(is_void<To>::value)  // else if for constexpr
@@ -120,12 +120,12 @@ shared_ptr<To> SafeAdr<T>::cast() const noexcept
     }
     else if constexpr(is_base_of<T, To>::value)
     {
-        HID("(SafeAdr) cast base->derived");
+        //HID("(SafeAdr) cast base->derived");
         return dynamic_pointer_cast<To>(pT_);
     }
     else if constexpr(!is_void<T>::value)
     {
-        HID("(SafeAdr) can't cast from=" << typeid(T).name() << " to=" << typeid(To).name());  // ERR() not MT safe
+        HID("(SafeAdr) casting from=" << typeid(T).name() << " to=" << typeid(To).name());
         return pT_;  // compile-err is safer than ret null
     }
     else if (&typeid(To) == realType_)
@@ -139,7 +139,7 @@ shared_ptr<To> SafeAdr<T>::cast() const noexcept
         return static_pointer_cast<To>(pT_);
     }
     HID("(SafeAdr) can't cast from=void/" << typeid(T).name() << " to=" << typeid(To).name());
-    // - realType_ & diffType_ can't compile-check so now has to ret null (than eg dyn-cast fail compile)
+    // realType_ & diffType_ can't compile-check so has to ret null (than eg dyn-cast that always fail compile)
     return nullptr;
 }
 
