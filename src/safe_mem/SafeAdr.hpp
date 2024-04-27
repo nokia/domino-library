@@ -16,8 +16,6 @@
 //   . ensure ptr type is valid: origin*, or base*, or void*
 //   . not SafeAdr but T to ensure T's inner safety (eg no exception within T's constructor)
 //   . hope cooperate with tool to ensure/track SafeAdr, all T, all code's mem safe
-// - suggest:
-//   . any class ensure mem-safe (like MT safe)
 //
 // - VALUE:
 //   . way#1: Rust is language-based mem ctrl (heavy)
@@ -25,11 +23,13 @@
 //     . keep legacy code/invest
 //     . but less safe than Rust
 //   . way#3: eg SafeAdr
-//     * if each class ensures itself mem-safe, then whole program is mem-safe (safer than way#2/tool)
-//     . more lightweight than Rust
-//     . keep legacy code/invest
-//     . eg dom lib is safe outside while base on unsafe std containers internally
+//     * if each app class is safe, then whole app is safe (safer than way#2/tool)
+//       * like SafeAdr(app class) encapsulates unsafe shared_ptr(legacy)
+//       * keep legacy code/invest
 //       * inner-freedom + outer-safe
+//     . more lightweight than Rust
+// - suggest:
+//   . any class ensure mem-safe (like MT safe)
 //
 // - MT safe: NO
 //   . so eg after MtInQueue.mt_push(), shall NOT touch pushed SafeAdr
