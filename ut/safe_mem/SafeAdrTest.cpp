@@ -49,9 +49,32 @@ TEST(SafeAdrTest, GOLD_safe_cp_sameType)
     EXPECT_EQ(43, *one.get()) << "REQ: 1 del not impact another";
 }
 
-struct Base                   { virtual int value()  { return 0; } };
-struct Derive : public Base   { int value() override { return 1; } };
-struct D2     : public Derive { int value() override { return 2; } };
+struct Base                   { virtual int value() const  { return 0; } };
+struct Derive : public Base   { int value() const override { return 1; } };
+struct D2     : public Derive { int value() const override { return 2; } };
+TEST(SafeAdrTest, GOLD_safe_cp_normal)
+{
+//  EXPECT_EQ(0,              SafeAdr<char>(make_safe<int>())) << "REQ: cp diff type - compile-err";
+//  EXPECT_EQ(0, dynamic_pointer_cast<char>(make_safe<int>())) << "REQ: cast - also compile-err";
+
+    EXPECT_EQ(1,              SafeAdr<Base>(make_safe<Derive>()).get()->value()) << "REQ: cp to base";
+    EXPECT_EQ(1, dynamic_pointer_cast<Base>(make_safe<Derive>()).get()->value()) << "REQ: cast";
+
+    EXPECT_NE(nullptr,              SafeAdr<void>(make_safe<Derive>()).get()) << "REQ: cp to void OK";
+    EXPECT_NE(nullptr, dynamic_pointer_cast<void>(make_safe<Derive>()).get()) << "REQ: cast OK";
+}
+TEST(SafeAdrTest, safe_cp_extended)
+{
+//  EXPECT_EQ(1,              SafeAdr<Derive>(SafeAdr<Base>(make_safe<Derive>())).get()->value()) << "REQ: cp to derived - compile-err";
+    EXPECT_EQ(1, dynamic_pointer_cast<Derive>(SafeAdr<Base>(make_safe<Derive>())).get()->value()) << "REQ: cast OK";
+    EXPECT_EQ(nullptr, dynamic_pointer_cast<Derive>(make_safe<Base>()).get()) << "REQ: cast NOK so has to check null before use";
+
+//  EXPECT_EQ(1,              SafeAdr<Derive>(SafeAdr<void>(SafeAdr<Base>(make_safe<Derive>()))).get()->value()) << "REQ: cp - compile-err";
+    EXPECT_EQ(1, dynamic_pointer_cast<Derive>(SafeAdr<void>(SafeAdr<Base>(make_safe<Derive>()))).get()->value()) << "REQ: void to realType_";
+    EXPECT_EQ(1, dynamic_pointer_cast<Base  >(SafeAdr<void>(SafeAdr<Base>(make_safe<Derive>()))).get()->value()) << "REQ: void to diffType_";
+    EXPECT_EQ(nullptr, dynamic_pointer_cast<D2>(SafeAdr<void>(SafeAdr<Base>(make_safe<Derive>()))).get()) << "REQ: void to unknown type";
+}
+#if 0
 TEST(SafeAdrTest, GOLD_safe_cp_toBase_OK)
 {
     auto d2 = make_safe<D2>();
@@ -106,12 +129,13 @@ TEST(SafeAdrTest, safe_cp_complex)
 //  EXPECT_EQ(2, SafeAdr            <Derive>(v).get()->value()) << "req: cp (D2->Derive->D2->)void->Derive compile err";
     EXPECT_EQ(2, static_pointer_cast<Derive>(v).get()->value()) << "REQ: cast cp is a workaround";
 }
+#endif
 TEST(SafeAdrTest, safe_cast_bugFix)
 {
-    SafeAdr<Base> b = make_safe<D2>();  // origin is D2
-    SafeAdr<void> v = b;  // preVoid is Base
+    SafeAdr<Base> b = make_safe<D2>();  // realType_ is D2
+    SafeAdr<void> v = b;  // diffType_ is Base
     auto vv = dynamic_pointer_cast<void>(v);  // bug fix for multi-void
-    EXPECT_EQ(2, static_pointer_cast<Base>(vv).get()->value()) << "REQ: can D2->Base->void->void->Base";
+    EXPECT_EQ(2, static_pointer_cast<Base>(vv).get()->value()) << "REQ: can cast D2->Base->void->void->Base";
 }
 TEST(SafeAdrTest, GOLD_const_and_back)
 {
