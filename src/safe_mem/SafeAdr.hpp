@@ -126,7 +126,7 @@ shared_ptr<To> SafeAdr<T>::cast() const noexcept
     else if constexpr(!is_void<T>::value)
     {
         HID("(SafeAdr) casting from=" << typeid(T).name() << " to=" << typeid(To).name());
-        return pT_;  // compile-err is safer than ret null
+        return this;  // force compile-err, safer than ret pT_ or null
     }
     else if (&typeid(To) == realType_)
     {
@@ -234,6 +234,9 @@ struct std::hash<RLib::SafeAdr<T>>
 //     . SafeAdr is simple
 //     . freq cast void->any is dangeous
 //     . so worth
+//
+//   . std::any vs SafeAdr
+//     . SafeAdr is safe shared_ptr that is lifecycle ptr, std::any is not ptr nor lifecycle mgmt
 //
 //   . T not ref/ptr/const?
 //   . SafeRef? or like this?
