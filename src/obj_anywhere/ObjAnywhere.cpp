@@ -7,27 +7,27 @@
 
 namespace RLib
 {
-shared_ptr<ObjAnywhere::ObjStore> ObjAnywhere::objStore_;
+shared_ptr<ObjAnywhere::ObjStore> ObjAnywhere::idx_obj_S_;
 
 // ***********************************************************************************************
 void ObjAnywhere::deinit(UniLog& oneLog)
 {
-    if (!objStore_)
+    if (!idx_obj_S_)
         return;
 
-    INF("(ObjAnywhere) Succeed. ObjAnywhere giveup nSvc=" << objStore_->size());
-    objStore_.reset();
+    INF("(ObjAnywhere) Succeed. ObjAnywhere giveup nSvc=" << idx_obj_S_->size());
+    idx_obj_S_.reset();
 }
 
 // ***********************************************************************************************
 void ObjAnywhere::init(UniLog& oneLog)
 {
-    if (objStore_)
+    if (idx_obj_S_)
         WRN("(ObjAnywhere) !!! Refuse dup init.")
     else
     {
         HID("(ObjAnywhere) Succeed.");
-        objStore_ = make_shared<ObjStore>();
+        idx_obj_S_ = make_shared<ObjStore>();
     }
 }
 }  // namespace

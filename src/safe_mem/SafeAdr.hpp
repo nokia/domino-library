@@ -126,7 +126,8 @@ shared_ptr<To> SafeAdr<T>::cast() const noexcept
     else if constexpr(!is_void<T>::value)
     {
         HID("(SafeAdr) casting from=" << typeid(T).name() << " to=" << typeid(To).name());
-        return this;  // force compile-err, safer than ret pT_ or null
+        return this;  // c++17: force compile-err, safer than ret pT_ or null
+        //return nullptr;  // c++14
     }
     else if (&typeid(To) == realType_)
     {
