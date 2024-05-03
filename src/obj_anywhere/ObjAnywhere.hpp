@@ -46,7 +46,7 @@ namespace RLib
 class ObjAnywhere
 {
 public:
-    using ObjIndex = size_t;
+    using ObjIndex = const type_info*;
     using ObjStore = unordered_map<ObjIndex, UniPtr>;
 
     static void init(UniLog& = UniLog::defaultUniLog_);    // init idx_obj_S_
@@ -57,8 +57,7 @@ public:
     // -------------------------------------------------------------------------------------------
     // - save aObjType into idx_obj_S_
     // -------------------------------------------------------------------------------------------
-    template<typename aObjType>
-    static void set(PTR<aObjType> aSharedObj, UniLog& = UniLog::defaultUniLog_);
+    template<typename aObjType> static void set(PTR<aObjType> aSharedObj, UniLog& = UniLog::defaultUniLog_);
 
     // -------------------------------------------------------------------------------------------
     // - get a "Obj" from idx_obj_S_
@@ -68,7 +67,7 @@ public:
 
 private:
     // -------------------------------------------------------------------------------------------
-    static shared_ptr<ObjStore> idx_obj_S_;
+    static shared_ptr<ObjStore> idx_obj_S_;  // store shared_ptr<aSvc> w/o include aObj.hpp
 };
 
 // ***********************************************************************************************
@@ -78,9 +77,9 @@ PTR<aObjType> ObjAnywhere::get(UniLog& oneLog)
     if (not isInit())
         return nullptr;
 
-    auto&& found = idx_obj_S_->find(typeid(aObjType).hash_code());
-    if (found != idx_obj_S_->end())
-        return static_pointer_cast<aObjType>(found->second);
+    auto&& idx_obj = idx_obj_S_->find(&typeid(aObjType));
+    if (idx_obj != idx_obj_S_->end())
+        return static_pointer_cast<aObjType>(idx_obj->second);
 
     INF("(ObjAnywhere) !!! Failed, unavailable obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
     return nullptr;
@@ -96,7 +95,7 @@ void ObjAnywhere::set(PTR<aObjType> aSharedObj, UniLog& oneLog)
         return;
     }
 
-    auto&& objIndex = typeid(aObjType).hash_code();
+    auto objIndex = &typeid(aObjType);
     if (aSharedObj.get() == nullptr)
     {
         idx_obj_S_->erase(objIndex);  // natural expectation
@@ -104,8 +103,7 @@ void ObjAnywhere::set(PTR<aObjType> aSharedObj, UniLog& oneLog)
         return;
     }
 
-    auto&& found = idx_obj_S_->find(objIndex);
-    if (found == idx_obj_S_->end())
+    if (idx_obj_S_->find(objIndex) == idx_obj_S_->end())
         HID("(ObjAnywhere) Set obj=" << typeid(aObjType).name() << " into ObjAnywhere.")
     else
         INF("(ObjAnywhere) !!!Replace obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
