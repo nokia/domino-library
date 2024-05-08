@@ -33,7 +33,7 @@
 #pragma once
 
 #include <unordered_map>
-#include <typeinfo>  // typeid()
+#include <typeindex>
 
 #include "UniLog.hpp"
 #include "UniPtr.hpp"
@@ -46,7 +46,7 @@ namespace RLib
 class ObjAnywhere
 {
 public:
-    using ObjIndex = const type_info*;
+    using ObjIndex = type_index;
     using ObjStore = unordered_map<ObjIndex, UniPtr>;
 
     static void init(UniLog& = UniLog::defaultUniLog_);    // init idx_obj_S_
@@ -77,7 +77,7 @@ PTR<aObjType> ObjAnywhere::get(UniLog& oneLog)
     if (not isInit())
         return nullptr;
 
-    auto&& idx_obj = idx_obj_S_->find(&typeid(aObjType));
+    auto&& idx_obj = idx_obj_S_->find(type_index(typeid(aObjType)));
     if (idx_obj != idx_obj_S_->end())
         return static_pointer_cast<aObjType>(idx_obj->second);
 
@@ -95,7 +95,7 @@ void ObjAnywhere::set(PTR<aObjType> aSharedObj, UniLog& oneLog)
         return;
     }
 
-    auto objIndex = &typeid(aObjType);
+    const auto& objIndex = type_index(typeid(aObjType));
     if (aSharedObj.get() == nullptr)
     {
         idx_obj_S_->erase(objIndex);  // natural expectation
