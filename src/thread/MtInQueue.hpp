@@ -25,6 +25,7 @@
 #include <deque>
 #include <functional>
 #include <mutex>
+#include <typeindex>
 #include <unordered_map>
 
 #include "MT_PingMainTH.hpp"
@@ -36,7 +37,7 @@ using namespace std;
 namespace RLib
 {
 // ele & its typeid.hash_code
-using ELE_TID = pair<UniPtr, const type_info*>;
+using ELE_TID = pair<UniPtr, type_index>;  // type_index ==/!= ok, but type_info* & hash_code nok
 using EleHdlr = function<void(UniPtr)>;
 
 // ***********************************************************************************************
@@ -69,7 +70,7 @@ private:
     deque<ELE_TID> cache_;
     mutex mutex_;
 
-    unordered_map<const type_info*, EleHdlr> tid_hdlr_S_;
+    unordered_map<type_index, EleHdlr> tid_hdlr_S_;
 
     // -------------------------------------------------------------------------------------------
 #ifdef RLIB_UT
@@ -98,7 +99,7 @@ void MtInQueue::mt_push(PTR<aEleType>&& aEle)
     // push
     {
         lock_guard<mutex> guard(mutex_);
-        queue_.push_back(ELE_TID(move(aEle), &typeid(aEleType)));
+        queue_.push_back(ELE_TID(move(aEle), type_index(typeid(aEleType))));
         HID("(MtQ) ptr=" << aEle.get() << ", nRef=" << aEle.use_count());  // HID supports MT
     }
 
@@ -116,7 +117,7 @@ PTR<aEleType> MtInQueue::pop()
         return nullptr;
 
     // mismatch
-    if (it->second != &typeid(aEleType))
+    if (it->second != type_index(typeid(aEleType)))
         return nullptr;
 
     // pop
@@ -135,7 +136,7 @@ bool MtInQueue::setHdlrOK(const EleHdlr& aHdlr)
         return false;
     }
 
-    const type_info* tid = &typeid(aEleType);
+    const auto& tid = type_index(typeid(aEleType));
     if (tid_hdlr_S_.find(tid) != tid_hdlr_S_.end())
     {
         ERR("(MtInQueue) failed!!! overwrite hdlr may unsafe existing data");

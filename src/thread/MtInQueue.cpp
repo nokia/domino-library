@@ -53,7 +53,7 @@ size_t MtInQueue::handleCacheEle_()
         auto&& id_hdlr = tid_hdlr_S_.find(ele_tid.second);
         if (id_hdlr == tid_hdlr_S_.end())
         {
-            WRN("(MtQ) discard 1 ele(tid=" << ele_tid.second->name() << ") since no handler.")
+            WRN("(MtQ) discard 1 ele(tid=" << ele_tid.second.name() << ") since no handler.")
             continue;
         }
         id_hdlr->second(ele_tid.first);
@@ -111,7 +111,7 @@ ELE_TID MtInQueue::pop()
     // nothing
     auto&& it = begin_();
     if (it == cache_.end())
-        return ELE_TID(nullptr, nullptr);
+        return ELE_TID(nullptr, type_index(typeid(void)));
 
     // pop
     auto ele_tid = *it;  // must copy
