@@ -6,6 +6,7 @@
 // ***********************************************************************************************
 #include <gtest/gtest.h>
 #include <map>
+#include <type_traits>
 #include <unordered_map>
 
 #include "SafeAdr.hpp"
@@ -14,14 +15,32 @@ namespace RLib
 {
 #define CREATE
 // ***********************************************************************************************
+TEST(SafeAdrTest, safeCreate_default)
+{
+    SafeAdr v;
+    EXPECT_EQ(nullptr, v.get()) << "REQ: create default is empty";
+    EXPECT_EQ(type_index(typeid(shared_ptr<void>)), type_index(typeid(v.get()))) << "REQ: default template is void";
+    static_assert(is_constructible_v<SafeAdr<>>, "REQ: shall be constexpr");
+
+    SafeAdr<int> i;
+    EXPECT_EQ(nullptr, i.get()) << "req: create default is empty";
+    EXPECT_EQ(type_index(typeid(shared_ptr<int>)), type_index(typeid(i.get()))) << "REQ: specify template";
+    static_assert(is_constructible_v<SafeAdr<int>>, "REQ: shall be constexpr");
+}
+TEST(SafeAdrTest, safeCreate_null)
+{
+    SafeAdr v(nullptr);
+    EXPECT_EQ(nullptr, v.get()) << "REQ: explicit create null to compatible with shared_ptr";
+    EXPECT_EQ(type_index(typeid(shared_ptr<void>)), type_index(typeid(v.get()))) << "REQ: default template is void";
+    static_assert(is_constructible_v<SafeAdr<>, nullptr_t>, "REQ: shall be constexpr");
+
+    SafeAdr<int> i;
+    EXPECT_EQ(nullptr, i.get()) << "req: create default is empty";
+    EXPECT_EQ(type_index(typeid(shared_ptr<int>)), type_index(typeid(i.get()))) << "REQ: specify template";
+    static_assert(is_constructible_v<SafeAdr<int>, nullptr_t>, "REQ: shall be constexpr");
+}
 TEST(SafeAdrTest, GOLD_safe_create)
 {
-    auto v = SafeAdr<>();
-    EXPECT_EQ(nullptr, v.get()) << "REQ: create default, null is legal address";
-
-    auto c = SafeAdr<char>(nullptr);
-    EXPECT_EQ(nullptr, c.get()) << "REQ: create null";
-
     auto i = make_safe<int>(42);
     auto content = i.get();
     EXPECT_EQ(42, *content) << "REQ: valid construct & get";

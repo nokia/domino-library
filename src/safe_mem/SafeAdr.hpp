@@ -56,8 +56,7 @@ class SafeAdr
 public:
     // - safe-only creation (eg shared_ptr<U>(U*) is not safe)
     // - can't construct by shared_ptr that maybe unsafe
-    constexpr SafeAdr() = default;  // must explicit since below converter constructor
-    constexpr SafeAdr(nullptr_t) noexcept : SafeAdr() {}  // implicit nullptr -> SafeAdr()
+    SafeAdr(nullptr_t = nullptr) {}
     template<typename U, typename... Args> friend SafeAdr<U> make_safe(Args&&... aArgs);  // U(Args) SHALL mem-safe
 
     // safe-only cast (vs shared_ptr, eg static_pointer_cast<any> is not safe)
@@ -73,7 +72,7 @@ public:
     auto          use_count()  const noexcept { return pT_.use_count();  }
 
     // most for debug
-    auto realType() const noexcept { return realType_; }
+    auto realType() const noexcept { return realType_; }  // ret cp is safer than ref
     auto diffType() const noexcept { return diffType_; }
 
 private:
