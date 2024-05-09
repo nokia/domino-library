@@ -41,6 +41,7 @@
 #include <functional>
 #include <memory>
 #include <type_traits>
+#include <typeindex>
 
 #include "UniLog.hpp"
 
@@ -72,16 +73,16 @@ public:
     auto          use_count()  const noexcept { return pT_.use_count();  }
 
     // most for debug
-    const type_info* realType() const noexcept { return realType_; }
-    const type_info* diffType() const noexcept { return diffType_; }
+    auto realType() const noexcept { return realType_; }
+    auto diffType() const noexcept { return diffType_; }
 
 private:
     template<typename From> void init_(const SafeAdr<From>&) noexcept;
 
     // -------------------------------------------------------------------------------------------
     shared_ptr<T>    pT_;
-    const type_info* realType_ = &typeid(T);  // origin type
-    const type_info* diffType_ = nullptr;  // diff valid type than realType_ & void
+    type_index realType_ = type_index(typeid(T));  // origin type
+    type_index diffType_ = realType_;  // maybe diff valid type than realType_ & void
 };
 
 // ***********************************************************************************************
@@ -129,12 +130,12 @@ shared_ptr<To> SafeAdr<T>::cast() const noexcept
         return this;  // c++17: force compile-err, safer than ret pT_ or null
         //return nullptr;  // c++14
     }
-    else if (&typeid(To) == realType_)
+    else if (type_index(typeid(To)) == realType_)
     {
         //HID("(SafeAdr) cast any->origin");
         return static_pointer_cast<To>(pT_);
     }
-    else if (&typeid(To) == diffType_)
+    else if (type_index(typeid(To)) == diffType_)
     {
         //HID("(SafeAdr) cast to last-type-except-void");
         return static_pointer_cast<To>(pT_);
@@ -158,8 +159,8 @@ void SafeAdr<T>::init_(const SafeAdr<From>& aSafeFrom) noexcept
 
     realType_ = aSafeFrom.realType();
     // save another useful type
-    if (&typeid(From) != realType_ && !is_same<From, void>::value)
-        diffType_ = &typeid(From);
+    if (type_index(typeid(From)) != realType_ && !is_same<From, void>::value)
+        diffType_ = type_index(typeid(From));
     else
         diffType_ = aSafeFrom.diffType();
 

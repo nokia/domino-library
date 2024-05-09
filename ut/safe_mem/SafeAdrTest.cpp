@@ -124,19 +124,19 @@ TEST(SafeAdrTest, mv_fail)
 {
     auto i = make_safe<int>(7);
     auto src = SafeAdr<void>(i);
-    EXPECT_EQ(&typeid(int), src.realType());
-    EXPECT_EQ(nullptr, src.diffType());
+    EXPECT_EQ(type_index(typeid(int)), src.realType());
+    EXPECT_EQ(type_index(typeid(int)), src.diffType());
 
     auto dst = dynamic_pointer_cast<char>(move(src));
-    EXPECT_NE(nullptr,       src.get()        ) << "REQ: keep content";
-    EXPECT_EQ(&typeid(int),  src.realType()   ) << "REQ: keep origin type";
-    EXPECT_EQ(nullptr,       src.diffType()   ) << "REQ: keep last type";
-    EXPECT_EQ(nullptr,       dst.get()        ) << "REQ: fail to takeover content";
-    EXPECT_EQ(&typeid(char), dst.realType()   ) << "REQ: fail to takeover origin type";
-    EXPECT_EQ(nullptr,       dst.diffType()   ) << "REQ: fail to takeover last type";
+    EXPECT_NE(nullptr,                  src.get()     ) << "REQ: keep content";
+    EXPECT_EQ(type_index(typeid(int)),  src.realType()) << "REQ: keep origin type";
+    EXPECT_EQ(type_index(typeid(int)),  src.diffType()) << "REQ: keep last type";
+    EXPECT_EQ(nullptr,                  dst.get()     ) << "REQ: fail to takeover content";
+    EXPECT_EQ(type_index(typeid(char)), dst.realType()) << "REQ: fail to takeover origin type";
+    EXPECT_EQ(type_index(typeid(char)), dst.diffType()) << "REQ: fail to takeover last type";
 
     SafeAdr<Base> b = SafeAdr<Derive>();
-    EXPECT_EQ(&typeid(Base), b.realType()) << "REQ/cov: mv-nothing=fail so origin is Base instead of Derive";
+    EXPECT_EQ(type_index(typeid(Base)), b.realType()) << "REQ/cov: mv-nothing=fail so origin is Base instead of Derive";
 }
 
 #define ASSIGN
