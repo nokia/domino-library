@@ -7,7 +7,7 @@
 // - what:     simple/easy write-protect for DataDomino
 // - why:      eg Yang RW para need write-protect
 // - core:     wrCtrl_
-// - mem-safe: true (when use SafeAdr instead of shared_ptr)
+// - mem-safe: true (when use SafePtr instead of shared_ptr)
 // ***********************************************************************************************
 #pragma once
 
@@ -166,5 +166,5 @@ void wbasic_setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2022-12-03  CSZ       - simple & natural
 // 2022-12-31  CSZ       - rm data
-// 2024-02-12  CSZ       2)use SafeAdr (mem-safe); shared_ptr is not mem-safe
+// 2024-02-12  CSZ       2)use SafePtr (mem-safe); shared_ptr is not mem-safe
 // ***********************************************************************************************

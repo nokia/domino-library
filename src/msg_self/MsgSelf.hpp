@@ -31,7 +31,7 @@
 //
 // - class safe: yes
 //   . not responsible for MsgCB itself's any unsafe behavior
-//   . why shared_ptr rather than SafeAdr to store MsgCB?
+//   . why shared_ptr rather than SafePtr to store MsgCB?
 //     . MsgSelf ensures safely usage of shared_ptr
 //   . not support callback after ~MsgSelf() since all msg discarded when ~MsgSelf()
 //     . UtInitObjAnywhere gives example how to provide a common callback for main()

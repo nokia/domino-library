@@ -9,33 +9,33 @@
 #include <type_traits>
 #include <unordered_map>
 
-#include "SafeAdr.hpp"
+#include "SafePtr.hpp"
 
 namespace RLib
 {
 #define CREATE
 // ***********************************************************************************************
-TEST(SafeAdrTest, safeCreate_default)
+TEST(SafePtrTest, safeCreate_default)
 {
-    SafeAdr v;
+    SafePtr v;
     EXPECT_EQ(nullptr, v.get()) << "REQ: create default is empty";
     EXPECT_EQ(type_index(typeid(shared_ptr<void>)), type_index(typeid(v.get()))) << "REQ: default template is void";
 
-    SafeAdr<int> i;
+    SafePtr<int> i;
     EXPECT_EQ(nullptr, i.get()) << "req: create default is empty";
     EXPECT_EQ(type_index(typeid(shared_ptr<int>)), type_index(typeid(i.get()))) << "REQ: specify template";
 }
-TEST(SafeAdrTest, safeCreate_null)
+TEST(SafePtrTest, safeCreate_null)
 {
-    const SafeAdr v(nullptr);
+    const SafePtr v(nullptr);
     EXPECT_EQ(nullptr, v.get()) << "REQ: explicit create null to compatible with shared_ptr";
     EXPECT_EQ(type_index(typeid(shared_ptr<void>)), type_index(typeid(v.get()))) << "REQ: default template is void";
 
-    const SafeAdr<int> i;
+    const SafePtr<int> i;
     EXPECT_EQ(nullptr, i.get()) << "req: create default is empty";
     EXPECT_EQ(type_index(typeid(shared_ptr<int>)), type_index(typeid(i.get()))) << "REQ: specify template";
 }
-TEST(SafeAdrTest, GOLD_safe_create)
+TEST(SafePtrTest, GOLD_safe_create)
 {
     auto i = make_safe<int>(42);
     auto content = i.get();
@@ -46,17 +46,17 @@ TEST(SafeAdrTest, GOLD_safe_create)
 
     content.reset();
     EXPECT_EQ(nullptr, content) << "REQ: reset OK";
-    EXPECT_EQ(43, *i.get()) << "REQ: outside reset not impact SafeAdr";
+    EXPECT_EQ(43, *i.get()) << "REQ: outside reset not impact SafePtr";
 }
-TEST(SafeAdrTest, safeCreate_noexcept_constexpr)
+TEST(SafePtrTest, safeCreate_noexcept_constexpr)
 {
-    static_assert(is_nothrow_constructible_v<SafeAdr<>>, "REQ: noexcept & constexpr");
-    static_assert(is_nothrow_constructible_v<SafeAdr<int>, nullptr_t>, "REQ: noexcept & constexpr");
+    static_assert(is_nothrow_constructible_v<SafePtr<>>, "REQ: noexcept & constexpr");
+    static_assert(is_nothrow_constructible_v<SafePtr<int>, nullptr_t>, "REQ: noexcept & constexpr");
 }
 
 #define COPY_CAST
 // ***********************************************************************************************
-TEST(SafeAdrTest, GOLD_safe_cp_sameType)
+TEST(SafePtrTest, GOLD_safe_cp_sameType)
 {
     auto one = make_safe<int>(42);
     {
@@ -72,36 +72,36 @@ TEST(SafeAdrTest, GOLD_safe_cp_sameType)
 struct Base                   { virtual int value() const  { return 0; } };
 struct Derive : public Base   { int value() const override { return 1; } };
 struct D2     : public Derive { int value() const override { return 2; } };
-TEST(SafeAdrTest, GOLD_safe_cp_normal)
+TEST(SafePtrTest, GOLD_safe_cp_normal)
 {
-//  EXPECT_EQ(0,              SafeAdr<char>(make_safe<int>())) << "REQ: cp diff type - compile-err";
+//  EXPECT_EQ(0,              SafePtr<char>(make_safe<int>())) << "REQ: cp diff type - compile-err";
 //  EXPECT_EQ(0, dynamic_pointer_cast<char>(make_safe<int>())) << "REQ: cast - also compile-err";
 
-    EXPECT_EQ(1,              SafeAdr<Base>(make_safe<Derive>()).get()->value()) << "REQ: cp to base";
+    EXPECT_EQ(1,              SafePtr<Base>(make_safe<Derive>()).get()->value()) << "REQ: cp to base";
     EXPECT_EQ(1, dynamic_pointer_cast<Base>(make_safe<Derive>()).get()->value()) << "REQ: cast";
 
-    EXPECT_NE(nullptr,              SafeAdr<void>(make_safe<Derive>()).get()) << "REQ: cp to void OK";
+    EXPECT_NE(nullptr,              SafePtr<void>(make_safe<Derive>()).get()) << "REQ: cp to void OK";
     EXPECT_NE(nullptr, dynamic_pointer_cast<void>(make_safe<Derive>()).get()) << "REQ: cast OK";
 }
-TEST(SafeAdrTest, safe_cp_extended)
+TEST(SafePtrTest, safe_cp_extended)
 {
-//  EXPECT_EQ(1,              SafeAdr<Derive>(SafeAdr<Base>(make_safe<Derive>())).get()->value()) << "REQ: cp to derived - compile-err";
-    EXPECT_EQ(1, dynamic_pointer_cast<Derive>(SafeAdr<Base>(make_safe<Derive>())).get()->value()) << "REQ: cast OK";
+//  EXPECT_EQ(1,              SafePtr<Derive>(SafePtr<Base>(make_safe<Derive>())).get()->value()) << "REQ: cp to derived - compile-err";
+    EXPECT_EQ(1, dynamic_pointer_cast<Derive>(SafePtr<Base>(make_safe<Derive>())).get()->value()) << "REQ: cast OK";
     EXPECT_EQ(nullptr, dynamic_pointer_cast<Derive>(make_safe<Base>()).get()) << "REQ: cast NOK so has to check null before use";
 
-//  EXPECT_EQ(1,              SafeAdr<Derive>(SafeAdr<void>(SafeAdr<Base>(make_safe<Derive>()))).get()->value()) << "REQ: cp - compile-err";
-    EXPECT_EQ(1, dynamic_pointer_cast<Derive>(SafeAdr<void>(SafeAdr<Base>(make_safe<Derive>()))).get()->value()) << "REQ: void to realType_";
-    EXPECT_EQ(1, dynamic_pointer_cast<Base  >(SafeAdr<void>(SafeAdr<Base>(make_safe<Derive>()))).get()->value()) << "REQ: void to diffType_";
-    EXPECT_EQ(nullptr, dynamic_pointer_cast<D2>(SafeAdr<void>(SafeAdr<Base>(make_safe<Derive>()))).get()) << "REQ: void to unknown type";
+//  EXPECT_EQ(1,              SafePtr<Derive>(SafePtr<void>(SafePtr<Base>(make_safe<Derive>()))).get()->value()) << "REQ: cp - compile-err";
+    EXPECT_EQ(1, dynamic_pointer_cast<Derive>(SafePtr<void>(SafePtr<Base>(make_safe<Derive>()))).get()->value()) << "REQ: void to realType_";
+    EXPECT_EQ(1, dynamic_pointer_cast<Base  >(SafePtr<void>(SafePtr<Base>(make_safe<Derive>()))).get()->value()) << "REQ: void to diffType_";
+    EXPECT_EQ(nullptr, dynamic_pointer_cast<D2>(SafePtr<void>(SafePtr<Base>(make_safe<Derive>()))).get()) << "REQ: void to unknown type";
 }
-TEST(SafeAdrTest, safe_cast_bugFix)
+TEST(SafePtrTest, safe_cast_bugFix)
 {
-    SafeAdr<Base> b = make_safe<D2>();  // realType_ is D2
-    SafeAdr<void> v = b;  // diffType_ is Base
+    SafePtr<Base> b = make_safe<D2>();  // realType_ is D2
+    SafePtr<void> v = b;  // diffType_ is Base
     auto vv = dynamic_pointer_cast<void>(v);  // bug fix for multi-void
     EXPECT_EQ(2, static_pointer_cast<Base>(vv).get()->value()) << "REQ: can cast D2->Base->void->void->Base";
 }
-TEST(SafeAdrTest, GOLD_const_and_back)
+TEST(SafePtrTest, GOLD_const_and_back)
 {
     struct D
     {
@@ -115,16 +115,16 @@ TEST(SafeAdrTest, GOLD_const_and_back)
     EXPECT_EQ(100, safe_d ->value()) << "REQ: call non-const";
     EXPECT_EQ(100, share_d->value()) << "req: call non-const";
 
-    SafeAdr   <const D> safe_const_d  = safe_d;
+    SafePtr   <const D> safe_const_d  = safe_d;
     shared_ptr<const D> share_const_d = share_d;
 
     EXPECT_EQ(0, safe_const_d ->value()) << "REQ: cp succ & call const)";
     EXPECT_EQ(0, share_const_d->value()) << "req: cp succ & call const)";
 
-//  SafeAdr<D>    safe_dd  = safe_const_d;   // REQ: compile err to cp from const to non
+//  SafePtr<D>    safe_dd  = safe_const_d;   // REQ: compile err to cp from const to non
 //  shared_ptr<D> share_dd = share_const_d;  // REQ: compile err to cp from const to non
 
-    const SafeAdr   <D> const_safe_d  = safe_d;
+    const SafePtr   <D> const_safe_d  = safe_d;
     const shared_ptr<D> const_share_d = share_d;
 
     EXPECT_EQ(100, const_safe_d ->value()) << "REQ: cp succ & call NON-const (same as shared_ptr)";
@@ -133,17 +133,17 @@ TEST(SafeAdrTest, GOLD_const_and_back)
 
 #define MOVE
 // ***********************************************************************************************
-TEST(SafeAdrTest, GOLD_mtQ_req_mv)
+TEST(SafePtrTest, GOLD_mtQ_req_mv)
 {
     auto msg = make_safe<string>("received msg");
-    SafeAdr<void> msgInQ = move(msg);
+    SafePtr<void> msgInQ = move(msg);
     EXPECT_EQ(nullptr, msg.get()) << "REQ: giveup";
     EXPECT_EQ("received msg", *dynamic_pointer_cast<string>(msgInQ).get()) << "REQ: takeover msg";
 }
-TEST(SafeAdrTest, mv_fail)
+TEST(SafePtrTest, mv_fail)
 {
     auto i = make_safe<int>(7);
-    auto src = SafeAdr<void>(i);
+    auto src = SafePtr<void>(i);
     EXPECT_EQ(type_index(typeid(int)), src.realType());
     EXPECT_EQ(type_index(typeid(int)), src.diffType());
 
@@ -155,29 +155,29 @@ TEST(SafeAdrTest, mv_fail)
     EXPECT_EQ(type_index(typeid(char)), dst.realType()) << "REQ: fail to takeover origin type";
     EXPECT_EQ(type_index(typeid(char)), dst.diffType()) << "REQ: fail to takeover last type";
 
-    SafeAdr<Base> b = SafeAdr<Derive>();
+    SafePtr<Base> b = SafePtr<Derive>();
     EXPECT_EQ(type_index(typeid(Base)), b.realType()) << "REQ/cov: mv-nothing=fail so origin is Base instead of Derive";
 }
 
 #define ASSIGN
 // ***********************************************************************************************
-TEST(SafeAdrTest, safe_assign)  // operator=() is auto-gen, just simple test 1 case
+TEST(SafePtrTest, safe_assign)  // operator=() is auto-gen, just simple test 1 case
 {
-    SafeAdr<int> one;
+    SafePtr<int> one;
     auto two = make_safe<int>(42);
     one = two;
     EXPECT_EQ(42, *(one.get())) << "REQ: valid assign & get";
 
-    two = SafeAdr<int>();
+    two = SafePtr<int>();
     EXPECT_EQ(nullptr, two.get()) << "REQ: assign to null";
     EXPECT_EQ(42, *(one.get())) << "REQ: valid get after assigner is reset";
 }
 
 #define SAFE
 // ***********************************************************************************************
-TEST(SafeAdrTest, get_isMemSafe_afterDelOrigin)
+TEST(SafePtrTest, get_isMemSafe_afterDelOrigin)
 {
-    SafeAdr<string> safe = make_safe<string>("hello");
+    SafePtr<string> safe = make_safe<string>("hello");
     shared_ptr<string> get = safe.get();
     EXPECT_EQ("hello", *get) << "get succ";
 
@@ -187,9 +187,9 @@ TEST(SafeAdrTest, get_isMemSafe_afterDelOrigin)
     get = safe.get();
     EXPECT_EQ(nullptr, get) << "REQ: get nullptr OK";
 }
-TEST(SafeAdrTest, getPtr_isMemSafe_afterDelOrigin)
+TEST(SafePtrTest, getPtr_isMemSafe_afterDelOrigin)
 {
-    SafeAdr<string> safe = make_safe<string>("hello");
+    SafePtr<string> safe = make_safe<string>("hello");
     shared_ptr<string> get = safe.operator->();  // diff
     EXPECT_EQ("hello", *get) << "REQ: get succ";
 
@@ -202,36 +202,36 @@ TEST(SafeAdrTest, getPtr_isMemSafe_afterDelOrigin)
 
 #define SUPPORT_MAP
 // ***********************************************************************************************
-TEST(SafeAdrTest, GOLD_asKeyOf_unorderedMap)
+TEST(SafePtrTest, GOLD_asKeyOf_unorderedMap)
 {
-    unordered_map<SafeAdr<string>, int> store;
-    EXPECT_EQ(0, store.size()) << "REQ: SafeAdr can be key";
+    unordered_map<SafePtr<string>, int> store;
+    EXPECT_EQ(0, store.size()) << "REQ: SafePtr can be key";
 
-    store[SafeAdr<string>()] = 100;
-    EXPECT_EQ(nullptr, SafeAdr<string>().get());
+    store[SafePtr<string>()] = 100;
+    EXPECT_EQ(nullptr, SafePtr<string>().get());
     EXPECT_EQ(1, store.size()) << "REQ: key=nullptr is OK";
 
-    store[SafeAdr<string>()] = 200;
+    store[SafePtr<string>()] = 200;
     EXPECT_EQ(1,   store.size()) << "REQ: no dup key";
-    EXPECT_EQ(200, store[SafeAdr<string>()]) << "REQ: dup key overwrites value";
+    EXPECT_EQ(200, store[SafePtr<string>()]) << "REQ: dup key overwrites value";
 
-    store[SafeAdr<string>(make_safe<string>("hello"))] = 300;
+    store[SafePtr<string>(make_safe<string>("hello"))] = 300;
     EXPECT_EQ(2, store.size()) << "REQ: diff key";
 }
-TEST(SafeAdrTest, GOLD_asKeyOf_map)
+TEST(SafePtrTest, GOLD_asKeyOf_map)
 {
-    map<SafeAdr<string>, int> store;
-    EXPECT_EQ(0, store.size()) << "REQ: SafeAdr can be key";
+    map<SafePtr<string>, int> store;
+    EXPECT_EQ(0, store.size()) << "REQ: SafePtr can be key";
 
-    store[SafeAdr<string>()] = 100;
-    EXPECT_EQ(nullptr, SafeAdr<string>().get());
+    store[SafePtr<string>()] = 100;
+    EXPECT_EQ(nullptr, SafePtr<string>().get());
     EXPECT_EQ(1, store.size()) << "REQ: key=nullptr is OK";
 
-    store[SafeAdr<string>()] = 200;
+    store[SafePtr<string>()] = 200;
     EXPECT_EQ(1,   store.size()) << "REQ: no dup key";
-    EXPECT_EQ(200, store[SafeAdr<string>()]) << "REQ: dup key overwrites value";
+    EXPECT_EQ(200, store[SafePtr<string>()]) << "REQ: dup key overwrites value";
 
-    store[SafeAdr<string>(make_safe<string>("hello"))] = 300;
+    store[SafePtr<string>(make_safe<string>("hello"))] = 300;
     EXPECT_EQ(2, store.size()) << "REQ: diff key";
 }
 

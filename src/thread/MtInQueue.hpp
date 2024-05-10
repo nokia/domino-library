@@ -18,7 +18,7 @@
 // - core:
 //   . queue_
 //
-// - class safe: true (when use SafeAdr instead of shared_ptr)
+// - class safe: true (when use SafePtr instead of shared_ptr)
 // ***********************************************************************************************
 #pragma once
 
@@ -167,6 +167,6 @@ MtInQueue& mt_getQ();
 // 2023-09-18  CSZ       - support main thread wait() instead of keeping pop()
 // 2023-10-26  CSZ       - replace mt_notifyFn_() by mt_pingMainTH()
 // 2023-10-29  CSZ       - integrate handler
-// 2024-02-15  CSZ       3)use SafeAdr (mem-safe); shared_ptr is not mem-safe
+// 2024-02-15  CSZ       3)use SafePtr (mem-safe); shared_ptr is not mem-safe
 // 2024-03-10  CSZ       - enhance safe of setHdlrOK()
 // ***********************************************************************************************

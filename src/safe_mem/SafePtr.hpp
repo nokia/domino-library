@@ -14,17 +14,17 @@
 // - DUTY-BOUND:
 //   . ensure ptr address is safe: legal created, not freed, not wild, etc
 //   . ensure ptr type is valid: origin*, or base*, or void*
-//   . not SafeAdr but T to ensure T's inner safety (eg no exception within T's constructor)
-//   . hope cooperate with tool to ensure/track SafeAdr, all T, all code's mem safe
+//   . not SafePtr but T to ensure T's inner safety (eg no exception within T's constructor)
+//   . hope cooperate with tool to ensure/track SafePtr, all T, all code's mem safe
 //
 // - VALUE:
 //   . way#1: Rust is language-based mem ctrl (heavy)
 //   . way#2: tool (dynamic eg valdrind, or static eg coverity)
 //     . keep legacy code/invest
 //     . but less safe than Rust
-//   . way#3: eg SafeAdr
+//   . way#3: eg SafePtr
 //     * if each app class is safe, then whole app is safe (safer than way#2/tool)
-//       * like SafeAdr(app class) encapsulates unsafe shared_ptr(legacy)
+//       * like SafePtr(app class) encapsulates unsafe shared_ptr(legacy)
 //       * keep legacy code/invest
 //       * inner-freedom + outer-safe
 //     . more lightweight than Rust
@@ -32,7 +32,7 @@
 //   . any class ensure mem-safe (like MT safe)
 //
 // - MT safe: NO
-//   . so eg after MtInQueue.mt_push(), shall NOT touch pushed SafeAdr
+//   . so eg after MtInQueue.mt_push(), shall NOT touch pushed SafePtr
 //   . only HID is MT safe that can be used here
 // - mem safe: yes
 // ***********************************************************************************************
@@ -51,20 +51,20 @@ namespace RLib
 {
 // ***********************************************************************************************
 template<typename T = void>
-class SafeAdr
+class SafePtr
 {
 public:
     // - safe-only creation (eg shared_ptr<U>(U*) is not safe)
     // - can't construct by shared_ptr that maybe unsafe
-    SafeAdr(nullptr_t = nullptr) noexcept {}
-    template<typename U, typename... Args> friend SafeAdr<U> make_safe(Args&&... aArgs);  // U(Args) SHALL mem-safe
+    SafePtr(nullptr_t = nullptr) noexcept {}
+    template<typename U, typename... Args> friend SafePtr<U> make_safe(Args&&... aArgs);  // U(Args) SHALL mem-safe
 
     // safe-only cast (vs shared_ptr, eg static_pointer_cast<any> is not safe)
-    template<typename From> SafeAdr(const SafeAdr<From>&) noexcept;          // cp  ok or compile err
-    template<typename From> SafeAdr(SafeAdr<From>&&) noexcept;               // mv  ok or compile err
+    template<typename From> SafePtr(const SafePtr<From>&) noexcept;          // cp  ok or compile err
+    template<typename From> SafePtr(SafePtr<From>&&) noexcept;               // mv  ok or compile err
     template<typename To> shared_ptr<To> cast() const noexcept;              // ret ok or null
     template<typename To, typename From>
-    friend SafeAdr<To> dynamic_pointer_cast(const SafeAdr<From>&) noexcept;  // ret ok or null
+    friend SafePtr<To> dynamic_pointer_cast(const SafePtr<From>&) noexcept;  // ret ok or null
 
     // safe usage: convenient, equivalent & min (vs shared_ptr)
     shared_ptr<T> get()        const noexcept { return pT_; }
@@ -76,7 +76,7 @@ public:
     auto diffType() const noexcept { return diffType_; }
 
 private:
-    template<typename From> void init_(const SafeAdr<From>&) noexcept;
+    template<typename From> void init_(const SafePtr<From>&) noexcept;
 
     // -------------------------------------------------------------------------------------------
     shared_ptr<T>    pT_;
@@ -87,7 +87,7 @@ private:
 // ***********************************************************************************************
 template<typename T>
 template<typename From>
-SafeAdr<T>::SafeAdr(const SafeAdr<From>& aSafeFrom) noexcept  // cp
+SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom) noexcept  // cp
     : pT_(aSafeFrom.get())  // to self/base/void only by shared_ptr till 024-04-25
 {
     init_(aSafeFrom);
@@ -96,50 +96,50 @@ SafeAdr<T>::SafeAdr(const SafeAdr<From>& aSafeFrom) noexcept  // cp
 // ***********************************************************************************************
 template<typename T>
 template<typename From>
-SafeAdr<T>::SafeAdr(SafeAdr<From>&& aSafeFrom) noexcept  // mv - MtQ need
-    : SafeAdr(aSafeFrom)  // cp
+SafePtr<T>::SafePtr(SafePtr<From>&& aSafeFrom) noexcept  // mv - MtQ need
+    : SafePtr(aSafeFrom)  // cp
 {
     if (pT_ != nullptr)  // cp succ, clear src
-        aSafeFrom = SafeAdr<From>();
+        aSafeFrom = SafePtr<From>();
 }
 
 // ***********************************************************************************************
 template<typename T>
 template<typename To>
-shared_ptr<To> SafeAdr<T>::cast() const noexcept
+shared_ptr<To> SafePtr<T>::cast() const noexcept
 {
     if constexpr(is_base_of<To, T>::value)  // safer than is_convertible()
     {
-        //HID("(SafeAdr) cast derived->base/self");  // ERR() not MT safe
+        //HID("(SafePtr) cast derived->base/self");  // ERR() not MT safe
         return pT_;
     }
     else if constexpr(is_void<To>::value)  // else if for constexpr
     {
-        //HID("(SafeAdr) cast any->void (for container to store diff types)");
+        //HID("(SafePtr) cast any->void (for container to store diff types)");
         return pT_;
     }
     else if constexpr(is_base_of<T, To>::value)
     {
-        //HID("(SafeAdr) cast base->derived");
+        //HID("(SafePtr) cast base->derived");
         return dynamic_pointer_cast<To>(pT_);
     }
     else if constexpr(!is_void<T>::value)
     {
-        HID("(SafeAdr) casting from=" << typeid(T).name() << " to=" << typeid(To).name());
+        HID("(SafePtr) casting from=" << typeid(T).name() << " to=" << typeid(To).name());
         return this;  // c++17: force compile-err, safer than ret pT_ or null
         //return nullptr;  // c++14
     }
     else if (type_index(typeid(To)) == realType_)
     {
-        //HID("(SafeAdr) cast any->origin");
+        //HID("(SafePtr) cast any->origin");
         return static_pointer_cast<To>(pT_);
     }
     else if (type_index(typeid(To)) == diffType_)
     {
-        //HID("(SafeAdr) cast to last-type-except-void");
+        //HID("(SafePtr) cast to last-type-except-void");
         return static_pointer_cast<To>(pT_);
     }
-    HID("(SafeAdr) can't cast from=void/" << typeid(T).name() << " to=" << typeid(To).name());
+    HID("(SafePtr) can't cast from=void/" << typeid(T).name() << " to=" << typeid(To).name());
     // realType_ & diffType_ can't compile-check so has to ret null (than eg dyn-cast that always fail compile)
     return nullptr;
 }
@@ -147,7 +147,7 @@ shared_ptr<To> SafeAdr<T>::cast() const noexcept
 // ***********************************************************************************************
 template<typename T>
 template<typename From>
-void SafeAdr<T>::init_(const SafeAdr<From>& aSafeFrom) noexcept
+void SafePtr<T>::init_(const SafePtr<From>& aSafeFrom) noexcept
 {
     // validate
     if (pT_ == nullptr)
@@ -172,9 +172,9 @@ void SafeAdr<T>::init_(const SafeAdr<From>& aSafeFrom) noexcept
 
 // ***********************************************************************************************
 template<typename To, typename From>
-SafeAdr<To> dynamic_pointer_cast(const SafeAdr<From>& aSafeFrom) noexcept
+SafePtr<To> dynamic_pointer_cast(const SafePtr<From>& aSafeFrom) noexcept
 {
-    SafeAdr<To> safeTo;
+    SafePtr<To> safeTo;
     safeTo.pT_ = aSafeFrom.template cast<To>();
     safeTo.init_(aSafeFrom);
     return safeTo;
@@ -182,45 +182,45 @@ SafeAdr<To> dynamic_pointer_cast(const SafeAdr<From>& aSafeFrom) noexcept
 
 // ***********************************************************************************************
 template<typename U, typename... Args>
-SafeAdr<U> make_safe(Args&&... aArgs)
+SafePtr<U> make_safe(Args&&... aArgs)
 {
-    SafeAdr<U> safeU;
+    SafePtr<U> safeU;
     safeU.pT_ = make_shared<U>(forward<Args>(aArgs)...);
     //HID("new ptr=" << (void*)(safeU.pT_.get()));  // too many print; void* print addr rather than content(dangeous)
     return safeU;
 }
 
 // ***********************************************************************************************
-// - SafeAdr can be key of map & unordered_map (like shared_ptr)
+// - SafePtr can be key of map & unordered_map (like shared_ptr)
 // - convenient usage
 template<typename T, typename U>
-bool operator==(SafeAdr<T> lhs, SafeAdr<U> rhs)
+bool operator==(SafePtr<T> lhs, SafePtr<U> rhs)
 {
     return lhs.get() == rhs.get();
 }
 template<typename T, typename U>
-bool operator!=(SafeAdr<T> lhs, SafeAdr<U> rhs)
+bool operator!=(SafePtr<T> lhs, SafePtr<U> rhs)
 {
     return !(lhs == rhs);
 }
 template<typename T, typename U>
-bool operator<(SafeAdr<T> lhs, SafeAdr<U> rhs)
+bool operator<(SafePtr<T> lhs, SafePtr<U> rhs)
 {
     return lhs.get() < rhs.get();
 }
 
 // ***********************************************************************************************
 template<typename To, typename From>
-SafeAdr<To> static_pointer_cast(const SafeAdr<From>& aFromPtr) noexcept
+SafePtr<To> static_pointer_cast(const SafePtr<From>& aFromPtr) noexcept
 {
     return dynamic_pointer_cast<To>(aFromPtr);
 }
 }  // namespace
 
 template<typename T>
-struct std::hash<RLib::SafeAdr<T>>
+struct std::hash<RLib::SafePtr<T>>
 {
-    auto operator()(const RLib::SafeAdr<T>& aSafeAdr) const { return hash<shared_ptr<T>>()(aSafeAdr.get()); }
+    auto operator()(const RLib::SafePtr<T>& aSafeAdr) const { return hash<shared_ptr<T>>()(aSafeAdr.get()); }
 };
 
 // ***********************************************************************************************
@@ -229,15 +229,16 @@ struct std::hash<RLib::SafeAdr<T>>
 // 2024-01-30  CSZ       1)create
 // 2024-02-13  CSZ       2)usage in dom lib
 // 2024-04-17  CSZ       3)strict constructor - illegal->compile-err (while *cast() can ret null)
+// 2024-05-06  CSZ       - AI-gen-code
 // ***********************************************************************************************
 // - Q&A
 //   . must replace shared_ptr in DatDom, ObjAnywhere?
-//     . SafeAdr is simple
+//     . SafePtr is simple
 //     . freq cast void->any is dangeous
 //     . so worth
 //
-//   . std::any vs SafeAdr
-//     . SafeAdr is safe shared_ptr that is lifecycle ptr, std::any is not ptr nor lifecycle mgmt
+//   . std::any vs SafePtr
+//     . SafePtr is safe shared_ptr that is lifecycle ptr, std::any is not ptr nor lifecycle mgmt
 //
 //   . T not ref/ptr/const?
 //   . SafeRef? or like this?
