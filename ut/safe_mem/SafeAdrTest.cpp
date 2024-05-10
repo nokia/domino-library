@@ -20,24 +20,20 @@ TEST(SafeAdrTest, safeCreate_default)
     SafeAdr v;
     EXPECT_EQ(nullptr, v.get()) << "REQ: create default is empty";
     EXPECT_EQ(type_index(typeid(shared_ptr<void>)), type_index(typeid(v.get()))) << "REQ: default template is void";
-    static_assert(is_constructible_v<SafeAdr<>>, "REQ: shall be constexpr");
 
     SafeAdr<int> i;
     EXPECT_EQ(nullptr, i.get()) << "req: create default is empty";
     EXPECT_EQ(type_index(typeid(shared_ptr<int>)), type_index(typeid(i.get()))) << "REQ: specify template";
-    static_assert(is_constructible_v<SafeAdr<int>>, "REQ: shall be constexpr");
 }
 TEST(SafeAdrTest, safeCreate_null)
 {
-    SafeAdr v(nullptr);
+    const SafeAdr v(nullptr);
     EXPECT_EQ(nullptr, v.get()) << "REQ: explicit create null to compatible with shared_ptr";
     EXPECT_EQ(type_index(typeid(shared_ptr<void>)), type_index(typeid(v.get()))) << "REQ: default template is void";
-    static_assert(is_constructible_v<SafeAdr<>, nullptr_t>, "REQ: shall be constexpr");
 
-    SafeAdr<int> i;
+    const SafeAdr<int> i;
     EXPECT_EQ(nullptr, i.get()) << "req: create default is empty";
     EXPECT_EQ(type_index(typeid(shared_ptr<int>)), type_index(typeid(i.get()))) << "REQ: specify template";
-    static_assert(is_constructible_v<SafeAdr<int>, nullptr_t>, "REQ: shall be constexpr");
 }
 TEST(SafeAdrTest, GOLD_safe_create)
 {
@@ -51,6 +47,11 @@ TEST(SafeAdrTest, GOLD_safe_create)
     content.reset();
     EXPECT_EQ(nullptr, content) << "REQ: reset OK";
     EXPECT_EQ(43, *i.get()) << "REQ: outside reset not impact SafeAdr";
+}
+TEST(SafeAdrTest, safeCreate_noexcept_constexpr)
+{
+    static_assert(is_nothrow_constructible_v<SafeAdr<>>, "REQ: noexcept & constexpr");
+    static_assert(is_nothrow_constructible_v<SafeAdr<int>, nullptr_t>, "REQ: noexcept & constexpr");
 }
 
 #define COPY_CAST

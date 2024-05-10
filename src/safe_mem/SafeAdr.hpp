@@ -56,7 +56,7 @@ class SafeAdr
 public:
     // - safe-only creation (eg shared_ptr<U>(U*) is not safe)
     // - can't construct by shared_ptr that maybe unsafe
-    SafeAdr(nullptr_t = nullptr) {}
+    SafeAdr(nullptr_t = nullptr) noexcept {}
     template<typename U, typename... Args> friend SafeAdr<U> make_safe(Args&&... aArgs);  // U(Args) SHALL mem-safe
 
     // safe-only cast (vs shared_ptr, eg static_pointer_cast<any> is not safe)
