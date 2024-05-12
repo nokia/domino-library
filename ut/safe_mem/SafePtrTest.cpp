@@ -15,6 +15,19 @@ namespace RLib
 {
 #define CREATE
 // ***********************************************************************************************
+TEST(SafePtrTest, GOLD_safeCreate_normal)
+{
+    SafePtr<int> i = make_safe<int>(42);
+    shared_ptr<int> content = i.get();
+    EXPECT_EQ(42, *content) << "REQ: valid construct & get";
+
+    *content = 43;
+    EXPECT_EQ(43, *i.get()) << "REQ: valid update";
+
+    content.reset();
+    EXPECT_EQ(nullptr, content) << "REQ: reset OK";
+    EXPECT_EQ(43, *i.get()) << "REQ: outside reset not impact SafePtr";
+}
 TEST(SafePtrTest, safeCreate_default)
 {
     SafePtr v;
@@ -35,27 +48,44 @@ TEST(SafePtrTest, safeCreate_null)
     EXPECT_EQ(nullptr, i.get()) << "req: create default is empty";
     EXPECT_EQ(type_index(typeid(shared_ptr<int>)), type_index(typeid(i.get()))) << "REQ: specify template";
 }
-TEST(SafePtrTest, GOLD_safe_create)
-{
-    auto i = make_safe<int>(42);
-    auto content = i.get();
-    EXPECT_EQ(42, *content) << "REQ: valid construct & get";
-
-    *content = 43;
-    EXPECT_EQ(43, *i.get()) << "REQ: valid update";
-
-    content.reset();
-    EXPECT_EQ(nullptr, content) << "REQ: reset OK";
-    EXPECT_EQ(43, *i.get()) << "REQ: outside reset not impact SafePtr";
-}
 TEST(SafePtrTest, safeCreate_noexcept_constexpr)
 {
-    static_assert(is_nothrow_constructible_v<SafePtr<>>, "REQ: noexcept & constexpr");
-    static_assert(is_nothrow_constructible_v<SafePtr<int>, nullptr_t>, "REQ: noexcept & constexpr");
+    static_assert(is_nothrow_constructible_v<SafePtr<>>, "REQ: noexcept; optional: constexpr");
+    static_assert(is_nothrow_constructible_v<SafePtr<int>, nullptr_t>, "REQ: noexcept; optional: constexpr");
+}
+
+#define CAST
+// ***********************************************************************************************
+struct Base                   { virtual int value() const  { return 0; } };
+struct Derive : public Base   { int value() const override { return 1; } };
+TEST(SafePtrTest, GOLD_safeCast_self_base_void_back)
+{
+    auto d = make_safe<Derive>();
+    EXPECT_EQ(1, dynamic_pointer_cast<Derive>(d).get()->value()) << "REQ: cast to self";
+    EXPECT_EQ(1, dynamic_pointer_cast<Base  >(d).get()->value()) << "REQ: cast to base";
+
+    EXPECT_EQ(1, dynamic_pointer_cast<Derive>(dynamic_pointer_cast<Base>(d)).get()->value()) << "REQ: (derived->)base->derived";
+
+    EXPECT_EQ(1, dynamic_pointer_cast<Derive>(dynamic_pointer_cast<void>(dynamic_pointer_cast<Base>(d))).get()->value()) << "REQ: ->void & void->origin";
+    EXPECT_EQ(1, dynamic_pointer_cast<Base  >(dynamic_pointer_cast<void>(dynamic_pointer_cast<Base>(d))).get()->value()) << "REQ: ->void & void->preVoid";
+}
+struct D_protect : protected Derive { int value() const override { return 2; } };
+struct D_private : private   Derive { int value() const override { return 3; } };
+TEST(SafePtrTest, invalidCast_retNull)
+{
+    EXPECT_EQ(nullptr, dynamic_pointer_cast<Derive>(make_safe<Base>()).get()) << "REQ: invalid base->derived";
+
+    //make_safe<int>(7).cast<char>());  // invalid cast, will compile err (safer than ret nullptr)
+
+    EXPECT_EQ(nullptr, dynamic_pointer_cast<Base>(dynamic_pointer_cast<void>(make_safe<Derive>())).get()) << "REQ: invalid derived->void->base";
+
+    //dynamic_pointer_cast<Base>(make_safe<D_private>());  // invalid private->base, will compile err
+    //dynamic_pointer_cast<Base>(make_safe<D_protect>());  // invalid protect->base, will compile err
 }
 
 #define COPY_CAST
 // ***********************************************************************************************
+struct D2 : public Derive { int value() const override { return 2; } };
 TEST(SafePtrTest, GOLD_safe_cp_sameType)
 {
     auto one = make_safe<int>(42);
@@ -68,10 +98,6 @@ TEST(SafePtrTest, GOLD_safe_cp_sameType)
     }
     EXPECT_EQ(43, *one.get()) << "REQ: 1 del not impact another";
 }
-
-struct Base                   { virtual int value() const  { return 0; } };
-struct Derive : public Base   { int value() const override { return 1; } };
-struct D2     : public Derive { int value() const override { return 2; } };
 TEST(SafePtrTest, GOLD_safe_cp_normal)
 {
 //  EXPECT_EQ(0,              SafePtr<char>(make_safe<int>())) << "REQ: cp diff type - compile-err";

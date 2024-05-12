@@ -11,10 +11,12 @@
 //   . safe cast     : only among self, base & void; compile-err is safer than ret-null
 //   . safe lifecycle: by shared_ptr (auto mem-mgmt, no use-after-free)
 //   . safe ptr array: no need since std::array
+//   . safe del      : not support self-deletor that maybe unsafe
 // - DUTY-BOUND:
 //   . ensure ptr address is safe: legal created, not freed, not wild, etc
 //   . ensure ptr type is valid: origin*, or base*, or void*
 //   . not SafePtr but T to ensure T's inner safety (eg no exception within T's constructor)
+//   . loop-ref: not SafePtr but user to avoid this
 //   . hope cooperate with tool to ensure/track SafePtr, all T, all code's mem safe
 //
 // - VALUE:
@@ -54,10 +56,11 @@ template<typename T = void>
 class SafePtr
 {
 public:
-    // - safe-only creation (eg shared_ptr<U>(U*) is not safe)
-    // - can't construct by shared_ptr that maybe unsafe
+    // - safe-only creation, eg can't construct by raw ptr/shared_ptr that maybe unsafe
+    // - can't create by SafePtr(ConstructArgs...) that confuse cp constructor, make_safe() instead
+    // - T(ConstructArgs) SHALL mem-safe
     SafePtr(nullptr_t = nullptr) noexcept {}
-    template<typename U, typename... Args> friend SafePtr<U> make_safe(Args&&... aArgs);  // U(Args) SHALL mem-safe
+    template<typename U, typename... ConstructArgs> friend SafePtr<U> make_safe(ConstructArgs&&... aArgs);
 
     // safe-only cast (vs shared_ptr, eg static_pointer_cast<any> is not safe)
     template<typename From> SafePtr(const SafePtr<From>&) noexcept;          // cp  ok or compile err
@@ -108,22 +111,22 @@ template<typename T>
 template<typename To>
 shared_ptr<To> SafePtr<T>::cast() const noexcept
 {
-    if constexpr(is_base_of<To, T>::value)  // safer than is_convertible()
+    if constexpr(is_base_of_v<To, T>)  // safer than is_convertible()
     {
         //HID("(SafePtr) cast derived->base/self");  // ERR() not MT safe
         return pT_;
     }
-    else if constexpr(is_void<To>::value)  // else if for constexpr
+    else if constexpr(is_void_v<To>)  // else if for constexpr
     {
         //HID("(SafePtr) cast any->void (for container to store diff types)");
         return pT_;
     }
-    else if constexpr(is_base_of<T, To>::value)
+    else if constexpr(is_base_of_v<T, To>)
     {
         //HID("(SafePtr) cast base->derived");
         return dynamic_pointer_cast<To>(pT_);
     }
-    else if constexpr(!is_void<T>::value)
+    else if constexpr(!is_void_v<T>)
     {
         HID("(SafePtr) casting from=" << typeid(T).name() << " to=" << typeid(To).name());
         return this;  // c++17: force compile-err, safer than ret pT_ or null
@@ -131,12 +134,12 @@ shared_ptr<To> SafePtr<T>::cast() const noexcept
     }
     else if (type_index(typeid(To)) == realType_)
     {
-        //HID("(SafePtr) cast any->origin");
+        //HID("(SafePtr) cast void->origin");
         return static_pointer_cast<To>(pT_);
     }
     else if (type_index(typeid(To)) == diffType_)
     {
-        //HID("(SafePtr) cast to last-type-except-void");
+        //HID("(SafePtr) cast void to last-type-except-void");
         return static_pointer_cast<To>(pT_);
     }
     HID("(SafePtr) can't cast from=void/" << typeid(T).name() << " to=" << typeid(To).name());
@@ -158,7 +161,7 @@ void SafePtr<T>::init_(const SafePtr<From>& aSafeFrom) noexcept
 
     realType_ = aSafeFrom.realType();
     // save another useful type
-    if (type_index(typeid(From)) != realType_ && !is_same<From, void>::value)
+    if (type_index(typeid(From)) != realType_ && !is_same_v<From, void>)
         diffType_ = type_index(typeid(From));
     else
         diffType_ = aSafeFrom.diffType();
@@ -181,11 +184,11 @@ SafePtr<To> dynamic_pointer_cast(const SafePtr<From>& aSafeFrom) noexcept
 }
 
 // ***********************************************************************************************
-template<typename U, typename... Args>
-SafePtr<U> make_safe(Args&&... aArgs)
+template<typename U, typename... ConstructArgs>
+SafePtr<U> make_safe(ConstructArgs&&... aArgs)
 {
     SafePtr<U> safeU;
-    safeU.pT_ = make_shared<U>(forward<Args>(aArgs)...);
+    safeU.pT_ = make_shared<U>(forward<ConstructArgs>(aArgs)...);
     //HID("new ptr=" << (void*)(safeU.pT_.get()));  // too many print; void* print addr rather than content(dangeous)
     return safeU;
 }
