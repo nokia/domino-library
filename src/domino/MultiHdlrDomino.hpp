@@ -102,7 +102,7 @@ Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvNa
     if (ev_hdlrs == ev_hdlrs_S_.end())
     {
         ev = this->newEvent(aEvName);
-        ev_hdlrs_S_[ev][aHdlrName] = newHdlr;
+        ev_hdlrs_S_[ev].emplace(aHdlrName, newHdlr);
     }
     else
     {
@@ -112,7 +112,7 @@ Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvNa
             WRN("(MultiHdlrDom)!!! Failed since dup EvName=" << aEvName << " + HdlrName=" << aHdlrName);
             return Domino::D_EVENT_FAILED_RET;
         }
-        ev_hdlrs->second[aHdlrName] = newHdlr;
+        ev_hdlrs->second.emplace(aHdlrName, newHdlr);
     }
     HID("(MultiHdlrDom) Succeed for EvName=" << aEvName << ", HdlrName=" << aHdlrName);
 

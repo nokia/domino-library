@@ -57,7 +57,7 @@ public:
     void   mt_clear();
 
     // shall be called in main thread ONLY!!!
-    template<class aEleType> bool setHdlrOK(EleHdlr&&);
+    template<class aEleType> bool setHdlrOK(const EleHdlr&);
     size_t handleAllEle();
     size_t nHdlr() const { return tid_hdlr_S_.size(); }
 
@@ -128,7 +128,7 @@ PTR<aEleType> MtInQueue::pop()
 
 // ***********************************************************************************************
 template<class aEleType>
-bool MtInQueue::setHdlrOK(EleHdlr&& aHdlr)
+bool MtInQueue::setHdlrOK(const EleHdlr& aHdlr)
 {
     if (! aHdlr)
     {
@@ -136,14 +136,14 @@ bool MtInQueue::setHdlrOK(EleHdlr&& aHdlr)
         return false;
     }
 
-    const auto& tid = type_index(typeid(aEleType));
+    auto&& tid = type_index(typeid(aEleType));
     if (tid_hdlr_S_.find(tid) != tid_hdlr_S_.end())
     {
         ERR("(MtInQueue) failed!!! overwrite hdlr may unsafe existing data");
         return false;
     }
 
-    tid_hdlr_S_[tid] = forward<EleHdlr>(aHdlr);
+    tid_hdlr_S_.emplace(tid, aHdlr);
     return true;
 }
 

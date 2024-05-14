@@ -162,7 +162,7 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
 
     // set
     auto newHdlr = make_shared<MsgCB>(aHdlr);
-    ev_hdlr_S_[newEv] = newHdlr;
+    ev_hdlr_S_.emplace(newEv, newHdlr);
     HID("(HdlrDom) Succeed for EvName=" << aEvName);
 
     // call

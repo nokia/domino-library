@@ -47,7 +47,7 @@ size_t MtInQueue::handleCacheEle_()
     const auto nEle = cache_.size();
     while (! cache_.empty())
     {
-        auto ele_tid = move(cache_.front());
+        auto ele_tid = move(cache_.front());  // avoid cp
         cache_.pop_front();
 
         auto&& id_hdlr = tid_hdlr_S_.find(ele_tid.second);
@@ -114,7 +114,7 @@ ELE_TID MtInQueue::pop()
         return ELE_TID(nullptr, type_index(typeid(void)));
 
     // pop
-    auto ele_tid = *it;  // must copy
+    auto ele_tid = move(*it);  // must copy
     cache_.pop_front();
     return ele_tid;
 }

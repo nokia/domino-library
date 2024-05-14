@@ -102,7 +102,7 @@ Domino::Event Domino::newEvent(const EvName& aEvName)
 
     HID("(Domino) init new EvName=" << aEvName << ", event=" << newEv);
     en_ev_.emplace(aEvName, newEv);
-    ev_en_[newEv] = aEvName;
+    ev_en_.emplace(newEv, aEvName);
     states_.push_back(false);
     return newEv;
 }

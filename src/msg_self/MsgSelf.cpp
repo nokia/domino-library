@@ -52,7 +52,7 @@ void MsgSelf::newMsg(const MsgCB& aMsgCB, const EMsgPriority aMsgPri)
     }
 
     // store
-    msgQueues_[aMsgPri].push_back(aMsgCB);
+    msgQueues_[aMsgPri].emplace_back(aMsgCB);
     ++nMsg_;
     HID("(MsgSelf) nMsg=" << nMsg_);
 
