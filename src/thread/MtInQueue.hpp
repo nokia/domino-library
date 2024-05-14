@@ -57,7 +57,7 @@ public:
     void   mt_clear();
 
     // shall be called in main thread ONLY!!!
-    template<class aEleType> bool setHdlrOK(const EleHdlr&);
+    template<class aEleType> bool setHdlrOK(EleHdlr&&);
     size_t handleAllEle();
     size_t nHdlr() const { return tid_hdlr_S_.size(); }
 
@@ -121,14 +121,14 @@ PTR<aEleType> MtInQueue::pop()
         return nullptr;
 
     // pop
-    auto ele_id = *it;  // must copy
+    auto ele = move(it->first);  // must copy
     cache_.pop_front();
-    return static_pointer_cast<aEleType>(ele_id.first);
+    return static_pointer_cast<aEleType>(ele);
 }
 
 // ***********************************************************************************************
 template<class aEleType>
-bool MtInQueue::setHdlrOK(const EleHdlr& aHdlr)
+bool MtInQueue::setHdlrOK(EleHdlr&& aHdlr)
 {
     if (! aHdlr)
     {
@@ -143,7 +143,7 @@ bool MtInQueue::setHdlrOK(const EleHdlr& aHdlr)
         return false;
     }
 
-    tid_hdlr_S_[tid] = aHdlr;
+    tid_hdlr_S_[tid] = forward<EleHdlr>(aHdlr);
     return true;
 }
 

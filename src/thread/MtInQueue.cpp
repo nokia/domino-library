@@ -47,7 +47,7 @@ size_t MtInQueue::handleCacheEle_()
     const auto nEle = cache_.size();
     while (! cache_.empty())
     {
-        auto ele_tid = cache_.front();
+        auto ele_tid = move(cache_.front());
         cache_.pop_front();
 
         auto&& id_hdlr = tid_hdlr_S_.find(ele_tid.second);
