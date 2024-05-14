@@ -83,7 +83,7 @@ private:
 
     // -------------------------------------------------------------------------------------------
     shared_ptr<T>    pT_;
-    type_index realType_ = type_index(typeid(T));  // origin type
+    type_index realType_ = typeid(T);  // origin type
     type_index diffType_ = realType_;  // maybe diff valid type than realType_ & void
 };
 
