@@ -11,6 +11,8 @@
 
 #include "SafePtr.hpp"
 
+using namespace std;
+
 namespace RLib
 {
 #define CREATE
@@ -48,7 +50,7 @@ TEST(SafePtrTest, safeCreate_null)
     EXPECT_EQ(nullptr, v.get()) << "REQ: explicit create null to compatible with shared_ptr";
     EXPECT_EQ(type_index(typeid(shared_ptr<void>)), type_index(typeid(v.get()))) << "REQ: default template is void";
 
-    const SafePtr<int> i;
+    const SafePtr<int> i(nullptr);
     EXPECT_EQ(nullptr, i.get()) << "req: create default is empty";
     EXPECT_EQ(type_index(typeid(shared_ptr<int>)), type_index(typeid(i.get()))) << "REQ: specify template";
 }
@@ -56,6 +58,11 @@ TEST(SafePtrTest, safeCreate_noexcept_constexpr)
 {
     static_assert(is_nothrow_constructible_v<SafePtr<>>, "REQ: noexcept; optional: constexpr");
     static_assert(is_nothrow_constructible_v<SafePtr<int>, nullptr_t>, "REQ: noexcept; optional: constexpr");
+}
+TEST(SafePtrTest, unsafeCreate_forbid)
+{
+    static_assert(! is_convertible_v<bool*, SafePtr<bool>>, "REQ: forbid SafePtr<T>(new T(..)");
+    static_assert(! is_convertible_v<shared_ptr<char>, SafePtr<char>>, "REQ: forbid SafePtr<T>(make_shared<T>(..))");
 }
 
 #define CAST
