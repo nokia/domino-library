@@ -34,6 +34,11 @@ TEST(SafePtrTest, GOLD_safeCreate_normal)
     EXPECT_EQ(43, *i.get()) << "REQ: outside reset not impact SafePtr";
     EXPECT_EQ(1, i.use_count()) << "REQ: compatible shared_ptr";
 }
+TEST(SafePtrTest, GOLD_unsafeCreate_forbid)
+{
+    static_assert(! is_convertible_v<bool*, SafePtr<bool>>, "REQ: forbid SafePtr<T>(new T)");
+    static_assert(! is_convertible_v<shared_ptr<char>, SafePtr<char>>, "REQ: forbid SafePtr<T>(shared_ptr<T>)");
+}
 TEST(SafePtrTest, safeCreate_default)
 {
     SafePtr v;
@@ -44,7 +49,7 @@ TEST(SafePtrTest, safeCreate_default)
     EXPECT_EQ(nullptr, i.get()) << "req: create default is empty";
     EXPECT_EQ(type_index(typeid(shared_ptr<int>)), type_index(typeid(i.get()))) << "REQ: specify template";
 }
-TEST(SafePtrTest, safeCreate_null)
+TEST(SafePtrTest, safeCreate_null)  // convenient usage (convert nullptr to SafePtr)
 {
     const SafePtr v(nullptr);
     EXPECT_EQ(nullptr, v.get()) << "REQ: explicit create null to compatible with shared_ptr";
@@ -59,16 +64,11 @@ TEST(SafePtrTest, safeCreate_noexcept_constexpr)
     static_assert(is_nothrow_constructible_v<SafePtr<>>, "REQ: noexcept; optional: constexpr");
     static_assert(is_nothrow_constructible_v<SafePtr<int>, nullptr_t>, "REQ: noexcept; optional: constexpr");
 }
-TEST(SafePtrTest, unsafeCreate_forbid)
-{
-    static_assert(! is_convertible_v<bool*, SafePtr<bool>>, "REQ: forbid SafePtr<T>(new T(..)");
-    static_assert(! is_convertible_v<shared_ptr<char>, SafePtr<char>>, "REQ: forbid SafePtr<T>(make_shared<T>(..))");
-}
 
 #define CAST
 // ***********************************************************************************************
-struct Base                   { virtual int value() const  { return 0; } };
-struct Derive : public Base   { int value() const override { return 1; } };
+struct Base                 { virtual int value() const  { return 0; } };
+struct Derive : public Base { int value() const override { return 1; } };
 TEST(SafePtrTest, GOLD_safeCast_self_base_void_back)
 {
     auto d = make_safe<Derive>();

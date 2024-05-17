@@ -12,11 +12,11 @@
 //   . safe lifecycle: by shared_ptr (auto mem-mgmt, no use-after-free)
 //   . safe ptr array: no need since std::array
 //   . safe del      : not support self-deletor that maybe unsafe
+//   . loop-ref      : ???
 // - DUTY-BOUND:
 //   . ensure ptr address is safe: legal created, not freed, not wild, etc
 //   . ensure ptr type is valid: origin*, or base*, or void*
 //   . not SafePtr but T to ensure T's inner safety (eg no exception within T's constructor)
-//   . loop-ref: not SafePtr but user to avoid this
 //   . hope cooperate with tool to ensure/track SafePtr, all T, all code's mem safe
 //
 // - VALUE:
