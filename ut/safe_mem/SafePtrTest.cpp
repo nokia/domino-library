@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 #include <map>
 #include <type_traits>
+#include <typeindex>
 #include <unordered_map>
 
 #include "SafePtr.hpp"
@@ -22,14 +23,14 @@ TEST(SafePtrTest, GOLD_safeCreate_normal)
     SafePtr<int> i = make_safe<int>(42);
     EXPECT_EQ(1, i.use_count()) << "REQ: compatible shared_ptr";
 
-    shared_ptr<int> content = i.get();
+    auto content = i.get();
     EXPECT_EQ(42, *content) << "REQ: valid construct & get";
     EXPECT_EQ(2, i.use_count()) << "REQ: compatible shared_ptr";
 
     *content = 43;
     EXPECT_EQ(43, *i.get()) << "REQ: valid update";
 
-    content.reset();
+    content = nullptr;
     EXPECT_EQ(nullptr, content) << "REQ: reset OK";
     EXPECT_EQ(43, *i.get()) << "REQ: outside reset not impact SafePtr";
     EXPECT_EQ(1, i.use_count()) << "REQ: compatible shared_ptr";
@@ -86,7 +87,7 @@ TEST(SafePtrTest, invalidCast_retNull)
 {
     EXPECT_EQ(nullptr, dynamic_pointer_cast<Derive>(make_safe<Base>()).get()) << "REQ: invalid base->derived";
 
-    //make_safe<int>(7).cast<char>());  // invalid cast, will compile err (safer than ret nullptr)
+    //dynamic_pointer_cast<char>(make_safe<int>(7));  // invalid cast, will compile err (safer than ret nullptr)
 
     EXPECT_EQ(nullptr, dynamic_pointer_cast<Base>(dynamic_pointer_cast<void>(make_safe<Derive>())).get()) << "REQ: invalid derived->void->base";
 
@@ -210,12 +211,12 @@ TEST(SafePtrTest, safe_assign)  // operator=() is auto-gen, just simple test 1 c
     EXPECT_EQ(42, *(one.get())) << "REQ: valid get after assigner is reset";
 }
 
-#define SAFE
+#define LIKE_SHARED_PTR
 // ***********************************************************************************************
 TEST(SafePtrTest, get_isMemSafe_afterDelOrigin)
 {
     SafePtr<string> safe = make_safe<string>("hello");
-    shared_ptr<string> get = safe.get();
+    auto get = safe.get();
     EXPECT_EQ("hello", *get) << "get succ";
 
     safe = nullptr;
@@ -227,7 +228,7 @@ TEST(SafePtrTest, get_isMemSafe_afterDelOrigin)
 TEST(SafePtrTest, getPtr_isMemSafe_afterDelOrigin)
 {
     SafePtr<string> safe = make_safe<string>("hello");
-    shared_ptr<string> get = safe.operator->();  // diff
+    auto get = safe.operator->();  // get ptr
     EXPECT_EQ("hello", *get) << "REQ: get succ";
 
     safe = nullptr;

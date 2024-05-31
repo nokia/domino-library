@@ -69,7 +69,9 @@ public:
     template<typename To, typename From>
     friend SafePtr<To> dynamic_pointer_cast(const SafePtr<From>&) noexcept;  // ret ok or null
 
-    // safe usage: convenient, equivalent & min (vs shared_ptr)
+    // safe usage: convenient(compatible shared_ptr), equivalent & min
+    // . ret shared_ptr is safer than T* (but not safest since to call T's func easily)
+    // . no operator*() since T& is unsafe
     shared_ptr<T> get()        const noexcept { return pT_; }
     shared_ptr<T> operator->() const noexcept { return pT_; }  // convenient
     auto          use_count()  const noexcept { return pT_.use_count();  }

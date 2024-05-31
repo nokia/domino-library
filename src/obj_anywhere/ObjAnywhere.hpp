@@ -77,7 +77,7 @@ PTR<aObjType> ObjAnywhere::get(UniLog& oneLog)
     if (not isInit())
         return nullptr;
 
-    auto&& idx_obj = idx_obj_S_->find(type_index(typeid(aObjType)));
+    auto&& idx_obj = idx_obj_S_->find(typeid(aObjType));
     if (idx_obj != idx_obj_S_->end())
         return static_pointer_cast<aObjType>(idx_obj->second);
 
@@ -95,7 +95,7 @@ void ObjAnywhere::set(PTR<aObjType> aSharedObj, UniLog& oneLog)
         return;
     }
 
-    const auto& objIndex = type_index(typeid(aObjType));
+    const type_index& objIndex = typeid(aObjType);
     if (aSharedObj.get() == nullptr)
     {
         idx_obj_S_->erase(objIndex);  // natural expectation
