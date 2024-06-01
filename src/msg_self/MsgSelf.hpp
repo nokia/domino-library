@@ -44,7 +44,7 @@
 
 #include "UniLog.hpp"
 
-#define MSG_SELF (ObjAnywhere::get<MsgSelf>(*this).get())
+#define MSG_SELF (ObjAnywhere::get<MsgSelf>(*this))
 
 using namespace std;
 

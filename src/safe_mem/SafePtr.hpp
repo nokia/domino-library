@@ -74,7 +74,8 @@ public:
     // . no operator*() since T& is unsafe
     shared_ptr<T> get()        const noexcept { return pT_; }
     shared_ptr<T> operator->() const noexcept { return pT_; }  // convenient
-    auto          use_count()  const noexcept { return pT_.use_count();  }
+    explicit operator bool() const noexcept { return pT_ != nullptr; }
+    auto use_count() const noexcept { return pT_.use_count();  }
 
     // most for debug
     auto realType() const noexcept { return realType_; }  // ret cp is safer than ref
@@ -190,7 +191,7 @@ template<typename U, typename... ConstructArgs>
 SafePtr<U> make_safe(ConstructArgs&&... aArgs)
 {
     SafePtr<U> safeU;
-    safeU.pT_ = make_shared<U>(forward<ConstructArgs>(aArgs)...);
+    safeU.pT_ = std::make_shared<U>(std::forward<ConstructArgs>(aArgs)...);  // std::~, or ambiguous with boost::~
     //HID("new ptr=" << (void*)(safeU.pT_.get()));  // too many print; void* print addr rather than content(dangeous)
     return safeU;
 }
@@ -241,6 +242,12 @@ struct std::hash<RLib::SafePtr<T>>
 //     . SafePtr is simple
 //     . freq cast void->any is dangeous
 //     . so worth
+//   . get()/etc ret shared_ptr<T>, safe?
+//     . safer than ret T* since still under lifecycle-protect
+//     . but not perfect as T* still available
+//     . this is the simplest way to call T's func - compromise convenient & safe
+//   . still worth? better than shared_ptr?
+//     . not perfect, but SafePtr inc safe than shared_ptr - eg create, cast - so worth
 //
 //   . std::any vs SafePtr
 //     . SafePtr is safe shared_ptr that is lifecycle ptr, std::any is not ptr nor lifecycle mgmt

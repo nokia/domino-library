@@ -20,6 +20,7 @@ using namespace std;
 #if 0
 namespace RLib
 {
+// std::~, or ambiguous with boost::~
 using   UniPtr =  shared_ptr<void>;
 #define MAKE_PTR  make_shared
 #define PTR       shared_ptr
