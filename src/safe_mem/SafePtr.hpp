@@ -6,10 +6,11 @@
 // ***********************************************************************************************
 // - ISSUE:
 //   . c++ mem bugs are 1 of the most challenge (eg US gov suggest to replace c++ by Rust)
+//   . ms & google: ~70% safety defects caused by mem safe issue
 // - REQ: this class is to enhance safety of shared_ptr:
-//   . safe create   : null / make_safe only (not allow unsafe create eg via raw ptr)
-//   . safe cast     : only among self, base & void; compile-err is safer than ret-null
-//   . safe lifecycle: by shared_ptr (auto mem-mgmt, no use-after-free)
+//   . safe create   : null or make_safe only (not allow unsafe create eg via raw ptr); minor in mem-bug
+//   . safe cast     : only among self, base & void; compile-err is safer than ret-null; major in mem-bug
+//   . safe lifecycle: by shared_ptr (auto mem-mgmt, no use-after-free); major in mem-bug
 //   . safe ptr array: no need since std::array
 //   . safe del      : not support self-deletor that maybe unsafe
 //   . loop-ref      : ???
@@ -245,9 +246,11 @@ struct std::hash<RLib::SafePtr<T>>
 //   . get()/etc ret shared_ptr<T>, safe?
 //     . safer than ret T* since still under lifecycle-protect
 //     . but not perfect as T* still available
-//     . this is the simplest way to call T's func - compromise convenient & safe
+//     . this is the simplest way to call T's func/member - compromise convenient & safe
 //   . still worth? better than shared_ptr?
-//     . not perfect, but SafePtr inc safe than shared_ptr - eg create, cast - so worth
+//     . not perfect, but SafePtr inc safe than shared_ptr - eg create(minor), cast(major) - so worth
+//     . it's possible but rare to use T* unsafely - SafePtr has this risk to exchange convenient
+//     . shared_ptr reduces mem-lifecycle-mgmt(1 major-possible-bug) - so worth
 //
 //   . std::any vs SafePtr
 //     . SafePtr is safe shared_ptr that is lifecycle ptr, std::any is not ptr nor lifecycle mgmt

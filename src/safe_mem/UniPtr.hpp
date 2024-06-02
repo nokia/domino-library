@@ -21,9 +21,9 @@ using namespace std;
 namespace RLib
 {
 // std::~, or ambiguous with boost::~
-using   UniPtr =  shared_ptr<void>;
-#define MAKE_PTR  make_shared
-#define PTR       shared_ptr
+using   UniPtr =  std::shared_ptr<void>;
+#define MAKE_PTR  std::make_shared
+#define PTR       std::shared_ptr
 
 #else
 #include "SafePtr.hpp"
