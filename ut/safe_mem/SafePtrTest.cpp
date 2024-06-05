@@ -211,6 +211,43 @@ TEST(SafePtrTest, safe_assign)  // operator=() is auto-gen, just simple test 1 c
     EXPECT_EQ(42, *(one.get())) << "REQ: valid get after assigner is reset";
 }
 
+#define DESTRUCT
+// ***********************************************************************************************
+struct TestBase
+{
+    bool& isBaseOver_;
+    explicit TestBase(bool& aExtFlag) : isBaseOver_(aExtFlag) { isBaseOver_ = false; }
+    virtual ~TestBase() { isBaseOver_ = true; }
+};
+TEST(SafePtrTest, GOLD_destructByVoid)
+{
+    bool isBaseOver;
+    SafePtr<void> test = make_safe<TestBase>(isBaseOver);
+    EXPECT_FALSE(isBaseOver) << "correctly constructed";
+
+    test = nullptr;
+    EXPECT_TRUE(isBaseOver) << "REQ: correctly destructed by SafePtr<void>";
+}
+struct TestDerive : public TestBase
+{
+    bool& isDeriveOver_;
+    explicit TestDerive(bool& aBaseFlag, bool& aDeriveFlag)
+        : TestBase(aBaseFlag)
+        , isDeriveOver_(aDeriveFlag)
+    { isDeriveOver_ = false; }
+    ~TestDerive() { isDeriveOver_ = true; }
+};
+TEST(SafePtrTest, GOLD_destructByBase)
+{
+    bool isBaseOver;
+    bool isDeriveOver;
+    SafePtr<TestBase> test = make_safe<TestDerive>(isBaseOver, isDeriveOver);
+    EXPECT_FALSE(isDeriveOver) << "correctly constructed";
+
+    test = nullptr;
+    EXPECT_TRUE(isDeriveOver) << "REQ: correctly destructed by SafePtr<TestBase>";
+}
+
 #define LIKE_SHARED_PTR
 // ***********************************************************************************************
 TEST(SafePtrTest, get_isMemSafe_afterDelOrigin)

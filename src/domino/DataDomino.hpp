@@ -13,7 +13,6 @@
 #pragma once
 
 #include <unordered_map>
-#include <memory>  // make_shared
 
 #include "UniLog.hpp"
 #include "UniPtr.hpp"

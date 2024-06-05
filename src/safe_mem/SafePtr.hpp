@@ -9,10 +9,10 @@
 //   . ms & google: ~70% safety defects caused by mem safe issue
 // - REQ: this class is to enhance safety of shared_ptr:
 //   . safe create   : null or make_safe only (not allow unsafe create eg via raw ptr); minor in mem-bug
-//   . safe cast     : only among self, base & void; compile-err is safer than ret-null; major in mem-bug
+//   * safe cast     : only among self, base & void; compile-err is safer than ret-null; major in mem-bug
 //   . safe lifecycle: by shared_ptr (auto mem-mgmt, no use-after-free); major in mem-bug
 //   . safe ptr array: no need since std::array
-//   . safe del      : not support self-deletor that maybe unsafe
+//   . safe del      : not support self-deletor that maybe unsafe; call correct destructor
 //   . loop-ref      : ???
 // - DUTY-BOUND:
 //   . ensure ptr address is safe: legal created, not freed, not wild, etc
@@ -20,7 +20,7 @@
 //   . not SafePtr but T to ensure T's inner safety (eg no exception within T's constructor)
 //   . hope cooperate with tool to ensure/track SafePtr, all T, all code's mem safe
 //
-// - VALUE:
+// - How to solve safety issue:
 //   . way#1: Rust is language-based mem ctrl (heavy)
 //   . way#2: tool (dynamic eg valdrind, or static eg coverity)
 //     . keep legacy code/invest

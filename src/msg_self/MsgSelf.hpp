@@ -39,7 +39,6 @@
 #pragma once
 
 #include <functional>
-#include <memory>  // shared_ptr
 #include <deque>
 
 #include "UniLog.hpp"
@@ -73,7 +72,7 @@ using SharedMsgCB  = shared_ptr<MsgCB>;
 class MsgSelf : public UniLog
 {
 public:
-    MsgSelf(const LogName& aUniLogName = ULN_DEFAULT) : UniLog(aUniLogName) {}
+    explicit MsgSelf(const LogName& aUniLogName = ULN_DEFAULT) : UniLog(aUniLogName) {}
     ~MsgSelf() { if (nMsg_) WRN("discard nMsg=" << nMsg_); }
 
     void   newMsg(const MsgCB&, const EMsgPriority = EMsgPri_NORM);  // can't withdraw CB but easier usage
