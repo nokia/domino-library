@@ -12,27 +12,13 @@
 //   * safe cast     : only among self, base & void; compile-err is safer than ret-null; major in mem-bug
 //   . safe lifecycle: by shared_ptr (auto mem-mgmt, no use-after-free); major in mem-bug
 //   . safe ptr array: no need since std::array
-//   . safe del      : not support self-deletor that maybe unsafe; call correct destructor
+//   . safe del      : not support self-deletor that maybe unsafe; (by shared_ptr)call correct destructor
 //   . loop-ref      : ???
 // - DUTY-BOUND:
 //   . ensure ptr address is safe: legal created, not freed, not wild, etc
 //   . ensure ptr type is valid: origin*, or base*, or void*
 //   . not SafePtr but T to ensure T's inner safety (eg no exception within T's constructor)
 //   . hope cooperate with tool to ensure/track SafePtr, all T, all code's mem safe
-//
-// - How to solve safety issue:
-//   . way#1: Rust is language-based mem ctrl (heavy)
-//   . way#2: tool (dynamic eg valdrind, or static eg coverity)
-//     . keep legacy code/invest
-//     . but less safe than Rust
-//   . way#3: eg SafePtr
-//     * if each app class is safe, then whole app is safe (safer than way#2/tool)
-//       * like SafePtr(app class) encapsulates unsafe shared_ptr(legacy)
-//       * keep legacy code/invest
-//       * inner-freedom + outer-safe
-//     . more lightweight than Rust
-// - suggest:
-//   . any class ensure mem-safe (like MT safe)
 //
 // - MT safe: NO
 //   . so eg after MtInQueue.mt_push(), shall NOT touch pushed SafePtr
@@ -239,6 +225,20 @@ struct std::hash<RLib::SafePtr<T>>
 // 2024-05-06  CSZ       - AI-gen-code
 // ***********************************************************************************************
 // - Q&A
+//   . How to solve safety issue:
+//     . way#1: Rust is language-based mem ctrl (heavy)
+//     . way#2: tool (dynamic eg valdrind, or static eg coverity)
+//       . keep legacy code/invest
+//       . but less safe than Rust
+//     . way#3: eg SafePtr
+//       * if each app class is safe, then whole app is safe (safer than way#2/tool)
+//         * like SafePtr(app class) encapsulates unsafe shared_ptr(legacy)
+//         * keep legacy code/invest
+//         * inner-freedom + outer-safe
+//       . more lightweight than Rust
+//   . suggest:
+//     . any class ensure mem-safe (like MT safe)
+//
 //   . must replace shared_ptr in DatDom, ObjAnywhere?
 //     . SafePtr is simple
 //     . freq cast void->any is dangeous
