@@ -19,6 +19,8 @@
 //   . ensure ptr type is valid: origin*, or base*, or void*
 //   . not SafePtr but T to ensure T's inner safety (eg no exception within T's constructor)
 //   . hope cooperate with tool to ensure/track SafePtr, all T, all code's mem safe
+// - Unique Value:
+//   . enhance & integrate safety of shared_ptr (cast, create, etc)
 //
 // - MT safe: NO
 //   . so eg after MtInQueue.mt_push(), shall NOT touch pushed SafePtr
