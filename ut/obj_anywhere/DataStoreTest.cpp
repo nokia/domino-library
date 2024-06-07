@@ -26,6 +26,7 @@ TEST_F(DataStoreTest, GOLD_store_diffType)
 {
     // init
     EXPECT_EQ(0u, dataStore_.nData()) << "REQ: empty";
+    EXPECT_EQ(nullptr, dataStore_.get<int>("int").get()) << "REQ: ret null if no set";
 
     // 1 inner type
     dataStore_.set("int", make_safe<int>(7));
