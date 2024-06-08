@@ -16,7 +16,6 @@
 // ***********************************************************************************************
 #pragma once
 
-#include <string>
 #include <unordered_map>
 
 #include "SafePtr.hpp"  // can't UniPtr.hpp since ut(=req) build-err
@@ -26,26 +25,26 @@ using namespace std;
 
 namespace RLib
 {
-using DataKey = string;
-
 // ***********************************************************************************************
+template<typename aDataKey>
 class DataStore
 {
 public:
-    template<typename aDataT> SafePtr<aDataT> get(const DataKey& aKey) const;
-    void set(const DataKey& aKey, SafePtr<void> aData);
+    template<typename aDataT> SafePtr<aDataT> get(const aDataKey& aKey) const;
+    void set(const aDataKey& aKey, SafePtr<void> aData);
     size_t nData() const { return key_data_S_.size(); }
 
     ~DataStore() { HID("(DataStore) discard nData=" << nData()); }  // debug
 
 private:
     // -------------------------------------------------------------------------------------------
-    unordered_map<DataKey, SafePtr<void>> key_data_S_;
+    unordered_map<aDataKey, SafePtr<void>> key_data_S_;
 };
 
 // ***********************************************************************************************
+template<typename aDataKey>
 template<typename aDataT>
-SafePtr<aDataT> DataStore::get(const DataKey& aKey) const
+SafePtr<aDataT> DataStore<aDataKey>::get(const aDataKey& aKey) const
 {
     auto&& key_data = key_data_S_.find(aKey);
     if (key_data == key_data_S_.end())
@@ -57,8 +56,8 @@ SafePtr<aDataT> DataStore::get(const DataKey& aKey) const
 }
 
 // ***********************************************************************************************
-inline
-void DataStore::set(const DataKey& aKey, SafePtr<void> aData)
+template<typename aDataKey>
+void DataStore<aDataKey>::set(const aDataKey& aKey, SafePtr<void> aData)
 {
     if (aData.get() == nullptr)
     {
@@ -67,8 +66,8 @@ void DataStore::set(const DataKey& aKey, SafePtr<void> aData)
     }
     else
     {
-        HID("(DataStore) new/replace key=" << aKey);
-        key_data_S_[aKey] = aData;
+        auto&& it_ok = key_data_S_.emplace(aKey, aData);
+        if (it_ok.second == false) { HID("(DataStore) ERR!!! not support to replace key=" << aKey); }
     }
 }
 

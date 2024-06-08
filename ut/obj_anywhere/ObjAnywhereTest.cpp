@@ -44,7 +44,11 @@ TEST_F(ObjAnywhereTest, get_replacement)
     ObjAnywhere::setObj(p1, *this);
     auto p2 = make_safe<int>(2);
     ObjAnywhere::setObj(p2, *this);  // req: replace set
-    EXPECT_EQ(p2.get(), ObjAnywhere::getObj<int>().get()) << "REQ: get p2 itself";
+    EXPECT_EQ(p1.get(), ObjAnywhere::getObj<int>().get()) << "REQ: refuse replacement";
+
+    ObjAnywhere::setObj<int>(nullptr, *this);
+    ObjAnywhere::setObj(p2, *this);
+    EXPECT_EQ(p2.get(), ObjAnywhere::getObj<int>().get()) << "REQ: explicit rm then set ok";
     ObjAnywhere::deinit();
 }
 TEST_F(ObjAnywhereTest, noSet_getNull)

@@ -32,6 +32,8 @@
 // ***********************************************************************************************
 #pragma once
 
+#include <string>
+
 #include "DataStore.hpp"
 #include "UniLog.hpp"
 
@@ -39,6 +41,8 @@ using namespace std;
 
 namespace RLib
 {
+using ObjName = string;
+
 // ***********************************************************************************************
 class ObjAnywhere
 {
@@ -50,18 +54,18 @@ public:
 
     // typeid().name() is to compatible with previous interface (w/o aObjName), eg ::get<TypeParam>
     template<typename aObjType> static
-    void setObj(SafePtr<aObjType>, UniLog& = UniLog::defaultUniLog_, const DataKey& = typeid(aObjType).name());
+    void setObj(SafePtr<aObjType>, UniLog& = UniLog::defaultUniLog_, const ObjName& = typeid(aObjType).name());
     template<typename aObjType> static
-    SafePtr<aObjType> getObj(const DataKey& = typeid(aObjType).name());
+    SafePtr<aObjType> getObj(const ObjName& = typeid(aObjType).name());
 
 private:
     // -------------------------------------------------------------------------------------------
-    static shared_ptr<DataStore> name_obj_S_;  // store aObj w/o include aObj.hpp
+    static shared_ptr<DataStore<ObjName>> name_obj_S_;  // store aObj w/o include aObj.hpp
 };
 
 // ***********************************************************************************************
 template<typename aObjType>
-SafePtr<aObjType> ObjAnywhere::getObj(const DataKey& aObjName)
+SafePtr<aObjType> ObjAnywhere::getObj(const ObjName& aObjName)
 {
     if (isInit())
         return name_obj_S_->get<aObjType>(aObjName);
@@ -70,7 +74,7 @@ SafePtr<aObjType> ObjAnywhere::getObj(const DataKey& aObjName)
 
 // ***********************************************************************************************
 template<typename aObjType>
-void ObjAnywhere::setObj(SafePtr<aObjType> aObj, UniLog& oneLog, const DataKey& aObjName)
+void ObjAnywhere::setObj(SafePtr<aObjType> aObj, UniLog& oneLog, const ObjName& aObjName)
 {
     if (isInit())
         name_obj_S_->set(aObjName, aObj);

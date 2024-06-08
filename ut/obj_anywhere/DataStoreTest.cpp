@@ -5,6 +5,7 @@
 */
 // ***********************************************************************************************
 #include <gtest/gtest.h>
+#include <string>
 #include <type_traits>
 
 #include "DataStore.hpp"
@@ -17,7 +18,7 @@ namespace RLib
 // ***********************************************************************************************
 struct DataStoreTest : public Test
 {
-    DataStore dataStore_;
+    DataStore<string> dataStore_;
 };
 
 #define STORE
@@ -58,6 +59,16 @@ TEST_F(DataStoreTest, noNeedToStoreNull)
 
     dataStore_.set("string", nullptr);
     EXPECT_EQ(0u, dataStore_.nData()) << "REQ: erase OK";
+}
+TEST_F(DataStoreTest, replace)
+{
+    dataStore_.set("string", make_safe<string>("hello"));
+    dataStore_.set("string", make_safe<string>("world"));
+    EXPECT_EQ("hello", *(dataStore_.get<string>("string").get())) << "req: refuse replace";
+
+    dataStore_.set("string", nullptr);
+    dataStore_.set("string", make_safe<string>("world"));
+    EXPECT_EQ("world", *(dataStore_.get<string>("string").get())) << "req: explicit rm then set ok";
 }
 
 #define SAFE

@@ -7,7 +7,7 @@
 
 namespace RLib
 {
-shared_ptr<DataStore> ObjAnywhere::name_obj_S_;
+shared_ptr<DataStore<ObjName>> ObjAnywhere::name_obj_S_;
 
 // ***********************************************************************************************
 void ObjAnywhere::deinit()
@@ -24,7 +24,7 @@ void ObjAnywhere::init(UniLog& oneLog)
     else
     {
         HID("(ObjAnywhere) Succeed.");
-        name_obj_S_ = make_shared<DataStore>();
+        name_obj_S_ = make_shared<DataStore<ObjName>>();
     }
 }
 }  // namespace
