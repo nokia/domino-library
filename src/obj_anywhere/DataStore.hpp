@@ -20,6 +20,7 @@
 #include <unordered_map>
 
 #include "SafePtr.hpp"  // can't UniPtr.hpp since ut(=req) build-err
+#include "UniLog.hpp"   // debug
 
 using namespace std;
 
@@ -35,6 +36,8 @@ public:
     void set(const DataKey& aKey, SafePtr<void> aData);
     size_t nData() const { return key_data_S_.size(); }
 
+    ~DataStore() { HID("(DataStore) discard nData=" << nData()); }  // debug
+
 private:
     // -------------------------------------------------------------------------------------------
     unordered_map<DataKey, SafePtr<void>> key_data_S_;
@@ -46,7 +49,10 @@ SafePtr<aDataT> DataStore::get(const DataKey& aKey) const
 {
     auto&& key_data = key_data_S_.find(aKey);
     if (key_data == key_data_S_.end())
+    {
+        HID("(DataStore) can't find key=" << aKey);
         return nullptr;
+    }
     return dynamic_pointer_cast<aDataT>(key_data->second);
 }
 
@@ -55,9 +61,15 @@ inline
 void DataStore::set(const DataKey& aKey, SafePtr<void> aData)
 {
     if (aData.get() == nullptr)
+    {
+        HID("(DataStore) erase key=" << aKey);
         key_data_S_.erase(aKey);
+    }
     else
+    {
+        HID("(DataStore) new/replace key=" << aKey);
         key_data_S_[aKey] = aData;
+    }
 }
 
 }  // namespace

@@ -26,9 +26,9 @@
 
 // ***********************************************************************************************
 // UT req: combined domino shall pass all UT
-#define DOMINO      (ObjAnywhere::get<MaxDom>      (*this).get())
-#define NO_FREE_DOM (ObjAnywhere::get<MaxNofreeDom>(*this).get())
-#define PARA_DOM    (ObjAnywhere::get<TypeParam>   (*this).get())
+#define DOMINO      (ObjAnywhere::get<MaxDom>      ().get())
+#define NO_FREE_DOM (ObjAnywhere::get<MaxNofreeDom>().get())
+#define PARA_DOM    (ObjAnywhere::get<TypeParam>   ().get())
 
 using namespace std;
 using namespace testing;
@@ -55,19 +55,19 @@ struct UtInitObjAnywhere : public UniLog, public Test
     {
         ObjAnywhere::init(*this);
 
-        ObjAnywhere::set(MAKE_PTR<MsgSelf>(uniLogName()), *this);
+        ObjAnywhere::set(make_safe<MsgSelf>(uniLogName()), *this);
 
-        ObjAnywhere::set(MAKE_PTR<Domino>         (uniLogName()), *this);
-        ObjAnywhere::set(MAKE_PTR<MinDatDom>      (uniLogName()), *this);
-        ObjAnywhere::set(MAKE_PTR<MinWbasicDatDom>(uniLogName()), *this);
-        ObjAnywhere::set(MAKE_PTR<MinHdlrDom>     (uniLogName()), *this);
-        ObjAnywhere::set(MAKE_PTR<MinMhdlrDom>    (uniLogName()), *this);
-        ObjAnywhere::set(MAKE_PTR<MinPriDom>      (uniLogName()), *this);
-        ObjAnywhere::set(MAKE_PTR<MinFreeDom>     (uniLogName()), *this);
-        ObjAnywhere::set(MAKE_PTR<MinRmEvDom>     (uniLogName()), *this);
+        ObjAnywhere::set(make_safe<Domino>         (uniLogName()), *this);
+        ObjAnywhere::set(make_safe<MinDatDom>      (uniLogName()), *this);
+        ObjAnywhere::set(make_safe<MinWbasicDatDom>(uniLogName()), *this);
+        ObjAnywhere::set(make_safe<MinHdlrDom>     (uniLogName()), *this);
+        ObjAnywhere::set(make_safe<MinMhdlrDom>    (uniLogName()), *this);
+        ObjAnywhere::set(make_safe<MinPriDom>      (uniLogName()), *this);
+        ObjAnywhere::set(make_safe<MinFreeDom>     (uniLogName()), *this);
+        ObjAnywhere::set(make_safe<MinRmEvDom>     (uniLogName()), *this);
 
-        ObjAnywhere::set(MAKE_PTR<MaxDom>         (uniLogName()), *this);
-        ObjAnywhere::set(MAKE_PTR<MaxNofreeDom>   (uniLogName()), *this);
+        ObjAnywhere::set(make_safe<MaxDom>         (uniLogName()), *this);
+        ObjAnywhere::set(make_safe<MaxNofreeDom>   (uniLogName()), *this);
 
         // - example how main() callback MsgSelf to handle all msgs
         // - this lambda hides all impl details but a common interface = function<void()>
@@ -75,7 +75,7 @@ struct UtInitObjAnywhere : public UniLog, public Test
     }
     ~UtInitObjAnywhere()
     {
-        ObjAnywhere::deinit(*this);
+        ObjAnywhere::deinit();
         GTEST_LOG_FAIL
     }
 

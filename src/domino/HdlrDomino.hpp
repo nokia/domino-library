@@ -42,7 +42,7 @@ class HdlrDomino : public aDominoType
 {
 public:
     explicit HdlrDomino(const LogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
-    bool setMsgSelfOK(const PTR<MsgSelf>& aMsgSelf);  // replace default
+    bool setMsgSelfOK(const SafePtr<MsgSelf>& aMsgSelf);  // replace default
 
     Domino::Event setHdlr(const Domino::EvName&, const MsgCB& aHdlr);
     bool rmOneHdlrOK(const Domino::EvName&);  // rm by EvName
@@ -70,7 +70,7 @@ protected:
 private:
     unordered_map<Domino::Event, SharedMsgCB> ev_hdlr_S_;
 protected:
-    PTR<MsgSelf> msgSelf_ = ObjAnywhere::get<MsgSelf>(*this);
+    SafePtr<MsgSelf> msgSelf_ = ObjAnywhere::get<MsgSelf>();
 public:
     using aDominoType::oneLog;
 };
@@ -176,7 +176,7 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
 
 // ***********************************************************************************************
 template<class aDominoType>
-bool HdlrDomino<aDominoType>::setMsgSelfOK(const PTR<MsgSelf>& aMsgSelf)
+bool HdlrDomino<aDominoType>::setMsgSelfOK(const SafePtr<MsgSelf>& aMsgSelf)
 {
     // validate
     const auto nMsgUnhandled = msgSelf_->nMsg();  // HdlrDomino ensure msgSelf_ always NOT null

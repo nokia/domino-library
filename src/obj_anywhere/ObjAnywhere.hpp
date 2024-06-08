@@ -15,7 +15,7 @@
 //   . ObjAnywhere not include any Obj.hpp so no cross-include conflict
 //   * ObjAnywhere stores shared_ptr<Obj> - real store, correct destruct, lifespan mgr
 //
-// - core: idx_obj_S_
+// - core: name_obj_S_
 //
 // - mem-safe: true (when use SafePtr instead of shared_ptr)
 //
@@ -32,11 +32,8 @@
 // ***********************************************************************************************
 #pragma once
 
-#include <unordered_map>
-#include <typeindex>
-
+#include "DataStore.hpp"
 #include "UniLog.hpp"
-#include "UniPtr.hpp"
 
 using namespace std;
 
@@ -46,68 +43,39 @@ namespace RLib
 class ObjAnywhere
 {
 public:
-    using ObjIndex = type_index;
-    using ObjStore = unordered_map<ObjIndex, UniPtr>;
+    static void init(UniLog& = UniLog::defaultUniLog_);    // init name_obj_S_
+    static void deinit();  // rm name_obj_S_
+    static bool isInit() { return name_obj_S_ != nullptr; }  // init name_obj_S_?
+    static size_t nObj() { return name_obj_S_ ? name_obj_S_->nData() : 0; }
 
-    static void init(UniLog& = UniLog::defaultUniLog_);    // init idx_obj_S_
-    static void deinit(UniLog& = UniLog::defaultUniLog_);  // rm idx_obj_S_
-    static bool isInit() { return idx_obj_S_ != nullptr; }  // init idx_obj_S_?
-    static size_t nObj() { return idx_obj_S_ ? idx_obj_S_->size() : 0; }
-
-    // -------------------------------------------------------------------------------------------
-    // - save aObjType into idx_obj_S_
-    // -------------------------------------------------------------------------------------------
-    template<typename aObjType> static void set(PTR<aObjType> aSharedObj, UniLog& = UniLog::defaultUniLog_);
-
-    // -------------------------------------------------------------------------------------------
-    // - get a "Obj" from idx_obj_S_
-    // - template operator[] not easier in usage
-    // -------------------------------------------------------------------------------------------
-    template<typename aObjType> static PTR<aObjType> get(UniLog& = UniLog::defaultUniLog_);
+    // typeid().name() is to compatible with previous interface (w/o aObjName), eg ::get<TypeParam>
+    template<typename aObjType> static
+    void set(SafePtr<aObjType>, UniLog& = UniLog::defaultUniLog_, const DataKey& = typeid(aObjType).name());
+    template<typename aObjType> static
+    SafePtr<aObjType> get(const DataKey& = typeid(aObjType).name());
 
 private:
     // -------------------------------------------------------------------------------------------
-    static shared_ptr<ObjStore> idx_obj_S_;  // store shared_ptr<aSvc> w/o include aObj.hpp
+    static shared_ptr<DataStore> name_obj_S_;  // store aObj w/o include aObj.hpp
 };
 
 // ***********************************************************************************************
 template<typename aObjType>
-PTR<aObjType> ObjAnywhere::get(UniLog& oneLog)
+SafePtr<aObjType> ObjAnywhere::get(const DataKey& aObjName)
 {
-    if (not isInit())
-        return nullptr;
-
-    auto&& idx_obj = idx_obj_S_->find(typeid(aObjType));
-    if (idx_obj != idx_obj_S_->end())
-        return static_pointer_cast<aObjType>(idx_obj->second);
-
-    INF("(ObjAnywhere) !!! Failed, unavailable obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
+    if (isInit())
+        return name_obj_S_->get<aObjType>(aObjName);
     return nullptr;
 }
 
 // ***********************************************************************************************
 template<typename aObjType>
-void ObjAnywhere::set(PTR<aObjType> aSharedObj, UniLog& oneLog)
+void ObjAnywhere::set(SafePtr<aObjType> aObj, UniLog& oneLog, const DataKey& aObjName)
 {
-    if (not isInit())
-    {
-        ERR("(ObjAnywhere) !!! Failed, pls call ObjAnywhere::init() beforehand.");
-        return;
-    }
-
-    const type_index& objIndex = typeid(aObjType);
-    if (aSharedObj.get() == nullptr)
-    {
-        idx_obj_S_->erase(objIndex);  // natural expectation
-        INF("(ObjAnywhere) Removed obj=" << typeid(aObjType).name() << " from ObjAnywhere.");
-        return;
-    }
-
-    if (idx_obj_S_->find(objIndex) == idx_obj_S_->end())
-        HID("(ObjAnywhere) Set obj=" << typeid(aObjType).name() << " into ObjAnywhere.")
+    if (isInit())
+        name_obj_S_->set(aObjName, aObj);
     else
-        INF("(ObjAnywhere) !!!Replace obj=" << typeid(aObjType).name() << " in ObjAnywhere.");
-    (*idx_obj_S_)[objIndex] = aSharedObj;
+        ERR("(ObjAnywhere) !!! Failed, pls call ObjAnywhere::init() beforehand.");
 }
 
 }  // namespace
@@ -131,4 +99,5 @@ void ObjAnywhere::set(PTR<aObjType> aSharedObj, UniLog& oneLog)
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2022-12-02  CSZ       - simple & natural
 // 2024-02-15  CSZ       7)use SafePtr (mem-safe); shared_ptr is not mem-safe
+// 2024-06-07  CSZ       8)use DataStore instead of map
 // ***********************************************************************************************
