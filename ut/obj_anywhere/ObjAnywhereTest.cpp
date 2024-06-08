@@ -27,7 +27,11 @@ TEST_F(ObjAnywhereTest, GOLD_setThenGetIt)
     ObjAnywhere::init(*this);
     auto p1 = make_safe<int>(1234);
     ObjAnywhere::set(p1, *this);  // req: normal set
-    EXPECT_EQ(p1.get(), ObjAnywhere::get<int>().get()) << "REQ: get p1 itself";
+    EXPECT_EQ(1234, *(ObjAnywhere::get<int>().get())) << "REQ: get p1 itself";
+
+    ObjAnywhere::set(make_safe<int>(5678), *this, "i2");
+    EXPECT_EQ(5678,  *(ObjAnywhere::get<int >("i2").get())) << "REQ: ok to store same type";
+    EXPECT_EQ(nullptr, ObjAnywhere::get<bool>("i2").get())  << "REQ: get invalid type -> ret null";
 
     ObjAnywhere::set<int>(nullptr, *this);  // req: set null
     EXPECT_EQ(nullptr, ObjAnywhere::get<int>().get()) << "REQ: get null";
