@@ -43,7 +43,7 @@ public:
     // -------------------------------------------------------------------------------------------
     // - replace old data by new=aData if old != new
     // - for aDataType w/o default constructor!!!
-    virtual void replaceData(const Domino::EvName&, UniPtr = nullptr);
+    virtual void setData(const Domino::EvName&, UniPtr = nullptr);
 
 protected:
     void rmEv_(const Domino::Event& aValidEv) override;
@@ -63,7 +63,7 @@ UniPtr DataDomino<aDominoType>::getData(const Domino::EvName& aEvName) const
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void DataDomino<aDominoType>::replaceData(const Domino::EvName& aEvName, UniPtr aData)
+void DataDomino<aDominoType>::setData(const Domino::EvName& aEvName, UniPtr aData)
 {
     if (aData.get() == nullptr)
         dataStore_.erase(this->getEventBy(aEvName));  // avoid keep inc dataStore_
@@ -95,7 +95,7 @@ auto getData(aDataDominoType& aDom, const Domino::EvName& aEvName)
 template<typename aDataDominoType, typename aDataType>
 void setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData)
 {
-    aDom.replaceData(aEvName, MAKE_PTR<aDataType>(aData));
+    aDom.setData(aEvName, MAKE_PTR<aDataType>(aData));
 }
 }  // namespace
 // ***********************************************************************************************

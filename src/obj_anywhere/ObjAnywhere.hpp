@@ -8,8 +8,8 @@
 //   . how easily share obj within a process? like cout sharing
 //
 // - how:
-//   . eg ObjAnywhere::set<Obj>(): register/store Obj
-//   . eg ObjAnywhere::get<Obj>(): get Obj
+//   . eg ObjAnywhere::setObj<Obj>(): register/store Obj
+//   . eg ObjAnywhere::getObj<Obj>(): get Obj
 //
 // - more value:
 //   . ObjAnywhere not include any Obj.hpp so no cross-include conflict
@@ -50,9 +50,9 @@ public:
 
     // typeid().name() is to compatible with previous interface (w/o aObjName), eg ::get<TypeParam>
     template<typename aObjType> static
-    void set(SafePtr<aObjType>, UniLog& = UniLog::defaultUniLog_, const DataKey& = typeid(aObjType).name());
+    void setObj(SafePtr<aObjType>, UniLog& = UniLog::defaultUniLog_, const DataKey& = typeid(aObjType).name());
     template<typename aObjType> static
-    SafePtr<aObjType> get(const DataKey& = typeid(aObjType).name());
+    SafePtr<aObjType> getObj(const DataKey& = typeid(aObjType).name());
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ private:
 
 // ***********************************************************************************************
 template<typename aObjType>
-SafePtr<aObjType> ObjAnywhere::get(const DataKey& aObjName)
+SafePtr<aObjType> ObjAnywhere::getObj(const DataKey& aObjName)
 {
     if (isInit())
         return name_obj_S_->get<aObjType>(aObjName);
@@ -70,7 +70,7 @@ SafePtr<aObjType> ObjAnywhere::get(const DataKey& aObjName)
 
 // ***********************************************************************************************
 template<typename aObjType>
-void ObjAnywhere::set(SafePtr<aObjType> aObj, UniLog& oneLog, const DataKey& aObjName)
+void ObjAnywhere::setObj(SafePtr<aObjType> aObj, UniLog& oneLog, const DataKey& aObjName)
 {
     if (isInit())
         name_obj_S_->set(aObjName, aObj);

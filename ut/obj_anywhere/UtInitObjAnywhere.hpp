@@ -26,9 +26,9 @@
 
 // ***********************************************************************************************
 // UT req: combined domino shall pass all UT
-#define DOMINO      (ObjAnywhere::get<MaxDom>      ().get())
-#define NO_FREE_DOM (ObjAnywhere::get<MaxNofreeDom>().get())
-#define PARA_DOM    (ObjAnywhere::get<TypeParam>   ().get())
+#define DOMINO      (ObjAnywhere::getObj<MaxDom>      ().get())
+#define NO_FREE_DOM (ObjAnywhere::getObj<MaxNofreeDom>().get())
+#define PARA_DOM    (ObjAnywhere::getObj<TypeParam>   ().get())
 
 using namespace std;
 using namespace testing;
@@ -55,19 +55,19 @@ struct UtInitObjAnywhere : public UniLog, public Test
     {
         ObjAnywhere::init(*this);
 
-        ObjAnywhere::set(make_safe<MsgSelf>(uniLogName()), *this);
+        ObjAnywhere::setObj(make_safe<MsgSelf>(uniLogName()), *this);
 
-        ObjAnywhere::set(make_safe<Domino>         (uniLogName()), *this);
-        ObjAnywhere::set(make_safe<MinDatDom>      (uniLogName()), *this);
-        ObjAnywhere::set(make_safe<MinWbasicDatDom>(uniLogName()), *this);
-        ObjAnywhere::set(make_safe<MinHdlrDom>     (uniLogName()), *this);
-        ObjAnywhere::set(make_safe<MinMhdlrDom>    (uniLogName()), *this);
-        ObjAnywhere::set(make_safe<MinPriDom>      (uniLogName()), *this);
-        ObjAnywhere::set(make_safe<MinFreeDom>     (uniLogName()), *this);
-        ObjAnywhere::set(make_safe<MinRmEvDom>     (uniLogName()), *this);
+        ObjAnywhere::setObj(make_safe<Domino>         (uniLogName()), *this);
+        ObjAnywhere::setObj(make_safe<MinDatDom>      (uniLogName()), *this);
+        ObjAnywhere::setObj(make_safe<MinWbasicDatDom>(uniLogName()), *this);
+        ObjAnywhere::setObj(make_safe<MinHdlrDom>     (uniLogName()), *this);
+        ObjAnywhere::setObj(make_safe<MinMhdlrDom>    (uniLogName()), *this);
+        ObjAnywhere::setObj(make_safe<MinPriDom>      (uniLogName()), *this);
+        ObjAnywhere::setObj(make_safe<MinFreeDom>     (uniLogName()), *this);
+        ObjAnywhere::setObj(make_safe<MinRmEvDom>     (uniLogName()), *this);
 
-        ObjAnywhere::set(make_safe<MaxDom>         (uniLogName()), *this);
-        ObjAnywhere::set(make_safe<MaxNofreeDom>   (uniLogName()), *this);
+        ObjAnywhere::setObj(make_safe<MaxDom>         (uniLogName()), *this);
+        ObjAnywhere::setObj(make_safe<MaxNofreeDom>   (uniLogName()), *this);
 
         // - example how main() callback MsgSelf to handle all msgs
         // - this lambda hides all impl details but a common interface = function<void()>

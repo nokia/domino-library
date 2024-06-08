@@ -41,7 +41,7 @@ TYPED_TEST_P(WbasicDatDomTest, GOLD_wrCtrl_set_get_rm)  // non-wrData is covered
 
     EXPECT_EQ(nullptr, (getData<TypeParam, size_t>(*PARA_DOM, "ev0").get())) << "REQ: legacy get nonexist";
 
-    PARA_DOM->replaceData("ev0");
+    PARA_DOM->setData("ev0");
     valGet = *(wbasic_getData<TypeParam, size_t>(*PARA_DOM, "ev0").get());
     EXPECT_EQ(2u, valGet) << "REQ: legacy rm failed";
 
@@ -67,7 +67,7 @@ TYPED_TEST_P(WbasicDatDomTest, canNOT_setWriteCtrl_afterOwnData)
     EXPECT_FALSE(PARA_DOM->wrCtrlOk("ev0")) << "REQ: failed to avoid out-ctrl";
     EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0")) << "REQ: flag no change";
 
-    PARA_DOM->replaceData("ev0", nullptr);
+    PARA_DOM->setData("ev0", nullptr);
     EXPECT_TRUE(PARA_DOM->wrCtrlOk("ev0")) << "REQ: succ since no data";
     EXPECT_TRUE(PARA_DOM->isWrCtrl("ev0")) << "REQ: flag change";
 }

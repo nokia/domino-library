@@ -70,7 +70,7 @@ protected:
 private:
     unordered_map<Domino::Event, SharedMsgCB> ev_hdlr_S_;
 protected:
-    SafePtr<MsgSelf> msgSelf_ = ObjAnywhere::get<MsgSelf>();
+    SafePtr<MsgSelf> msgSelf_ = ObjAnywhere::getObj<MsgSelf>();
 public:
     using aDominoType::oneLog;
 };

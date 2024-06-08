@@ -24,9 +24,9 @@ struct PriDominoTest : public UtInitObjAnywhere
     {
         hdlrIDs_.push(5);
 
-        ObjAnywhere::get<aParaDom>()->setState({{"e2", true}});
-        ObjAnywhere::get<aParaDom>()->setPriority("e2", EMsgPri_HIGH);
-        ObjAnywhere::get<aParaDom>()->setHdlr("e2", d2EventHdlr_);          // raise when d5() is exe
+        ObjAnywhere::getObj<aParaDom>()->setState({{"e2", true}});
+        ObjAnywhere::getObj<aParaDom>()->setPriority("e2", EMsgPri_HIGH);
+        ObjAnywhere::getObj<aParaDom>()->setHdlr("e2", d2EventHdlr_);          // raise when d5() is exe
     };
 
     queue<int> hdlrIDs_;

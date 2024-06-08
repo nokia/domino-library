@@ -26,41 +26,41 @@ TEST_F(ObjAnywhereTest, GOLD_setThenGetIt)
 {
     ObjAnywhere::init(*this);
     auto p1 = make_safe<int>(1234);
-    ObjAnywhere::set(p1, *this);  // req: normal set
-    EXPECT_EQ(1234, *(ObjAnywhere::get<int>().get())) << "REQ: get p1 itself";
+    ObjAnywhere::setObj(p1, *this);  // req: normal set
+    EXPECT_EQ(1234, *(ObjAnywhere::getObj<int>().get())) << "REQ: get p1 itself";
 
-    ObjAnywhere::set(make_safe<int>(5678), *this, "i2");
-    EXPECT_EQ(5678,  *(ObjAnywhere::get<int >("i2").get())) << "REQ: ok to store same type";
-    EXPECT_EQ(nullptr, ObjAnywhere::get<bool>("i2").get())  << "REQ: get invalid type -> ret null";
+    ObjAnywhere::setObj(make_safe<int>(5678), *this, "i2");
+    EXPECT_EQ(5678,  *(ObjAnywhere::getObj<int >("i2").get())) << "REQ: ok to store same type";
+    EXPECT_EQ(nullptr, ObjAnywhere::getObj<bool>("i2").get())  << "REQ: get invalid type -> ret null";
 
-    ObjAnywhere::set<int>(nullptr, *this);  // req: set null
-    EXPECT_EQ(nullptr, ObjAnywhere::get<int>().get()) << "REQ: get null";
+    ObjAnywhere::setObj<int>(nullptr, *this);  // req: set null
+    EXPECT_EQ(nullptr, ObjAnywhere::getObj<int>().get()) << "REQ: get null";
     ObjAnywhere::deinit();
 }
 TEST_F(ObjAnywhereTest, get_replacement)
 {
     ObjAnywhere::init(*this);
     auto p1 = make_safe<int>(1);
-    ObjAnywhere::set(p1, *this);
+    ObjAnywhere::setObj(p1, *this);
     auto p2 = make_safe<int>(2);
-    ObjAnywhere::set(p2, *this);  // req: replace set
-    EXPECT_EQ(p2.get(), ObjAnywhere::get<int>().get()) << "REQ: get p2 itself";
+    ObjAnywhere::setObj(p2, *this);  // req: replace set
+    EXPECT_EQ(p2.get(), ObjAnywhere::getObj<int>().get()) << "REQ: get p2 itself";
     ObjAnywhere::deinit();
 }
 TEST_F(ObjAnywhereTest, noSet_getNull)
 {
     ObjAnywhere::init(*this);
-    EXPECT_EQ(nullptr, ObjAnywhere::get<int>().get()) << "REQ: get null";
+    EXPECT_EQ(nullptr, ObjAnywhere::getObj<int>().get()) << "REQ: get null";
     ObjAnywhere::deinit();
 }
 TEST_F(ObjAnywhereTest, deinit_getNull)
 {
-    EXPECT_EQ(nullptr, ObjAnywhere::get<int>().get()) << "REQ: get null";
+    EXPECT_EQ(nullptr, ObjAnywhere::getObj<int>().get()) << "REQ: get null";
 }
 TEST_F(ObjAnywhereTest, deinitThenSet_getNull)
 {
-    ObjAnywhere::set(make_safe<int>(1234), *this);
-    EXPECT_EQ(nullptr, ObjAnywhere::get<int>().get()) << "REQ: get null";
+    ObjAnywhere::setObj(make_safe<int>(1234), *this);
+    EXPECT_EQ(nullptr, ObjAnywhere::getObj<int>().get()) << "REQ: get null";
 }
 
 #define CORRECT_DESTRUCT
@@ -75,7 +75,7 @@ TEST_F(ObjAnywhereTest, GOLD_destructCorrectly)
 {
     bool isDestructed;
     ObjAnywhere::init(*this);
-    ObjAnywhere::set(make_safe<TestObj>(isDestructed), *this);
+    ObjAnywhere::setObj(make_safe<TestObj>(isDestructed), *this);
     EXPECT_FALSE(isDestructed);
 
     ObjAnywhere::deinit();
@@ -86,12 +86,12 @@ TEST_F(ObjAnywhereTest, destructBySetNull)
     bool isDestructed;
     ObjAnywhere::init(*this);
 
-    ObjAnywhere::set(make_safe<TestObj>(isDestructed), *this);
-    ObjAnywhere::set(SafePtr<TestObj>(), *this);  // set null
+    ObjAnywhere::setObj(make_safe<TestObj>(isDestructed), *this);
+    ObjAnywhere::setObj(SafePtr<TestObj>(), *this);  // set null
     EXPECT_TRUE(isDestructed) << "REQ: destruct correctly";
-    EXPECT_EQ(nullptr, ObjAnywhere::get<TestObj>().get()) << "REQ: destruct TestObj";
+    EXPECT_EQ(nullptr, ObjAnywhere::getObj<TestObj>().get()) << "REQ: destruct TestObj";
 
-    ObjAnywhere::set(SafePtr<TestObj>(), *this);  // REQ: rm unexist
+    ObjAnywhere::setObj(SafePtr<TestObj>(), *this);  // REQ: rm unexist
     EXPECT_EQ(0u, ObjAnywhere::nObj());
 
     ObjAnywhere::deinit();
@@ -121,9 +121,9 @@ TEST_F(ObjAnywhereTest, ignore_dup_init)
 {
     ObjAnywhere::init(*this);
     auto pChar = make_safe<char>('a');
-    ObjAnywhere::set(pChar, *this);
+    ObjAnywhere::setObj(pChar, *this);
     ObjAnywhere::init(*this);  // req: ignore dup init
-    EXPECT_EQ(pChar.get(), ObjAnywhere::get<char>().get());
+    EXPECT_EQ(pChar.get(), ObjAnywhere::getObj<char>().get());
     ObjAnywhere::deinit();
 }
 TEST_F(ObjAnywhereTest, default_is_deinit)

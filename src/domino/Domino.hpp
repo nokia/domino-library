@@ -214,8 +214,8 @@ private:
 //   . simplify complex scenario eg rmOneHdlrOK() may relate with multi-hdlr
 //   . simplify interface: EvName only, Event is internal-use only
 //
-// - why rm "#define PRI_DOMINO (ObjAnywhere::get<PriDomino<Domino> >())"
-//   . PriDomino<Domino> != PriDomino<DataDomino<Domino> >, ObjAnywhere::get() may ret null
+// - why rm "#define PRI_DOMINO (ObjAnywhere::getObj<PriDomino<Domino> >())"
+//   . PriDomino<Domino> != PriDomino<DataDomino<Domino> >, ObjAnywhere::getObj() may ret null
 //
 // - why no nHdlr() & hasHdlr()
 //   . MultiHdlrDomino also need to support them
