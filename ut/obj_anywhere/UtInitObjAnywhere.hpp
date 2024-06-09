@@ -55,19 +55,19 @@ struct UtInitObjAnywhere : public UniLog, public Test
     {
         ObjAnywhere::init(*this);
 
-        ObjAnywhere::setObj(make_safe<MsgSelf>(uniLogName()), *this);
+        ObjAnywhere::emplaceObj(make_safe<MsgSelf>(uniLogName()), *this);
 
-        ObjAnywhere::setObj(make_safe<Domino>         (uniLogName()), *this);
-        ObjAnywhere::setObj(make_safe<MinDatDom>      (uniLogName()), *this);
-        ObjAnywhere::setObj(make_safe<MinWbasicDatDom>(uniLogName()), *this);
-        ObjAnywhere::setObj(make_safe<MinHdlrDom>     (uniLogName()), *this);
-        ObjAnywhere::setObj(make_safe<MinMhdlrDom>    (uniLogName()), *this);
-        ObjAnywhere::setObj(make_safe<MinPriDom>      (uniLogName()), *this);
-        ObjAnywhere::setObj(make_safe<MinFreeDom>     (uniLogName()), *this);
-        ObjAnywhere::setObj(make_safe<MinRmEvDom>     (uniLogName()), *this);
+        ObjAnywhere::emplaceObj(make_safe<Domino>         (uniLogName()), *this);
+        ObjAnywhere::emplaceObj(make_safe<MinDatDom>      (uniLogName()), *this);
+        ObjAnywhere::emplaceObj(make_safe<MinWbasicDatDom>(uniLogName()), *this);
+        ObjAnywhere::emplaceObj(make_safe<MinHdlrDom>     (uniLogName()), *this);
+        ObjAnywhere::emplaceObj(make_safe<MinMhdlrDom>    (uniLogName()), *this);
+        ObjAnywhere::emplaceObj(make_safe<MinPriDom>      (uniLogName()), *this);
+        ObjAnywhere::emplaceObj(make_safe<MinFreeDom>     (uniLogName()), *this);
+        ObjAnywhere::emplaceObj(make_safe<MinRmEvDom>     (uniLogName()), *this);
 
-        ObjAnywhere::setObj(make_safe<MaxDom>         (uniLogName()), *this);
-        ObjAnywhere::setObj(make_safe<MaxNofreeDom>   (uniLogName()), *this);
+        ObjAnywhere::emplaceObj(make_safe<MaxDom>         (uniLogName()), *this);
+        ObjAnywhere::emplaceObj(make_safe<MaxNofreeDom>   (uniLogName()), *this);
 
         // - example how main() callback MsgSelf to handle all msgs
         // - this lambda hides all impl details but a common interface = function<void()>

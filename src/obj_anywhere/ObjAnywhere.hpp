@@ -8,7 +8,7 @@
 //   . how easily share obj within a process? like cout sharing
 //
 // - how:
-//   . eg ObjAnywhere::setObj<Obj>(): register/store Obj
+//   . eg ObjAnywhere::emplaceObj<Obj>(): register/store Obj
 //   . eg ObjAnywhere::getObj<Obj>(): get Obj
 //
 // - more value:
@@ -54,7 +54,7 @@ public:
 
     // typeid().name() is to compatible with previous interface (w/o aObjName), eg ::get<TypeParam>
     template<typename aObjType> static
-    void setObj(SafePtr<aObjType>, UniLog& = UniLog::defaultUniLog_, const ObjName& = typeid(aObjType).name());
+    void emplaceObj(SafePtr<aObjType>, UniLog& = UniLog::defaultUniLog_, const ObjName& = typeid(aObjType).name());
     template<typename aObjType> static
     SafePtr<aObjType> getObj(const ObjName& = typeid(aObjType).name());
 
@@ -74,10 +74,10 @@ SafePtr<aObjType> ObjAnywhere::getObj(const ObjName& aObjName)
 
 // ***********************************************************************************************
 template<typename aObjType>
-void ObjAnywhere::setObj(SafePtr<aObjType> aObj, UniLog& oneLog, const ObjName& aObjName)
+void ObjAnywhere::emplaceObj(SafePtr<aObjType> aObj, UniLog& oneLog, const ObjName& aObjName)
 {
     if (isInit())
-        name_obj_S_->set(aObjName, aObj);
+        name_obj_S_->emplace(aObjName, aObj);
     else
         ERR("(ObjAnywhere) !!! Failed, pls call ObjAnywhere::init() beforehand.");
 }

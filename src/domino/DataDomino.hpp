@@ -6,16 +6,14 @@
 // ***********************************************************************************************
 // - ISSUE:    eg C&M translator store any type data from RU/BBU/HLAPI, like IM [MUST-HAVE!]
 // - Req:      Domino to store any type of data
-// - core:     dataStore_
+// - core:     ev_data_S_
 // - scope:    provide min interface (& extend by non-member func)
 // - mem-safe: true (when use SafePtr instead of shared_ptr)
 // ***********************************************************************************************
 #pragma once
 
-#include <unordered_map>
-
+#include "DataStore.hpp"
 #include "UniLog.hpp"
-#include "UniPtr.hpp"
 
 using namespace std;
 
@@ -38,44 +36,40 @@ public:
     // - if aEvName/data invalid, return null
     // - not template<aDataType> so can virtual for WrDatDom
     // . & let DataDomino has little idea of read-write ctrl, simpler
-    virtual UniPtr getData(const Domino::EvName&) const;
+    virtual SafePtr<void> getData(const Domino::EvName&) const;
 
     // -------------------------------------------------------------------------------------------
     // - replace old data by new=aData if old != new
     // - for aDataType w/o default constructor!!!
-    virtual void setData(const Domino::EvName&, UniPtr = nullptr);
+    virtual void replaceData(const Domino::EvName&, SafePtr<void> = nullptr);
 
 protected:
     void rmEv_(const Domino::Event& aValidEv) override;
 
 private:
     // -------------------------------------------------------------------------------------------
-    unordered_map<Domino::Event, UniPtr> dataStore_;  // [event]=UniPtr
+    DataStore<Domino::Event> ev_data_S_;  // [event]=SafePtr<void>
 };
 
 // ***********************************************************************************************
 template<typename aDominoType>
-UniPtr DataDomino<aDominoType>::getData(const Domino::EvName& aEvName) const
+SafePtr<void> DataDomino<aDominoType>::getData(const Domino::EvName& aEvName) const
 {
-    auto&& found = dataStore_.find(this->getEventBy(aEvName));
-    return (found == dataStore_.end()) ? nullptr : found->second;
+    return ev_data_S_.get<void>(this->getEventBy(aEvName));
 }
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void DataDomino<aDominoType>::setData(const Domino::EvName& aEvName, UniPtr aData)
+void DataDomino<aDominoType>::replaceData(const Domino::EvName& aEvName, SafePtr<void> aData)
 {
-    if (aData.get() == nullptr)
-        dataStore_.erase(this->getEventBy(aEvName));  // avoid keep inc dataStore_
-    else
-        dataStore_[this->newEvent(aEvName)] = aData;
+    ev_data_S_.replace(this->newEvent(aEvName), aData);
 }
 
 // ***********************************************************************************************
 template<typename aDominoType>
 void DataDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 {
-    dataStore_.erase(aValidEv);
+    ev_data_S_.replace(aValidEv, nullptr);
     aDominoType::rmEv_(aValidEv);
 }
 
@@ -95,7 +89,7 @@ auto getData(aDataDominoType& aDom, const Domino::EvName& aEvName)
 template<typename aDataDominoType, typename aDataType>
 void setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData)
 {
-    aDom.setData(aEvName, MAKE_PTR<aDataType>(aData));
+    aDom.replaceData(aEvName, make_safe<aDataType>(aData));
 }
 }  // namespace
 // ***********************************************************************************************
@@ -113,4 +107,5 @@ void setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataT
 // 2022-12-03  CSZ       - simple & natural
 // 2022-12-30  CSZ       - rm data
 // 2024-02-12  CSZ       4)use SafePtr (mem-safe); shared_ptr is not mem-safe
+// 2024-06-08  CSZ       5)use DataStore instead of map
 // ***********************************************************************************************

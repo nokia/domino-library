@@ -31,7 +31,8 @@ class DataStore
 {
 public:
     template<typename aDataT> SafePtr<aDataT> get(const aDataKey& aKey) const;
-    void set(const aDataKey& aKey, SafePtr<void> aData);
+    void emplace(const aDataKey& aKey, SafePtr<void> aData);  // not replace but add new or rm old
+    void replace(const aDataKey& aKey, SafePtr<void> aData);
     size_t nData() const { return key_data_S_.size(); }
 
     ~DataStore() { HID("(DataStore) discard nData=" << nData()); }  // debug
@@ -40,6 +41,22 @@ private:
     // -------------------------------------------------------------------------------------------
     unordered_map<aDataKey, SafePtr<void>> key_data_S_;
 };
+
+// ***********************************************************************************************
+template<typename aDataKey>
+void DataStore<aDataKey>::emplace(const aDataKey& aKey, SafePtr<void> aData)
+{
+    if (aData.get() == nullptr)
+    {
+        HID("(DataStore) erase key=" << aKey);
+        key_data_S_.erase(aKey);
+    }
+    else
+    {
+        auto&& it_ok = key_data_S_.emplace(aKey, aData);
+        if (it_ok.second == false) { HID("(DataStore) ERR!!! not support to replace key=" << aKey); }
+    }
+}
 
 // ***********************************************************************************************
 template<typename aDataKey>
@@ -57,7 +74,7 @@ SafePtr<aDataT> DataStore<aDataKey>::get(const aDataKey& aKey) const
 
 // ***********************************************************************************************
 template<typename aDataKey>
-void DataStore<aDataKey>::set(const aDataKey& aKey, SafePtr<void> aData)
+void DataStore<aDataKey>::replace(const aDataKey& aKey, SafePtr<void> aData)
 {
     if (aData.get() == nullptr)
     {
@@ -65,10 +82,7 @@ void DataStore<aDataKey>::set(const aDataKey& aKey, SafePtr<void> aData)
         key_data_S_.erase(aKey);
     }
     else
-    {
-        auto&& it_ok = key_data_S_.emplace(aKey, aData);
-        if (it_ok.second == false) { HID("(DataStore) ERR!!! not support to replace key=" << aKey); }
-    }
+        key_data_S_[aKey] = aData;
 }
 
 }  // namespace

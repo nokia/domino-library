@@ -254,7 +254,7 @@ TYPED_TEST_P(NofreeHdlrDominoTest, hdlrOnRoad_thenRmDom_noCrash_noLeak)
     PARA_DOM->setState({{"event", true}});
     EXPECT_EQ(1U, MSG_SELF->nMsg(EMsgPri_NORM));  // 1 cb on road
 
-    ObjAnywhere::setObj<TypeParam>(nullptr, *this);  // rm dom
+    ObjAnywhere::emplaceObj<TypeParam>(nullptr, *this);  // rm dom
     EXPECT_CALL(*this, hdlr0()).Times(0);  // REQ: no cb
     this->pongMsgSelf_();
 }
@@ -356,7 +356,7 @@ TYPED_TEST_P(HdlrDominoTest, replace_msgSelf)  // checked by CI valgrind
 
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->setState({{"event", true}});  // 1 msg in old msgSelf
-    auto msgSelf = MAKE_PTR<MsgSelf>(this->uniLogName());
+    auto msgSelf = make_safe<MsgSelf>(this->uniLogName());
     ASSERT_FALSE(PARA_DOM->setMsgSelfOK(msgSelf)) << "REQ: can NOT set new msgSelf when unhandled msg in old";
 
     this->pongMsgSelf_();

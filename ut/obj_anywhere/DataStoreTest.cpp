@@ -30,44 +30,43 @@ TEST_F(DataStoreTest, GOLD_store_diffType)
     EXPECT_EQ(nullptr, dataStore_.get<int>("int").get()) << "REQ: ret null if no set";
 
     // 1 inner type
-    dataStore_.set("int", make_safe<int>(7));
+    dataStore_.emplace("int", make_safe<int>(7));
     EXPECT_EQ(1u, dataStore_.nData()) << "REQ: insert OK";
     EXPECT_EQ(7, *(dataStore_.get<int>("int").get())) << "REQ: get OK";
 
     // 1 class type
-    dataStore_.set("string", make_safe<string>("hello"));
+    dataStore_.emplace("string", make_safe<string>("hello"));
     EXPECT_EQ(2u, dataStore_.nData()) << "req: insert OK";
     EXPECT_EQ("hello", *(dataStore_.get<string>("string").get())) << "req: get OK";
 }
 TEST_F(DataStoreTest, GOLD_store_sameType)
 {
-    dataStore_.set("string", make_safe<string>("hello"));
+    dataStore_.emplace("string", make_safe<string>("hello"));
     EXPECT_EQ(1u, dataStore_.nData()) << "req: insert OK";
     EXPECT_EQ("hello", *(dataStore_.get<string>("string").get())) << "req: get OK";
 
-    dataStore_.set("s2", make_safe<string>("world"));
+    dataStore_.emplace("s2", make_safe<string>("world"));
     EXPECT_EQ(2u, dataStore_.nData()) << "REQ: insert OK for same type with diff DataName";
     EXPECT_EQ("world", *(dataStore_.get<string>("s2").get())) << "req: get OK";
 }
 TEST_F(DataStoreTest, noNeedToStoreNull)
 {
-    dataStore_.set("string", nullptr);
+    dataStore_.emplace("string", nullptr);
     EXPECT_EQ(0u, dataStore_.nData()) << "REQ: no need to store null";
 
-    dataStore_.set("string", make_safe<string>("hello"));
+    dataStore_.emplace("string", make_safe<string>("hello"));
     EXPECT_EQ(1u, dataStore_.nData()) << "req: insert OK";
 
-    dataStore_.set("string", nullptr);
+    dataStore_.emplace("string", nullptr);
     EXPECT_EQ(0u, dataStore_.nData()) << "REQ: erase OK";
 }
 TEST_F(DataStoreTest, replace)
 {
-    dataStore_.set("string", make_safe<string>("hello"));
-    dataStore_.set("string", make_safe<string>("world"));
-    EXPECT_EQ("hello", *(dataStore_.get<string>("string").get())) << "req: refuse replace";
+    dataStore_.emplace("string", make_safe<string>("hello"));
+    dataStore_.emplace("string", make_safe<string>("world"));
+    EXPECT_EQ("hello", *(dataStore_.get<string>("string").get())) << "req: emplace can't replace";
 
-    dataStore_.set("string", nullptr);
-    dataStore_.set("string", make_safe<string>("world"));
+    dataStore_.replace("string", make_safe<string>("world"));
     EXPECT_EQ("world", *(dataStore_.get<string>("string").get())) << "req: explicit rm then set ok";
 }
 
@@ -75,19 +74,19 @@ TEST_F(DataStoreTest, replace)
 // ***********************************************************************************************
 TEST_F(DataStoreTest, GOLD_safe_lifecycle)
 {
-    dataStore_.set("int", make_safe<int>(7));
+    dataStore_.emplace("int", make_safe<int>(7));
     auto i = dataStore_.get<int>("int");
     *(i.get()) = 8;
     EXPECT_EQ(8, *(dataStore_.get<int>("int").get())) << "REQ: shared";
     EXPECT_EQ(2u, i.use_count()) << "REQ: 2 users";
 
-    dataStore_.set("int", nullptr);
+    dataStore_.emplace("int", nullptr);
     EXPECT_EQ(8, *(i.get())) << "REQ: lifecycle mgmt - not del until no usr";
     EXPECT_EQ(1u, i.use_count()) << "REQ: 1 user";
 }
 TEST_F(DataStoreTest, GOLD_safe_cast)
 {
-    dataStore_.set("int", make_safe<int>(7));
+    dataStore_.emplace("int", make_safe<int>(7));
     EXPECT_EQ(7, *(dataStore_.get<int>("int").get())) << "REQ: get origin OK";
     EXPECT_EQ(nullptr, dataStore_.get<char>("int").get()) << "REQ: ret null for invalid type";
 
@@ -96,7 +95,7 @@ TEST_F(DataStoreTest, GOLD_safe_cast)
     struct D2     : public Derive { int value() const override { return 2; } };
 
     SafePtr<Base> b = make_safe<Derive>();
-    dataStore_.set("Base", b);
+    dataStore_.emplace("Base", b);
     EXPECT_EQ(1      , dataStore_.get<Base  >("Base")->value()) << "REQ: get real type";
     EXPECT_EQ(1      , dataStore_.get<Derive>("Base")->value()) << "REQ: get real type";
     EXPECT_EQ(nullptr, dataStore_.get<D2    >("Base").get   ()) << "REQ: get invalid type";
@@ -121,11 +120,11 @@ TEST_F(DataStoreTest, GOLD_safe_destruct)
 
     bool isBaseOver;
     bool isDeriveOver;
-    dataStore_.set("Base", make_safe<TestDerive>(isBaseOver, isDeriveOver));
+    dataStore_.emplace("Base", make_safe<TestDerive>(isBaseOver, isDeriveOver));
     EXPECT_FALSE(isBaseOver);
     EXPECT_FALSE(isDeriveOver);
 
-    dataStore_.set("Base", nullptr);
+    dataStore_.emplace("Base", nullptr);
     EXPECT_TRUE(isBaseOver);
     EXPECT_TRUE(isDeriveOver);
 }

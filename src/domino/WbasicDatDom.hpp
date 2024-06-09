@@ -27,11 +27,11 @@ public:
     bool isWrCtrl(const Domino::EvName&) const;
     bool wrCtrlOk(const Domino::EvName&, const bool aNewState = true);
 
-    UniPtr getData(const Domino::EvName&) const override;
-    UniPtr wbasic_getData(const Domino::EvName&) const;
+    SafePtr<void> getData(const Domino::EvName&) const override;
+    SafePtr<void> wbasic_getData(const Domino::EvName&) const;
 
-    void setData(const Domino::EvName&, UniPtr aData = nullptr) override;
-    void wbasic_replaceData(const Domino::EvName&, UniPtr aData = nullptr);
+    void replaceData(const Domino::EvName&, SafePtr<void> aData = nullptr) override;
+    void wbasic_replaceData(const Domino::EvName&, SafePtr<void> aData = nullptr);
 
 protected:
     void rmEv_(const Domino::Event& aValidEv) override;
@@ -39,7 +39,7 @@ protected:
 private:
     // forbid ouside usage
     using aDominoType::getData;
-    using aDominoType::setData;
+    using aDominoType::replaceData;
     // -------------------------------------------------------------------------------------------
     vector<bool> wrCtrl_;
 
@@ -49,7 +49,7 @@ public:
 
 // ***********************************************************************************************
 template<typename aDominoType>
-UniPtr WbasicDatDom<aDominoType>::getData(const Domino::EvName& aEvName) const
+SafePtr<void> WbasicDatDom<aDominoType>::getData(const Domino::EvName& aEvName) const
 {
     if (not isWrCtrl(aEvName))
         return aDominoType::getData(aEvName);
@@ -68,11 +68,11 @@ bool WbasicDatDom<aDominoType>::isWrCtrl(const Domino::EvName& aEvName) const
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void WbasicDatDom<aDominoType>::setData(const Domino::EvName& aEvName, UniPtr aData)
+void WbasicDatDom<aDominoType>::replaceData(const Domino::EvName& aEvName, SafePtr<void> aData)
 {
     if (isWrCtrl(aEvName))
         WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!")
-    else aDominoType::setData(aEvName, aData);
+    else aDominoType::replaceData(aEvName, aData);
 }
 
 // ***********************************************************************************************
@@ -87,7 +87,7 @@ void WbasicDatDom<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 
 // ***********************************************************************************************
 template<typename aDominoType>
-UniPtr WbasicDatDom<aDominoType>::wbasic_getData(const Domino::EvName& aEvName) const
+SafePtr<void> WbasicDatDom<aDominoType>::wbasic_getData(const Domino::EvName& aEvName) const
 {
     if (isWrCtrl(aEvName))
         return aDominoType::getData(aEvName);
@@ -98,10 +98,10 @@ UniPtr WbasicDatDom<aDominoType>::wbasic_getData(const Domino::EvName& aEvName) 
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void WbasicDatDom<aDominoType>::wbasic_replaceData(const Domino::EvName& aEvName, UniPtr aData)
+void WbasicDatDom<aDominoType>::wbasic_replaceData(const Domino::EvName& aEvName, SafePtr<void> aData)
 {
     if (isWrCtrl(aEvName))
-        aDominoType::setData(aEvName, aData);
+        aDominoType::replaceData(aEvName, aData);
     else
         WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!")
 }
@@ -133,7 +133,7 @@ bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName, const bo
 //   . so getData() instead of getValue()
 // - this func cast type so more convenient than WbasicDatDom's
 template<typename aDataDominoType, typename aDataType>
-PTR<aDataType> wbasic_getData(aDataDominoType& aDom, const Domino::EvName& aEvName)
+SafePtr<aDataType> wbasic_getData(aDataDominoType& aDom, const Domino::EvName& aEvName)
 {
     return static_pointer_cast<aDataType>(aDom.wbasic_getData(aEvName));
 }
@@ -142,7 +142,7 @@ PTR<aDataType> wbasic_getData(aDataDominoType& aDom, const Domino::EvName& aEvNa
 template<typename aDataDominoType, typename aDataType>
 void wbasic_setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData)
 {
-    aDom.wbasic_replaceData(aEvName, MAKE_PTR<aDataType>(aData));
+    aDom.wbasic_replaceData(aEvName, make_safe<aDataType>(aData));
 }
 
 }  // namespace
