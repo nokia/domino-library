@@ -60,7 +60,7 @@ public:
 
 private:
     // -------------------------------------------------------------------------------------------
-    static shared_ptr<DataStore<ObjName>> name_obj_S_;  // store aObj w/o include aObj.hpp
+    static shared_ptr<DataStore<ObjName>> name_obj_S_;  // store aObj w/o include aObj.hpp; shared_ptr is safe here
 };
 
 // ***********************************************************************************************

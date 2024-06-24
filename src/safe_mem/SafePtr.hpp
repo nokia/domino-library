@@ -48,7 +48,7 @@ public:
     // - safe-only creation, eg can't construct by raw ptr/shared_ptr that maybe unsafe
     // - can't create by SafePtr(ConstructArgs...) that confuse cp constructor, make_safe() instead
     // - T(ConstructArgs) SHALL mem-safe
-    SafePtr(nullptr_t = nullptr) noexcept {}
+    constexpr SafePtr(nullptr_t = nullptr) noexcept {}
     template<typename U, typename... ConstructArgs> friend SafePtr<U> make_safe(ConstructArgs&&... aArgs);
 
     // safe-only cast (vs shared_ptr, eg static_pointer_cast<any> is not safe)

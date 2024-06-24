@@ -31,8 +31,8 @@
 
 #include "MsgSelf.hpp"
 #include "ObjAnywhere.hpp"
+#include "SafePtr.hpp"
 #include "UniLog.hpp"
-#include "UniPtr.hpp"
 
 namespace RLib
 {

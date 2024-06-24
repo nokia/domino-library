@@ -36,8 +36,9 @@ using namespace std;
 
 namespace RLib
 {
-// ele & its typeid.hash_code
-using ELE_TID = pair<UniPtr, type_index>;  // type_index ==/!= ok, but type_info* & hash_code nok
+// - ele & its type_index(==/!= ok, but type_info* & hash_code nok)
+// - shared_ptr is safe to cast void since type_index (but not safe as SafePtr's create)
+using ELE_TID = pair<UniPtr, type_index>;
 using EleHdlr = function<void(UniPtr)>;
 
 // ***********************************************************************************************
