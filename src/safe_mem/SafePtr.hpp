@@ -105,25 +105,25 @@ shared_ptr<To> SafePtr<T>::cast() const noexcept
 {
     if constexpr(is_base_of_v<To, T>)  // safer than is_convertible()
     {
-        //HID("(SafePtr) cast derived->base/self");  // ERR() not MT safe
-        return pT_;
+        //HID("(SafePtr) cast to base/self");  // ERR() not MT safe
+        return dynamic_pointer_cast<To>(pT_);  // private/protected inherit will compile err(rare & no easy fix)
     }
-    else if constexpr(is_void_v<To>)  // else if for constexpr
+     else if constexpr(is_base_of_v<T, To>)  // else if for constexpr
     {
-        //HID("(SafePtr) cast any->void (for container to store diff types)");
-        return pT_;
-    }
-    else if constexpr(is_base_of_v<T, To>)
-    {
-        //HID("(SafePtr) cast base->derived");
+        //HID("(SafePtr) cast to derived");
         return dynamic_pointer_cast<To>(pT_);
+    }
+   else if constexpr(is_void_v<To>)
+    {
+        //HID("(SafePtr) cast to void (for container to store diff types)");
+        return pT_;
     }
     else if constexpr(!is_void_v<T>)
     {
-        HID("(SafePtr) casting from=" << typeid(T).name() << " to=" << typeid(To).name());
-        return this;  // c++17: force compile-err, safer than ret pT_ or null
-        //return nullptr;  // c++14
+        HID("(SafePtr) invalid nonVoid-to-nonVoid, from=" << typeid(T).name() << " to=" << typeid(To).name());
+        return nullptr;  // cast ok or null
     }
+
     else if (type_index(typeid(To)) == realType_)
     {
         //HID("(SafePtr) cast void->origin");
@@ -135,8 +135,7 @@ shared_ptr<To> SafePtr<T>::cast() const noexcept
         return static_pointer_cast<To>(pT_);
     }
     HID("(SafePtr) can't cast from=void/" << typeid(T).name() << " to=" << typeid(To).name());
-    // realType_ & diffType_ can't compile-check so has to ret null (than eg dyn-cast that always fail compile)
-    return nullptr;
+    return nullptr;  // since dynamic_pointer_cast<To>(pT_) may fail compile DataStore::get(); cast or or null
 }
 
 // ***********************************************************************************************
@@ -225,6 +224,7 @@ struct std::hash<RLib::SafePtr<T>>
 // 2024-02-13  CSZ       2)usage in dom lib
 // 2024-04-17  CSZ       3)strict constructor - illegal->compile-err (while *cast() can ret null)
 // 2024-05-06  CSZ       - AI-gen-code
+// 2024-06-28  CSZ       - dynamic_pointer_cast ok or ret null
 // ***********************************************************************************************
 // - Q&A
 //   . How to solve safety issue:
@@ -253,6 +253,11 @@ struct std::hash<RLib::SafePtr<T>>
 //     . not perfect, but SafePtr inc safe than shared_ptr - eg create(minor), cast(major) - so worth
 //     . it's possible but rare to use T* unsafely - SafePtr has this risk to exchange convenient
 //     . shared_ptr reduces mem-lifecycle-mgmt(1 major-possible-bug) - so worth
+//
+//   . why cast ok or null instead of compiling err?
+//     . copy constructor is ok or compiling err; they cover diff scenario
+//     . unique ret is predictable & simple
+//       . dynamic_cast & dynamic_pointer_cast mostly follow the same rule
 //
 //   . std::any vs SafePtr
 //     . SafePtr is safe shared_ptr that is lifecycle ptr, std::any is not ptr nor lifecycle mgmt

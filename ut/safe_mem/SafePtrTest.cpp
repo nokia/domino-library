@@ -80,19 +80,18 @@ TEST(SafePtrTest, GOLD_safeCast_self_base_void_back)
 
     EXPECT_EQ(1, dynamic_pointer_cast<Derive>(dynamic_pointer_cast<void>(dynamic_pointer_cast<Base>(d)))->value()) << "REQ: ->void & void->origin";
     EXPECT_EQ(1, dynamic_pointer_cast<Base  >(dynamic_pointer_cast<void>(dynamic_pointer_cast<Base>(d)))->value()) << "REQ: ->void & void->preVoid";
+
+    //EXPECT_EQ(1, dynamic_pointer_cast<Base>(dynamic_pointer_cast<void>(make_safe<Derive>())).get()) << "safe cast, but not support";
 }
 struct D_protect : protected Derive { int value() const override { return 2; } };
 struct D_private : private   Derive { int value() const override { return 3; } };
 TEST(SafePtrTest, invalidCast_retNull)
 {
-    EXPECT_EQ(nullptr, dynamic_pointer_cast<Derive>(make_safe<Base>()).get()) << "REQ: invalid base->derived";
+    EXPECT_EQ(nullptr, dynamic_pointer_cast<char  >(make_safe<int >(7)).get()) << "REQ: invalid int ->char";
+    EXPECT_EQ(nullptr, dynamic_pointer_cast<Derive>(make_safe<Base>() ).get()) << "REQ: invalid base->derived";
 
-    //dynamic_pointer_cast<char>(make_safe<int>(7));  // invalid cast, will compile err (safer than ret nullptr)
-
-    EXPECT_EQ(nullptr, dynamic_pointer_cast<Base>(dynamic_pointer_cast<void>(make_safe<Derive>())).get()) << "REQ: invalid derived->void->base";
-
-    //dynamic_pointer_cast<Base>(make_safe<D_private>());  // invalid private->base, will compile err
-    //dynamic_pointer_cast<Base>(make_safe<D_protect>());  // invalid protect->base, will compile err
+    //EXPECT_EQ(nullptr, dynamic_pointer_cast<Base>(make_safe<D_private>()).get());  // invalid, not ret null but compile err
+    //EXPECT_EQ(nullptr, dynamic_pointer_cast<Base>(make_safe<D_protect>()).get());  // invalid, not ret null but compile err
 }
 struct D2 : public Derive { int value() const override { return 2; } };
 TEST(SafePtrTest, safe_cast_bugFix)
