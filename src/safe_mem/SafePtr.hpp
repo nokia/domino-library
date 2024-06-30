@@ -76,14 +76,14 @@ private:
     // -------------------------------------------------------------------------------------------
     shared_ptr<T>    pT_;
     type_index realType_ = typeid(T);  // origin type
-    type_index diffType_ = realType_;  // maybe diff valid type than realType_ & void
+    type_index diffType_ = typeid(T);  // maybe diff valid type than realType_ & void
 };
 
 // ***********************************************************************************************
 template<typename T>
 template<typename From>
 SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom) noexcept  // cp
-    : pT_(aSafeFrom.get())  // to self/base/void only by shared_ptr till 024-04-25
+    : pT_(aSafeFrom.get())  // safe cp(to self/base/void) or compile err(can dynamic_pointer_cast if really safe)
 {
     init_(aSafeFrom);
 }

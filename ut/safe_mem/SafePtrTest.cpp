@@ -172,27 +172,29 @@ TEST(SafePtrTest, GOLD_const_and_back)
 // ***********************************************************************************************
 TEST(SafePtrTest, GOLD_mtQ_req_mv)
 {
-    auto msg = make_safe<string>("received msg");
+    auto msg = SafePtr<Base>(make_safe<Derive>());  // Derive->Base
     SafePtr<void> msgInQ = move(msg);
-    EXPECT_EQ(nullptr, msg.get()) << "REQ: giveup";
-    EXPECT_EQ("received msg", *dynamic_pointer_cast<string>(msgInQ).get()) << "REQ: takeover msg";
+    EXPECT_EQ(nullptr, msg.get()) << "REQ: src giveup";
+    EXPECT_EQ(type_index(typeid(Base)), msg.realType()) << "REQ: reset src all";
+    EXPECT_EQ(type_index(typeid(Base)), msg.diffType()) << "REQ: reset src all";
+
+    EXPECT_EQ(1                         , dynamic_pointer_cast<Base>(msgInQ)->value()  ) << "REQ: takeover msg";
+    EXPECT_EQ(type_index(typeid(Derive)), dynamic_pointer_cast<Base>(msgInQ).realType()) << "REQ: reset src all";
+    EXPECT_EQ(type_index(typeid(Base  )), dynamic_pointer_cast<Base>(msgInQ).diffType()) << "REQ: reset src all";
 }
 TEST(SafePtrTest, mv_fail)
 {
-    auto i = make_safe<int>(7);
-    auto src = SafePtr<void>(i);
-    EXPECT_EQ(type_index(typeid(int)), src.realType());
-    EXPECT_EQ(type_index(typeid(int)), src.diffType());
+    auto msgInQ = SafePtr<void>(SafePtr<Base>(make_safe<Derive>()));
+    auto msgOutQ = dynamic_pointer_cast<char>(move(msgInQ));
+    EXPECT_EQ(1, dynamic_pointer_cast<Base>(msgInQ)->value ()) << "REQ: failed mv -> keep src";
+    EXPECT_EQ(type_index(typeid(Derive)),   msgInQ.realType()) << "REQ: failed mv -> keep src";
+    EXPECT_EQ(type_index(typeid(Base  )),   msgInQ.diffType()) << "REQ: failed mv -> keep src";
 
-    auto dst = dynamic_pointer_cast<char>(move(src));
-    EXPECT_NE(nullptr,                  src.get()     ) << "REQ: keep content";
-    EXPECT_EQ(type_index(typeid(int)),  src.realType()) << "REQ: keep origin type";
-    EXPECT_EQ(type_index(typeid(int)),  src.diffType()) << "REQ: keep last type";
-    EXPECT_EQ(nullptr,                  dst.get()     ) << "REQ: fail to takeover content";
-    EXPECT_EQ(type_index(typeid(char)), dst.realType()) << "REQ: fail to takeover origin type";
-    EXPECT_EQ(type_index(typeid(char)), dst.diffType()) << "REQ: fail to takeover last type";
+    EXPECT_EQ(nullptr                 , msgOutQ.get     ()) << "REQ: failed mv -> dest takeover nothing";
+    EXPECT_EQ(type_index(typeid(char)), msgOutQ.realType()) << "REQ: failed mv -> dest takeover nothing";
+    EXPECT_EQ(type_index(typeid(char)), msgOutQ.diffType()) << "REQ: failed mv -> dest takeover nothing";
 
-    SafePtr<Base> b = SafePtr<Derive>();
+    SafePtr<Base> b = SafePtr<Derive>();  // mv nullptr
     EXPECT_EQ(type_index(typeid(Base)), b.realType()) << "REQ/cov: mv-nothing=fail so origin is Base instead of Derive";
 }
 

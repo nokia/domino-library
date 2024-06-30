@@ -47,7 +47,7 @@ elseif(COV  STREQUAL  "ubsan")
 else()
     message("!!! UT only - no cov, no SANITIZE check etc")
     set(CMAKE_CXX_STANDARD  17)
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O1")  # fastest build+ut
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O1")  # fastest build+ut (1-cpp-change=5s, vs 45s of -g)
     #add_compile_definitions(WITH_HID_LOG)  # cov no HID; easy to turn-on
 endif()
 
