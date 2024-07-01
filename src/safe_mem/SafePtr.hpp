@@ -68,7 +68,7 @@ public:
 
     // most for debug
     auto realType() const noexcept { return realType_; }  // ret cp is safer than ref
-    auto diffType() const noexcept { return diffType_; }
+    auto lastType() const noexcept { return lastType_; }
 
 private:
     template<typename From> void init_(const SafePtr<From>&) noexcept;
@@ -76,7 +76,7 @@ private:
     // -------------------------------------------------------------------------------------------
     shared_ptr<T>    pT_;
     type_index realType_ = typeid(T);  // origin type
-    type_index diffType_ = typeid(T);  // maybe diff valid type than realType_ & void
+    type_index lastType_ = typeid(T);  // maybe last valid type than realType_ & void
 };
 
 // ***********************************************************************************************
@@ -95,7 +95,7 @@ SafePtr<T>::SafePtr(SafePtr<From>&& aSafeFrom) noexcept  // mv - MtQ need
     : SafePtr(aSafeFrom)  // cp
 {
     if (pT_ != nullptr)  // cp succ, clear src
-        aSafeFrom = SafePtr<From>();
+        aSafeFrom = nullptr;
 }
 
 // ***********************************************************************************************
@@ -129,7 +129,7 @@ shared_ptr<To> SafePtr<T>::cast() const noexcept
         //HID("(SafePtr) cast void->origin");
         return static_pointer_cast<To>(pT_);
     }
-    else if (type_index(typeid(To)) == diffType_)
+    else if (type_index(typeid(To)) == lastType_)
     {
         //HID("(SafePtr) cast void to last-type-except-void");
         return static_pointer_cast<To>(pT_);
@@ -151,14 +151,14 @@ void SafePtr<T>::init_(const SafePtr<From>& aSafeFrom) noexcept
     }
 
     realType_ = aSafeFrom.realType();
-    // save another useful type
-    if (type_index(typeid(From)) != realType_ && !is_same_v<From, void>)
-        diffType_ = type_index(typeid(From));
+    // save last useful type
+    if (type_index(typeid(T)) != realType_ && !is_same_v<T, void>)
+        lastType_ = type_index(typeid(T));
     else
-        diffType_ = aSafeFrom.diffType();
+        lastType_ = aSafeFrom.lastType();
 
     /*HID("cp from=" << typeid(From).name() << " to=" << typeid(T).name()
-        << ", diff=" << (diffType_ == nullptr ? "null" : diffType_->name())
+        << ", diff=" << (lastType_ == nullptr ? "null" : lastType_->name())
         << ", real=" << (realType_ == nullptr ? "null" : realType_->name()));*/
 }
 
@@ -254,10 +254,18 @@ struct std::hash<RLib::SafePtr<T>>
 //     . it's possible but rare to use T* unsafely - SafePtr has this risk to exchange convenient
 //     . shared_ptr reduces mem-lifecycle-mgmt(1 major-possible-bug) - so worth
 //
-//   . why cast ok or null instead of compiling err?
-//     . copy constructor is ok or compiling err; they cover diff scenario
-//     . unique ret is predictable & simple
-//       . dynamic_cast & dynamic_pointer_cast mostly follow the same rule
+//   . why dynamic_pointer_cast?
+//     . cast all possible eg base->derived (more than cp constructor)
+//     . explicit cast so ok or nullptr (cp constructor is implicit & ok/compile-err)
+//       . unified-ret is predictable & simple
+//       . dynamic_cast & dynamic_pointer_cast follow the same rule
+//     . align/compatible with shared_ptr
+//   . why cp constructor?
+//     . dyn-cast & cp cover diff scenario - implicit convert is useful/convenient also
+//   . why mv constructor?
+//     . clean src
+//   . why no assignment?
+//     . compiler will gen it & enough
 //
 //   . std::any vs SafePtr
 //     . SafePtr is safe shared_ptr that is lifecycle ptr, std::any is not ptr nor lifecycle mgmt

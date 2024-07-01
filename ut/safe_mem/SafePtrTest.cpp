@@ -92,6 +92,16 @@ TEST(SafePtrTest, invalidCast_retNull)
 
     //EXPECT_EQ(nullptr, dynamic_pointer_cast<Base>(make_safe<D_private>()).get());  // invalid, not ret null but compile err
     //EXPECT_EQ(nullptr, dynamic_pointer_cast<Base>(make_safe<D_protect>()).get());  // invalid, not ret null but compile err
+
+    auto msgInQ = SafePtr<void>(SafePtr<Base>(make_safe<Derive>()));
+    auto msgOutQ = dynamic_pointer_cast<char>(msgInQ);
+    EXPECT_EQ(1, dynamic_pointer_cast<Base>(msgInQ)->value ()) << "REQ: failed cast -> keep src";
+    EXPECT_EQ(type_index(typeid(Derive)),   msgInQ.realType()) << "REQ: failed cast -> keep src";
+    EXPECT_EQ(type_index(typeid(Base  )),   msgInQ.lastType()) << "REQ: failed cast -> keep src";
+
+    EXPECT_EQ(nullptr                 , msgOutQ.get     ()) << "REQ: failed cast -> dest get nothing";
+    EXPECT_EQ(type_index(typeid(char)), msgOutQ.realType()) << "REQ: failed cast -> dest get nothing";
+    EXPECT_EQ(type_index(typeid(char)), msgOutQ.lastType()) << "REQ: failed cast -> dest get nothing";
 }
 struct D2 : public Derive { int value() const override { return 2; } };
 TEST(SafePtrTest, safe_cast_bugFix)
@@ -176,31 +186,29 @@ TEST(SafePtrTest, GOLD_mtQ_req_mv)
     SafePtr<void> msgInQ = move(msg);
     EXPECT_EQ(nullptr, msg.get()) << "REQ: src giveup";
     EXPECT_EQ(type_index(typeid(Base)), msg.realType()) << "REQ: reset src all";
-    EXPECT_EQ(type_index(typeid(Base)), msg.diffType()) << "REQ: reset src all";
+    EXPECT_EQ(type_index(typeid(Base)), msg.lastType()) << "REQ: reset src all";
 
     EXPECT_EQ(1                         , dynamic_pointer_cast<Base>(msgInQ)->value()  ) << "REQ: takeover msg";
     EXPECT_EQ(type_index(typeid(Derive)), dynamic_pointer_cast<Base>(msgInQ).realType()) << "REQ: reset src all";
-    EXPECT_EQ(type_index(typeid(Base  )), dynamic_pointer_cast<Base>(msgInQ).diffType()) << "REQ: reset src all";
+    EXPECT_EQ(type_index(typeid(Base  )), dynamic_pointer_cast<Base>(msgInQ).lastType()) << "REQ: reset src all";
 }
-TEST(SafePtrTest, mv_fail)
+TEST(SafePtrTest, nothing_cp_mv_assign)
 {
-    auto msgInQ = SafePtr<void>(SafePtr<Base>(make_safe<Derive>()));
-    auto msgOutQ = dynamic_pointer_cast<char>(move(msgInQ));
-    EXPECT_EQ(1, dynamic_pointer_cast<Base>(msgInQ)->value ()) << "REQ: failed mv -> keep src";
-    EXPECT_EQ(type_index(typeid(Derive)),   msgInQ.realType()) << "REQ: failed mv -> keep src";
-    EXPECT_EQ(type_index(typeid(Base  )),   msgInQ.diffType()) << "REQ: failed mv -> keep src";
+    SafePtr<Base> cp = SafePtr<Derive>();  // cp nullptr
+    EXPECT_EQ(type_index(typeid(Base)), cp.realType()) << "REQ/cov: cp-nothing=fail so origin is Base instead of Derive";
 
-    EXPECT_EQ(nullptr                 , msgOutQ.get     ()) << "REQ: failed mv -> dest takeover nothing";
-    EXPECT_EQ(type_index(typeid(char)), msgOutQ.realType()) << "REQ: failed mv -> dest takeover nothing";
-    EXPECT_EQ(type_index(typeid(char)), msgOutQ.diffType()) << "REQ: failed mv -> dest takeover nothing";
+    SafePtr<Base> mv = move(SafePtr<Derive>());  // mv nullptr
+    EXPECT_EQ(type_index(typeid(Base)), mv.realType()) << "REQ/cov: mv-nothing=fail so origin is Base instead of Derive";
 
-    SafePtr<Base> b = SafePtr<Derive>();  // mv nullptr
-    EXPECT_EQ(type_index(typeid(Base)), b.realType()) << "REQ/cov: mv-nothing=fail so origin is Base instead of Derive";
+    SafePtr<Base> as;
+    EXPECT_EQ(type_index(typeid(Base)), mv.realType());
+    as = SafePtr<Derive>();
+    EXPECT_EQ(type_index(typeid(Base)), mv.realType()) << "REQ/cov: assign-nothing=fail so keep origin";
 }
 
 #define ASSIGN
 // ***********************************************************************************************
-TEST(SafePtrTest, safe_assign)  // operator=() is auto-gen, just simple test 1 case
+TEST(SafePtrTest, GOLD_safe_assign)  // operator=() is auto-gen, just simple test 1 case
 {
     SafePtr<int> one;
     auto two = make_safe<int>(42);
@@ -211,6 +219,19 @@ TEST(SafePtrTest, safe_assign)  // operator=() is auto-gen, just simple test 1 c
     EXPECT_EQ(nullptr, two.get()) << "REQ: assign to null";
     EXPECT_EQ(42, *(one.get())) << "REQ: valid get after assigner is reset";
 }
+TEST(SafePtrTest, GOLD_safeReset_byAssign)
+{
+    auto msgInQ = SafePtr<void>(SafePtr<Base>(make_safe<Derive>()));
+    EXPECT_NE(nullptr                   , msgInQ.get     ()) << "REQ: init ok";
+    EXPECT_EQ(type_index(typeid(Derive)), msgInQ.realType()) << "REQ: init ok";
+    EXPECT_EQ(type_index(typeid(Base  )), msgInQ.lastType()) << "REQ: init ok";
+
+    msgInQ = nullptr;  // reset
+    EXPECT_EQ(nullptr                 , msgInQ.get     ()) << "REQ: reset ok";
+    EXPECT_EQ(type_index(typeid(void)), msgInQ.realType()) << "REQ: reset ok";
+    EXPECT_EQ(type_index(typeid(void)), msgInQ.lastType()) << "REQ: reset ok";
+}
+// assign/cp/mv failure -> compile err
 
 #define DESTRUCT
 // ***********************************************************************************************
