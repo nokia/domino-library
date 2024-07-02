@@ -111,7 +111,7 @@ ELE_TID MtInQueue::pop()
     // nothing
     auto&& it = begin_();
     if (it == cache_.end())
-        return ELE_TID(nullptr, type_index(typeid(void)));
+        return ELE_TID(nullptr, typeid(void));
 
     // pop
     auto ele_tid = move(*it);  // must copy

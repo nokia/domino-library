@@ -124,12 +124,12 @@ shared_ptr<To> SafePtr<T>::cast() const noexcept
         return nullptr;  // cast ok or null
     }
 
-    else if (type_index(typeid(To)) == realType_)
+    else if (realType_ == typeid(To))
     {
         //HID("(SafePtr) cast void->origin");
         return static_pointer_cast<To>(pT_);
     }
-    else if (type_index(typeid(To)) == lastType_)
+    else if (lastType_  == typeid(To))
     {
         //HID("(SafePtr) cast void to last-type-except-void");
         return static_pointer_cast<To>(pT_);
@@ -152,8 +152,8 @@ void SafePtr<T>::init_(const SafePtr<From>& aSafeFrom) noexcept
 
     realType_ = aSafeFrom.realType();
     // save last useful type
-    if (!is_same_v<T, void> && type_index(typeid(T)) != realType_)
-        lastType_ = type_index(typeid(T));
+    if (!is_same_v<T, void> && realType_ != typeid(T))
+        lastType_ = typeid(T);
     else
         lastType_ = aSafeFrom.lastType();
 

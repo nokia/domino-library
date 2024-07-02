@@ -39,7 +39,7 @@ namespace RLib
 // - ele & its type_index(==/!= ok, but type_info* & hash_code nok)
 // - shared_ptr is safe to cast void since type_index (but not safe as SafePtr's create)
 using ELE_TID = pair<UniPtr, type_index>;
-using EleHdlr = function<void(UniPtr)>;
+using EleHdlr = function<void(UniPtr)>;  // NO exception allowed
 
 // ***********************************************************************************************
 class MtInQueue
@@ -47,7 +47,7 @@ class MtInQueue
 public:
     ~MtInQueue();
 
-    template<class aEleType> void mt_push(PTR<aEleType>&& aEle);
+    template<class aEleType> void mt_push(PTR<aEleType>&& aEle);  // aEle may not mt-safe, so NOT share to other thread
 
     // - shall be called in main thread ONLY!!!
     // - high performance
@@ -68,7 +68,7 @@ private:
 
     // -------------------------------------------------------------------------------------------
     deque<ELE_TID> queue_;  // unlimited ele; most suitable container
-    deque<ELE_TID> cache_;
+    deque<ELE_TID> cache_;  // main-thread use ONLY (so no mutex protect)
     mutex mutex_;
 
     unordered_map<type_index, EleHdlr> tid_hdlr_S_;
@@ -100,7 +100,7 @@ void MtInQueue::mt_push(PTR<aEleType>&& aEle)
     // push
     {
         lock_guard<mutex> guard(mutex_);
-        queue_.push_back(ELE_TID(move(aEle), type_index(typeid(aEleType))));
+        queue_.push_back(ELE_TID(move(aEle), typeid(aEleType)));
         HID("(MtQ) ptr=" << aEle.get() << ", nRef=" << aEle.use_count());  // HID supports MT
     }
 
@@ -118,7 +118,7 @@ PTR<aEleType> MtInQueue::pop()
         return nullptr;
 
     // mismatch
-    if (it->second != type_index(typeid(aEleType)))
+    if (it->second != typeid(aEleType))
         return nullptr;
 
     // pop

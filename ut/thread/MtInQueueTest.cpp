@@ -198,7 +198,7 @@ TEST_F(MtInQueueTest, destruct_right_type)
     mt_getQ().mt_clear();
     ASSERT_TRUE(isDestructed) << "REQ: destruct correctly";
 }
-TEST_F(MtInQueueTest, clear_queue_cache_hdlr)
+TEST_F(MtInQueueTest, clean_queue_cache_hdlr)
 {
     mt_getQ().mt_push<int>(MAKE_PTR<int>(1));
     mt_getQ().mt_push<int>(MAKE_PTR<int>(2));
