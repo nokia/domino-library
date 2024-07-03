@@ -19,6 +19,7 @@
 //   . queue_
 //
 // - class safe: true (when use SafePtr instead of shared_ptr)
+//   . MtInQueue is for normal/most scenario, may NOK for high throughput, etc
 // ***********************************************************************************************
 #pragma once
 
@@ -54,7 +55,7 @@ public:
     ELE_TID pop();
     template<class aEleType> PTR<aEleType> pop();
 
-    size_t mt_sizeQ(bool canBlock);
+    size_t mt_size(bool canBlock);
     void   mt_clear();
 
     // shall be called in main thread ONLY!!!
@@ -67,7 +68,7 @@ private:
     size_t  handleCacheEle_();
 
     // -------------------------------------------------------------------------------------------
-    deque<ELE_TID> queue_;  // unlimited ele; most suitable container
+    deque<ELE_TID> queue_;  // my limit ele# if need; most suitable container
     deque<ELE_TID> cache_;  // main-thread use ONLY (so no mutex protect)
     mutex mutex_;
 

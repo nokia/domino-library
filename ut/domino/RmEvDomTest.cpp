@@ -220,7 +220,7 @@ TYPED_TEST_P(RmFreeHdlrDomTest, GOLD_rm_FreeHdlrDom_resrc)
     EXPECT_TRUE(PARA_DOM->isRepeatHdlr(e1));
 
     EXPECT_TRUE(PARA_DOM->rmEvOK("e1"));
-    EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e1)) << "REQ: rm Ev shall clean auto-free flag.";
+    EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e1)) << "REQ: rm Ev shall clear auto-free flag.";
 
     EXPECT_EQ(e1, PARA_DOM->repeatedHdlr("another e1")) << "REQ: reuse e1.";
     EXPECT_TRUE(PARA_DOM->isRepeatHdlr(e1));

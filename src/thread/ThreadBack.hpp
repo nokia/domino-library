@@ -36,21 +36,19 @@
 //     . aovid complex MsgSelf: ThreadBack provides 1 func to fill aBack into MsgSelf
 //     . avoid complex ThreadBack (viaMsgSelf() in new hpp)
 //     . avoid block main thread
+//   * ThreadBack is for normal/most scenario, may NOK for huge threads, high throughput, etc
+//   * ONLY call ThreadBack in main-thread
 //
 // - class safe: yes
 //   * all ThreadBack func must run in 1 thread (best in main thread)
 //     . ThreadBack can call inMyMainThread() to ensure this
 //     . but can all RLib func call inMyMainThread()? little benefit so giveup
-//     * common sense/principle: RLib (include ThreadBack) not call inMyMainThread()
+//       * common sense/principle: RLib (include ThreadBack) not call inMyMainThread()
 //       . inMyMainThread() for user debug - any main-thread func shall ret T if call inMyMainThread()
 //     * same for exception - assume no exception from any hdlr provided to RLib
-//   . no duty to any unsafe behavior of MT_ThreadEntryFN or ThreadBackFN (eg throw exception)
+//   . no duty to any unsafe behavior of MT_ThreadEntryFN & ThreadBackFN (eg throw exception)
 //     . MT_ThreadEntryFN & ThreadBackFN shall NOT throw exception
 //     . they can try-catch all exception & leave RLib simple/focus
-//   . limit thread#?
-//     . eg linsee's /proc/sys/kernel/threads-max=154w, cloud=35w
-//     . /proc/sys/kernel/threads-max is for each process
-//     . so no necessary to limit in ThreadBack
 //
 // - support multi-thread
 //   . MT_/mt_ prefix: yes
@@ -77,7 +75,15 @@ using StoreThreadBack   = list<pair<future<bool>, ThreadBackFN> >;
 class ThreadBack
 {
 public:
+    // @brief: Schedules an asynchronous task to be executed in a background thread.
+    // @param MT_ThreadEntryFN: The task to be executed asynchronously.
+    // @param ThreadBackFN    : The callback to be invoked in the main thread upon task completion.
+    // @param UniLog          : The logger to use for this operation.
     static void newThread(const MT_ThreadEntryFN&, const ThreadBackFN&, UniLog& = UniLog::defaultUniLog_);
+
+    // @brief: Processes completed threads and invokes their callbacks.
+    // @param UniLog: The logger to use for this operation.
+    // @return: The number of completed tasks processed.
     static size_t hdlFinishedThreads(UniLog& = UniLog::defaultUniLog_);
 
     static size_t nThread() { return fut_backFN_S_.size(); }
@@ -122,9 +128,17 @@ public:
 //     . most func/variable are in main-thread, so w/o this prefix
 //   . must save future<>
 //     . otherwise the thread looks like serialized with main thread
-//   . thread pool to avoid cost of creating/destroying thread?
+//   . limit thread#?
+//     . eg linsee's /proc/sys/kernel/threads-max=154w, cloud=35w
+//       . /proc/sys/kernel/threads-max is for each process
+//       . so no necessary to limit
+//     . most code in main-thread -> very little (eg 1%) in ThreadBack, shouldn't be many threads
+//   . cancel thread?
+//     . async not support cancel
+//     . usr-self can cancel by eg flag
+//   . thread pool?
 //     . then eg future.wait_for() can't be used, may high-risk to self-impl
-//     . ThreadBack is used for time-cost task, thread create/destroy should be too small to care
+//     * thread pool costs more time than async (eg 0.3s:0.1s of 100 threads on belinb03)
 //   * hdlFinishedThreads()'s wait_for() each thread, may spend too long?
 //     . ThreadBack is to use for time-consuming tasks
 //     * should be not too many threads exist simultaneously

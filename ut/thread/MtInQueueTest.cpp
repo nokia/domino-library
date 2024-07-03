@@ -122,18 +122,18 @@ TEST_F(MtInQueueTest, pushWakeup_popNoBlockAndWakeup)
 TEST_F(MtInQueueTest, push_null_NOK)
 {
     mt_getQ().mt_push<void>(nullptr);
-    EXPECT_EQ(0, mt_getQ().mt_sizeQ(true)) << "REQ: can't push nullptr since pop empty will ret nullptr";
+    EXPECT_EQ(0, mt_getQ().mt_size(true)) << "REQ: can't push nullptr since pop empty will ret nullptr";
 }
 TEST_F(MtInQueueTest, push_takeover_toEnsureMtSafe)
 {
     auto ele = MAKE_PTR<int>(1);
     auto e2  = ele;
     mt_getQ().mt_push<int>(move(ele));
-    EXPECT_EQ(0, mt_getQ().mt_sizeQ(true)) << "REQ: push failed since can't takeover ele";
+    EXPECT_EQ(0, mt_getQ().mt_size(true)) << "REQ: push failed since can't takeover ele";
 
     e2 = nullptr;
     mt_getQ().mt_push<int>(move(ele));
-    EXPECT_EQ(1, mt_getQ().mt_sizeQ(true)) << "REQ: push succ since takeover";
+    EXPECT_EQ(1, mt_getQ().mt_size(true)) << "REQ: push succ since takeover";
     EXPECT_EQ(0, ele.use_count())      << "REQ: own nothing after push";
 }
 
@@ -141,7 +141,7 @@ TEST_F(MtInQueueTest, push_takeover_toEnsureMtSafe)
 // ***********************************************************************************************
 TEST_F(MtInQueueTest, popEmpty)
 {
-    EXPECT_EQ(0u, mt_getQ().mt_sizeQ(true)) << "empty MtQ";
+    EXPECT_EQ(0u, mt_getQ().mt_size(true)) << "empty MtQ";
     EXPECT_EQ(nullptr, mt_getQ().pop<void>().get()) << "REQ: can pop empty";
     EXPECT_EQ(nullptr, mt_getQ().pop().first.get()) << "REQ: can pop empty (diff pop)";
 }
@@ -149,35 +149,35 @@ TEST_F(MtInQueueTest, popMismatchType)
 {
     mt_getQ().mt_push<int>(MAKE_PTR<int>(10));
     EXPECT_EQ(nullptr, mt_getQ().pop<void>().get()) << "REQ: pop failed since type mismatch";
-    EXPECT_EQ(1u, mt_getQ().mt_sizeQ(true)) << "REQ: pop fail = no pop - natural";
+    EXPECT_EQ(1u, mt_getQ().mt_size(true)) << "REQ: pop fail = no pop - natural";
 }
 
 #define SIZE_Q
 // ***********************************************************************************************
 TEST_F(MtInQueueTest, sizeQ_block_nonBlock)
 {
-    ASSERT_EQ(0u, mt_getQ().mt_sizeQ(true )) << "REQ: blocked init";
-    ASSERT_EQ(0u, mt_getQ().mt_sizeQ(false)) << "REQ: unblocked init";
+    ASSERT_EQ(0u, mt_getQ().mt_size(true )) << "REQ: blocked init";
+    ASSERT_EQ(0u, mt_getQ().mt_size(false)) << "REQ: unblocked init";
 
     mt_getQ().mt_push<int>(MAKE_PTR<int>(1));
-    ASSERT_EQ(1u, mt_getQ().mt_sizeQ(true )) << "REQ: inc blocked size";
-    ASSERT_EQ(1u, mt_getQ().mt_sizeQ(false)) << "REQ: inc unblocked size";
+    ASSERT_EQ(1u, mt_getQ().mt_size(true )) << "REQ: inc blocked size";
+    ASSERT_EQ(1u, mt_getQ().mt_size(false)) << "REQ: inc unblocked size";
 
     mt_getQ().backdoor().lock();
-    ASSERT_EQ(0u, mt_getQ().mt_sizeQ(false)) << "REQ: sizeQ can be unblocked (blocked will hang)";
+    ASSERT_EQ(0u, mt_getQ().mt_size(false)) << "REQ: sizeQ can be unblocked (blocked will hang)";
     mt_getQ().backdoor().unlock();
 
     mt_getQ().mt_push<int>(MAKE_PTR<int>(2));
     EXPECT_EQ(1, *mt_getQ().pop<int>().get());
-    ASSERT_EQ(1u, mt_getQ().mt_sizeQ(true )) << "REQ: dec blocked size";
-    ASSERT_EQ(1u, mt_getQ().mt_sizeQ(false)) << "REQ: dec unblocked size";
+    ASSERT_EQ(1u, mt_getQ().mt_size(true )) << "REQ: dec blocked size";
+    ASSERT_EQ(1u, mt_getQ().mt_size(false)) << "REQ: dec unblocked size";
 
     mt_getQ().mt_push<int>(MAKE_PTR<int>(3));
-    ASSERT_EQ(2u, mt_getQ().mt_sizeQ(true )) << "REQ: re-inc blocked size (now 1 in cache_, 1 in queue)";
-    ASSERT_EQ(2u, mt_getQ().mt_sizeQ(false)) << "REQ: re-inc unblocked size";
+    ASSERT_EQ(2u, mt_getQ().mt_size(true )) << "REQ: re-inc blocked size (now 1 in cache_, 1 in queue)";
+    ASSERT_EQ(2u, mt_getQ().mt_size(false)) << "REQ: re-inc unblocked size";
 
     mt_getQ().backdoor().lock();
-    ASSERT_EQ(1u, mt_getQ().mt_sizeQ(false)) << "REQ: sizeQ can be unblocked (get cache_ only)";
+    ASSERT_EQ(1u, mt_getQ().mt_size(false)) << "REQ: sizeQ can be unblocked (get cache_ only)";
     mt_getQ().backdoor().unlock();
 }
 
@@ -198,7 +198,7 @@ TEST_F(MtInQueueTest, destruct_right_type)
     mt_getQ().mt_clear();
     ASSERT_TRUE(isDestructed) << "REQ: destruct correctly";
 }
-TEST_F(MtInQueueTest, clean_queue_cache_hdlr)
+TEST_F(MtInQueueTest, clear_queue_cache_hdlr)
 {
     mt_getQ().mt_push<int>(MAKE_PTR<int>(1));
     mt_getQ().mt_push<int>(MAKE_PTR<int>(2));
@@ -206,15 +206,15 @@ TEST_F(MtInQueueTest, clean_queue_cache_hdlr)
     mt_getQ().mt_push<int>(MAKE_PTR<int>(3));
 
     mt_getQ().backdoor().lock();
-    ASSERT_EQ(1u, mt_getQ().mt_sizeQ(false)) << "1 in cache_";
+    ASSERT_EQ(1u, mt_getQ().mt_size(false)) << "1 in cache_";
     mt_getQ().backdoor().unlock();
-    EXPECT_EQ(2u, mt_getQ().mt_sizeQ(true)) << "1 in queue_";
+    EXPECT_EQ(2u, mt_getQ().mt_size(true)) << "1 in queue_";
 
     mt_getQ().setHdlrOK<int>([](UniPtr){});
     EXPECT_EQ(1u, mt_getQ().nHdlr()) << "1 hdlr";
 
     mt_getQ().mt_clear();
-    EXPECT_EQ(0u, mt_getQ().mt_sizeQ(true)) << "REQ: clear all ele";
+    EXPECT_EQ(0u, mt_getQ().mt_size(true)) << "REQ: clear all ele";
     EXPECT_EQ(0u, mt_getQ().nHdlr()) << "REQ: clear all hdlr";
 }
 TEST_F(MtInQueueTest, cov_destructor)
@@ -237,7 +237,7 @@ TEST_F(MtInQueueTest, GOLD_handle_bothCacheAndQueue_ifPossible_withoutBlocked)
     mt_getQ().mt_push<int>(MAKE_PTR<int>(1));
     mt_getQ().pop();  // still 1 ele in cache_
     mt_getQ().mt_push<int>(MAKE_PTR<int>(1));  // and 1 ele in queue_
-    EXPECT_EQ(2u, mt_getQ().mt_sizeQ(true));
+    EXPECT_EQ(2u, mt_getQ().mt_size(true));
 
     mt_getQ().backdoor().lock();
     EXPECT_EQ(1u, mt_getQ().handleAllEle()) << "REQ: handle cache_, avoid blocked on queue_";
@@ -245,20 +245,20 @@ TEST_F(MtInQueueTest, GOLD_handle_bothCacheAndQueue_ifPossible_withoutBlocked)
 
     mt_getQ().backdoor().unlock();
     mt_getQ().handleAllEle();
-    EXPECT_EQ(0u, mt_getQ().mt_sizeQ(true)) << "REQ: shall handle queue_ since unlocked";
+    EXPECT_EQ(0u, mt_getQ().mt_size(true)) << "REQ: shall handle queue_ since unlocked";
     EXPECT_EQ(2u, nCalled);
 }
 TEST_F(MtInQueueTest, discard_noHdlrEle)
 {
     mt_getQ().mt_push<int>(MAKE_PTR<int>(1));
-    EXPECT_EQ(1u, mt_getQ().mt_sizeQ(true));
+    EXPECT_EQ(1u, mt_getQ().mt_size(true));
 
     mt_getQ().handleAllEle();
-    EXPECT_EQ(0u, mt_getQ().mt_sizeQ(true)) << "REQ: discard ele w/o hdlr - simple & no mem leak";
+    EXPECT_EQ(0u, mt_getQ().mt_size(true)) << "REQ: discard ele w/o hdlr - simple & no mem leak";
 }
 TEST_F(MtInQueueTest, handle_emptyQ)
 {
-    EXPECT_EQ(0u, mt_getQ().mt_sizeQ(true)) << "REQ: can handle empty Q";
+    EXPECT_EQ(0u, mt_getQ().mt_size(true)) << "REQ: can handle empty Q";
     mt_getQ().handleAllEle();
 }
 TEST_F(MtInQueueTest, hdlr_cannot_null_overwrite)
@@ -281,7 +281,7 @@ TEST_F(MtInQueueTest, handle_via_base)
 
     auto d = MAKE_PTR<Derive>();
     mt_getQ().mt_push<Base>(move(d));
-    EXPECT_EQ(2u, mt_getQ().mt_sizeQ(true)) << "REQ: can push Derive to Base";
+    EXPECT_EQ(2u, mt_getQ().mt_size(true)) << "REQ: can push Derive to Base";
 
     EXPECT_TRUE(mt_getQ().setHdlrOK<Base>([](UniPtr aEle)
     {
@@ -291,7 +291,7 @@ TEST_F(MtInQueueTest, handle_via_base)
         EXPECT_EQ(exp++, ele.get()->value());
     }));
     mt_getQ().handleAllEle();
-    EXPECT_EQ(0u, mt_getQ().mt_sizeQ(true)) << "req: Base & Derive are handled correctly";
+    EXPECT_EQ(0u, mt_getQ().mt_size(true)) << "req: Base & Derive are handled correctly";
 }
 
 }  // namespace

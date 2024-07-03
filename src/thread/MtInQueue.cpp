@@ -14,7 +14,7 @@ namespace RLib
 // ***********************************************************************************************
 MtInQueue::~MtInQueue()
 {
-    const auto nEle = mt_sizeQ(true);
+    const auto nEle = mt_size(true);
     if (nEle)
         WRN("discard nEle=" << nEle);  // main thread can WRN()
 }
@@ -89,7 +89,7 @@ void MtInQueue::mt_clear()
 }
 
 // ***********************************************************************************************
-size_t MtInQueue::mt_sizeQ(bool canBlock)
+size_t MtInQueue::mt_size(bool canBlock)
 {
     if (canBlock)
     {

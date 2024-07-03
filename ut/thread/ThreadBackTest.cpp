@@ -29,7 +29,7 @@ struct ThreadBackTest : public Test, public UniLog
 {
     ThreadBackTest() : UniLog(UnitTest::GetInstance()->current_test_info()->name())
     {
-        EXPECT_EQ(0, ThreadBack::nThread()) << "REQ: clean env";
+        EXPECT_EQ(0, ThreadBack::nThread()) << "REQ: clear env";
     }
 
     ~ThreadBackTest()

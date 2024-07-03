@@ -17,7 +17,7 @@ namespace RLib
 size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
 {
     size_t nHandled = 0;
-    for (auto&& fut_backFN = fut_backFN_S_.begin(); fut_backFN != fut_backFN_S_.end();)
+    for (auto&& fut_backFN = fut_backFN_S_.begin(); fut_backFN != fut_backFN_S_.end();)  // may limit# if too many
     {
         // safer to check valid here than in newThread(), eg bug after newThread()
         auto&& threadFut = fut_backFN->first;
