@@ -13,10 +13,13 @@
 #include <unordered_map>
 
 #include "MsgSelf.hpp"
-#include "MT_PingMainTH.hpp"
-#include "MtInQueue.hpp"
 #include "ThreadBackViaMsgSelf.hpp"
 #include "UniLog.hpp"
+
+#define RLIB_UT
+#include "MT_PingMainTH.hpp"
+#include "MtInQueue.hpp"
+#undef RLIB_UT
 
 using namespace std::chrono;
 using namespace testing;
@@ -27,7 +30,9 @@ struct MT_SemaphoreTest : public Test, public UniLog
 {
     MT_SemaphoreTest()
         : UniLog(UnitTest::GetInstance()->current_test_info()->name())
-    {}
+    {
+        g_sem.reset();  // clear prev test's counter
+    }
     void SetUp() override
     {
         mt_getQ().mt_clear();  // avoid other case interfere

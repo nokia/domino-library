@@ -20,6 +20,7 @@
 // ***********************************************************************************************
 #pragma once
 
+#include <atomic>
 #include <semaphore.h>
 
 using namespace std;
@@ -30,20 +31,30 @@ namespace RLib
 class MT_Semaphore
 {
 public:
-    MT_Semaphore()  { sem_init(&mt_sem_, 0, 0); }  // 2nd para: intra-process; 3rd: init value
-    ~MT_Semaphore() { sem_destroy(&mt_sem_); }
-    MT_Semaphore(const MT_Semaphore&) = delete;  // then compiler will not auto-gen mv(), =() etc
+    MT_Semaphore()  noexcept { sem_init(&mt_sem_, 0, 0); }  // 2nd para: intra-process; 3rd: init value
+    ~MT_Semaphore() noexcept { sem_destroy(&mt_sem_); }
+    MT_Semaphore(const MT_Semaphore&) = delete;  // then compiler NOT auto-gen mv(), =() etc
 
-    void mt_notify();
+    void mt_notify() noexcept;
 
-    // - no mt_ prefix since main thread use only
+    // - no mt_ prefix since main-thread use ONLY
     // - if more threads call it, not guarantee to wakeup all threads but only 1
-    //   . so mt_timedwait() is more complex, will impl if real req appears
-    void timedwait(const size_t aSec = 0, const size_t aRestNsec = 100'000'000);
+    void timedwait(const size_t aSec = 0, const size_t aRestNsec = 100'000'000) noexcept;
 
-    // -------------------------------------------------------------------------------------------
 private:
     sem_t mt_sem_;
+    atomic_flag mt_notified_ = ATOMIC_FLAG_INIT;  // = false
+
+    // -------------------------------------------------------------------------------------------
+#ifdef RLIB_UT
+public:
+    void reset() noexcept  // not mt safe
+    {
+        sem_destroy(&mt_sem_);
+        sem_init(&mt_sem_, 0, 0);
+        mt_notified_.clear();
+    }
+#endif
 };
 
 }  // namespace
@@ -53,4 +64,12 @@ private:
 // 2023-09-20  CSZ       1)create
 // 2023-09-21  CSZ       - timer based on ThreadBack
 // 2023-10-26  CSZ       - timer based on sem_timedwait()
+// 2024-07-04  CSZ       - sem_getvalue() is not MT safe, replaced
 // ***********************************************************************************************
+// Q&A:
+// - why not check sem_*() failure?
+//   . ENOMEM: sem exceeds max# - impossible normally/mostly
+//   . EINVAL: invalid para - impossible
+//   . EPERM : no right - impossible normally/mostly
+//   . ENOSYS: not support sem - impossible normally/mostly
+//   . EBUSY : re-init sem - impossible

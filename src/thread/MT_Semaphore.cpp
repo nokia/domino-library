@@ -15,18 +15,17 @@ namespace RLib
 // ***********************************************************************************************
 void MT_Semaphore::mt_notify()
 {
-    int count = 0;
-    sem_getvalue(&mt_sem_, &count);  // impossible failed since MT_Semaphore's constructore
-    if (count > 0)  // >0 to avoid count overflow; timeout is deadline
-        return;
-    sem_post(&mt_sem_);  // impossible failed since MT_Semaphore's constructor
+    // - can't sem_getvalue() as NOT mt-safe
+    // - mt_notified_ is to avoid sem counter overflow; & not rouse main-thread repeatedly
+    if (!mt_notified_.test_and_set())  // memory_order_seq_cst to ensure other thread(s) see the flag
+        sem_post(&mt_sem_);  // impossible failed since MT_Semaphore's constructor
 }
 
 // ***********************************************************************************************
 void MT_Semaphore::timedwait(const size_t aSec, const size_t aRestNsec)
 {
     timespec ts{0, 0};
-    clock_gettime(CLOCK_REALTIME, &ts);  // impossible failed since MT_Semaphore's constructor
+    clock_gettime(CLOCK_REALTIME, &ts);
 
     const auto ns = ts.tv_nsec + aRestNsec;  // usr's duty for reasonable aRestNsec; here's duty for no crash
     ts.tv_sec += (aSec + ns / 1000'000'000);
@@ -35,10 +34,11 @@ void MT_Semaphore::timedwait(const size_t aSec, const size_t aRestNsec)
     for (;;)
     {
         const auto ret = sem_timedwait(&mt_sem_, &ts);
-        if (ret == 0)  // notified
+        if (errno == ETIMEDOUT || ret == 0)  // timeout or notified -> wakeup to handle sth
+        {
+            mt_notified_.clear();  // memory_order_seq_cst to ensure other thread(s) see the flag
             return;
-        else if (errno == ETIMEDOUT)
-            return;
+        }
 
         // impossible since MT_Semaphore's constructor
         // else if (errno == EINVAL)  // avoid dead loop
