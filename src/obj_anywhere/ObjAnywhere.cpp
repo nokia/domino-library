@@ -23,8 +23,8 @@ void ObjAnywhere::init(UniLog& oneLog)
         WRN("(ObjAnywhere) !!! Refuse dup init.")
     else
     {
-        HID("(ObjAnywhere) Succeed.");
         name_obj_S_ = make_shared<DataStore<ObjName>>();
+        HID("(ObjAnywhere) Succeed.");
     }
 }
 }  // namespace

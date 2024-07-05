@@ -4,12 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-// - REQ: this class is to enhance safety of shared_ptr:
-//   . store any type data: eg for ObjAnywhere
-//   * store same type data: eg for DataDomino
-//   . mem safe by SafePtr
-// - Unique Value:
-//   . store
+// - REQ: this class is to
+//   . store data of any type: eg for ObjAnywhere
+//   * store multi-copy of data of the same type: eg for DataDomino
+//   . fetch data by unique key(eg string)
+//   . ensure mem safe of stored data by SafePtr
 //
 // - MT safe: NO
 // - mem safe: yes
@@ -46,7 +45,7 @@ private:
 template<typename aDataKey>
 void DataStore<aDataKey>::emplace(const aDataKey& aKey, SafePtr<void> aData)
 {
-    if (aData.get() == nullptr)
+    if (! aData)
     {
         HID("(DataStore) erase key=" << aKey);
         key_data_S_.erase(aKey);
@@ -76,7 +75,7 @@ SafePtr<aDataT> DataStore<aDataKey>::get(const aDataKey& aKey) const
 template<typename aDataKey>
 void DataStore<aDataKey>::replace(const aDataKey& aKey, SafePtr<void> aData)
 {
-    if (aData.get() == nullptr)
+    if (! aData)
     {
         HID("(DataStore) erase key=" << aKey);
         key_data_S_.erase(aKey);

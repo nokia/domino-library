@@ -13,22 +13,12 @@
 //
 // - more value:
 //   . ObjAnywhere not include any Obj.hpp so no cross-include conflict
-//   * ObjAnywhere stores shared_ptr<Obj> - real store, correct destruct, lifespan mgr
+//   * ObjAnywhere stores SafePtr<Obj> - real store, correct destruct, lifespan management
 //
 // - core: name_obj_S_
 //
 // - mem-safe: true (when use SafePtr instead of shared_ptr)
-//
-// - note:
-//   . Obj can be destructed by its own destructor when shared_ptr<Obj>.use_count()==0
-//   . it's possible after deinit() that Obj still exists since its use_count()>0
-//   . if req to store same Obj multiply, use DataDomino
-//
-// - can DataDomino replace ObjAnywhere?
-//   . somewhat yes
-//   . but ObjAnywhere will be more complex since ObjIndex is replaced by EvName
-//   . and DataDomino will be more complex to manage sharing/static store_
-//   . = merge DataDomino & ObjAnywhere, so now giveup
+// - MT safe: false (only use in main-thread)
 // ***********************************************************************************************
 #pragma once
 
