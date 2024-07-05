@@ -41,8 +41,6 @@ using namespace std;
 namespace RLib
 {
 // ***********************************************************************************************
-// @brief: A safe wrapper around shared_ptr with enhanced type safety.
-// @tparam T: The type stored in SafePtr.
 template<typename T = void>
 class SafePtr
 {

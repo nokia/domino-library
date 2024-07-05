@@ -29,11 +29,18 @@ template<typename aDataKey>
 class DataStore
 {
 public:
+    // @brief: get a data
+    // @ret: ok or nullptr
     template<typename aDataT> SafePtr<aDataT> get(const aDataKey& aKey) const;
-    void emplace(const aDataKey& aKey, SafePtr<void> aData);  // not replace but add new or rm old
-    void replace(const aDataKey& aKey, SafePtr<void> aData);
-    size_t nData() const { return key_data_S_.size(); }
 
+    // @brief: store a new data (ie not replace but add new or rm old by aData=nullptr)
+    // @ret: store ok/nok
+    bool emplaceOK(const aDataKey& aKey, SafePtr<void> aData);
+
+    // @brief: store a data (add new, replace old, or rm old by aData=nullptr)
+    void replace(const aDataKey& aKey, SafePtr<void> aData);
+
+    size_t nData() const { return key_data_S_.size(); }
     ~DataStore() { HID("(DataStore) discard nData=" << nData()); }  // debug
 
 private:
@@ -43,17 +50,24 @@ private:
 
 // ***********************************************************************************************
 template<typename aDataKey>
-void DataStore<aDataKey>::emplace(const aDataKey& aKey, SafePtr<void> aData)
+bool DataStore<aDataKey>::emplaceOK(const aDataKey& aKey, SafePtr<void> aData)
 {
     if (! aData)
     {
         HID("(DataStore) erase key=" << aKey);
         key_data_S_.erase(aKey);
+        return true;
     }
     else
     {
         auto&& it_ok = key_data_S_.emplace(aKey, aData);
-        if (it_ok.second == false) { HID("(DataStore) ERR!!! not support to replace key=" << aKey); }
+        if (it_ok.second)
+            return true;
+        else
+        {
+            HID("(DataStore) ERR!!! not support to replace key=" << aKey);
+            return false;
+        }
     }
 }
 

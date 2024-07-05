@@ -254,7 +254,7 @@ TYPED_TEST_P(NofreeHdlrDominoTest, hdlrOnRoad_thenRmDom_noCrash_noLeak)
     PARA_DOM->setState({{"event", true}});
     EXPECT_EQ(1U, MSG_SELF->nMsg(EMsgPri_NORM));  // 1 cb on road
 
-    ObjAnywhere::emplaceObj<TypeParam>(nullptr, *this);  // rm dom
+    ObjAnywhere::emplaceObjOK<TypeParam>(nullptr, *this);  // rm dom
     EXPECT_CALL(*this, hdlr0()).Times(0);  // REQ: no cb
     this->pongMsgSelf_();
 }

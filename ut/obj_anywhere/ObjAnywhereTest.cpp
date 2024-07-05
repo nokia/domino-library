@@ -26,14 +26,14 @@ TEST_F(ObjAnywhereTest, GOLD_setThenGetIt)
 {
     ObjAnywhere::init(*this);
     auto p1 = make_safe<int>(1234);
-    ObjAnywhere::emplaceObj(p1, *this);  // req: normal set
+    EXPECT_TRUE(ObjAnywhere::emplaceObjOK(p1, *this)) << "REQ: normal set succ";
     EXPECT_EQ(1234, *(ObjAnywhere::getObj<int>().get())) << "REQ: get p1 itself";
 
-    ObjAnywhere::emplaceObj(make_safe<int>(5678), *this, "i2");
+    EXPECT_TRUE(ObjAnywhere::emplaceObjOK(make_safe<int>(5678), *this, "i2"));
     EXPECT_EQ(5678,  *(ObjAnywhere::getObj<int >("i2").get())) << "REQ: ok to store same type";
     EXPECT_EQ(nullptr, ObjAnywhere::getObj<bool>("i2").get())  << "REQ: get invalid type -> ret null";
 
-    ObjAnywhere::emplaceObj<int>(nullptr, *this);  // req: set null
+    EXPECT_TRUE(ObjAnywhere::emplaceObjOK<int>(nullptr, *this)) << "REQ: set null succ";
     EXPECT_EQ(nullptr, ObjAnywhere::getObj<int>().get()) << "REQ: get null";
     ObjAnywhere::deinit();
 }
@@ -41,13 +41,13 @@ TEST_F(ObjAnywhereTest, get_replacement)
 {
     ObjAnywhere::init(*this);
     auto p1 = make_safe<int>(1);
-    ObjAnywhere::emplaceObj(p1, *this);
+    EXPECT_TRUE(ObjAnywhere::emplaceObjOK(p1, *this));
     auto p2 = make_safe<int>(2);
-    ObjAnywhere::emplaceObj(p2, *this);  // req: replace set
+    EXPECT_FALSE(ObjAnywhere::emplaceObjOK(p2, *this)) << "REQ: replace failed";
     EXPECT_EQ(p1.get(), ObjAnywhere::getObj<int>().get()) << "REQ: refuse replacement";
 
-    ObjAnywhere::emplaceObj<int>(nullptr, *this);
-    ObjAnywhere::emplaceObj(p2, *this);
+    EXPECT_TRUE(ObjAnywhere::emplaceObjOK<int>(nullptr, *this));
+    EXPECT_TRUE(ObjAnywhere::emplaceObjOK(p2, *this));
     EXPECT_EQ(p2.get(), ObjAnywhere::getObj<int>().get()) << "REQ: explicit rm then set ok";
     ObjAnywhere::deinit();
 }
@@ -63,7 +63,7 @@ TEST_F(ObjAnywhereTest, deinit_getNull)
 }
 TEST_F(ObjAnywhereTest, deinitThenSet_getNull)
 {
-    ObjAnywhere::emplaceObj(make_safe<int>(1234), *this);
+    EXPECT_FALSE(ObjAnywhere::emplaceObjOK(make_safe<int>(1234), *this)) << "REQ: no init so set fail";
     EXPECT_EQ(nullptr, ObjAnywhere::getObj<int>().get()) << "REQ: get null";
 }
 
@@ -79,7 +79,7 @@ TEST_F(ObjAnywhereTest, GOLD_destructCorrectly)
 {
     bool isDestructed;
     ObjAnywhere::init(*this);
-    ObjAnywhere::emplaceObj(make_safe<TestObj>(isDestructed), *this);
+    EXPECT_TRUE(ObjAnywhere::emplaceObjOK(make_safe<TestObj>(isDestructed), *this));
     EXPECT_FALSE(isDestructed);
 
     ObjAnywhere::deinit();
@@ -90,12 +90,12 @@ TEST_F(ObjAnywhereTest, destructBySetNull)
     bool isDestructed;
     ObjAnywhere::init(*this);
 
-    ObjAnywhere::emplaceObj(make_safe<TestObj>(isDestructed), *this);
-    ObjAnywhere::emplaceObj(SafePtr<TestObj>(), *this);  // set null
+    EXPECT_TRUE(ObjAnywhere::emplaceObjOK(make_safe<TestObj>(isDestructed), *this));
+    EXPECT_TRUE(ObjAnywhere::emplaceObjOK(SafePtr<TestObj>(), *this));  // set null
     EXPECT_TRUE(isDestructed) << "REQ: destruct correctly";
     EXPECT_EQ(nullptr, ObjAnywhere::getObj<TestObj>().get()) << "REQ: destruct TestObj";
 
-    ObjAnywhere::emplaceObj(SafePtr<TestObj>(), *this);  // REQ: rm unexist
+    EXPECT_TRUE(ObjAnywhere::emplaceObjOK(SafePtr<TestObj>(), *this)) << "REQ: rm again";
     EXPECT_EQ(0u, ObjAnywhere::nObj());
 
     ObjAnywhere::deinit();
@@ -125,7 +125,7 @@ TEST_F(ObjAnywhereTest, ignore_dup_init)
 {
     ObjAnywhere::init(*this);
     auto pChar = make_safe<char>('a');
-    ObjAnywhere::emplaceObj(pChar, *this);
+    ObjAnywhere::emplaceObjOK(pChar, *this);
     ObjAnywhere::init(*this);  // req: ignore dup init
     EXPECT_EQ(pChar.get(), ObjAnywhere::getObj<char>().get());
     ObjAnywhere::deinit();

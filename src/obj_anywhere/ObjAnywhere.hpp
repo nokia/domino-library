@@ -8,7 +8,7 @@
 //   . how easily share obj within a process? like cout sharing
 //
 // - how:
-//   . eg ObjAnywhere::emplaceObj<Obj>(): register/store Obj
+//   . eg ObjAnywhere::emplaceObjOK<Obj>(): register/store Obj
 //   . eg ObjAnywhere::getObj<Obj>(): get Obj
 //
 // - more value:
@@ -42,9 +42,16 @@ public:
     static bool isInit() { return name_obj_S_ != nullptr; }  // init name_obj_S_?
     static size_t nObj() { return name_obj_S_ ? name_obj_S_->nData() : 0; }
 
-    // typeid().name() is to compatible with previous interface (w/o aObjName), eg ::get<TypeParam>
+    // @brief: store an obj
+    // @param SafePtr<aObjType>: an obj to be stored
+    // @param UniLog           : log
+    // @param ObjName          : key of the obj; default is typeid(aObjType).name()
     template<typename aObjType> static
-    void emplaceObj(SafePtr<aObjType>, UniLog& = UniLog::defaultUniLog_, const ObjName& = typeid(aObjType).name());
+    bool emplaceObjOK(SafePtr<aObjType>, UniLog& = UniLog::defaultUniLog_, const ObjName& = typeid(aObjType).name());
+
+    // @brief: get an obj
+    // @param ObjName: key of the obj when stored; default is typeid(aObjType).name()
+    // @ret: ok or nullptr
     template<typename aObjType> static
     SafePtr<aObjType> getObj(const ObjName& = typeid(aObjType).name());
 
@@ -64,12 +71,15 @@ SafePtr<aObjType> ObjAnywhere::getObj(const ObjName& aObjName)
 
 // ***********************************************************************************************
 template<typename aObjType>
-void ObjAnywhere::emplaceObj(SafePtr<aObjType> aObj, UniLog& oneLog, const ObjName& aObjName)
+bool ObjAnywhere::emplaceObjOK(SafePtr<aObjType> aObj, UniLog& oneLog, const ObjName& aObjName)
 {
     if (isInit())
-        name_obj_S_->emplace(aObjName, aObj);
+        return name_obj_S_->emplaceOK(aObjName, aObj);
     else
+    {
         ERR("(ObjAnywhere) !!! Failed, pls call ObjAnywhere::init() beforehand.");
+        return false;
+    }
 }
 
 }  // namespace

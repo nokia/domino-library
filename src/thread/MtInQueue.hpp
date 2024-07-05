@@ -48,7 +48,8 @@ class MtInQueue
 public:
     ~MtInQueue();
 
-    template<class aEleType> void mt_push(PTR<aEleType>&& aEle);  // aEle may not mt-safe, so NOT share to other thread
+    // aEle may not mt-safe, so here mv
+    template<class aEleType> void mt_push(PTR<aEleType>&& aEle);
 
     // - shall be called in main thread ONLY!!!
     // - high performance
