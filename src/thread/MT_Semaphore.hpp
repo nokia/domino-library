@@ -8,9 +8,9 @@
 //   * let main thread timedwait() other's input (eg from MsgSelf, ThreadBack, MtInQueue)
 //   * let other thread mt_notify() to wakeup main thread upon timedwait()
 //   . base on semaphore that is simple enough
+//     * condition_variable may lose notification if nobody is waiting, but semaphore never
 //     . std::latch/etc need c++20, too high vs semaphore (POSIX)
-//     * sem_wait() doesn't miss afterwards sem_post()
-//   * support timeout to prevent sleep forever by eg missing sem_post()
+//   * support timeout to prevent sleep forever
 //
 // - core:
 //   . mt_sem_

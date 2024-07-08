@@ -74,7 +74,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     EXPECT_EQ(2u, mt_getQ().nHdlr())  << "REQ: count hdlr";
 
     // push
-    ThreadBack::newThread(
+    ThreadBack::newThreadOK(
         // entryFn
         [] {
             mt_getQ().mt_push(MAKE_PTR<string>("a"));
@@ -90,7 +90,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
             msgSelf_
         )
     );
-    ThreadBack::newThread(
+    ThreadBack::newThreadOK(
         // entryFn
         [] {
             mt_getQ().mt_push(MAKE_PTR<int>(2));
@@ -130,22 +130,6 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << ThreadBack::nThread());
         timedwait();
     }
-}
-TEST_F(MT_SemaphoreTest, invalid_msgSelf)
-{
-    ThreadBack::newThread(
-        [] { return true; },  // entryFn
-        viaMsgSelf([](bool) {}, nullptr)  // invalid since msgSelf==nullptr
-    );
-    ThreadBack::newThread(
-        [] { return true; },  // entryFn
-        viaMsgSelf(nullptr, msgSelf_)  // invalid since backFn==nullptr
-    );
-    ThreadBack::newThread(
-        MT_ThreadEntryFN(nullptr),  // invalid since entryFn==nullptr
-        [](bool) {}  // backFn
-    );
-    EXPECT_EQ(0, ThreadBack::nThread());
 }
 
 // ***********************************************************************************************

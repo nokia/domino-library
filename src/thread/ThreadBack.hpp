@@ -8,14 +8,14 @@
 //   . How to coordinate main thread(containing all logic) with other threads(time-consuming tasks)
 //
 // - Usage/how:
-//                   [main thread]
-//                         |
-//                         | std::async()    [new thread]
-// ThreadBack::newThread() |--------------------->| MT_ThreadEntryFN()  // time-consuming task eg block to rec msg)
-//                         |                      |
-//          ThreadBackFN() |<.....................| (over)
-//                         |
-//                         |
+//                     [main thread]
+//                           |
+//                           | std::async()    [new thread]
+// ThreadBack::newThreadOK() |--------------------->| MT_ThreadEntryFN()  // time-consuming task eg block to rec msg
+//                           |                      |
+//            ThreadBackFN() |<.....................| (over)
+//                           |
+//                           |
 //
 // - core: ThreadBackFN
 //   . after MT_ThreadEntryFN() end in "other thread", ThreadBackFN() is auto-run in MAIN THREAD - key diff vs async()
@@ -79,7 +79,7 @@ public:
     // @param MT_ThreadEntryFN: The task to be executed asynchronously.
     // @param ThreadBackFN    : The callback to be invoked in the main thread upon task completion.
     // @param UniLog          : The logger to use for this operation.
-    static void newThread(const MT_ThreadEntryFN&, const ThreadBackFN&, UniLog& = UniLog::defaultUniLog_);
+    static bool newThreadOK(const MT_ThreadEntryFN&, const ThreadBackFN&, UniLog& = UniLog::defaultUniLog_);
 
     // @brief: Processes completed threads and invokes their callbacks.
     // @param UniLog: The logger to use for this operation.

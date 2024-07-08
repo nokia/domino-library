@@ -19,7 +19,7 @@ size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
     size_t nHandled = 0;
     for (auto&& fut_backFN = fut_backFN_S_.begin(); fut_backFN != fut_backFN_S_.end();)  // may limit# if too many
     {
-        // safer to check valid here than in newThread(), eg bug after newThread()
+        // safer to check valid here than in newThreadOK(), eg bug after newThreadOK()
         auto&& threadFut = fut_backFN->first;
         const bool threadOver = ! threadFut.valid() || (threadFut.wait_for(0s) == future_status::ready);
         HID("(ThreadBack) nHandled=" << nHandled << ", valid=" << threadFut.valid() << ", backFn=" << &(fut_backFN->second));
@@ -36,18 +36,18 @@ size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
 }
 
 // ***********************************************************************************************
-void ThreadBack::newThread(const MT_ThreadEntryFN& mt_aEntryFn, const ThreadBackFN& aBackFn, UniLog& oneLog)
+bool ThreadBack::newThreadOK(const MT_ThreadEntryFN& mt_aEntryFn, const ThreadBackFN& aBackFn, UniLog& oneLog)
 {
     // validate
-    if (! mt_aEntryFn)
-    {
-        ERR("(ThreadBack) mt_aEntryFn can't be empty!!!");
-        return;
-    }
     if (! aBackFn)
     {
-        ERR("(ThreadBack) aBackFn can't be empty!!!");
-        return;
+        ERR("(ThreadBack) aBackFn=null doesn't make sense!!! Why not async() directly?");
+        return false;
+    }
+    if (! mt_aEntryFn)
+    {
+        ERR("(ThreadBack) NOT support mt_aEntryFn=null!!! Necessary?");
+        return false;
     }
 
     // create new thread
@@ -64,6 +64,7 @@ void ThreadBack::newThread(const MT_ThreadEntryFN& mt_aEntryFn, const ThreadBack
         aBackFn
     );
     HID("(ThreadBack) valid=" << fut_backFN_S_.back().first.valid() << ", backFn=" << &(fut_backFN_S_.back().second));
+    return true;
 }
 
 // ***********************************************************************************************

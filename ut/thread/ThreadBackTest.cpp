@@ -16,7 +16,7 @@
 #include "UniLog.hpp"
 
 #define RLIB_UT
-#include "ThreadBack.hpp"
+#include "ThreadBackViaMsgSelf.hpp"
 #undef RLIB_UT
 
 #include <chrono>
@@ -37,25 +37,27 @@ struct ThreadBackTest : public Test, public UniLog
         EXPECT_EQ(0, ThreadBack::nThread()) << "REQ: handle all";
         GTEST_LOG_FAIL
     }
+
+    shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(uniLogName());
 };
 
 #define THREAD_AND_BACK
 // ***********************************************************************************************
-//                                 [main thread]
-//                                       |
-//                                       | std::async()    [new thread]
-//               ThreadBack::newThread() |--------------------->| MT_ThreadEntryFN()
-// [future, ThreadBackFN]->fut_backFN_S_ |                      |
-//                                       |                      |
-//                                       |                      |
-//                                       |<.....................| future<>
-//      ThreadBack::hdlFinishedThreads() |
-//                                       |
+//                                   [main thread]
+//                                         |
+//                                         | std::async()    [new thread]
+//               ThreadBack::newThreadOK() |--------------------->| MT_ThreadEntryFN()
+//   [future, ThreadBackFN]->fut_backFN_S_ |                      |
+//                                         |                      |
+//                                         |                      |
+//                                         |<.....................| future<>
+//        ThreadBack::hdlFinishedThreads() |
+//                                         |
 TEST_F(ThreadBackTest, GOLD_entryFn_inNewThread_thenBackFn_inMainThread_withTimedWait)
 {
     atomic<thread::id> mt_threadID(this_thread::get_id());
     INF("main thread id=" << mt_threadID);
-    ThreadBack::newThread(
+    EXPECT_TRUE(ThreadBack::newThreadOK(
         // MT_ThreadEntryFN
         [&mt_threadID, this]() -> bool
         {
@@ -71,7 +73,7 @@ TEST_F(ThreadBackTest, GOLD_entryFn_inNewThread_thenBackFn_inMainThread_withTime
             mt_threadID = this_thread::get_id();
             INF("ThreadBackFN thread id=" << mt_threadID);
         }
-    );
+    ));
 
     while (true)
     {
@@ -91,7 +93,7 @@ TEST_F(ThreadBackTest, GOLD_entryFnResult_toBackFn_withoutTimedWait)
     for (size_t idxThread = 0; idxThread < maxThread; ++idxThread)
     {
         SCOPED_TRACE(idxThread);
-        ThreadBack::newThread(
+        ThreadBack::newThreadOK(
             // MT_ThreadEntryFN
             [idxThread]() -> bool
             {
@@ -114,7 +116,7 @@ TEST_F(ThreadBackTest, GOLD_entryFnResult_toBackFn_withoutTimedWait)
 TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
 {
     atomic<bool> canEnd(false);
-    ThreadBack::newThread(
+    ThreadBack::newThreadOK(
         // MT_ThreadEntryFN
         [&canEnd]() -> bool
         {
@@ -126,7 +128,7 @@ TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
         [](bool) {}
     );
 
-    ThreadBack::newThread(
+    ThreadBack::newThreadOK(
         // MT_ThreadEntryFN
         []() -> bool
         {
@@ -155,7 +157,7 @@ TEST_F(ThreadBackTest, canHandle_someThreadDone_whileOtherRunning)
 TEST_F(ThreadBackTest, GOLD_entryFn_notify_insteadof_timeout)
 {
     auto start = high_resolution_clock::now();
-    ThreadBack::newThread(
+    ThreadBack::newThreadOK(
         [] { return true; },  // entryFn
         [](bool) {}  // backFn
     );
@@ -183,6 +185,22 @@ TEST_F(ThreadBackTest, emptyThreadList_ok)
     size_t nHandled = ThreadBack::hdlFinishedThreads();
     EXPECT_EQ(0u, nHandled);
 }
+TEST_F(ThreadBackTest, invalid_msgSelf_entryFN_backFN)
+{
+    EXPECT_FALSE(ThreadBack::newThreadOK(
+        [] { return true; },  // entryFn
+        viaMsgSelf([](bool) {}, nullptr)  // invalid since msgSelf==nullptr
+    ));
+    EXPECT_FALSE(ThreadBack::newThreadOK(
+        [] { return true; },  // entryFn
+        viaMsgSelf(nullptr, msgSelf_)  // invalid since backFn==nullptr
+    ));
+    EXPECT_FALSE(ThreadBack::newThreadOK(
+        MT_ThreadEntryFN(nullptr),  // invalid since entryFn==nullptr
+        [](bool) {}  // backFn
+    ));
+    EXPECT_EQ(0, ThreadBack::nThread());
+}
 
 #define MAIN_THREAD
 // ***********************************************************************************************
@@ -190,7 +208,7 @@ TEST_F(ThreadBackTest, can_debug_usr_code)
 {
     EXPECT_TRUE(ThreadBack::inMyMainThread()) << "REQ: OK in main thread";
 
-    ThreadBack::newThread(
+    ThreadBack::newThreadOK(
         // entryFn
         []
         {
