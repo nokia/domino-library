@@ -157,7 +157,7 @@ TEST_F(ThreadBackTest, GOLD_entryFn_notify_insteadof_timeout)
     );
     timedwait(0, 500'000'000);  // long timer to ensure thread done beforehand
     auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - start);
-    EXPECT_LT(dur.count(), 500) << "REQ: entryFn end shall notify g_sem instead of timeout";
+    EXPECT_LT(dur.count(), 500) << "REQ: entryFn end shall notify g_semToMainTH instead of timeout";
 
     while (ThreadBack::hdlFinishedThreads() == 0);  // clear all threads
 }

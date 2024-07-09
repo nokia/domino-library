@@ -20,15 +20,15 @@ namespace RLib
 {
 // ***********************************************************************************************
 // - can't use ObjAnywhere that is not MT safe
-// - REQ: usr shall not use g_sem, otherwise impl change may impact his/her code
-extern MT_Semaphore g_sem;
+// - REQ: usr shall not use g_semToMainTH, otherwise impl change may impact his/her code
+extern MT_Semaphore g_semToMainTH;
 
 // ***********************************************************************************************
 // - REQ: can provide diff impl w/o usr code change
 // - sem is better since can wakeup later wait(), while condition_variable can NOT
 inline void mt_pingMainTH()
 {
-    g_sem.mt_notify();
+    g_semToMainTH.mt_notify();
 }
 
 // ***********************************************************************************************
@@ -37,7 +37,7 @@ inline void mt_pingMainTH()
 // - REQ: timer guarantee no wait forever
 inline void timedwait(const size_t aSec = 0, const size_t aRestNsec = 100'000'000)
 {
-    g_sem.timedwait(aSec, aRestNsec);
+    g_semToMainTH.timedwait(aSec, aRestNsec);
 }
 
 }  // namespace

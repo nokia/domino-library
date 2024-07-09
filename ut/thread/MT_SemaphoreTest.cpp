@@ -31,7 +31,7 @@ struct MT_SemaphoreTest : public Test, public UniLog
     MT_SemaphoreTest()
         : UniLog(UnitTest::GetInstance()->current_test_info()->name())
     {
-        g_sem.reset();  // clear prev test's counter
+        g_semToMainTH.reset();  // clear prev test's counter
     }
     void SetUp() override
     {
