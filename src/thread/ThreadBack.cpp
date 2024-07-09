@@ -21,21 +21,16 @@ size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
     {
         // safer to check valid here than in newThreadOK(), eg bug after newThreadOK()
         auto&& fut = fut_backFN->first;
-        if (! fut.valid())
+        const bool over = ! fut.valid() || fut.wait_for(0s) == future_status::ready;
+        HID("(ThreadBack) nHandled=" << nHandled << ", valid=" << fut.valid() << ", backFn=" << &(fut_backFN->second));
+        if (over)
         {
-            fut_backFN->second(false);  // callback
-            fut_backFN = fut_backFN_S_.erase(fut_backFN);
-            ++nHandled;
-        }
-        else if (fut.wait_for(0s) == future_status::ready)
-        {
-            fut_backFN->second(fut.get());  // callback
+            fut_backFN->second(fut.valid() && fut.get());  // callback
             fut_backFN = fut_backFN_S_.erase(fut_backFN);
             ++nHandled;
         }
         else
             ++fut_backFN;
-        HID("(ThreadBack) nHandled=" << nHandled << ", valid=" << fut.valid());
     }  // 1 loop, simple & safe
     return nHandled;
 }
