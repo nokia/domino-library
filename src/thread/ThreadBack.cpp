@@ -35,7 +35,7 @@ size_t ThreadBack::hdlFinishedThreads(UniLog& oneLog)
         }
         else
             ++fut_backFN;
-        HID("(ThreadBack) nHandled=" << nHandled << ", valid=" << fut.valid() << ", backFn=" << &(fut_backFN->second));
+        HID("(ThreadBack) nHandled=" << nHandled << ", valid=" << fut.valid());
     }  // 1 loop, simple & safe
     return nHandled;
 }
