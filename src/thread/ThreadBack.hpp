@@ -21,7 +21,7 @@
 //   . after MT_ThreadEntryFN() end in "other thread", ThreadBackFN() is auto-run in MAIN THREAD - key diff vs async()
 //
 // - VALUE/why:
-//   * keep all logic in main thread / single thread (simple, eg no lock/deadlock, no complex logic)
+//   * keep all logic (most code) in main thread (single thread: simple, no complex logic, no lock/deadlock, etc)
 //     . while time-consuming tasks in other threads
 //   . cross platform:
 //     . std::async
@@ -29,9 +29,9 @@
 //
 // - REQ:
 //   * run MT_ThreadEntryFN() in new thread
-//   * when MT_ThreadEntryFN() finished, auto trigger main thread to run ThreadBackFN()
+//   * when MT_ThreadEntryFN() finished, auto rouse main thread to run ThreadBackFN()
 //   . MT_ThreadEntryFN() ret T(succ)/F(fail)
-//     . this ret is as input para of ThreadBackFN(); if eg async() fail, this para also F
+//     . this ret is as input para of ThreadBackFN(); if eg async() fail, this para=F also
 //   . align with MsgSelf since all "msg" shall queue in MsgSelf
 //     . aovid complex MsgSelf: ThreadBack provides 1 func to fill aBack into MsgSelf
 //     . avoid complex ThreadBack (viaMsgSelf() in new hpp)

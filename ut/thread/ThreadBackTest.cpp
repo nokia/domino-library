@@ -55,23 +55,18 @@ struct ThreadBackTest : public Test, public UniLog
 //                                         |
 TEST_F(ThreadBackTest, GOLD_entryFn_inNewThread_thenBackFn_inMainThread_withTimedWait)
 {
-    atomic<thread::id> mt_threadID(this_thread::get_id());
-    INF("main thread id=" << mt_threadID);
+    EXPECT_TRUE(ThreadBack::inMyMainThread()) << "REQ: OK in main thread";
     EXPECT_TRUE(ThreadBack::newThreadOK(
         // MT_ThreadEntryFN
-        [&mt_threadID, this]() -> bool
+        [this]() -> bool
         {
-            EXPECT_NE(this_thread::get_id(), mt_threadID) << "REQ: in new thread";
-            mt_threadID = this_thread::get_id();
-            HID("MT_ThreadEntryFN(): thread id=" << mt_threadID);  // REQ: MT safe
+            EXPECT_FALSE(ThreadBack::inMyMainThread()) << "REQ: in new thread";
             return true;
         },
         // ThreadBackFN
-        [&mt_threadID, this](bool)
+        [this](bool)
         {
-            EXPECT_NE(this_thread::get_id(), mt_threadID) << "REQ: in diff thread";
-            mt_threadID = this_thread::get_id();
-            INF("ThreadBackFN thread id=" << mt_threadID);
+            EXPECT_TRUE(ThreadBack::inMyMainThread()) << "REQ: in main thread";
         }
     ));
 
@@ -79,11 +74,10 @@ TEST_F(ThreadBackTest, GOLD_entryFn_inNewThread_thenBackFn_inMainThread_withTime
     {
         if (ThreadBack::hdlFinishedThreads() == 0)
         {
-            INF("new thread not end yet, wait... mt_threadID=" << mt_threadID)
+            INF("new thread not end yet...");
             timedwait();  // REQ: timedwait() is more efficient than keep hdlFinishedThreads()
             continue;
         }
-        EXPECT_EQ(mt_threadID, this_thread::get_id()) << "REQ: run ThreadBackFN() in main thread afterwards";
         return;
     }
 }
@@ -93,7 +87,7 @@ TEST_F(ThreadBackTest, GOLD_entryFnResult_toBackFn_withoutTimedWait)
     for (size_t idxThread = 0; idxThread < maxThread; ++idxThread)
     {
         SCOPED_TRACE(idxThread);
-        ThreadBack::newThreadOK(
+        EXPECT_TRUE(ThreadBack::newThreadOK(
             // MT_ThreadEntryFN
             [idxThread]() -> bool
             {
@@ -104,10 +98,10 @@ TEST_F(ThreadBackTest, GOLD_entryFnResult_toBackFn_withoutTimedWait)
             {
                 EXPECT_EQ(idxThread % 2 != 0, aRet) << "REQ: check true & false";
             }
-        );
+        ));
     }
 
-    // req: call all ThreadBackFN
+    // REQ: no timedwait() but keep asking
     for (size_t nHandled = 0; nHandled < maxThread; nHandled += ThreadBack::hdlFinishedThreads())
     {
         INF("nHandled=" << nHandled);
@@ -170,7 +164,7 @@ TEST_F(ThreadBackTest, GOLD_entryFn_notify_insteadof_timeout)
 
 #define ABNORMAL
 // ***********************************************************************************************
-TEST_F(ThreadBackTest, asyncFail_noException_toBackFnWithFalse)
+TEST_F(ThreadBackTest, asyncFail_toBackFnWithFalse)
 {
     ThreadBack::invalidNewThread(
         [](bool aRet)
@@ -200,25 +194,6 @@ TEST_F(ThreadBackTest, invalid_msgSelf_entryFN_backFN)
         [](bool) {}  // backFn
     ));
     EXPECT_EQ(0, ThreadBack::nThread());
-}
-
-#define MAIN_THREAD
-// ***********************************************************************************************
-TEST_F(ThreadBackTest, can_debug_usr_code)
-{
-    EXPECT_TRUE(ThreadBack::inMyMainThread()) << "REQ: OK in main thread";
-
-    ThreadBack::newThreadOK(
-        // entryFn
-        []
-        {
-            EXPECT_FALSE(ThreadBack::inMyMainThread()) << "REQ: NOK in other thread";
-            return true;
-        },
-        // backFn
-        [](bool) {}
-    );
-    while (ThreadBack::hdlFinishedThreads() == 0);  // clear all threads
 }
 
 }  // namespace
