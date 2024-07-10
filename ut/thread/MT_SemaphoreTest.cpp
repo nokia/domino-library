@@ -13,12 +13,13 @@
 #include <unordered_map>
 
 #include "MsgSelf.hpp"
-#include "ThreadBackViaMsgSelf.hpp"
 #include "UniLog.hpp"
 
 #define RLIB_UT
+#include "AsyncBack.hpp"
 #include "MT_PingMainTH.hpp"
 #include "MtInQueue.hpp"
+#include "ThreadBackViaMsgSelf.hpp"
 #undef RLIB_UT
 
 using namespace std::chrono;
@@ -39,6 +40,8 @@ struct MT_SemaphoreTest : public Test, public UniLog
     }
     ~MT_SemaphoreTest() { GTEST_LOG_FAIL }
 
+    // -------------------------------------------------------------------------------------------
+    AsyncBack asyncBack_;
     shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(uniLogName());
 };
 
@@ -74,7 +77,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     EXPECT_EQ(2u, mt_getQ().nHdlr())  << "REQ: count hdlr";
 
     // push
-    ThreadBack::newThreadOK(
+    asyncBack_.newTaskOK(
         // entryFn
         [] {
             mt_getQ().mt_push(MAKE_PTR<string>("a"));
@@ -90,7 +93,7 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
             msgSelf_
         )
     );
-    ThreadBack::newThreadOK(
+    asyncBack_.newTaskOK(
         // entryFn
         [] {
             mt_getQ().mt_push(MAKE_PTR<int>(2));
@@ -113,21 +116,21 @@ TEST_F(MT_SemaphoreTest, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     for (;;)
     {
         // handle all done Thread
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << ThreadBack::nThread());
-        ThreadBack::hdlFinishedThreads();
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << asyncBack_.nThread());
+        asyncBack_.hdlFinishedTasks();
 
         // handle all existing in mt_getQ()
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << ThreadBack::nThread());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << asyncBack_.nThread());
         mt_getQ().handleAllEle();
 
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << ThreadBack::nThread());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << asyncBack_.nThread());
         msgSelf_->handleAllMsg();
 
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << ThreadBack::nThread());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << asyncBack_.nThread());
         if (expect == cb_info)
             return;
 
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << ThreadBack::nThread());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << asyncBack_.nThread());
         timedwait();
     }
 }
