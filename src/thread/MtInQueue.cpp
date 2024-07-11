@@ -37,7 +37,7 @@ deque<ELE_TID>::iterator MtInQueue::begin_()
     }
     // unlocked
 
-    HID("(MtQ) ptr=" << cache_.begin()->first.get() << ", nRef=" << cache_.begin()->first.use_count());
+    //HID("(MtQ) ptr=" << cache_.begin()->first.get() << ", nRef=" << cache_.begin()->first.use_count());
     return cache_.begin();
 }
 

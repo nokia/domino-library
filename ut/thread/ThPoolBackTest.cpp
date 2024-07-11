@@ -20,7 +20,7 @@ TEST_F(ThPoolBackTest, invalid_maxThread)
 // ***********************************************************************************************
 TEST_F(ThPoolBackTest, performance)
 {
-    const size_t maxThread = 1000;  // github ci can afford
+    const size_t maxThread = 100;  // github ci can afford
 
     AsyncBack asyncBack;
     auto start = high_resolution_clock::now();
@@ -30,8 +30,8 @@ TEST_F(ThPoolBackTest, performance)
             [](bool) {}  // backFn
         ));
     for (size_t nHandled = 0; nHandled < maxThread; nHandled += asyncBack.hdlFinishedTasks());
-    auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - start);
-    INF("AsyncBack cost=" << dur.count() << "ms");
+    auto dur = duration_cast<chrono::microseconds>(high_resolution_clock::now() - start);
+    HID("AsyncBack cost=" << dur.count() << "us");
 
     ThPoolBack thPoolBack(maxThread + 1);  // inc cov
     start = high_resolution_clock::now();
@@ -41,8 +41,8 @@ TEST_F(ThPoolBackTest, performance)
             [](bool) {}  // backFn
         ));
     for (size_t nHandled = 0; nHandled < maxThread; nHandled += thPoolBack.hdlFinishedTasks());
-    dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - start);
-    INF("ThPoolBack cost=" << dur.count() << "ms");
+    dur = duration_cast<chrono::microseconds>(high_resolution_clock::now() - start);
+    HID("ThPoolBack cost=" << dur.count() << "us");
 }
 
 }  // namespace
