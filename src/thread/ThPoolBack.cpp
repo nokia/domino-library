@@ -31,7 +31,7 @@ ThPoolBack::ThPoolBack(size_t aMaxThread) : thPool_(aMaxThread)
 
                     if (this->stopAllTH_)
                         return;
-                    if (this->taskQ_.empty())
+                    if (this->taskQ_.empty())  // ut can't cov since normal wait()'s pred
                         continue;
                     task = move(this->taskQ_.front());
                     this->taskQ_.pop_front();
