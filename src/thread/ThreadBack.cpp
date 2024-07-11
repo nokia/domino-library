@@ -21,7 +21,7 @@ size_t ThreadBack::hdlFinishedTasks(UniLog& oneLog)
         // safer to check valid here than in newTaskOK(), eg bug after newTaskOK()
         auto&& fut = fut_backFN->first;
         const bool over = ! fut.valid() || fut.wait_for(0s) == future_status::ready;
-        HID("(ThreadBack) nHandled=" << nHandled << ", valid=" << fut.valid() << ", backFn=" << &(fut_backFN->second));
+        //HID("(ThreadBack) nHandled=" << nHandled << ", valid=" << fut.valid() << ", backFn=" << &(fut_backFN->second));
         if (over)
         {
             fut_backFN->second(fut.valid() && fut.get());  // callback
