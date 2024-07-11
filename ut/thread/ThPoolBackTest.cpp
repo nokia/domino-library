@@ -35,7 +35,7 @@ TEST_F(ThPoolBackTest, performance)
     // - belinb03 : ~ 10 faster than AsyncBack
     // - github ci: ~100 faster than AsyncBack
 
-    thPoolBack.fakeNotify();  // simulate wrong notify; inc cov
+    thPoolBack.fakeNotifyAll();  // simulate wrong notify; inc cov
 
     AsyncBack asyncBack;
     start = high_resolution_clock::now();

@@ -33,7 +33,7 @@ public:
 
     bool newTaskOK(const MT_TaskEntryFN&, const TaskBackFN&, UniLog& = UniLog::defaultUniLog_) override;
 
-    void fakeNotify() { condition_.notify_one(); }  // UT only
+    void fakeNotifyAll() { condition_.notify_all(); }  // UT only
 
 private:
     // -------------------------------------------------------------------------------------------
