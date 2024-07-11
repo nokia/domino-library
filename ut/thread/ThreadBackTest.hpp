@@ -22,7 +22,6 @@
 #include "ThreadBackViaMsgSelf.hpp"
 #undef RLIB_UT
 
-#include <chrono>
 using namespace testing;
 
 namespace RLib
