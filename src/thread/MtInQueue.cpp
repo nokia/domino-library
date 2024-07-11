@@ -80,7 +80,7 @@ size_t MtInQueue::handleAllEle()
 }
 
 // ***********************************************************************************************
-void MtInQueue::mt_clear()
+void MtInQueue::mt_clearElePool()
 {
     lock_guard<mutex> guard(mutex_);
     queue_.clear();

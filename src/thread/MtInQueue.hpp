@@ -57,12 +57,13 @@ public:
     template<class aEleType> PTR<aEleType> pop();
 
     size_t mt_size(bool canBlock);
-    void   mt_clear();
+    void   mt_clearElePool();
 
     // shall be called in main thread ONLY!!!
     template<class aEleType> bool setHdlrOK(const EleHdlr&);
     size_t handleAllEle();
-    size_t nHdlr() const { return tid_hdlr_S_.size(); }
+    auto nHdlr() const { return tid_hdlr_S_.size(); }
+    void clearHdlrPool() { tid_hdlr_S_.clear(); }
 
 private:
     deque<ELE_TID>::iterator begin_();

@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Nokia. All rights reserved.
+ * Copyright 2024 Nokia. All rights reserved.
  * Licensed under the BSD 3 Clause license
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -32,6 +32,22 @@ size_t ThreadBack::hdlFinishedTasks(UniLog& oneLog)
             ++fut_backFN;
     }  // 1 loop, simple & safe
     return nHandled;
+}
+
+// ***********************************************************************************************
+bool ThreadBack::newTaskOK(const MT_TaskEntryFN& mt_aEntryFN, const TaskBackFN& aBackFN, UniLog& oneLog)
+{
+    if (! aBackFN)
+    {
+        ERR("(ThreadBack) aBackFN=null doesn't make sense!!! Why not async() directly?");
+        return false;
+    }
+    if (! mt_aEntryFN)
+    {
+        ERR("(ThreadBack) NOT support mt_aEntryFN=null!!! Necessary?");
+        return false;
+    }
+    return true;
 }
 
 }  // namespace

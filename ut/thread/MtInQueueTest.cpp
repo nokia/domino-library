@@ -28,11 +28,12 @@ struct MtInQueueTest : public Test, public UniLog
     MtInQueueTest()
         : UniLog(UnitTest::GetInstance()->current_test_info()->name())
     {}
-    void SetUp() override
+    ~MtInQueueTest()
     {
-        mt_getQ().mt_clear();  // avoid other case interference
+        mt_getQ().mt_clearElePool();  // not impact other testcase
+        mt_getQ().clearHdlrPool();    // not impact other testcase
+        GTEST_LOG_FAIL
     }
-    ~MtInQueueTest() { GTEST_LOG_FAIL }
 };
 
 #define FIFO
@@ -195,7 +196,7 @@ TEST_F(MtInQueueTest, destruct_right_type)
     mt_getQ().mt_push(MAKE_PTR<TestObj>(isDestructed));
     ASSERT_FALSE(isDestructed);
 
-    mt_getQ().mt_clear();
+    mt_getQ().mt_clearElePool();
     ASSERT_TRUE(isDestructed) << "REQ: destruct correctly";
 }
 TEST_F(MtInQueueTest, clear_queue_cache_hdlr)
@@ -213,7 +214,7 @@ TEST_F(MtInQueueTest, clear_queue_cache_hdlr)
     mt_getQ().setHdlrOK<int>([](UniPtr){});
     EXPECT_EQ(1u, mt_getQ().nHdlr()) << "1 hdlr";
 
-    mt_getQ().mt_clear();
+    mt_getQ().mt_clearElePool();
     EXPECT_EQ(0u, mt_getQ().mt_size(true)) << "REQ: clear all ele";
     EXPECT_EQ(0u, mt_getQ().nHdlr()) << "REQ: clear all hdlr";
 }

@@ -1,11 +1,9 @@
 /**
- * Copyright 2024 Nokia
+ * Copyright 2022 Nokia
  * Licensed under the BSD 3 Clause license
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include "AsyncBack.hpp"
-
-using namespace std;
 
 namespace RLib
 {
@@ -13,16 +11,8 @@ namespace RLib
 bool AsyncBack::newTaskOK(const MT_TaskEntryFN& mt_aEntryFN, const TaskBackFN& aBackFN, UniLog& oneLog)
 {
     // validate
-    if (! aBackFN)
-    {
-        ERR("(AsyncBack) aBackFN=null doesn't make sense!!! Why not async() directly?");
+    if (! ThreadBack::newTaskOK(mt_aEntryFN, aBackFN, oneLog))
         return false;
-    }
-    if (! mt_aEntryFN)
-    {
-        ERR("(AsyncBack) NOT support mt_aEntryFN=null!!! Necessary?");
-        return false;
-    }
 
     // create new thread
     fut_backFN_S_.emplace_back(  // save future<> & aBackFN()
