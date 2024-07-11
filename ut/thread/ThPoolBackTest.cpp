@@ -20,7 +20,7 @@ TEST_F(ThPoolBackTest, invalid_maxThread)
 // ***********************************************************************************************
 TEST_F(ThPoolBackTest, performance)
 {
-    const size_t maxThread = 10000;
+    const size_t maxThread = 1000;  // github ci can afford
 
     AsyncBack asyncBack;
     auto start = high_resolution_clock::now();
