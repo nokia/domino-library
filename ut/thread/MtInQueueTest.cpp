@@ -63,14 +63,14 @@ TEST_F(MtInQueueTest, GOLD_sparsePush_fifo)
         auto msg = mt_getQ().pop<int>();  // CAN'T directly get() that destruct shared_ptr afterward
         if (msg.get())
         {
-            HID("nHdl=" << nHdl << ", msg=" << msg.get() << ", nRef=" << msg.use_count());
+            //HID("nHdl=" << nHdl << ", msg=" << msg.get() << ", nRef=" << msg.use_count());
             SCOPED_TRACE(nHdl);
             EXPECT_EQ(nHdl, *(msg.get())) << "REQ: fifo";
             ++nHdl;
         }
         else
         {
-            HID("nHdl=" << nHdl << ", nRef=" << msg.use_count());
+            //HID("nHdl=" << nHdl << ", nRef=" << msg.use_count());
             timedwait();  // REQ: less CPU than repeat pop() or this_thread::yield()
         }
     }
