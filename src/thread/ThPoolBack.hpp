@@ -6,7 +6,7 @@
 // ***********************************************************************************************
 // - Why:
 //   . alt AsyncBack by limit thread# (limited resource) but may wait more time for free thread
-//   . avoid create/destroy thread, but total cost may not lower than AsyncBack
+//   . avoid create/destroy thread, 10~100 faster than AsyncBack
 //   . code more complex than AsyncBack
 // ***********************************************************************************************
 #pragma once
@@ -32,6 +32,8 @@ public:
     ~ThPoolBack();
 
     bool newTaskOK(const MT_TaskEntryFN&, const TaskBackFN&, UniLog& = UniLog::defaultUniLog_) override;
+
+    void fakeNotify() { condition_.notify_one(); }  // UT only
 
 private:
     // -------------------------------------------------------------------------------------------
