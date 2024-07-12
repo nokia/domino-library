@@ -26,7 +26,11 @@ TEST_F(ThPoolBackTest, performance)
     auto start = high_resolution_clock::now();
     for (size_t i = 0; i < maxThread; i++)
         EXPECT_TRUE(thPoolBack.newTaskOK(
-            [] { return true; },  // entryFn
+            []  // entryFn
+            {
+                this_thread::yield();  // hung like real time-cost task
+                return true;
+            },
             [](bool) {}  // backFn
         ));
     for (size_t nHandled = 0; nHandled < maxThread; nHandled += thPoolBack.hdlFinishedTasks());
@@ -39,7 +43,11 @@ TEST_F(ThPoolBackTest, performance)
     start = high_resolution_clock::now();
     for (size_t i = 0; i < maxThread; i++)
         EXPECT_TRUE(asyncBack.newTaskOK(
-            [] { return true; },  // entryFn
+            []  // entryFn
+            {
+                this_thread::yield();  // hung like real time-cost task
+                return true;
+            },
             [](bool) {}  // backFn
         ));
     for (size_t nHandled = 0; nHandled < maxThread; nHandled += asyncBack.hdlFinishedTasks());

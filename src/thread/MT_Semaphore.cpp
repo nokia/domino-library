@@ -13,7 +13,7 @@ using namespace std;
 namespace RLib
 {
 // ***********************************************************************************************
-void MT_Semaphore::mt_notify()
+void MT_Semaphore::mt_notify() noexcept
 {
     // - can't sem_getvalue() as NOT mt-safe
     // - mt_notified_ is to avoid sem counter overflow; & not rouse main-thread repeatedly
@@ -22,7 +22,7 @@ void MT_Semaphore::mt_notify()
 }
 
 // ***********************************************************************************************
-void MT_Semaphore::timedwait(const size_t aSec, const size_t aRestNsec)
+void MT_Semaphore::timedwait(const size_t aSec, const size_t aRestNsec) noexcept
 {
     timespec ts{0, 0};
     clock_gettime(CLOCK_REALTIME, &ts);
