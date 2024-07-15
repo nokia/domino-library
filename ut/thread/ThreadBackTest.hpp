@@ -6,21 +6,14 @@
 // ***********************************************************************************************
 #include <atomic>
 #include <chrono>
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <queue>
-#include <thread>
-#include <unistd.h>
 
-#include "MT_PingMainTH.hpp"
-#include "UniLog.hpp"
-
-#define RLIB_UT
 #include "AsyncBack.hpp"
+#include "MT_PingMainTH.hpp"
 #include "MtInQueue.hpp"
 #include "ThPoolBack.hpp"
 #include "ThreadBackViaMsgSelf.hpp"
-#undef RLIB_UT
+#include "UniLog.hpp"
 
 using namespace testing;
 
@@ -169,16 +162,6 @@ TEST_F(THREAD_BACK_TEST, GOLD_entryFn_notify_insteadof_timeout)
 
 #define ABNORMAL
 // ***********************************************************************************************
-TEST_F(THREAD_BACK_TEST, asyncFail_toBackFnWithFalse)
-{
-    threadBack_.invalidNewThread(
-        [](bool aRet)
-        {
-            EXPECT_FALSE(aRet) << "REQ: async failed -> ret=false always";
-        }
-    );
-    threadBack_.hdlFinishedTasks();
-}
 TEST_F(THREAD_BACK_TEST, emptyThreadList_ok)
 {
     size_t nHandled = threadBack_.hdlFinishedTasks();

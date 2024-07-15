@@ -36,8 +36,8 @@ TEST_F(ThPoolBackTest, performance)
     for (size_t nHandled = 0; nHandled < maxThread; nHandled += thPoolBack.hdlFinishedTasks());
     auto dur = duration_cast<chrono::microseconds>(high_resolution_clock::now() - start);
     HID("ThPoolBack cost=" << dur.count() << "us");
-    // - belinb03 : ~ 10 faster than AsyncBack
-    // - github ci: ~100 faster than AsyncBack
+    // - belinb03 : ~ 20 faster than AsyncBack
+    // - github ci: ~100 slower than AsyncBack
 
     AsyncBack asyncBack;
     start = high_resolution_clock::now();

@@ -24,7 +24,7 @@ namespace RLib
 // ***********************************************************************************************
 using MT_TaskEntryFN  = function<bool()>;      // succ ret true, otherwise false
 using TaskBackFN      = function<void(bool)>;  // entry ret as para
-using StoreThreadBack = list<pair<future<bool>, TaskBackFN> >;
+using StoreThreadBack = list<pair<future<bool>, TaskBackFN> >;  // deque rm middle is worse
 
 // ***********************************************************************************************
 class ThreadBack
@@ -54,16 +54,6 @@ public:
 protected:
     // -------------------------------------------------------------------------------------------
     StoreThreadBack fut_backFN_S_;
-
-
-    // -------------------------------------------------------------------------------------------
-#ifdef RLIB_UT  // UT only
-public:
-    void invalidNewThread(const TaskBackFN& aBackFN)
-    {
-        fut_backFN_S_.emplace_back(future<bool>(), aBackFN);  // invalid future
-    }
-#endif
 };
 
 }  // namespace

@@ -35,12 +35,12 @@ public:
 
 private:
     // -------------------------------------------------------------------------------------------
-    vector<thread>        thPool_;
-    deque<packaged_task<bool()>> taskQ_;
+    vector<thread>  thPool_;
+    deque<packaged_task<bool()>>  taskQ_;
 
-    mutex              mutex_;
-    condition_variable condition_;
-    atomic<bool>       stopAllTH_ = false;
+    mutex  mutex_;
+    condition_variable cv_;
+    atomic<bool>  stopAllTH_ = false;
 };
 
 }  // namespace
