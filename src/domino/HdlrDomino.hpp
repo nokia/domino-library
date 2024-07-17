@@ -148,6 +148,11 @@ template<class aDominoType>
 Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, const MsgCB& aHdlr)
 {
     // validate
+    if (! msgSelf_)
+    {
+        ERR("(HdlrDom) Failed!!! since MsgSelf is invalid.");
+        return Domino::D_EVENT_FAILED_RET;
+    }
     if (! aHdlr)
     {
         WRN("(HdlrDom) Failed!!! not accept aHdlr=nullptr.");
@@ -156,7 +161,7 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
     auto&& newEv = this->newEvent(aEvName);
     if (ev_hdlr_S_.find(newEv) != ev_hdlr_S_.end())
     {
-        WRN("(HdlrDom) Failed!!! Can't overwrite hdlr for " << aEvName << ". Rm old or Use MultiHdlrDomino instead.");
+        ERR("(HdlrDom) Failed!!! Can't overwrite hdlr for " << aEvName << ". Rm old or Use MultiHdlrDomino instead.");
         return Domino::D_EVENT_FAILED_RET;
     }
 
@@ -179,7 +184,7 @@ template<class aDominoType>
 bool HdlrDomino<aDominoType>::setMsgSelfOK(const SafePtr<MsgSelf>& aMsgSelf)
 {
     // validate
-    const auto nMsgUnhandled = msgSelf_->nMsg();  // HdlrDomino ensure msgSelf_ always NOT null
+    const auto nMsgUnhandled = msgSelf_ ? msgSelf_->nMsg() : 0;  // HdlrDomino ensure msgSelf_ always NOT null
     if (nMsgUnhandled > 0)
     {
         ERR("(MsgSelf) failed!!! since old msgSelf is not empty, nMsgUnhandled=" << nMsgUnhandled);

@@ -362,6 +362,13 @@ TYPED_TEST_P(HdlrDominoTest, replace_msgSelf)  // checked by CI valgrind
     this->pongMsgSelf_();
     ASSERT_TRUE(PARA_DOM->setMsgSelfOK(msgSelf)) << "REQ: can set new msgSelf";
 }
+TYPED_TEST_P(HdlrDominoTest, bugFix_invalidMsgSelf)  // checked by CI valgrind
+{
+    ObjAnywhere::deinit();  // free MsgSelf
+    auto dom = make_safe<TypeParam>();  // now dom's MsgSelf = null/invalid
+    dom->setHdlr("en", this->hdlr0_);
+    dom->forceAllHdlr("en");  // bug fix: shall not crash
+}
 
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(HdlrDominoTest
@@ -388,6 +395,7 @@ REGISTER_TYPED_TEST_SUITE_P(HdlrDominoTest
     , nonConstInterface_shall_createUnExistEvent_withStateFalse
 
     , replace_msgSelf
+    , bugFix_invalidMsgSelf
 );
 using AnyHdlrDom = Types<MinHdlrDom, MinMhdlrDom, MinFreeDom, MinPriDom, MaxNofreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, HdlrDominoTest, AnyHdlrDom);
