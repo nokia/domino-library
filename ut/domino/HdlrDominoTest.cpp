@@ -368,6 +368,8 @@ TYPED_TEST_P(HdlrDominoTest, bugFix_invalidMsgSelf)  // checked by CI valgrind
     auto dom = make_safe<TypeParam>();  // now dom's MsgSelf = null/invalid
     dom->setHdlr("en", this->hdlr0_);
     dom->forceAllHdlr("en");  // bug fix: shall not crash
+
+    EXPECT_FALSE(dom->setMsgSelfOK(nullptr)) << "inc cov";
 }
 
 // ***********************************************************************************************
