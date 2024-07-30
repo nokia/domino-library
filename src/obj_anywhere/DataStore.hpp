@@ -20,8 +20,6 @@
 #include "SafePtr.hpp"  // can't UniPtr.hpp since ut(=req) build-err
 #include "UniLog.hpp"   // debug
 
-using namespace std;
-
 namespace RLib
 {
 // ***********************************************************************************************
@@ -45,7 +43,7 @@ public:
 
 private:
     // -------------------------------------------------------------------------------------------
-    unordered_map<aDataKey, SafePtr<void>> key_data_S_;
+    std::unordered_map<aDataKey, SafePtr<void>> key_data_S_;
 };
 
 // ***********************************************************************************************
@@ -82,7 +80,7 @@ SafePtr<aDataT> DataStore<aDataKey>::get(const aDataKey& aKey) const
         HID("(DataStore) can't find key=" << aKey);
         return nullptr;
     }
-    return dynamic_pointer_cast<aDataT>(key_data->second);
+    return std::dynamic_pointer_cast<aDataT>(key_data->second);
 }
 
 // ***********************************************************************************************

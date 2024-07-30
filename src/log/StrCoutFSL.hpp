@@ -25,14 +25,12 @@
 
 #include "BaseSL.hpp"
 
-using namespace std;
-
 namespace RLib
 {
 // ***********************************************************************************************
-class StrCoutFSL            // FSL = Formatted Smart Log
+class StrCoutFSL  // FSL = Formatted Smart Log
     : public BaseSL
-    , public stringstream   // for operator<<(); must not ostringstream since dump need read it!!!
+    , public std::stringstream   // for operator<<(); must not ostringstream since dump need read it!!!
 {
 public :
     ~StrCoutFSL();
@@ -56,7 +54,7 @@ StrCoutFSL::~StrCoutFSL()
 inline
 void StrCoutFSL::forceSave() const
 {
-    cout << rdbuf() << endl;  // internet says rdbuf() is faster than str()
+    std::cout << rdbuf() << std::endl;  // internet says rdbuf() is faster than str()
 }
 
 }  // namespace

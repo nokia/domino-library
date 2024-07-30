@@ -24,8 +24,6 @@
 
 #include "UniBaseLog.hpp"
 
-using namespace std;
-
 namespace RLib
 {
 // ***********************************************************************************************
@@ -35,8 +33,8 @@ public:
     explicit UniCoutLog(const LogName&) {}  // compatible UniSmartLog
     UniCoutLog() = default;
 
-    static ostream& oneLog();
-    ostream& operator()() const { return oneLog(); }
+    static std::ostream& oneLog();
+    std::ostream& operator()() const { return oneLog(); }
     static void needLog() {}
 
     static LogName uniLogName() { return ULN_DEFAULT; }
@@ -59,7 +57,7 @@ public:
 
 // ***********************************************************************************************
 // static than inline, avoid ut conflict when coexist both UniLog
-static ostream& oneLog() { return UniCoutLog::oneLog(); }
+static std::ostream& oneLog() { return UniCoutLog::oneLog(); }
 
 using UniLog = UniCoutLog;
 

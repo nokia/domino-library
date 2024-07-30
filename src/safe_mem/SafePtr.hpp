@@ -36,8 +36,6 @@
 
 #include "UniLog.hpp"
 
-using namespace std;
-
 namespace RLib
 {
 // ***********************************************************************************************
@@ -54,15 +52,15 @@ public:
     // safe-only cast (vs shared_ptr, eg static_pointer_cast<any> is not safe)
     template<typename From> SafePtr(const SafePtr<From>&) noexcept;          // cp  ok or compile err
     template<typename From> SafePtr(SafePtr<From>&&) noexcept;               // mv  ok or compile err
-    template<typename To> shared_ptr<To> cast() const noexcept;              // ret ok or null
+    template<typename To> std::shared_ptr<To> cast() const noexcept;         // ret ok or null
     template<typename To, typename From>
-    friend SafePtr<To> dynamic_pointer_cast(const SafePtr<From>&) noexcept;  // ret ok or null
+    friend SafePtr<To> std::dynamic_pointer_cast(const SafePtr<From>&) noexcept;  // ret ok or null
 
     // safe usage: convenient(compatible shared_ptr), equivalent & min
     // . ret shared_ptr is safer than T* (but not safest since to call T's func easily)
     // . no operator*() since T& is unsafe
-    shared_ptr<T> get()        const noexcept { return pT_; }
-    shared_ptr<T> operator->() const noexcept { return pT_; }  // convenient
+    std::shared_ptr<T> get() const noexcept { return pT_; }
+    std::shared_ptr<T> operator->() const noexcept { return pT_; }  // convenient
     explicit operator bool() const noexcept { return pT_ != nullptr; }
     auto use_count() const noexcept { return pT_.use_count();  }
 
@@ -74,9 +72,9 @@ private:
     template<typename From> void init_(const SafePtr<From>&) noexcept;
 
     // -------------------------------------------------------------------------------------------
-    shared_ptr<T> pT_;  // core
-    type_index realType_ = typeid(T);  // origin type
-    type_index lastType_ = typeid(T);  // maybe last valid type than realType_ & void
+    std::shared_ptr<T> pT_;  // core
+    std::type_index realType_ = typeid(T);  // origin type
+    std::type_index lastType_ = typeid(T);  // maybe last valid type than realType_ & void
 };
 
 // ***********************************************************************************************
@@ -101,24 +99,24 @@ SafePtr<T>::SafePtr(SafePtr<From>&& aSafeFrom) noexcept  // mv - MtQ need
 // ***********************************************************************************************
 template<typename T>
 template<typename To>
-shared_ptr<To> SafePtr<T>::cast() const noexcept
+std::shared_ptr<To> SafePtr<T>::cast() const noexcept
 {
-    if constexpr(is_base_of_v<To, T>)  // safer than is_convertible()
+    if constexpr(std::is_base_of_v<To, T>)  // safer than is_convertible()
     {
         //HID("(SafePtr) cast to base/self");  // ERR() not MT safe
-        return dynamic_pointer_cast<To>(pT_);  // private/protected inherit will compile err(rare & no easy fix)
+        return std::dynamic_pointer_cast<To>(pT_);  // private/protected inherit will compile err(rare & no easy fix)
     }
-     else if constexpr(is_base_of_v<T, To>)  // else if for constexpr
+     else if constexpr(std::is_base_of_v<T, To>)  // else if for constexpr
     {
         //HID("(SafePtr) cast to derived");
-        return dynamic_pointer_cast<To>(pT_);
+        return std::dynamic_pointer_cast<To>(pT_);
     }
-    else if constexpr(is_void_v<To>)
+    else if constexpr(std::is_void_v<To>)
     {
         //HID("(SafePtr) cast to void (for container to store diff types)");
         return pT_;
     }
-    else if constexpr(!is_void_v<T>)
+    else if constexpr(!std::is_void_v<T>)
     {
         HID("(SafePtr) invalid nonVoid-to-nonVoid, from=" << typeid(T).name() << " to=" << typeid(To).name());
         return nullptr;  // cast ok or null
@@ -127,12 +125,12 @@ shared_ptr<To> SafePtr<T>::cast() const noexcept
     else if (realType_ == typeid(To))
     {
         //HID("(SafePtr) cast void->origin");
-        return static_pointer_cast<To>(pT_);
+        return std::static_pointer_cast<To>(pT_);
     }
     else if (lastType_  == typeid(To))
     {
         //HID("(SafePtr) cast void to last-type-except-void");
-        return static_pointer_cast<To>(pT_);
+        return std::static_pointer_cast<To>(pT_);
     }
     HID("(SafePtr) can't cast from=void/" << typeid(T).name() << " to=" << typeid(To).name());
     return nullptr;  // since dynamic_pointer_cast<To>(pT_) may fail compile DataStore::get(); cast or or null
@@ -152,7 +150,7 @@ void SafePtr<T>::init_(const SafePtr<From>& aSafeFrom) noexcept
 
     realType_ = aSafeFrom.realType();
     // save last useful type
-    if (!is_same_v<T, void> && realType_ != typeid(T))
+    if (!std::is_same_v<T, void> && realType_ != typeid(T))
         lastType_ = typeid(T);
     else
         lastType_ = aSafeFrom.lastType();
@@ -163,16 +161,6 @@ void SafePtr<T>::init_(const SafePtr<From>& aSafeFrom) noexcept
 }
 
 
-
-// ***********************************************************************************************
-template<typename To, typename From>
-SafePtr<To> dynamic_pointer_cast(const SafePtr<From>& aSafeFrom) noexcept
-{
-    SafePtr<To> safeTo;
-    safeTo.pT_ = aSafeFrom.template cast<To>();
-    safeTo.init_(aSafeFrom);
-    return safeTo;
-}
 
 // ***********************************************************************************************
 template<typename U, typename... ConstructArgs>
@@ -202,15 +190,26 @@ bool operator<(SafePtr<T> lhs, SafePtr<U> rhs)
 {
     return lhs.get() < rhs.get();
 }
+}  // namespace
 
 // ***********************************************************************************************
 template<typename To, typename From>
-SafePtr<To> static_pointer_cast(const SafePtr<From>& aSafeFrom) noexcept
+RLib::SafePtr<To> std::dynamic_pointer_cast(const RLib::SafePtr<From>& aSafeFrom) noexcept
 {
-    return dynamic_pointer_cast<To>(aSafeFrom);
+    RLib::SafePtr<To> safeTo;
+    safeTo.pT_ = aSafeFrom.template cast<To>();
+    safeTo.init_(aSafeFrom);
+    return safeTo;
 }
-}  // namespace
 
+// ***********************************************************************************************
+template<typename To, typename From>
+RLib::SafePtr<To> std::static_pointer_cast(const RLib::SafePtr<From>& aSafeFrom) noexcept
+{
+    return std::dynamic_pointer_cast<To>(aSafeFrom);
+}
+
+// ***********************************************************************************************
 template<typename T>
 struct std::hash<RLib::SafePtr<T>>
 {

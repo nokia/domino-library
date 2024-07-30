@@ -37,7 +37,7 @@ protected:
 
 private:
     // -------------------------------------------------------------------------------------------
-    unordered_map<Domino::Event, EMsgPriority> ev_pri_S_;  // [event]=priority
+    std::unordered_map<Domino::Event, EMsgPriority> ev_pri_S_;  // [event]=priority
 public:
     using aDominoType::oneLog;
 };

@@ -18,6 +18,7 @@
 #include "MtInQueue.hpp"
 #undef RLIB_UT
 
+using namespace std;
 using namespace testing;
 
 namespace RLib

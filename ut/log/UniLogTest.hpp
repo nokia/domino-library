@@ -6,6 +6,7 @@
 // ***********************************************************************************************
 #include <gtest/gtest.h>
 
+using namespace std;
 using namespace testing;
 
 namespace RLib

@@ -15,15 +15,12 @@
 #include <memory>
 #include <string>
 
-using namespace std;
-using namespace std::chrono;
-
-using LogName = string;
+using LogName = std::string;
 
 // ***********************************************************************************************
 // - mem safe: yes
 // - MT safe : yes upon UniCoutLog, no upon UniSmartLog
-#define BUF(content) __func__ << "():" << __LINE__ << ": " << content << endl  // __FILE_NAME__ since GCC 12
+#define BUF(content) __func__ << "():" << __LINE__ << ": " << content << std::endl  // __FILE_NAME__ since GCC 12
 #define INF(content) { oneLog() << "INF] " << BUF(content); }
 #define WRN(content) { oneLog() << "WRN] " << BUF(content); }
 #define ERR(content) { oneLog() << "ERR] " << BUF(content); }
@@ -49,11 +46,12 @@ inline const char* timestamp()
 {
     static thread_local char buf[] = "ddd/HH:MM:SS.123456";  // ddd is days/year; thread_local is MT safe
 
-    auto now_tp = system_clock::now();
-    auto now_tt = system_clock::to_time_t(now_tp);
+    auto now_tp = std::chrono::system_clock::now();
+    auto now_tt = std::chrono::system_clock::to_time_t(now_tp);
     strftime(buf, sizeof(buf), "%j/%T.", localtime(&now_tt));
     snprintf(buf + sizeof(buf) - 7, 7, "%06u",  // snprintf is safer than sprintf
-        unsigned(duration_cast<microseconds>(now_tp.time_since_epoch()).count() % 1'000'000));  // can milliseconds
+        unsigned(std::chrono::duration_cast<std::chrono::microseconds>(now_tp.time_since_epoch()).count()
+        % 1'000'000));
     return buf;
 }
 

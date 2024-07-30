@@ -15,8 +15,6 @@
 #include "DataStore.hpp"
 #include "UniLog.hpp"
 
-using namespace std;
-
 namespace RLib
 {
 // ***********************************************************************************************
@@ -82,7 +80,7 @@ void DataDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 template<typename aDataDominoType, typename aDataType>
 auto getData(aDataDominoType& aDom, const Domino::EvName& aEvName)
 {
-    return static_pointer_cast<aDataType>(aDom.getData(aEvName));
+    return std::static_pointer_cast<aDataType>(aDom.getData(aEvName));
 }
 
 // ***********************************************************************************************

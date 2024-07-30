@@ -32,8 +32,8 @@ template<class aDominoType>
 class MultiHdlrDomino : public aDominoType
 {
 public:
-    using HdlrName  = string;
-    using HName_Hdlr_S = map<HdlrName, SharedMsgCB>;
+    using HdlrName  = std::string;
+    using HName_Hdlr_S = std::map<HdlrName, SharedMsgCB>;
 
     explicit MultiHdlrDomino(const LogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
 
@@ -56,7 +56,7 @@ protected:
 
 private:
     // -------------------------------------------------------------------------------------------
-    unordered_map<Domino::Event, HName_Hdlr_S> ev_hdlrs_S_;
+    std::unordered_map<Domino::Event, HName_Hdlr_S> ev_hdlrs_S_;
 public:
     using aDominoType::oneLog;
 };
@@ -96,7 +96,7 @@ Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvNa
     }
 
     // set hdlr
-    auto&& newHdlr = make_shared<MsgCB>(aHdlr);
+    auto&& newHdlr = std::make_shared<MsgCB>(aHdlr);
     auto&& ev = this->getEventBy(aEvName);
     auto&& ev_hdlrs = ev_hdlrs_S_.find(ev);
     if (ev_hdlrs == ev_hdlrs_S_.end())

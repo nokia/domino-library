@@ -43,7 +43,7 @@ protected:
 private:
     // - bitmap & dyn expand, [event]=t/f
     // - don't know if repeated hdlrs are much less than non-repeated, so bitmap is simpler than set<Event>
-    vector<bool> isRepeatHdlr_;
+    std::vector<bool> isRepeatHdlr_;
 public:
     using aDominoType::oneLog;
 };

@@ -33,14 +33,12 @@
 #include "UniLog.hpp"
 #include "UniPtr.hpp"
 
-using namespace std;
-
 namespace RLib
 {
 // - ele & its type_index(==/!= ok, but type_info* & hash_code nok)
 // - shared_ptr is safe to cast void since type_index (but not safe as SafePtr's create)
-using ELE_TID = pair<UniPtr, type_index>;
-using EleHdlr = function<void(UniPtr)>;  // NO exception allowed
+using ELE_TID = std::pair<UniPtr, std::type_index>;
+using EleHdlr = std::function<void(UniPtr)>;  // NO exception allowed
 
 // ***********************************************************************************************
 class MtInQueue
@@ -66,20 +64,20 @@ public:
     void clearHdlrPool() { tid_hdlr_S_.clear(); }
 
 private:
-    deque<ELE_TID>::iterator begin_();
+    std::deque<ELE_TID>::iterator begin_();
     size_t  handleCacheEle_();
 
     // -------------------------------------------------------------------------------------------
-    deque<ELE_TID> queue_;  // my limit ele# if need; most suitable container
-    deque<ELE_TID> cache_;  // main-thread use ONLY (so no mutex protect)
-    mutex mutex_;
+    std::deque<ELE_TID> queue_;  // my limit ele# if need; most suitable container
+    std::deque<ELE_TID> cache_;  // main-thread use ONLY (so no mutex protect)
+    std::mutex mutex_;
 
-    unordered_map<type_index, EleHdlr> tid_hdlr_S_;
+    std::unordered_map<std::type_index, EleHdlr> tid_hdlr_S_;
 
     // -------------------------------------------------------------------------------------------
 #ifdef RLIB_UT
 public:
-    mutex& backdoor() { return mutex_; }
+    std::mutex& backdoor() { return mutex_; }
 #endif
 };
 
@@ -102,8 +100,8 @@ void MtInQueue::mt_push(PTR<aEleType>&& aEle)
 
     // push
     {
-        lock_guard<mutex> guard(mutex_);
-        queue_.push_back(ELE_TID(move(aEle), typeid(aEleType)));
+        std::lock_guard<std::mutex> guard(mutex_);
+        queue_.push_back(ELE_TID(std::move(aEle), typeid(aEleType)));
         //HID("(MtQ) ptr=" << aEle.get() << ", nRef=" << aEle.use_count());  // HID supports MT
     }
 
@@ -125,9 +123,9 @@ PTR<aEleType> MtInQueue::pop()
         return nullptr;
 
     // pop
-    auto ele = move(it->first);  // must copy
+    auto ele = std::move(it->first);
     cache_.pop_front();
-    return static_pointer_cast<aEleType>(ele);
+    return std::static_pointer_cast<aEleType>(ele);
 }
 
 // ***********************************************************************************************
@@ -140,7 +138,7 @@ bool MtInQueue::setHdlrOK(const EleHdlr& aHdlr)
         return false;
     }
 
-    auto&& tid = type_index(typeid(aEleType));
+    auto&& tid = std::type_index(typeid(aEleType));
     if (tid_hdlr_S_.find(tid) != tid_hdlr_S_.end())
     {
         ERR("(MtInQueue) failed!!! overwrite hdlr may unsafe existing data");

@@ -31,8 +31,6 @@
 
 #include <unordered_set>
 
-using namespace std;
-
 namespace RLib
 {
 // ***********************************************************************************************
@@ -53,7 +51,7 @@ private:
     // - REQ: min mem (so set<Event> is better than vector<bool> when almost empty
     // - REQ: fast (eg isRemoved(), insert, del)
     // - req: better FIFO
-    unordered_set<Domino::Event> isRemovedEv_;
+    std::unordered_set<Domino::Event> isRemovedEv_;
 
 public:
     using aDominoType::oneLog;

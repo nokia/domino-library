@@ -45,8 +45,6 @@
 
 #define MSG_SELF (ObjAnywhere::getObj<MsgSelf>())
 
-using namespace std;
-
 namespace RLib
 {
 // ***********************************************************************************************
@@ -64,9 +62,9 @@ enum EMsgPriority : unsigned char
 // !!! MsgCB shall NEVER throw exception!!!
 // - MsgCB can try-catch all exception
 // - exception is bug to be fixed than pretected
-using MsgCB        = function<void()>;
-using WeakMsgCB    = weak_ptr<MsgCB>;
-using SharedMsgCB  = shared_ptr<MsgCB>;
+using MsgCB        = std::function<void()>;
+using WeakMsgCB    = std::weak_ptr<MsgCB>;
+using SharedMsgCB  = std::shared_ptr<MsgCB>;
 
 // ***********************************************************************************************
 class MsgSelf : public UniLog
@@ -86,7 +84,7 @@ private:
     bool handleOneMsg_();
 
     // -------------------------------------------------------------------------------------------
-    deque<MsgCB> msgQueues_[EMsgPri_MAX];
+    std::deque<MsgCB> msgQueues_[EMsgPri_MAX];
     size_t nMsg_ = 0;
 };
 }  // namespace

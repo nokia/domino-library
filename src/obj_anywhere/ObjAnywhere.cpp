@@ -5,6 +5,8 @@
  */
 #include "ObjAnywhere.hpp"
 
+using namespace std;
+
 namespace RLib
 {
 shared_ptr<DataStore<ObjName>> ObjAnywhere::name_obj_S_;

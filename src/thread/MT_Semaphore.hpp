@@ -23,8 +23,6 @@
 #include <atomic>
 #include <semaphore.h>
 
-using namespace std;
-
 namespace RLib
 {
 // ***********************************************************************************************
@@ -43,7 +41,7 @@ public:
 
 private:
     sem_t mt_sem_;
-    atomic_flag mt_notified_ = ATOMIC_FLAG_INIT;  // = false
+    std::atomic_flag mt_notified_ = ATOMIC_FLAG_INIT;  // = false
 
     // -------------------------------------------------------------------------------------------
 #ifdef RLIB_UT

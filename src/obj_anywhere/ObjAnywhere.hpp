@@ -27,11 +27,9 @@
 #include "DataStore.hpp"
 #include "UniLog.hpp"
 
-using namespace std;
-
 namespace RLib
 {
-using ObjName = string;
+using ObjName = std::string;
 
 // ***********************************************************************************************
 class ObjAnywhere
@@ -57,7 +55,7 @@ public:
 
 private:
     // -------------------------------------------------------------------------------------------
-    static shared_ptr<DataStore<ObjName>> name_obj_S_;  // store aObj w/o include aObj.hpp; shared_ptr is safe here
+    static std::shared_ptr<DataStore<ObjName>> name_obj_S_;  // store aObj w/o include aObj.hpp; shared_ptr is safe here
 };
 
 // ***********************************************************************************************

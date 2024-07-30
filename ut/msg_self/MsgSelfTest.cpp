@@ -13,6 +13,7 @@
 #include "MsgSelf.hpp"
 #include "MT_PingMainTH.hpp"
 
+using namespace std;
 using namespace std::chrono;
 using namespace testing;
 
@@ -38,7 +39,7 @@ struct MsgSelfTest : public Test, public UniLog
     };
     MOCK_METHOD(void, d6MsgHdlr, ());
 
-    queue<int> hdlrIDs_;
+    std::queue<int> hdlrIDs_;
 };
 
 #define SEND_MSG

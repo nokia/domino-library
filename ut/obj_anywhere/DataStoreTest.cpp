@@ -11,6 +11,7 @@
 #include "DataStore.hpp"
 #include "SafePtr.hpp"
 
+using namespace std;
 using namespace testing;
 
 namespace RLib

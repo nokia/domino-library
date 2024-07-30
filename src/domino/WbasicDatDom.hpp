@@ -13,8 +13,6 @@
 
 #include "UniLog.hpp"
 
-using namespace std;
-
 namespace RLib
 {
 // ***********************************************************************************************
@@ -41,7 +39,7 @@ private:
     using aDominoType::getData;
     using aDominoType::replaceData;
     // -------------------------------------------------------------------------------------------
-    vector<bool> wrCtrl_;
+    std::vector<bool> wrCtrl_;
 
 public:
     using aDominoType::oneLog;
@@ -135,7 +133,7 @@ bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName, const bo
 template<typename aDataDominoType, typename aDataType>
 SafePtr<aDataType> wbasic_getData(aDataDominoType& aDom, const Domino::EvName& aEvName)
 {
-    return static_pointer_cast<aDataType>(aDom.wbasic_getData(aEvName));
+    return std::static_pointer_cast<aDataType>(aDom.wbasic_getData(aEvName));
 }
 
 // ***********************************************************************************************

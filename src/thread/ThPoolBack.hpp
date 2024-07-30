@@ -20,8 +20,6 @@
 
 #include "ThreadBack.hpp"
 
-using namespace std;
-
 namespace RLib
 {
 // ***********************************************************************************************
@@ -35,12 +33,12 @@ public:
 
 private:
     // -------------------------------------------------------------------------------------------
-    vector<thread>  thPool_;
-    deque<packaged_task<bool()>>  taskQ_;
+    std::vector<std::thread>  thPool_;
+    std::deque<std::packaged_task<bool()>>  taskQ_;
 
-    mutex  mutex_;
-    condition_variable cv_;
-    atomic<bool>  stopAllTH_ = false;
+    std::mutex  mutex_;
+    std::condition_variable cv_;
+    std::atomic<bool>  stopAllTH_ = false;
 };
 
 }  // namespace

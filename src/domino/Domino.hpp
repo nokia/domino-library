@@ -63,11 +63,11 @@ class Domino : public UniLog
 {
 public:
     using Event      = size_t;  // smaller size can save mem; larger size can support more events
-    using Events     = set<Event>;
-    using EvName     = string;
-    using SimuEvents = map<EvName, bool>;  // not unordered-map since most traversal
-    using EvNames    = unordered_map<Event, EvName>;  // map is less mem than vector<EvName>
-    using EvLinks    = map<Event, Events>;
+    using Events     = std::set<Event>;
+    using EvName     = std::string;
+    using SimuEvents = std::map<EvName, bool>;  // not unordered-map since most traversal
+    using EvNames    = std::unordered_map<Event, EvName>;  // map is less mem than vector<EvName>
+    using EvLinks    = std::map<Event, Events>;
 
     enum : Event
     {
@@ -122,13 +122,13 @@ private:
     static const Events& findPeerEVs(const Event&, const EvLinks&);
 
     // -------------------------------------------------------------------------------------------
-    vector<bool>                 states_;               // bitmap & dyn expand, [event]=t/f
+    std::vector<bool>                 states_;               // bitmap & dyn expand, [event]=t/f
 
-    EvLinks                      prev_[N_EVENT_STATE];  // not unordered-map since most traversal
-    EvLinks                      next_[N_EVENT_STATE];  // not unordered-map since most traversal
-    unordered_map<EvName, Event> en_ev_;                // [evName]=event
-    EvNames                      ev_en_;                // [event]=evName for easy debug
-    unordered_set<Event>         effectEVs_;
+    EvLinks                           prev_[N_EVENT_STATE];  // not unordered-map since most traversal
+    EvLinks                           next_[N_EVENT_STATE];  // not unordered-map since most traversal
+    std::unordered_map<EvName, Event> en_ev_;                // [evName]=event
+    EvNames                           ev_en_;                // [event]=evName for easy debug
+    std::unordered_set<Event>         effectEVs_;
 };
 
 }  // namespace

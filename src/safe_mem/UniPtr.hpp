@@ -15,8 +15,6 @@
 
 #include <memory>  // make_shared
 
-using namespace std;
-
 #if 0
 namespace RLib
 {

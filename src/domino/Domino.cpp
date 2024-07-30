@@ -7,6 +7,8 @@
 
 #include "Domino.hpp"
 
+using namespace std;
+
 namespace RLib
 {
 static const Domino::Events defaultEVs;  // internal use only

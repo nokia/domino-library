@@ -27,13 +27,11 @@
 #include "StrCoutFSL.hpp"
 #include "UniBaseLog.hpp"
 
-using namespace std;
-
 namespace RLib
 {
 // ***********************************************************************************************
 using SmartLog = StrCoutFSL;
-using LogStore = unordered_map<LogName, shared_ptr<SmartLog> >;
+using LogStore = std::unordered_map<LogName, std::shared_ptr<SmartLog> >;
 
 // ***********************************************************************************************
 class UniSmartLog
@@ -51,8 +49,8 @@ public:
 
 private:
     // -------------------------------------------------------------------------------------------
-    shared_ptr<SmartLog> smartLog_;
-    const LogName        uniLogName_;
+    std::shared_ptr<SmartLog>  smartLog_;
+    const LogName  uniLogName_;
 
     static LogStore name_log_S_;
 public:

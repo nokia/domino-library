@@ -19,14 +19,12 @@
 
 #define THREAD_BACK  (RLib::ObjAnywhere::getObj<RLib::ThreadBack>())
 
-using namespace std;
-
 namespace RLib
 {
 // ***********************************************************************************************
-using MT_TaskEntryFN  = function<bool()>;      // succ ret true, otherwise false
-using TaskBackFN      = function<void(bool)>;  // entry ret as para
-using StoreThreadBack = list<pair<future<bool>, TaskBackFN> >;  // deque rm middle is worse
+using MT_TaskEntryFN  = std::function<bool()>;  // succ ret true, otherwise false
+using TaskBackFN      = std::function<void(bool)>;  // entry ret as para
+using StoreThreadBack = std::list<std::pair<std::future<bool>, TaskBackFN> >;  // deque rm middle is worse
 
 // ***********************************************************************************************
 class ThreadBack
@@ -49,8 +47,8 @@ public:
 
     static bool inMyMainTH()
     {
-        static const auto s_myMainTH = this_thread::get_id();
-        return s_myMainTH == this_thread::get_id();
+        static const auto s_myMainTH = std::this_thread::get_id();
+        return s_myMainTH == std::this_thread::get_id();
     }
 
 protected:

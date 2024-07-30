@@ -9,6 +9,8 @@
 #include "MT_PingMainTH.hpp"
 #include "MtInQueue.hpp"
 
+using namespace std;
+
 namespace RLib
 {
 // ***********************************************************************************************

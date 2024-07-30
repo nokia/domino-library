@@ -68,7 +68,7 @@ protected:
 
     // -------------------------------------------------------------------------------------------
 private:
-    unordered_map<Domino::Event, SharedMsgCB> ev_hdlr_S_;
+    std::unordered_map<Domino::Event, SharedMsgCB> ev_hdlr_S_;
 protected:
     SafePtr<MsgSelf> msgSelf_ = ObjAnywhere::getObj<MsgSelf>();
 public:
@@ -166,7 +166,7 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
     }
 
     // set
-    auto newHdlr = make_shared<MsgCB>(aHdlr);
+    auto newHdlr = std::make_shared<MsgCB>(aHdlr);
     ev_hdlr_S_.emplace(newEv, newHdlr);
     HID("(HdlrDom) Succeed for EvName=" << aEvName);
 

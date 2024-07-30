@@ -15,6 +15,8 @@
 #include "ThreadBackViaMsgSelf.hpp"
 #include "UniLog.hpp"
 
+using namespace std;
+using namespace std::chrono;
 using namespace testing;
 
 namespace RLib
@@ -36,7 +38,7 @@ struct THREAD_BACK_TEST : public Test, public UniLog
 
     // -------------------------------------------------------------------------------------------
     THREAD_BACK_TYPE threadBack_;
-    shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(uniLogName());
+    std::shared_ptr<MsgSelf> msgSelf_ = std::make_shared<MsgSelf>(uniLogName());
 };
 
 #define THREAD_AND_BACK

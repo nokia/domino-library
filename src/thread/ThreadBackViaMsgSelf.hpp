@@ -20,7 +20,7 @@ namespace RLib
 // ***********************************************************************************************
 // wrap TaskBackFN to queue in MsgSelf
 inline
-TaskBackFN viaMsgSelf(const TaskBackFN& aBackFN, shared_ptr<MsgSelf> aMsgSelf, EMsgPriority aPri = EMsgPri_NORM)
+TaskBackFN viaMsgSelf(const TaskBackFN& aBackFN, std::shared_ptr<MsgSelf> aMsgSelf, EMsgPriority aPri = EMsgPri_NORM)
 {
     return ! aBackFN || aMsgSelf == nullptr
         ? TaskBackFN(nullptr)  // empty fn
