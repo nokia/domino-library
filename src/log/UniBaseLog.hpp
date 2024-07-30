@@ -37,7 +37,7 @@ using LogName = std::string;
 
 #define GTEST_LOG_FAIL { if (Test::HasFailure()) needLog(); }  // UT only
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 // - MT safe : yes
@@ -48,7 +48,8 @@ inline const char* timestamp()
 
     auto now_tp = std::chrono::system_clock::now();
     auto now_tt = std::chrono::system_clock::to_time_t(now_tp);
-    strftime(buf, sizeof(buf), "%j/%T.", localtime(&now_tt));
+    struct tm now_tm;
+    strftime(buf, sizeof(buf), "%j/%T.", localtime_r(&now_tt, &now_tm));  // cpplint asks localtime_r (MT safe)
     snprintf(buf + sizeof(buf) - 7, 7, "%06u",  // snprintf is safer than sprintf
         unsigned(std::chrono::duration_cast<std::chrono::microseconds>(now_tp.time_since_epoch()).count()
         % 1'000'000));

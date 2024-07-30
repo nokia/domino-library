@@ -27,6 +27,7 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 #include <unordered_map>
 
 #include "MsgSelf.hpp"
@@ -34,7 +35,7 @@
 #include "SafePtr.hpp"
 #include "UniLog.hpp"
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 template<class aDominoType>

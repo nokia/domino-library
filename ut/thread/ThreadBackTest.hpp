@@ -19,7 +19,7 @@ using namespace std;
 using namespace std::chrono;
 using namespace testing;
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 struct THREAD_BACK_TEST : public Test, public UniLog

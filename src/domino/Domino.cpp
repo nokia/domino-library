@@ -9,7 +9,7 @@
 
 using namespace std;
 
-namespace RLib
+namespace rlib
 {
 static const Domino::Events defaultEVs;  // internal use only
 
@@ -144,7 +144,7 @@ void Domino::pureSetPrev_(const Event& aValidEv, const SimuEvents& aSimuPrevEven
 // ***********************************************************************************************
 bool Domino::pureSetStateOK_(const Event& aValidEv, const bool aNewState)
 {
-    if (states_[aValidEv] != aNewState) // do need change
+    if (states_[aValidEv] != aNewState)  // do need change
     {
         states_[aValidEv] = aNewState;
         HID("(Domino) Succeed, EvName=" << ev_en_[aValidEv] << " newState=" << aNewState);

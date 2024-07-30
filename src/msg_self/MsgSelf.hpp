@@ -38,14 +38,15 @@
 // ***********************************************************************************************
 #pragma once
 
-#include <functional>
 #include <deque>
+#include <functional>
+#include <memory>
 
 #include "UniLog.hpp"
 
 #define MSG_SELF (ObjAnywhere::getObj<MsgSelf>())
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 enum EMsgPriority : unsigned char

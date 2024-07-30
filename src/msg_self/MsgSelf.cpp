@@ -7,7 +7,7 @@
 #include "MsgSelf.hpp"
 #include "MT_PingMainTH.hpp"
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 // - performance optimization need 5 lines code, with a little benfit in most cases

@@ -21,11 +21,11 @@
 #pragma once
 
 #include <iostream>
-#include <sstream>  //stringstream
+#include <sstream>  // stringstream
 
 #include "BaseSL.hpp"
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 class StrCoutFSL  // FSL = Formatted Smart Log
@@ -44,7 +44,7 @@ public :
 inline
 StrCoutFSL::~StrCoutFSL()
 {
-    if( canDelLog() )
+    if (canDelLog())
         return;
 
     forceSave();

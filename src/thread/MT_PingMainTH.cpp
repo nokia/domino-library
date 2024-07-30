@@ -5,7 +5,7 @@
  */
 #include "MT_PingMainTH.hpp"
 
-namespace RLib
+namespace rlib
 {
 MT_Semaphore g_semToMainTH;
 }  // namespace

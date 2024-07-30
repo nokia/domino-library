@@ -12,10 +12,12 @@
 //
 // - mem safe: yes
 // ***********************************************************************************************
+#include <memory>
+
 #include "MsgSelf.hpp"
 #include "ThreadBack.hpp"
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 // wrap TaskBackFN to queue in MsgSelf

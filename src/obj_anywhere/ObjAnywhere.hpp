@@ -22,12 +22,13 @@
 // ***********************************************************************************************
 #pragma once
 
+#include <memory>
 #include <string>
 
 #include "DataStore.hpp"
 #include "UniLog.hpp"
 
-namespace RLib
+namespace rlib
 {
 using ObjName = std::string;
 

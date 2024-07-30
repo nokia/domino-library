@@ -4,7 +4,7 @@
 #undef   THREAD_BACK_TYPE
 #undef   THREAD_BACK_TEST
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 TEST_F(ThPoolBackTest, invalid_maxThread)

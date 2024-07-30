@@ -16,7 +16,7 @@
 
 #include "MT_Semaphore.hpp"
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 // - can't use ObjAnywhere that is not MT safe

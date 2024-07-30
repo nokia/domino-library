@@ -3,11 +3,12 @@
  * Licensed under the BSD 3 Clause license
  * SPDX-License-Identifier: BSD-3-Clause
  */
+#include <utility>
 #include "ThPoolBack.hpp"
 
 using namespace std;
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 ThPoolBack::ThPoolBack(size_t aMaxThread)

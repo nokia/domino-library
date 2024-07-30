@@ -54,7 +54,7 @@
 
 #include "UniLog.hpp"
 
-namespace RLib
+namespace rlib
 {
 const char DOM_RESERVED_EVNAME[] = "[Dom Reserved EvName]";
 

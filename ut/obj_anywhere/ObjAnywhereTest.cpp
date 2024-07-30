@@ -11,7 +11,7 @@
 
 using namespace testing;
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 struct ObjAnywhereTest : public Test, public UniLog

@@ -9,7 +9,7 @@
 using namespace std;
 using namespace testing;
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 struct UNI_LOG_TEST : public Test

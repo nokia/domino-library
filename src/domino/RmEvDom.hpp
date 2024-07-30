@@ -31,7 +31,7 @@
 
 #include <unordered_set>
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 template<typename aDominoType>

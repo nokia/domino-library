@@ -43,7 +43,7 @@
 //                     :    :            :    :
 //                     :    :            :    :
 //         UniSmartLogTest.cpp          UniCoutLogTest.cpp
- //
+//
 // - REQ:
 //   * uni-interface (INF/...) for all users (eg DomLib, swm, rfsw)
 //     * easily support INF/etc macros

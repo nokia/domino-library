@@ -27,7 +27,7 @@
 #include "StrCoutFSL.hpp"
 #include "UniBaseLog.hpp"
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 using SmartLog = StrCoutFSL;

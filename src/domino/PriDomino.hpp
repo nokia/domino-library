@@ -17,7 +17,7 @@
 #include <unordered_map>
 #include "UniLog.hpp"
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 template<class aDominoType>

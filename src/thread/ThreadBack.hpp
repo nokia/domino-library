@@ -13,13 +13,14 @@
 #include <functional>
 #include <future>
 #include <list>
+#include <utility>
 
 #include "MT_PingMainTH.hpp"
 #include "UniLog.hpp"
 
-#define THREAD_BACK  (RLib::ObjAnywhere::getObj<RLib::ThreadBack>())
+#define THREAD_BACK  (rlib::ObjAnywhere::getObj<rlib::ThreadBack>())
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 using MT_TaskEntryFN  = std::function<bool()>;  // succ ret true, otherwise false

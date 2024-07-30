@@ -14,7 +14,7 @@
 
 using namespace std;
 
-namespace RLib
+namespace rlib
 {
 #define CREATE
 // ***********************************************************************************************

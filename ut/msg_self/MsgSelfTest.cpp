@@ -17,7 +17,7 @@ using namespace std;
 using namespace std::chrono;
 using namespace testing;
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 struct MsgSelfTest : public Test, public UniLog

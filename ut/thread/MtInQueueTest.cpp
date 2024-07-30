@@ -21,7 +21,7 @@
 using namespace std;
 using namespace testing;
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 struct MtInQueueTest : public Test, public UniLog

@@ -8,12 +8,12 @@
 
 using namespace std;
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 UniSmartLog::UniSmartLog(const LogName& aUniLogName) : uniLogName_(aUniLogName)
 {
-    //for(auto&& name_log : name_log_S_) cout << name_log.first<<", p=" << name_log.second.get() << endl;
+    // for(auto&& name_log : name_log_S_) cout << name_log.first<<", p=" << name_log.second.get() << endl;
     auto&& name_log = name_log_S_.find(aUniLogName);
     if (name_log == name_log_S_.end())
     {

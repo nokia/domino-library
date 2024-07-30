@@ -7,7 +7,7 @@
 
 using namespace std;
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 bool AsyncBack::newTaskOK(const MT_TaskEntryFN& mt_aEntryFN, const TaskBackFN& aBackFN, UniLog& oneLog)
@@ -29,7 +29,7 @@ bool AsyncBack::newTaskOK(const MT_TaskEntryFN& mt_aEntryFN, const TaskBackFN& a
         ),
         aBackFN
     );
-    //HID("(AsyncBack) valid=" << fut_backFN_S_.back().first.valid() << ", backFn=" << &(fut_backFN_S_.back().second));
+    // HID("(AsyncBack) valid=" << fut_backFN_S_.back().first.valid() << ", backFn=" << &(fut_backFN_S_.back().second));
     return true;
 }
 

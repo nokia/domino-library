@@ -20,12 +20,13 @@
 #pragma once
 
 #include <map>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
 #include "UniLog.hpp"
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 template<class aDominoType>
@@ -175,7 +176,7 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, c
 
     // rm
     auto&& ev_hdlrs = ev_hdlrs_S_.find(aValidEv);
-    //if (ev_hdlrs == ev_hdlrs_S_.end()) return false;  // impossible if valid aValidHdlr
+    // if (ev_hdlrs == ev_hdlrs_S_.end()) return false;  // impossible if valid aValidHdlr
     for (auto&& name_hdlr = ev_hdlrs->second.begin(); name_hdlr != ev_hdlrs->second.end(); ++name_hdlr)
     {
         if (name_hdlr->second != aValidHdlr)

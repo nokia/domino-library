@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 ostream& UniCoutLog::oneLog()

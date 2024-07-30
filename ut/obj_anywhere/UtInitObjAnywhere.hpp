@@ -33,7 +33,7 @@
 using namespace std;
 using namespace testing;
 
-namespace RLib
+namespace rlib
 {
 using MinHdlrDom  =                 HdlrDomino<Domino>;
 using MinMhdlrDom = MultiHdlrDomino<MinHdlrDom>;

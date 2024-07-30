@@ -24,7 +24,7 @@
 
 #include "UniBaseLog.hpp"
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 class UniCoutLog

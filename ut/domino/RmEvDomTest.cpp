@@ -9,7 +9,7 @@
 
 #include "UtInitObjAnywhere.hpp"
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 template<class aParaDom>

@@ -20,7 +20,7 @@
 
 #include "ThreadBack.hpp"
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 class ThPoolBack : public ThreadBack

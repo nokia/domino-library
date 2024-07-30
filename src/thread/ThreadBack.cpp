@@ -12,7 +12,7 @@
 
 using namespace std;
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 size_t ThreadBack::hdlFinishedTasks(UniLog& oneLog)
@@ -24,7 +24,7 @@ size_t ThreadBack::hdlFinishedTasks(UniLog& oneLog)
         // - valid async()'s future never invalid
         // - valid packaged_task's get_future() never invalid
         auto&& fut = fut_backFN->first;
-        //HID("(ThreadBack) nHandled=" << nHandled << ", valid=" << fut.valid() << ", backFn=" << &(fut_backFN->second));
+        // HID("(ThreadBack) nHandled=" << nHandled << ", valid=" << fut.valid() << ", backFn=" << &(fut_backFN->second));
         if (fut.wait_for(0s) == future_status::ready)
         {
             fut_backFN->second(fut.get());  // callback

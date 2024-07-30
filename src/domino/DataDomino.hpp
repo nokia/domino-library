@@ -15,7 +15,7 @@
 #include "DataStore.hpp"
 #include "UniLog.hpp"
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 template<typename aDominoType>

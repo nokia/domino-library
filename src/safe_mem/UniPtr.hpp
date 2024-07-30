@@ -16,7 +16,7 @@
 #include <memory>  // make_shared
 
 #if 0
-namespace RLib
+namespace rlib
 {
 // std::~, or ambiguous with boost::~
 using   UniPtr =  std::shared_ptr<void>;
@@ -25,7 +25,7 @@ using   UniPtr =  std::shared_ptr<void>;
 
 #else
 #include "SafePtr.hpp"
-namespace RLib
+namespace rlib
 {
 using   UniPtr =  SafePtr<void>;
 #define MAKE_PTR  make_safe

@@ -28,12 +28,13 @@
 #include <mutex>
 #include <typeindex>
 #include <unordered_map>
+#include <utility>
 
 #include "MT_PingMainTH.hpp"
 #include "UniLog.hpp"
 #include "UniPtr.hpp"
 
-namespace RLib
+namespace rlib
 {
 // - ele & its type_index(==/!= ok, but type_info* & hash_code nok)
 // - shared_ptr is safe to cast void since type_index (but not safe as SafePtr's create)
@@ -102,7 +103,7 @@ void MtInQueue::mt_push(PTR<aEleType>&& aEle)
     {
         std::lock_guard<std::mutex> guard(mutex_);
         queue_.push_back(ELE_TID(std::move(aEle), typeid(aEleType)));
-        //HID("(MtQ) ptr=" << aEle.get() << ", nRef=" << aEle.use_count());  // HID supports MT
+        // HID("(MtQ) ptr=" << aEle.get() << ", nRef=" << aEle.use_count());  // HID supports MT
     }
 
     // unlock then notify main thread

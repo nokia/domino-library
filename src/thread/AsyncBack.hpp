@@ -38,13 +38,13 @@
 // - class safe: yes
 //   * all AsyncBack func (include ThreadBack) must run in 1 thread (best in main thread)
 //     . AsyncBack can call inMyMainTH() to ensure this
-//     . but can all RLib func call inMyMainTH()? little benefit so giveup
-//       * common sense/principle: RLib (include AsyncBack) not call inMyMainTH()
+//     . but can all rlib func call inMyMainTH()? little benefit so giveup
+//       * common sense/principle: rlib (include AsyncBack) not call inMyMainTH()
 //       . inMyMainTH() for user debug - any main-thread func shall ret T if call inMyMainTH()
-//     * same for exception - assume no exception from any hdlr provided to RLib
+//     * same for exception - assume no exception from any hdlr provided to rlib
 //   . no duty to any unsafe behavior of MT_TaskEntryFN & TaskBackFN (eg throw exception)
 //     . MT_TaskEntryFN & TaskBackFN shall NOT throw exception
-//     . they can try-catch all exception & leave RLib simple/focus
+//     . they can try-catch all exception & leave rlib simple/focus
 //
 // - support multi-thread
 //   . MT_/mt_ prefix: yes
@@ -54,7 +54,7 @@
 
 #include "ThreadBack.hpp"
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 class AsyncBack : public ThreadBack

@@ -22,7 +22,7 @@
 
 #include <vector>
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 template<class aDominoType>

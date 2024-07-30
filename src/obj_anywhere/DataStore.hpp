@@ -20,7 +20,7 @@
 #include "SafePtr.hpp"  // can't UniPtr.hpp since ut(=req) build-err
 #include "UniLog.hpp"   // debug
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 template<typename aDataKey>

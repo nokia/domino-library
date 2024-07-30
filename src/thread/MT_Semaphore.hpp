@@ -23,7 +23,7 @@
 #include <atomic>
 #include <semaphore.h>
 
-namespace RLib
+namespace rlib
 {
 // ***********************************************************************************************
 class MT_Semaphore
