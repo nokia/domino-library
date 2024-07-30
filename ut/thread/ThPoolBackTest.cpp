@@ -1,7 +1,7 @@
-#define  THREAD_BACK       ThPoolBack
+#define  THREAD_BACK_TYPE  ThPoolBack
 #define  THREAD_BACK_TEST  ThPoolBackTest
 #include "ThreadBackTest.hpp"
-#undef   THREAD_BACK
+#undef   THREAD_BACK_TYPE
 #undef   THREAD_BACK_TEST
 
 namespace RLib

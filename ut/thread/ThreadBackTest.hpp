@@ -35,7 +35,7 @@ struct THREAD_BACK_TEST : public Test, public UniLog
     }
 
     // -------------------------------------------------------------------------------------------
-    THREAD_BACK threadBack_;
+    THREAD_BACK_TYPE threadBack_;
     shared_ptr<MsgSelf> msgSelf_ = make_shared<MsgSelf>(uniLogName());
 };
 

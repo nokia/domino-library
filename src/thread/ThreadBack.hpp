@@ -17,6 +17,8 @@
 #include "MT_PingMainTH.hpp"
 #include "UniLog.hpp"
 
+#define THREAD_BACK  (RLib::ObjAnywhere::getObj<RLib::ThreadBack>())
+
 using namespace std;
 
 namespace RLib
