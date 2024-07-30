@@ -30,7 +30,7 @@ using LogName = std::string;
 //   . under single thread, can change cout back to oneLog() for smart log
 // - HID() is MT safe also upon UniSmartLog
 #if WITH_HID_LOG
-#define HID(content) { cout << "cout[" << timestamp() << "/HID] " << BUF(content) << dec; }
+#define HID(content) { cout << "cout[" << timestamp() << "/HID] " << BUF(content) << std::dec; }
 #else
 #define HID(content) {}
 #endif
