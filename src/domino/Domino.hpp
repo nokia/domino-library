@@ -30,18 +30,10 @@
 //   . n-go domino
 //
 // - MT safe: no
-// - class safe: yes (all-safe include mem-safe, no-ev-link-loop, no exception, etc, exclude MT safe)
-//   . no use-up mem which is impossible in most cases
-//   . user shall not loop link ev - hard, expensive & unreasonable
-//   . ev-link-loop:
-//     . REQ:
-//       . no-loop to ensure safe
-//         . runtime forbid (rather than offline/afterward check which is not safe)
-//         . so fail setPrev() to prevent loop
-//       . reasonable cost-benefit
-//         . so little impact runtime (debug can be HID_CODE)
-//         . next-loop can be prevented simply
-//         . true-false-loop can NOT (refer UT strange_loop)
+// - use-safe: yes with conditions:
+//   . no too many events/.. that use-up mem (impossible in most cases)
+//   . user shall not loop ev-link (impossible unless deliberate)
+//     . domino prevent is not 100%, see UT for details
 // ***********************************************************************************************
 #pragma once
 

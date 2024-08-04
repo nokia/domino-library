@@ -4,10 +4,14 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-// - Why:
-//   . alt AsyncBack by limit thread# (limited resource) but may wait more time for free thread
-//   . avoid create/destroy thread, 10~100 faster than AsyncBack
-//   . code more complex than AsyncBack
+// Why:
+// - alt AsyncBack by limit thread# (limited resource) but may wait more time for free thread
+// - avoid create/destroy thread, 10~100 faster than AsyncBack
+// - code more complex than AsyncBack
+//
+// MT safe: NO (can be used in main thread only)
+// Exception-safe: NO
+// Use-safe: yes
 // ***********************************************************************************************
 #pragma once
 

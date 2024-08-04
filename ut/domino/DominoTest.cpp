@@ -167,17 +167,18 @@ TYPED_TEST_P(DominoTest, strangeLoop_prevBothTrueAndFalse)
     EXPECT_EQ("e44==false", PARA_DOM->whyFalse(e40)) << "inc cov: e40=T via e41, then =F via e42";
 
     // - this kind of loop can be very long & complex (much more than above examples)
-    //   . when occur, the end-event can't be satisfied forever (user's fault, not Domino)
+    //   . when occur, the end-event can't be satisfied forever
     // - not find a simple way (reasonable cost-benefit) to prevent it
     //   . whyFalse() is simple to detect it (but not prevent so not perfect)
     //   . TODO: need partial forbid simple t/f-loop? avoid complex/risk impl
     // - so is setPrev() safe?
-    //   . Domino will not dead-loop; end-event always false, it's not Domino's fault
-    //   . so yes, setPrev() is safe (& risky)
-    // - how to define safe? if calling a class' interface,
-    //   . no crash, no mem-leak, no dead loop, etc under normal/required scenaria
-    //   . and it does what's expected reasonably
-    //   . then it's safe (as LTD company)
+    //   . mostly & normally yes
+    //     . next-loop can be prevented simply
+    //     . true-false-loop can NOT (see above ut)
+    //   . as if LTD company (benefit-cost shall be reasonable)
+    // - how to define loop-safe:
+    //   . runtime forbid (rather than offline/afterward check which is not safe)
+    //   . so shall fail setPrev() to prevent loop
 }
 
 #define WHY_FALSE
