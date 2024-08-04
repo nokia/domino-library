@@ -41,6 +41,7 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
                     this->taskQ_.pop_front();
                 }
                 task();
+                this->nDoneTh_.fetch_add(1, std::memory_order_relaxed);  // fastest +1
                 mt_pingMainTH();  // notify mainTH 1 task done
             }
         });

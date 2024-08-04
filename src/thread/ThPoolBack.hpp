@@ -11,7 +11,8 @@
 //
 // MT safe: NO (can be used in main thread only)
 // Exception-safe: NO
-// Use-safe: yes
+// Use-safe: yes with condition:
+// - shall not too many tasks that exceeds fut_backFN_S_/nDoneTh_/.. (impossible in most/normal cases)
 // ***********************************************************************************************
 #pragma once
 

@@ -10,6 +10,7 @@
 // ***********************************************************************************************
 #pragma once
 
+#include <atomic>
 #include <functional>
 #include <future>
 #include <list>
@@ -54,7 +55,8 @@ public:
 
 protected:
     // -------------------------------------------------------------------------------------------
-    StoreThreadBack fut_backFN_S_;
+    StoreThreadBack      fut_backFN_S_;  // must save future till thread end
+    std::atomic<size_t>  nDoneTh_ = 0;   // improve main thread to search done thread(s)
 };
 
 }  // namespace
@@ -62,4 +64,5 @@ protected:
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2024-07-09  CSZ       1)create
+// 2024-08-05  CSZ       - nDoneTh_ to improve iteration of fut_backFN_S_
 // ***********************************************************************************************
