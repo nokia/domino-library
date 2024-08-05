@@ -17,25 +17,27 @@ namespace rlib
 // ***********************************************************************************************
 size_t ThreadBack::hdlFinishedTasks(UniLog& oneLog)
 {
-    size_t nHandledTh = 0;
-    const auto nDoneTh = nDoneTh_.exchange(0, memory_order_relaxed);
-    for (auto&& fut_backFN = fut_backFN_S_.begin(); nHandledTh < nDoneTh && fut_backFN != fut_backFN_S_.end();)
+    size_t nHandledTask = 0;
+    const auto nFinishedTask = nDoneTh_.exchange(0, memory_order_relaxed);
+    // impossible fut_backFN == fut_backFN_S_.end() if nHandledTask < nFinishedTask
+    for (auto&& fut_backFN = fut_backFN_S_.begin(); nHandledTask < nFinishedTask;)
     {
         // - async() failure will throw exception -> terminate since compiling forbid exception
         // - valid async()'s future never invalid
         // - valid packaged_task's get_future() never invalid
         auto&& fut = fut_backFN->first;
-        // HID("(ThreadBack) nHandledTh=" << nHandledTh << ", valid=" << fut.valid() << ", backFn=" << &(fut_backFN->second));
+        HID("(ThreadBack) nHandled=" << nHandledTask << '/' << nFinishedTask
+            << ", valid=" << fut.valid() << ", backFn=" << &(fut_backFN->second));
         if (fut.wait_for(0s) == future_status::ready)
         {
             fut_backFN->second(fut.get());  // callback
             fut_backFN = fut_backFN_S_.erase(fut_backFN);
-            ++nHandledTh;
+            ++nHandledTask;
         }
         else
             ++fut_backFN;
     }  // 1 loop, simple & safe
-    return nHandledTh;
+    return nHandledTask;
 }
 
 // ***********************************************************************************************
