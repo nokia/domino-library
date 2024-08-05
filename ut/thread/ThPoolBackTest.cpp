@@ -21,7 +21,7 @@ TEST_F(ThPoolBackTest, invalid_maxThread)
 // ***********************************************************************************************
 TEST_F(ThPoolBackTest, performance)
 {
-    const size_t maxThread = 10;  // github ci can afford 100 (1000+ slower than belinb03)
+    const size_t maxThread = 10;  // github ci can afford 10 (1000+ slower than belinb03)
 
     ThPoolBack thPoolBack(maxThread);
     auto start = high_resolution_clock::now();
@@ -38,8 +38,8 @@ TEST_F(ThPoolBackTest, performance)
         timedwait();
     auto dur = duration_cast<chrono::microseconds>(high_resolution_clock::now() - start);
     HID("ThPoolBack cost=" << dur.count() << "us");
-    // - belinb03 : ~ 20 faster than AsyncBack
-    // - github ci: ~100 slower than AsyncBack
+    // - belinb03 :  8~ 20 faster than AsyncBack
+    // - github ci: 40~100 slower than AsyncBack
 
     AsyncBack asyncBack;
     start = high_resolution_clock::now();

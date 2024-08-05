@@ -36,6 +36,10 @@
 //   * ONLY call AsyncBack in main-thread
 //
 //
+// - Use-safe: yes with condition:
+//   . not support TOO many threads (used-up thread resource; impossible in most/normal cases)
+//   . lower performance than eg thread pool (but simpler impl than thread pool)
+//   . destructor will FOREVER wait all thread finished
 // - MT safe: NO
 //   * all AsyncBack func (include ThreadBack) must run in 1 thread (best in main thread)
 //     . AsyncBack can call inMyMainTH() to ensure this
@@ -47,9 +51,6 @@
 //   . no duty to any unsafe behavior of MT_TaskEntryFN & TaskBackFN (eg throw exception)
 //     . MT_TaskEntryFN & TaskBackFN shall NOT throw exception
 //     . they can try-catch all exception & leave rlib simple/focus
-// - Use-safe: LTD
-//   . not support too many threads (used-up thread resource; impossible in most/normal cases)
-//   . lower performance than eg thread pool (but simpler impl than thread pool)
 //
 // - support multi-thread
 //   . MT_/mt_ prefix: yes
@@ -65,6 +66,8 @@ namespace rlib
 class AsyncBack : public ThreadBack
 {
 public:
+    // destruct-future will block till thread done (ut verified) - so default ~AsyncBack() is safe
+
     bool newTaskOK(const MT_TaskEntryFN&, const TaskBackFN&, UniLog& = UniLog::defaultUniLog_) override;
 };
 
