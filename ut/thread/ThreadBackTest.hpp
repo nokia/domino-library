@@ -135,14 +135,14 @@ TEST_F(THREAD_BACK_TEST, canHandle_someThreadDone_whileOtherRunning)
     while (threadBack_.hdlFinishedTasks() == 0)
     {
         INF("both threads not end yet, wait...");
-        this_thread::yield();
+        timedwait();
     }
 
     canEnd = true;  // 1st thread keep running while 2nd is done
     while (threadBack_.hdlFinishedTasks() == 0)  // no timedwait() so keep occupy cpu
     {
         INF("2nd thread done, wait 1st done...")
-        this_thread::yield();
+        timedwait();
     }
 }
 
@@ -159,7 +159,8 @@ TEST_F(THREAD_BACK_TEST, GOLD_entryFn_notify_insteadof_timeout)
     auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - start);
     EXPECT_LT(dur.count(), 500) << "REQ: entryFn end shall notify g_semToMainTH instead of timeout";
 
-    while (threadBack_.hdlFinishedTasks() == 0);  // clear all threads
+    while (threadBack_.hdlFinishedTasks() == 0)  // clear all threads
+        timedwait();
 }
 
 #define ABNORMAL

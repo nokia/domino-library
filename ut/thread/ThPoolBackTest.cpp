@@ -14,7 +14,8 @@ TEST_F(ThPoolBackTest, invalid_maxThread)
         [] { return true; },  // entryFn
         [](bool) {}  // backFn
     )) << "REQ: can create new task";
-    while (threadBack_.hdlFinishedTasks() == 0);  // REQ: wait new task done
+    while (threadBack_.hdlFinishedTasks() == 0)
+        timedwait();  // REQ: wait new task done
 }
 
 // ***********************************************************************************************
@@ -33,7 +34,8 @@ TEST_F(ThPoolBackTest, performance)
             },
             [](bool) {}  // backFn
         ));
-    for (size_t nHandled = 0; nHandled < maxThread; nHandled += thPoolBack.hdlFinishedTasks());
+    for (size_t nHandled = 0; nHandled < maxThread; nHandled += thPoolBack.hdlFinishedTasks())
+        timedwait();
     auto dur = duration_cast<chrono::microseconds>(high_resolution_clock::now() - start);
     HID("ThPoolBack cost=" << dur.count() << "us");
     // - belinb03 : ~ 20 faster than AsyncBack
@@ -50,7 +52,8 @@ TEST_F(ThPoolBackTest, performance)
             },
             [](bool) {}  // backFn
         ));
-    for (size_t nHandled = 0; nHandled < maxThread; nHandled += asyncBack.hdlFinishedTasks());
+    for (size_t nHandled = 0; nHandled < maxThread; nHandled += asyncBack.hdlFinishedTasks())
+        timedwait();
     dur = duration_cast<chrono::microseconds>(high_resolution_clock::now() - start);
     HID("AsyncBack cost=" << dur.count() << "us");
 }
