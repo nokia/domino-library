@@ -11,8 +11,8 @@ TEST_F(ThPoolBackTest, invalid_maxThread)
 {
     ThPoolBack myPool(0);  // invalid maxThread=0
     EXPECT_TRUE(threadBack_.newTaskOK(
-        [] { return true; },  // entryFn
-        [](bool) {}  // backFn
+        [] { return make_safe<bool>(true); },  // entryFn
+        [](SafePtr<void>) {}  // backFn
     )) << "REQ: can create new task";
     while (threadBack_.hdlFinishedTasks() == 0)
         timedwait();  // REQ: wait new task done
@@ -30,9 +30,9 @@ TEST_F(ThPoolBackTest, performance)
             []  // entryFn
             {
                 this_thread::yield();  // hung like real time-cost task
-                return true;
+                return make_safe<bool>(true);
             },
-            [](bool) {}  // backFn
+            [](SafePtr<void>) {}  // backFn
         ));
     for (size_t nHandled = 0; nHandled < maxThread; nHandled += thPoolBack.hdlFinishedTasks())
         timedwait();
@@ -48,9 +48,9 @@ TEST_F(ThPoolBackTest, performance)
             []  // entryFn
             {
                 this_thread::yield();  // hung like real time-cost task
-                return true;
+                return make_safe<bool>(true);
             },
-            [](bool) {}  // backFn
+            [](SafePtr<void>) {}  // backFn
         ));
     for (size_t nHandled = 0; nHandled < maxThread; nHandled += asyncBack.hdlFinishedTasks())
         timedwait();

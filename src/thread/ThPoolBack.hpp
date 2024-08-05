@@ -40,7 +40,7 @@ public:
 private:
     // -------------------------------------------------------------------------------------------
     std::vector<std::thread>  thPool_;
-    std::deque<std::packaged_task<bool()>>  taskQ_;
+    std::deque<std::packaged_task<SafePtr<void>()>>  taskQ_;
 
     std::mutex  mutex_;
     std::condition_variable cv_;

@@ -26,7 +26,7 @@ TaskBackFN viaMsgSelf(const TaskBackFN& aBackFN, std::shared_ptr<MsgSelf> aMsgSe
 {
     return ! aBackFN || aMsgSelf == nullptr
         ? TaskBackFN(nullptr)  // empty fn
-        : [aBackFN, aMsgSelf, aPri](bool aRet)  // must cp aBackFN since lambda run later in diff lifecycle
+        : [aBackFN, aMsgSelf, aPri](SafePtr<void> aRet)  // must cp aBackFN since lambda run later in diff lifecycle
         {
             aMsgSelf->newMsg(bind(aBackFN, aRet), aPri);  // wrap aBackFN to queue in MsgSelf
         };

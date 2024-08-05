@@ -22,7 +22,7 @@ bool AsyncBack::newTaskOK(const MT_TaskEntryFN& mt_aEntryFN, const TaskBackFN& a
             launch::async,
             [mt_aEntryFN, this]()  // must cp than ref, otherwise dead loop
             {
-                const bool ret = mt_aEntryFN();
+                auto ret = mt_aEntryFN();
                 this->nDoneTh_.fetch_add(1, std::memory_order_relaxed);  // fastest +1
                 mt_pingMainTH();
                 return ret;

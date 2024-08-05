@@ -4,9 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-// - Why:
+// - Why this class:
 //   . support both async() & thread pool
 //   . common here, special in AsyncBack or ThPoolBack
+//
+// - why SafePtr
+//   . thread can ret any type data include bool
+//   . safe convert from SafePtr<void> to correct data
 // ***********************************************************************************************
 #pragma once
 
@@ -17,6 +21,7 @@
 #include <utility>
 
 #include "MT_PingMainTH.hpp"
+#include "SafePtr.hpp"
 #include "UniLog.hpp"
 
 #define THREAD_BACK  (rlib::ObjAnywhere::getObj<rlib::ThreadBack>())
@@ -24,9 +29,9 @@
 namespace rlib
 {
 // ***********************************************************************************************
-using MT_TaskEntryFN  = std::function<bool()>;  // succ ret true, otherwise false
-using TaskBackFN      = std::function<void(bool)>;  // entry ret as para
-using StoreThreadBack = std::list<std::pair<std::future<bool>, TaskBackFN> >;  // deque rm middle is worse
+using MT_TaskEntryFN  = std::function<SafePtr<void>()>;  // ret-nullptr means failure
+using TaskBackFN      = std::function<void(SafePtr<void>)>;  // MT_TaskEntryFN's ret as para
+using StoreThreadBack = std::list<std::pair<std::future<SafePtr<void>>, TaskBackFN> >;  // deque is worse when rm mid
 
 // ***********************************************************************************************
 class ThreadBack
@@ -65,4 +70,5 @@ protected:
 // ..........  .........   .......................................................................
 // 2024-07-09  CSZ       1)create
 // 2024-08-05  CSZ       - nDoneTh_ to improve iteration of fut_backFN_S_
+//                       - MT_TaskEntryFN ret SafePtr<void> instead of bool
 // ***********************************************************************************************

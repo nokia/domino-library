@@ -58,27 +58,22 @@ TEST_F(THREAD_BACK_TEST, GOLD_entryFn_inNewThread_thenBackFn_inMainThread_withTi
     EXPECT_TRUE(ThreadBack::inMyMainTH()) << "REQ: OK in main thread";
     EXPECT_TRUE(threadBack_.newTaskOK(
         // MT_TaskEntryFN
-        [this]() -> bool
+        [this]()
         {
             EXPECT_FALSE(ThreadBack::inMyMainTH()) << "REQ: in new thread";
-            return true;
+            return make_safe<bool>(true);
         },
         // TaskBackFN
-        [this](bool)
+        [this](SafePtr<void>)
         {
             EXPECT_TRUE(ThreadBack::inMyMainTH()) << "REQ: in main thread";
         }
     ));
 
-    while (true)
+    while (threadBack_.hdlFinishedTasks() == 0)
     {
-        if (threadBack_.hdlFinishedTasks() == 0)
-        {
-            INF("new thread not end yet...");
-            timedwait();  // REQ: timedwait() is more efficient than keep hdlFinishedTasks()
-            continue;
-        }
-        return;
+        INF("new thread not end yet...");
+        timedwait();  // REQ: timedwait() is more efficient than keep hdlFinishedTasks()
     }
 }
 TEST_F(THREAD_BACK_TEST, GOLD_entryFnResult_toBackFn_withoutTimedWait)
@@ -89,14 +84,14 @@ TEST_F(THREAD_BACK_TEST, GOLD_entryFnResult_toBackFn_withoutTimedWait)
         SCOPED_TRACE(idxThread);
         EXPECT_TRUE(threadBack_.newTaskOK(
             // MT_TaskEntryFN
-            [idxThread]() -> bool
+            [idxThread]()
             {
-                return idxThread % 2 != 0;  // ret true / false
+                return make_safe<bool>(idxThread % 2 != 0);  // ret true / false
             },
             // TaskBackFN
-            [idxThread](bool aRet)
+            [idxThread](SafePtr<void> aRet)
             {
-                EXPECT_EQ(idxThread % 2 != 0, aRet) << "REQ: check true & false";
+                EXPECT_EQ(idxThread % 2 != 0, *(dynamic_pointer_cast<bool>(aRet).get())) << "REQ: check true & false";
             }
         ));
     }
@@ -112,24 +107,24 @@ TEST_F(THREAD_BACK_TEST, canHandle_someThreadDone_whileOtherRunning)
     atomic<bool> canEnd(false);
     threadBack_.newTaskOK(
         // MT_TaskEntryFN
-        [&canEnd]() -> bool
+        [&canEnd]()
         {
             while (not canEnd)
                 this_thread::yield();  // not end until instruction
-            return true;
+            return make_safe<bool>(true);
         },
         // TaskBackFN
-        [](bool) {}
+        [](SafePtr<void>) {}
     );
 
     threadBack_.newTaskOK(
         // MT_TaskEntryFN
-        []() -> bool
+        []()
         {
-            return false;  // quick end
+            return make_safe<bool>(false);  // quick end
         },
         // TaskBackFN
-        [](bool) {}
+        [](SafePtr<void>) {}
     );
 
     while (threadBack_.hdlFinishedTasks() == 0)
@@ -152,8 +147,8 @@ TEST_F(THREAD_BACK_TEST, GOLD_entryFn_notify_insteadof_timeout)
 {
     auto start = high_resolution_clock::now();
     threadBack_.newTaskOK(
-        [] { return true; },  // entryFn
-        [](bool) {}  // backFn
+        [] { return make_safe<bool>(true); },  // entryFn
+        [](SafePtr<void>) {}  // backFn
     );
     timedwait(0, 500'000'000);  // long timer to ensure thread done beforehand
     auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - start);
@@ -173,16 +168,16 @@ TEST_F(THREAD_BACK_TEST, emptyThreadList_ok)
 TEST_F(THREAD_BACK_TEST, invalid_msgSelf_entryFN_backFN)
 {
     EXPECT_FALSE(threadBack_.newTaskOK(
-        [] { return true; },  // entryFn
-        viaMsgSelf([](bool) {}, nullptr)  // invalid since msgSelf==nullptr
+        [] { return make_safe<bool>(true); },  // entryFn
+        viaMsgSelf([](SafePtr<void>) {}, nullptr)  // invalid since msgSelf==nullptr
     ));
     EXPECT_FALSE(threadBack_.newTaskOK(
-        [] { return true; },  // entryFn
+        [] { return make_safe<bool>(true); },  // entryFn
         viaMsgSelf(nullptr, msgSelf_)  // invalid since backFn==nullptr
     ));
     EXPECT_FALSE(threadBack_.newTaskOK(
         MT_TaskEntryFN(nullptr),  // invalid since entryFn==nullptr
-        [](bool) {}  // backFn
+        [](SafePtr<void>) {}  // backFn
     ));
     EXPECT_EQ(0, threadBack_.nThread());
 }
@@ -223,13 +218,13 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         // entryFn
         [] {
             mt_getQ().mt_push(MAKE_PTR<string>("a"));
-            return true;
+            return make_safe<bool>(true);
         },
         // backFn
         viaMsgSelf(  // REQ: via MsgSelf
-            [this, &cb_info](bool aRet)
+            [this, &cb_info](SafePtr<void> aRet)
             {
-                EXPECT_TRUE(aRet) << "entryFn succ";
+                EXPECT_TRUE(*(dynamic_pointer_cast<bool>(aRet).get())) << "entryFn succ";
                 cb_info.emplace("REQ: a's backFn via MsgSelf");
             },
             msgSelf_
@@ -239,13 +234,13 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         // entryFn
         [] {
             mt_getQ().mt_push(MAKE_PTR<int>(2));
-            return true;
+            return make_safe<bool>(true);
         },
         // backFn
         viaMsgSelf(
-            [this, &cb_info](bool aRet)
+            [this, &cb_info](SafePtr<void> aRet)
             {
-                EXPECT_TRUE(aRet) << "entryFn succ";
+                EXPECT_TRUE(*(dynamic_pointer_cast<bool>(aRet).get())) << "entryFn succ";
                 cb_info.emplace("REQ: 2's backFn via MsgSelf");
             },
             msgSelf_

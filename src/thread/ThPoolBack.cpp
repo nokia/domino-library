@@ -28,7 +28,7 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
         {   // thread main()
             for (;;)
             {
-                packaged_task<bool()> task;
+                packaged_task<SafePtr<void>()> task;
                 {
                     unique_lock<mutex> lock(this->mutex_);
                     this->cv_.wait(lock, [this]{ return this->stopAllTH_ || !this->taskQ_.empty(); });
@@ -68,7 +68,7 @@ bool ThPoolBack::newTaskOK(const MT_TaskEntryFN& mt_aEntryFN, const TaskBackFN& 
     if (! ThreadBack::newTaskOK(mt_aEntryFN, aBackFN, oneLog))
         return false;
 
-    packaged_task<bool()> task(mt_aEntryFN);  // packaged_task can get_future()="task result"
+    packaged_task<SafePtr<void>()> task(mt_aEntryFN);  // packaged_task can get_future()="task result"
     fut_backFN_S_.emplace_back(task.get_future(), aBackFN);  // save future<> & aBackFN()
     {
         unique_lock<mutex> lock(mutex_);
