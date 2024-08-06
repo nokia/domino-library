@@ -15,29 +15,31 @@ using namespace std;
 namespace rlib
 {
 // ***********************************************************************************************
-size_t ThreadBack::hdlFinishedTasks(UniLog& oneLog)
+size_t ThreadBack::hdlDoneFut(UniLog& oneLog)
 {
-    size_t nHandledTask = 0;
-    const auto nFinishedTask = nDoneTh_.exchange(0, memory_order_relaxed);
-    // impossible fut_backFN == fut_backFN_S_.end() if nHandledTask < nFinishedTask
-    for (auto&& fut_backFN = fut_backFN_S_.begin(); nHandledTask < nFinishedTask;)
+    size_t nHandledFut = 0;
+    const auto nDoneFut = nDoneFut_.load(memory_order_relaxed);  // since possible nDoneFut_+1 before future::ready
+    // HID("(ThreadBack) nHandled=" << nHandledFut << '/' << nDoneFut << '|' << nFut());
+
+    // bugFix: if nDoneFut_+1 before future::ready, must check "fut_backFN != fut_backFN_S_.end()"
+    for (auto&& fut_backFN = fut_backFN_S_.begin(); nHandledFut < nDoneFut && fut_backFN != fut_backFN_S_.end();)
     {
         // - async() failure will throw exception -> terminate since compiling forbid exception
         // - valid async()'s future never invalid
         // - valid packaged_task's get_future() never invalid
         auto& fut = fut_backFN->first;
-        // HID("(ThreadBack) nHandled=" << nHandledTask << '/' << nFinishedTask
-        //     << ", valid=" << fut.valid() << ", backFn=" << &(fut_backFN->second));
         if (fut.wait_for(0s) == future_status::ready)
         {
             fut_backFN->second(fut.get());  // callback
             fut_backFN = fut_backFN_S_.erase(fut_backFN);
-            ++nHandledTask;
+            ++nHandledFut;
         }
         else
             ++fut_backFN;
     }  // 1 loop, simple & safe
-    return nHandledTask;
+
+    nDoneFut_.fetch_sub(nHandledFut, memory_order_relaxed);
+    return nHandledFut;
 }
 
 // ***********************************************************************************************

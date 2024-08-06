@@ -14,7 +14,7 @@ TEST_F(ThPoolBackTest, invalid_maxThread)
         [] { return make_safe<bool>(true); },  // entryFn
         [](SafePtr<void>) {}  // backFn
     )) << "REQ: can create new task";
-    while (threadBack_.hdlFinishedTasks() == 0)
+    while (threadBack_.hdlDoneFut() == 0)
         timedwait();  // REQ: wait new task done
 }
 
@@ -34,7 +34,7 @@ TEST_F(ThPoolBackTest, performance)
             },
             [](SafePtr<void>) {}  // backFn
         ));
-    for (size_t nHandled = 0; nHandled < maxThread; nHandled += thPoolBack.hdlFinishedTasks())
+    for (size_t nHandled = 0; nHandled < maxThread; nHandled += thPoolBack.hdlDoneFut())
         timedwait();
     auto dur = duration_cast<chrono::microseconds>(high_resolution_clock::now() - start);
     HID("ThPoolBack cost=" << dur.count() << "us");
@@ -52,7 +52,7 @@ TEST_F(ThPoolBackTest, performance)
             },
             [](SafePtr<void>) {}  // backFn
         ));
-    for (size_t nHandled = 0; nHandled < maxThread; nHandled += asyncBack.hdlFinishedTasks())
+    for (size_t nHandled = 0; nHandled < maxThread; nHandled += asyncBack.hdlDoneFut())
         timedwait();
     dur = duration_cast<chrono::microseconds>(high_resolution_clock::now() - start);
     HID("AsyncBack cost=" << dur.count() << "us");

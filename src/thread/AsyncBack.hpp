@@ -100,11 +100,3 @@ public:
 //   . thread pool?
 //     . then eg future.wait_for() can't be used, may high-risk to self-impl
 //     * thread pool costs more time than async (eg 0.3s:0.1s of 100 threads on belinb03)
-//   * hdlFinishedTasks()'s wait_for() each thread, may spend too long?
-//     . ThreadBack is to use for time-consuming tasks
-//     * should be not too many threads exist simultaneously
-//     * so should not spend too long (wait till new req appears)
-//     . mt_nFinishedThread_:
-//       . can reduce about half iterations with 15 more LOC
-//       . atomic is lightweight & fast than mutex
-//       * since little benefit, decide rm it

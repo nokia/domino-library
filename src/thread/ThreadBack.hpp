@@ -44,9 +44,9 @@ public:
     // @brief: Processes completed threads and invokes their callbacks.
     // @param UniLog: The logger to use for this operation.
     // @return: The number of completed tasks processed.
-    size_t hdlFinishedTasks(UniLog& = UniLog::defaultUniLog_);
+    size_t hdlDoneFut(UniLog& = UniLog::defaultUniLog_);
 
-    auto nThread() { return fut_backFN_S_.size(); }
+    auto nFut() { return fut_backFN_S_.size(); }
 
     static bool inMyMainTH()
     {
@@ -57,7 +57,13 @@ public:
 protected:
     // -------------------------------------------------------------------------------------------
     StoreThreadBack      fut_backFN_S_;  // must save future till thread end
-    std::atomic<size_t>  nDoneTh_ = 0;   // improve main thread to search done thread(s)
+    std::atomic<size_t>  nDoneFut_ = 0;  // improve main thread to search done thread(s)
+
+    // -------------------------------------------------------------------------------------------
+#ifdef RLIB_UT
+public:
+    auto& nDoneFut() { return nDoneFut_; }
+#endif
 };
 
 }  // namespace
@@ -65,7 +71,7 @@ protected:
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2024-07-09  CSZ       1)create
-// 2024-08-05  CSZ       - nDoneTh_ to improve iteration of fut_backFN_S_
+// 2024-08-05  CSZ       - nDoneFut_ to improve iteration of fut_backFN_S_
 //                       - MT_TaskEntryFN ret SafePtr<void> instead of bool
 // ***********************************************************************************************
 // - why SafePtr

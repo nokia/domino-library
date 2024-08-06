@@ -8,6 +8,10 @@
 #include <chrono>
 #include <gtest/gtest.h>
 
+#define RLIB_UT
+#include "ThreadBack.hpp"
+#undef RLIB_UT
+
 #include "AsyncBack.hpp"
 #include "MT_PingMainTH.hpp"
 #include "MtInQueue.hpp"
@@ -26,12 +30,12 @@ struct THREAD_BACK_TEST : public Test, public UniLog
 {
     THREAD_BACK_TEST() : UniLog(UnitTest::GetInstance()->current_test_info()->name())
     {
-        EXPECT_EQ(0, threadBack_.nThread()) << "REQ: clear env";
+        EXPECT_EQ(0, threadBack_.nFut()) << "REQ: clear env";
     }
 
     ~THREAD_BACK_TEST()
     {
-        EXPECT_EQ(0, threadBack_.nThread()) << "REQ: handle all";
+        EXPECT_EQ(0, threadBack_.nFut()) << "REQ: handle all";
         mt_getQ().clearHdlrPool();
         GTEST_LOG_FAIL
     }
@@ -51,7 +55,7 @@ struct THREAD_BACK_TEST : public Test, public UniLog
 //                                       |                      |
 //                                       |                      |
 //                                       |<.....................| future<>
-//        ThreadBack::hdlFinishedTasks() |
+//        ThreadBack::hdlDoneFut() |
 //                                       |
 TEST_F(THREAD_BACK_TEST, GOLD_entryFn_inNewThread_thenBackFn_inMainThread_withTimedWait)
 {
@@ -70,10 +74,10 @@ TEST_F(THREAD_BACK_TEST, GOLD_entryFn_inNewThread_thenBackFn_inMainThread_withTi
         }
     ));
 
-    while (threadBack_.hdlFinishedTasks() == 0)
+    while (threadBack_.hdlDoneFut() == 0)
     {
         INF("new thread not end yet...");
-        timedwait();  // REQ: timedwait() is more efficient than keep hdlFinishedTasks()
+        timedwait();  // REQ: timedwait() is more efficient than keep hdlDoneFut()
     }
 }
 TEST_F(THREAD_BACK_TEST, GOLD_entryFnResult_toBackFn_withoutTimedWait)
@@ -97,7 +101,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_entryFnResult_toBackFn_withoutTimedWait)
     }
 
     // REQ: no timedwait() but keep asking; cost most time in CI
-    for (size_t nHandled = 0; nHandled < maxThread; nHandled += threadBack_.hdlFinishedTasks())
+    for (size_t nHandled = 0; nHandled < maxThread; nHandled += threadBack_.hdlDoneFut())
     {
         INF("nHandled=" << nHandled);
     }
@@ -127,14 +131,14 @@ TEST_F(THREAD_BACK_TEST, canHandle_someThreadDone_whileOtherRunning)
         [](SafePtr<void>) {}
     );
 
-    while (threadBack_.hdlFinishedTasks() == 0)
+    while (threadBack_.hdlDoneFut() == 0)
     {
         INF("both threads not end yet, wait...");
         timedwait();
     }
 
     canEnd = true;  // 1st thread keep running while 2nd is done
-    while (threadBack_.hdlFinishedTasks() == 0)  // no timedwait() so keep occupy cpu
+    while (threadBack_.hdlDoneFut() == 0)  // no timedwait() so keep occupy cpu
     {
         INF("2nd thread done, wait 1st done...")
         timedwait();
@@ -154,7 +158,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_entryFn_notify_insteadof_timeout)
     auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - start);
     EXPECT_LT(dur.count(), 500) << "REQ: entryFn end shall notify g_semToMainTH instead of timeout";
 
-    while (threadBack_.hdlFinishedTasks() == 0)  // clear all threads
+    while (threadBack_.hdlDoneFut() == 0)  // clear all threads
         timedwait();
 }
 
@@ -162,7 +166,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_entryFn_notify_insteadof_timeout)
 // ***********************************************************************************************
 TEST_F(THREAD_BACK_TEST, emptyThreadList_ok)
 {
-    size_t nHandled = threadBack_.hdlFinishedTasks();
+    size_t nHandled = threadBack_.hdlDoneFut();
     EXPECT_EQ(0u, nHandled);
 }
 TEST_F(THREAD_BACK_TEST, invalid_msgSelf_entryFN_backFN)
@@ -179,7 +183,29 @@ TEST_F(THREAD_BACK_TEST, invalid_msgSelf_entryFN_backFN)
         MT_TaskEntryFN(nullptr),  // invalid since entryFn==nullptr
         [](SafePtr<void>) {}  // backFn
     ));
-    EXPECT_EQ(0, threadBack_.nThread());
+    EXPECT_EQ(0, threadBack_.nFut());
+}
+TEST_F(THREAD_BACK_TEST, bugFix_nDoneFut_before_futureReady)
+{
+    atomic<bool> canEnd(false);
+    threadBack_.newTaskOK(
+        // MT_TaskEntryFN
+        [&canEnd]()
+        {
+            while (not canEnd)
+                this_thread::yield();  // not end until instruction
+            return make_safe<bool>(true);
+        },
+        // TaskBackFN
+        [](SafePtr<void>) {}
+    );
+
+    threadBack_.nDoneFut()++;  // force +1 before future ready, threadBack_ shall not crash
+
+    // clean
+    canEnd = true;
+    while (threadBack_.hdlDoneFut() == 0)
+        timedwait();
 }
 
 #define SEM_TEST
@@ -253,21 +279,21 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     for (;;)
     {
         // handle all done Thread
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << threadBack_.nThread());
-        threadBack_.hdlFinishedTasks();
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << threadBack_.nFut());
+        threadBack_.hdlDoneFut();
 
         // handle all existing in mt_getQ()
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << threadBack_.nThread());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << threadBack_.nFut());
         mt_getQ().handleAllEle();
 
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << threadBack_.nThread());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << threadBack_.nFut());
         msgSelf_->handleAllMsg();
 
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << threadBack_.nThread());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << threadBack_.nFut());
         if (expect == cb_info)
             return;
 
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << threadBack_.nThread());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << threadBack_.nFut());
         timedwait();
     }
 }
