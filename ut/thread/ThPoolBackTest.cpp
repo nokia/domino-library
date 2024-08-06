@@ -21,7 +21,7 @@ TEST_F(ThPoolBackTest, invalid_maxThread)
 // ***********************************************************************************************
 TEST_F(ThPoolBackTest, performance)
 {
-    const size_t maxThread = 10;  // github ci can afford 10 (1000+ slower than belinb03)
+    const size_t maxThread = 100;  // github ci can afford 100 (1000+ slower than belinb03)
 
     ThPoolBack thPoolBack(maxThread);
     auto start = high_resolution_clock::now();

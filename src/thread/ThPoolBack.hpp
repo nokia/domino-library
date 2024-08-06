@@ -4,16 +4,16 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-// Why:
-// - alt AsyncBack by limit thread# (limited resource) but may wait more time for free thread
-// - avoid create/destroy thread, 10~100 faster than AsyncBack
-// - code more complex than AsyncBack
+// - Why:
+//   . alt AsyncBack by limit thread# (limited resource) but may wait more time for free thread
+//   . avoid create/destroy thread, 10~100 faster than AsyncBack
+//   . code more complex than AsyncBack
 //
-// Use-safe: yes with condition:
-// - not support TOO many tasks that exceeds fut_backFN_S_/nDoneTh_/.. (impossible in most/normal cases)
-// - destructor will FOREVER wait all thread finished
-// MT safe: NO (can be used in main thread only)
-// Exception-safe: NO
+// - Use-safe: yes with condition:
+//   . not support TOO many tasks that exceeds fut_backFN_S_/nDoneTh_/.. (impossible in most/normal cases)
+//   . destructor will FOREVER wait all thread finished
+// - MT safe: NO (can be used in main thread only)
+// - Exception-safe: NO
 // ***********************************************************************************************
 #pragma once
 

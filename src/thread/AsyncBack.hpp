@@ -35,7 +35,6 @@
 //   * AsyncBack is for normal/most scenario, may NOK for huge threads, high throughput, etc
 //   * ONLY call AsyncBack in main-thread
 //
-//
 // - Use-safe: yes with condition:
 //   . not support TOO many threads (used-up thread resource; impossible in most/normal cases)
 //   . lower performance than eg thread pool (but simpler impl than thread pool)
@@ -51,7 +50,6 @@
 //   . no duty to any unsafe behavior of MT_TaskEntryFN & TaskBackFN (eg throw exception)
 //     . MT_TaskEntryFN & TaskBackFN shall NOT throw exception
 //     . they can try-catch all exception & leave rlib simple/focus
-//
 // - support multi-thread
 //   . MT_/mt_ prefix: yes
 //   . others: NO (only use in main thread - most dom lib code shall in main thread - simple & nsesilbe)

@@ -7,10 +7,6 @@
 // - Why this class:
 //   . support both async() & thread pool
 //   . common here, special in AsyncBack or ThPoolBack
-//
-// - why SafePtr
-//   . thread can ret any type data include bool
-//   . safe convert from SafePtr<void> to correct data
 // ***********************************************************************************************
 #pragma once
 
@@ -72,3 +68,7 @@ protected:
 // 2024-08-05  CSZ       - nDoneTh_ to improve iteration of fut_backFN_S_
 //                       - MT_TaskEntryFN ret SafePtr<void> instead of bool
 // ***********************************************************************************************
+// - why SafePtr
+//   . thread can ret any type data include bool
+//   . simpler than using MtQ to ship rsp back to main thread
+//   . safe convert from SafePtr<void> to corresponding data

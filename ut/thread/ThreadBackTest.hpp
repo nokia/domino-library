@@ -96,7 +96,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_entryFnResult_toBackFn_withoutTimedWait)
         ));
     }
 
-    // REQ: no timedwait() but keep asking
+    // REQ: no timedwait() but keep asking; cost most time in CI
     for (size_t nHandled = 0; nHandled < maxThread; nHandled += threadBack_.hdlFinishedTasks())
     {
         INF("nHandled=" << nHandled);
