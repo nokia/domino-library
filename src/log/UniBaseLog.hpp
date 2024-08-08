@@ -19,8 +19,12 @@ using LogName = std::string;
 
 // ***********************************************************************************************
 // - mem safe: yes
-// - MT safe : yes upon UniCoutLog, no upon UniSmartLog
-#define BUF(content) __func__ << "():" << __LINE__ << ": " << content << std::endl  // __FILE_NAME__ since GCC 12
+// - MT safe : yes of UniCoutLog, no of UniSmartLog
+#ifdef __FILE_NAME__  // g++12/c++20
+#define BUF(content) __FILE_NAME__ << ':' << __func__ << "():" << __LINE__ << ": " << content << std::endl
+#else
+#define BUF(content)                         __func__ << "():" << __LINE__ << ": " << content << std::endl
+#endif
 #define INF(content) { oneLog() << "INF] " << BUF(content); }
 #define WRN(content) { oneLog() << "WRN] " << BUF(content); }
 #define ERR(content) { oneLog() << "ERR] " << BUF(content); }
