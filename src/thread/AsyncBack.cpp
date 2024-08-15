@@ -20,10 +20,13 @@ bool AsyncBack::newTaskOK(const MT_TaskEntryFN& mt_aEntryFN, const TaskBackFN& a
     fut_backFN_S_.emplace_back(  // save future<> & aBackFN()
         async(
             launch::async,
-            [mt_aEntryFN, this]()  // must cp than ref, otherwise dead loop
+            // - must cp mt_aEntryFN than ref, otherwise dead loop
+            // - &mt_nDoneFut is better than "this" that can access other non-MT-safe member
+            // - ensure AsyncBack alive when thread alive - yes since ~AsyncBack() will wait all fut over
+            [mt_aEntryFN, &mt_nDoneFut = mt_nDoneFut_]()
             {
                 auto ret = mt_aEntryFN();
-                this->nDoneFut_.fetch_add(1, std::memory_order_relaxed);  // fastest +1
+                mt_nDoneFut.fetch_add(1, std::memory_order_relaxed);  // fastest +1
                 mt_pingMainTH();
                 return ret;
             }

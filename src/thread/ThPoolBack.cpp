@@ -30,10 +30,10 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
             {
                 packaged_task<SafePtr<void>()> task;
                 {
-                    unique_lock<mutex> lock(this->mutex_);
-                    this->cv_.wait(lock, [this]{ return this->stopAllTH_ || !this->taskQ_.empty(); });
+                    unique_lock<mutex> lock(this->mutex_);  // lock so can use any in "this"
+                    this->cv_.wait(lock, [this]{ return this->mt_stopAllTH_ || !this->taskQ_.empty(); });
 
-                    if (this->stopAllTH_)
+                    if (this->mt_stopAllTH_)
                         return;
                     if (this->taskQ_.empty())  // ut can't cov since normal wait()'s pred
                         continue;
@@ -41,7 +41,9 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
                     this->taskQ_.pop_front();
                 }
                 task();
-                this->nDoneFut_.fetch_add(1, std::memory_order_relaxed);  // fastest +1
+
+                // no lock so can only use MT_safe part in "this"
+                this->mt_nDoneFut_.fetch_add(1, std::memory_order_relaxed);  // fastest +1
                 mt_pingMainTH();  // notify mainTH 1 task done
             }
         });
@@ -51,7 +53,7 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
 // ***********************************************************************************************
 ThPoolBack::~ThPoolBack()
 {
-    stopAllTH_ = true;
+    mt_stopAllTH_ = true;
     cv_.notify_all();
 
     for (auto&& th : thPool_)

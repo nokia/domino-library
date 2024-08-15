@@ -41,10 +41,10 @@
 //   . destructor will FOREVER wait all thread finished
 // - MT safe: NO
 //   * all AsyncBack func (include ThreadBack) must run in 1 thread (best in main thread)
-//     . AsyncBack can call inMyMainTH() to ensure this
-//     . but can all rlib func call inMyMainTH()? little benefit so giveup
-//       * common sense/principle: rlib (include AsyncBack) not call inMyMainTH()
-//       . inMyMainTH() for user debug - any main-thread func shall ret T if call inMyMainTH()
+//     . AsyncBack can call mt_inMyMainTH() to ensure this
+//     . but can all rlib func call mt_inMyMainTH()? little benefit so giveup
+//       * common sense/principle: rlib (include AsyncBack) not call mt_inMyMainTH()
+//       . mt_inMyMainTH() for user debug - any main-thread func shall ret T if call mt_inMyMainTH()
 // - Exception-safe: NO
 //   * assume no exception from any hdlr provided to rlib
 //   . no duty to any unsafe behavior of MT_TaskEntryFN & TaskBackFN (eg throw exception)

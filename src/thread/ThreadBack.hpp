@@ -48,7 +48,7 @@ public:
 
     auto nFut() { return fut_backFN_S_.size(); }
 
-    static bool inMyMainTH()
+    static bool mt_inMyMainTH()
     {
         static const auto s_myMainTH = std::this_thread::get_id();
         return s_myMainTH == std::this_thread::get_id();
@@ -56,13 +56,13 @@ public:
 
 protected:
     // -------------------------------------------------------------------------------------------
-    StoreThreadBack      fut_backFN_S_;  // must save future till thread end
-    std::atomic<size_t>  nDoneFut_ = 0;  // improve main thread to search done thread(s)
+    StoreThreadBack      fut_backFN_S_;     // must save future till thread end
+    std::atomic<size_t>  mt_nDoneFut_ = 0;  // improve main thread to search done thread(s)
 
     // -------------------------------------------------------------------------------------------
 #ifdef RLIB_UT
 public:
-    auto& nDoneFut() { return nDoneFut_; }
+    auto& mt_nDoneFut() { return mt_nDoneFut_; }
 #endif
 };
 
@@ -71,7 +71,7 @@ public:
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2024-07-09  CSZ       1)create
-// 2024-08-05  CSZ       - nDoneFut_ to improve iteration of fut_backFN_S_
+// 2024-08-05  CSZ       - mt_nDoneFut_ to improve iteration of fut_backFN_S_
 //                       - MT_TaskEntryFN ret SafePtr<void> instead of bool
 // ***********************************************************************************************
 // - why SafePtr

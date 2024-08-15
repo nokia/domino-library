@@ -10,7 +10,7 @@
 //   . code more complex than AsyncBack
 //
 // - Use-safe: yes with condition:
-//   . not support TOO many tasks that exceeds fut_backFN_S_/nDoneFut_/.. (impossible in most/normal cases)
+//   . not support TOO many tasks that exceeds fut_backFN_S_/mt_nDoneFut_/.. (impossible in most/normal cases)
 //   . destructor will FOREVER wait all thread finished
 // - MT safe: NO (can be used in main thread only)
 // - Exception-safe: NO
@@ -43,8 +43,8 @@ private:
     std::deque<std::packaged_task<SafePtr<void>()>>  taskQ_;
 
     std::mutex  mutex_;
-    std::condition_variable cv_;
-    std::atomic<bool>  stopAllTH_ = false;
+    std::condition_variable  cv_;
+    std::atomic<bool>  mt_stopAllTH_ = false;
 };
 
 }  // namespace

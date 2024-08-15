@@ -59,18 +59,18 @@ struct THREAD_BACK_TEST : public Test, public UniLog
 //                                       |
 TEST_F(THREAD_BACK_TEST, GOLD_entryFn_inNewThread_thenBackFn_inMainThread_withTimedWait)
 {
-    EXPECT_TRUE(ThreadBack::inMyMainTH()) << "REQ: OK in main thread";
+    EXPECT_TRUE(ThreadBack::mt_inMyMainTH()) << "REQ: OK in main thread";
     EXPECT_TRUE(threadBack_.newTaskOK(
         // MT_TaskEntryFN
         [this]()
         {
-            EXPECT_FALSE(ThreadBack::inMyMainTH()) << "REQ: in new thread";
+            EXPECT_FALSE(ThreadBack::mt_inMyMainTH()) << "REQ: in new thread";
             return make_safe<bool>(true);
         },
         // TaskBackFN
         [this](SafePtr<void>)
         {
-            EXPECT_TRUE(ThreadBack::inMyMainTH()) << "REQ: in main thread";
+            EXPECT_TRUE(ThreadBack::mt_inMyMainTH()) << "REQ: in main thread";
         }
     ));
 
@@ -200,7 +200,7 @@ TEST_F(THREAD_BACK_TEST, bugFix_nDoneFut_before_futureReady)
         [](SafePtr<void>) {}
     );
 
-    threadBack_.nDoneFut()++;  // force +1 before future ready, threadBack_ shall not crash
+    threadBack_.mt_nDoneFut()++;  // force +1 before future ready, threadBack_ shall not crash
 
     // clean
     canEnd = true;

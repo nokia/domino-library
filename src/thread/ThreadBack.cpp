@@ -18,10 +18,10 @@ namespace rlib
 size_t ThreadBack::hdlDoneFut(UniLog& oneLog)
 {
     size_t nHandledFut = 0;
-    const auto nDoneFut = nDoneFut_.load(memory_order_relaxed);  // since possible nDoneFut_+1 before future::ready
+    const auto nDoneFut = mt_nDoneFut_.load(memory_order_relaxed);  // since mt_nDoneFut_+1 may before future::ready
     // HID("(ThreadBack) nHandled=" << nHandledFut << '/' << nDoneFut << '|' << nFut());
 
-    // bugFix: if nDoneFut_+1 before future::ready, must check "fut_backFN != fut_backFN_S_.end()"
+    // bugFix: may mt_nDoneFut_+1 before future::ready, so must check "fut_backFN != fut_backFN_S_.end()"
     for (auto&& fut_backFN = fut_backFN_S_.begin(); nHandledFut < nDoneFut && fut_backFN != fut_backFN_S_.end();)
     {
         // - async() failure will throw exception -> terminate since compiling forbid exception
@@ -38,7 +38,7 @@ size_t ThreadBack::hdlDoneFut(UniLog& oneLog)
             ++fut_backFN;
     }  // 1 loop, simple & safe
 
-    nDoneFut_.fetch_sub(nHandledFut, memory_order_relaxed);
+    mt_nDoneFut_.fetch_sub(nHandledFut, memory_order_relaxed);
     return nHandledFut;
 }
 
