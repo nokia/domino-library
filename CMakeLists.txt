@@ -57,20 +57,21 @@ set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fno-exceptions")  # inc branch covera
 
 add_executable(ut_exe)
 
+set(gtest_dir ${CMAKE_CURRENT_SOURCE_DIR}/../googletest)
+add_subdirectory(${gtest_dir} ${CMAKE_BINARY_DIR}/googletest)
 add_subdirectory(src)
 add_subdirectory(ut)
 
 target_link_libraries(ut_exe  PRIVATE
-  lib_domino
-  lib_ut
-  gtest_main
+    lib_domino
+    lib_ut
+    gtest_main
 )
 
-# ------------------------------------------------------------------------------------------------
 # make run-ut_exe
 add_custom_target(run
-  COMMAND  ./ut_exe --gtest_brief=0
-  DEPENDS  ut_exe
+    COMMAND  ./ut_exe --gtest_brief=0
+    DEPENDS  ut_exe
 )
 
 # simplify "make help"
