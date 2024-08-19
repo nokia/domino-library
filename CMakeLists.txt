@@ -58,7 +58,8 @@ set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fno-exceptions")  # inc branch covera
 add_executable(ut_exe)
 
 set(gtest_dir ${CMAKE_CURRENT_SOURCE_DIR}/../googletest)
-add_subdirectory(${gtest_dir} ${CMAKE_BINARY_DIR}/googletest)
+add_subdirectory(${gtest_dir}
+    ${CMAKE_BINARY_DIR}/googletest)  # must specify where to build since gtest out domino root
 add_subdirectory(src)
 add_subdirectory(ut)
 
