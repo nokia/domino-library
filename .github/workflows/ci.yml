@@ -19,12 +19,12 @@ jobs:
       run: sudo apt-get update && sudo apt-get install valgrind
 
     - name: install gmock & gtest  # 1)always gtest latest 2)--depth 1 is to min download
-      run: git clone https://github.com/google/googletest.git --depth 1 && cd googletest && mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=/usr && sudo make install -j
+      run: pwd && git clone https://github.com/google/googletest.git --depth 1 && cd googletest && mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=/usr && sudo make install -j
 
     - uses: actions/checkout@v4
 
     - name: make ut
-      run: cmake -DCOV=1 -DCMAKE_CXX_COMPILER="g++" . && make -j
+      run: pwd && cmake -DCOV=1 -DCMAKE_CXX_COMPILER="g++" . && make -j
 
     - name: ut
       run: SLICE=always-malloc G_DEBUG=gc-friendly valgrind -v --tool=memcheck --leak-check=full --num-callers=40 --log-file=ut/gcovr/cov.valgrind.log --error-exitcode=6 ./ut_exe --gtest_brief=1
