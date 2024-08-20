@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION  3.12)
 # ------------------------------------------------------------------------------------------------
 project(ut_exe  CXX)  # as early as possible, eg must before CMAKE_CXX_FLAGS
 
-if(COV  STREQUAL  "1")
-    message("!!! coverage enabled")
+if(ci  STREQUAL  "cov")
+    message("!!! coverage & valgrind(only need -g -fno-omit-frame-pointer)")
     set(CMAKE_CXX_STANDARD  20)  # if gtest fix bug, try c++20/23 to see cov rate inc or not
 
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  --coverage")          # gcov req (=-fprofile-arcs -ftest-coverage & -lgcov)
@@ -12,36 +12,19 @@ if(COV  STREQUAL  "1")
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O0")                 # gcov req
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fprofile-abs-path")  # gcc 8
 
-    set(CMAKE_CXX_FLAGS_PROFILE  --coverage)                              # cmake req with -DCMAKE_BUILD_TYPE=PROFILE
-    set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  --coverage")  # cmake req before v3.13
-
     add_compile_definitions(SMART_LOG)
     add_compile_definitions(WITH_HID_LOG)  # more info to debug ci
 
-elseif(COV  STREQUAL  "asan")
-    set(CMAKE_CXX_STANDARD  17)  # low c++ version for wide usage; 17 since "if constexpr()"
-    message("!!! SANITIZE for: use-after-free, double-free, out-of-bound")
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -g -fsanitize=address")             # compile
-    set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  -fsanitize=address")  # link
-    set(lib_san  "-lasan")
-
-elseif(COV  STREQUAL  "lsan")
-    set(CMAKE_CXX_STANDARD  17)
-    message("!!! SANITIZE for: leak")
-    set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS}  -g -fsanitize=leak")
-    set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  -fsanitize=leak")
-    set(lib_san  "-llsan")
-
-elseif(COV  STREQUAL  "tsan")
+elseif(ci  STREQUAL  "tsan")  # asan/lsan/msan cover by valgrind(memcheck)
     set(CMAKE_CXX_STANDARD  17)
     message("!!! SANITIZE for: thread")
-    set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS}  -g -fsanitize=thread")
+    set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS}  -g -fno-omit-frame-pointer -fsanitize=thread")
     set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  -fsanitize=thread")
 
-elseif(COV  STREQUAL  "ubsan")
+elseif(ci  STREQUAL  "ubsan")
     set(CMAKE_CXX_STANDARD  17)
     message("!!! SANITIZE for: undefined behavior")
-    set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS}  -g -fsanitize=undefined")
+    set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS}  -g -fno-omit-frame-pointer -fsanitize=undefined")
     set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  -fsanitize=undefined")
 
 else()
