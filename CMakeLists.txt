@@ -19,13 +19,13 @@ if(ci  STREQUAL  "cov")
 elseif(ci  STREQUAL  "asan")
     set(CMAKE_CXX_STANDARD  17)  # low c++ version for wide usage; 17 since "if constexpr()"
     message("!!! SANITIZE for: use-after-free, double-free, out-of-bound")
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -g -fsanitize=address")             # compile
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -g -fno-omit-frame-pointer -fsanitize=address")             # compile
     set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  -fsanitize=address")  # link
 
 elseif(ci  STREQUAL  "lsan")
     set(CMAKE_CXX_STANDARD  17)
     message("!!! SANITIZE for: leak")
-    set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS}  -g -fsanitize=leak")
+    set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS}  -g -fno-omit-frame-pointer -fsanitize=leak")
     set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  -fsanitize=leak")
 
 elseif(ci  STREQUAL  "tsan")  # asan/lsan/msan cover by valgrind(memcheck)
