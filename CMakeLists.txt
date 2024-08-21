@@ -19,19 +19,21 @@ if(ci  STREQUAL  "cov")
 elseif(ci  STREQUAL  "asan")
     set(CMAKE_CXX_STANDARD  17)  # low c++ version for wide usage; 17 since "if constexpr()"
     message("!!! asan+lsan+ubsan for: use-after-free, double-free, out-of-bound, leak, undef behavior")
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -g -fno-omit-frame-pointer -fsanitize=address,undefined")  # compile
-    set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  -fsanitize=address")  # link
+    add_compile_options(-g -fno-omit-frame-pointer)
+    add_compile_options(-fsanitize=address,undefined)
+    add_link_options   (-fsanitize=address,undefined)
 
 elseif(ci  STREQUAL  "tsan")  # asan/lsan/msan cover by valgrind(memcheck)
     set(CMAKE_CXX_STANDARD  17)
     message("!!! SANITIZE for: thread")
-    set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS}  -g -fno-omit-frame-pointer -fsanitize=thread")
-    set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  -fsanitize=thread")
+    add_compile_options(-g -fno-omit-frame-pointer)
+    add_compile_options(-fsanitize=thread)
+    add_link_options   (-fsanitize=thread)
 
 else()
     message("!!! UT only - no cov, no SANITIZE check etc")
     set(CMAKE_CXX_STANDARD  17)
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O1")  # fastest build+ut (1-cpp-change=5s, vs 45s of -g)
+    add_compile_options(-O1)  # fastest build+ut (1-cpp-change=5s, vs 45s of -g)
 endif()
 
 set(CMAKE_CXX_STANDARD_REQUIRED  TRUE)
