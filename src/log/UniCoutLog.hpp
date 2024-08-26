@@ -45,7 +45,7 @@ public:
     static UniCoutLog defaultUniLog_;
     static size_t     nLogLine_;  // ut only, simpler here
 
-#ifdef RLIB_UT
+#ifdef IN_UT
     // -------------------------------------------------------------------------------------------
     // MT safe : no (since nLogLine_ is not atomic & no worth for ut only)
     // mem safe: yes

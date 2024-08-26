@@ -8,9 +8,9 @@
 #include <chrono>
 #include <gtest/gtest.h>
 
-#define RLIB_UT
+#define IN_UT
 #include "ThreadBack.hpp"
-#undef RLIB_UT
+#undef IN_UT
 
 #include "AsyncBack.hpp"
 #include "MT_PingMainTH.hpp"

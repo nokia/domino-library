@@ -57,7 +57,7 @@ public:
     static UniSmartLog defaultUniLog_;
 
 
-#ifdef RLIB_UT
+#ifdef IN_UT
     // -------------------------------------------------------------------------------------------
     // MT safe : no
     // mem safe: yes

@@ -13,10 +13,10 @@
 #include "MT_Semaphore.hpp"
 #include "UniLog.hpp"
 
-#define RLIB_UT
+#define IN_UT
 #include "MT_PingMainTH.hpp"
 #include "MtInQueue.hpp"
-#undef RLIB_UT
+#undef IN_UT
 
 using namespace std;
 using namespace testing;

@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-#define RLIB_UT
+#define IN_UT
 #include "UniSmartLog.hpp"
-#undef RLIB_UT
+#undef IN_UT
 
 #define UNI_LOG_TEST UniSmartLogTest
 #define UNI_LOG      UniSmartLog
