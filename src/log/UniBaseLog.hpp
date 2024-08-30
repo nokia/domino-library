@@ -14,6 +14,7 @@
 #include <ctime>
 #include <memory>
 #include <string>
+#include <thread>
 
 using LogName = std::string;
 
@@ -34,7 +35,8 @@ using LogName = std::string;
 //   . under single thread, can change cout back to oneLog() for smart log
 // - HID() is MT safe also upon UniSmartLog
 #if WITH_HID_LOG
-#define HID(content) { std::cout << "cout[" << timestamp() << "/HID] " << BUF(content) << std::dec; }
+#define HID(content) { std::cout << "cout[" << timestamp() << "/HID/" << std::this_thread::get_id() << "] " \
+    << BUF(content) << std::dec; }
 #else
 #define HID(content) {}
 #endif
