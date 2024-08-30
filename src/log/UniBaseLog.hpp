@@ -35,7 +35,7 @@ using LogName = std::string;
 //   . under single thread, can change cout back to oneLog() for smart log
 // - HID() is MT safe also upon UniSmartLog
 #if WITH_HID_LOG
-#define HID(content) { std::cout << "cout[" << timestamp() << "/HID/" << std::this_thread::get_id() << "] " \
+#define HID(content) { std::cout << "cout[" << mt_timestamp() << "/HID/" << std::this_thread::get_id() << "] " \
     << BUF(content) << std::dec; }
 #else
 #define HID(content) {}
@@ -48,7 +48,7 @@ namespace rlib
 // ***********************************************************************************************
 // - MT safe : yes
 // - mem safe: yes
-inline const char* timestamp()
+inline const char* mt_timestamp()
 {
     static thread_local char buf[] = "ddd/HH:MM:SS.123456";  // ddd is days/year; thread_local is MT safe
 
@@ -69,6 +69,6 @@ const char ULN_DEFAULT[] = "DEFAULT";
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2022-08-29  CSZ       1)create
-// 2023-05-29  CSZ       - ms/us in timestamp
+// 2023-05-29  CSZ       - ms/us in mt_timestamp
 // 2024-02-22  CSZ       2)mem-safe
 // ***********************************************************************************************

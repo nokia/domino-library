@@ -31,7 +31,7 @@ UniSmartLog::UniSmartLog(const LogName& aUniLogName) : uniLogName_(aUniLogName)
 // ***********************************************************************************************
 SmartLog& UniSmartLog::oneLog() const
 {
-    *smartLog_ << "s[" << timestamp() << ' ' << uniLogName_ << '/';
+    *smartLog_ << "s[" << mt_timestamp() << ' ' << uniLogName_ << '/';
     return *smartLog_;
 }
 

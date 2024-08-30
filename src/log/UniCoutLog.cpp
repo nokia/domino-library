@@ -14,7 +14,7 @@ namespace rlib
 ostream& UniCoutLog::oneLog()
 {
     ++nLogLine_;  // ut only; no impact product's MT safe & mem safe
-    cout << "c[" << timestamp() << ' ' << ULN_DEFAULT << '/';
+    cout << "c[" << mt_timestamp() << ' ' << ULN_DEFAULT << '/';
     return cout;
 }
 
