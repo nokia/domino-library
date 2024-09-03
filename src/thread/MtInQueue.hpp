@@ -102,8 +102,8 @@ void MtInQueue::mt_push(PTR<aEleType>&& aEle)
     // push
     {
         std::lock_guard<std::mutex> guard(mutex_);
+        // HID("(MtQ) nRef=" << aEle.use_count() << ", ptr=" << aEle.get());  // HID supports MT
         queue_.push_back(ELE_TID(std::move(aEle), typeid(aEleType)));
-        // HID("(MtQ) ptr=" << aEle.get() << ", nRef=" << aEle.use_count());  // HID supports MT
     }
 
     // unlock then notify main thread
