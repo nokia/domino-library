@@ -64,6 +64,32 @@ inline const char* mt_timestamp()
 
 const char ULN_DEFAULT[] = "DEFAULT";
 
+// ***********************************************************************************************
+// - MT safe : no (aStr maybe not)
+// - mem safe: yes
+inline void cout_ascii(const std::string& aStr)
+{
+    std::cout << std::hex;
+    unsigned char preC = 0;
+    for (unsigned char c : aStr)
+    {
+        if (std::isprint(c))
+        {
+            if (preC == 0xd || preC == 0xa)
+            {
+                std::cout << std::endl;
+                preC = 0;
+            }
+            std::cout << c;
+        }
+        else
+        {
+            std::cout << "[`" << static_cast<size_t>(c) << "'}";  // [`'} is rare
+            preC = c;
+        }
+    }
+    std::cout << std::dec << std::endl;
+}
 }  // namespace
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
