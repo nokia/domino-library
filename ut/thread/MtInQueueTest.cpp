@@ -13,10 +13,10 @@
 #include "MT_Semaphore.hpp"
 #include "UniLog.hpp"
 
-#define IN_UT
+#define IN_GTEST
 #include "MT_PingMainTH.hpp"
 #include "MtInQueue.hpp"
-#undef IN_UT
+#undef IN_GTEST
 
 using namespace std;
 using namespace testing;

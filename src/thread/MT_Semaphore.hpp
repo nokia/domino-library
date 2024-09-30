@@ -44,7 +44,7 @@ private:
     std::atomic_flag mt_notified_ = ATOMIC_FLAG_INIT;  // = false
 
     // -------------------------------------------------------------------------------------------
-#ifdef IN_UT
+#ifdef IN_GTEST
 public:
     void reset() noexcept  // not mt safe
     {

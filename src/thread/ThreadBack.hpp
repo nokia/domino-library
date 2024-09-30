@@ -60,7 +60,7 @@ protected:
     std::atomic<size_t>  mt_nDoneFut_ = 0;  // improve main thread to search done thread(s)
 
     // -------------------------------------------------------------------------------------------
-#ifdef IN_UT
+#ifdef IN_GTEST
 public:
     auto& mt_nDoneFut() { return mt_nDoneFut_; }
 #endif

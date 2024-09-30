@@ -76,7 +76,7 @@ private:
     std::unordered_map<std::type_index, EleHdlr> tid_hdlr_S_;
 
     // -------------------------------------------------------------------------------------------
-#ifdef IN_UT
+#ifdef IN_GTEST
 public:
     std::mutex& backdoor() { return mutex_; }
 #endif

@@ -57,7 +57,7 @@ public:
     static UniSmartLog defaultUniLog_;
 
 
-#ifdef IN_UT
+#ifdef IN_GTEST
     // -------------------------------------------------------------------------------------------
     // MT safe : no
     // mem safe: yes

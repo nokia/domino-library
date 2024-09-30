@@ -8,9 +8,9 @@
 #include <chrono>
 #include <gtest/gtest.h>
 
-#define IN_UT
+#define IN_GTEST
 #include "ThreadBack.hpp"
-#undef IN_UT
+#undef IN_GTEST
 
 #include "AsyncBack.hpp"
 #include "MT_PingMainTH.hpp"

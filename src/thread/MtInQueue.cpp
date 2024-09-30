@@ -128,6 +128,7 @@ MtInQueue& mt_getQ()
 {
     // - not exist if nobody call this func
     // - c++14 support MT safe for static var
+    // - can't via ObjAnywhere that's not MT safe
     static MtInQueue s_mtQ;
 
     return s_mtQ;
