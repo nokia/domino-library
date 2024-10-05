@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
+#include <functional>
 #include <future>
 #include <gtest/gtest.h>
 #include <queue>
@@ -13,12 +14,19 @@
 #include "MT_Semaphore.hpp"
 #include "UniLog.hpp"
 
+#include "Domino.hpp"
+#include "DataDomino.hpp"
+#include "HdlrDomino.hpp"
+using Dom = rlib::DataDomino<rlib::HdlrDomino<rlib::Domino>>;
+#define DAT_DOM (rlib::ObjAnywhere::getObj<Dom>())
+
 #define IN_GTEST
 #include "MT_PingMainTH.hpp"
-#include "MtInQueue.hpp"
+#include "MtInQueueWithDom.hpp"
 #undef IN_GTEST
 
 using namespace std;
+using namespace std::placeholders;
 using namespace testing;
 
 namespace rlib
@@ -28,11 +36,14 @@ struct MtInQueueTest : public Test, public UniLog
 {
     MtInQueueTest()
         : UniLog(UnitTest::GetInstance()->current_test_info()->name())
-    {}
+    {
+        ObjAnywhere::init();
+    }
     ~MtInQueueTest()
     {
         mt_getQ().mt_clearElePool();  // not impact other testcase
         mt_getQ().clearHdlrPool();    // not impact other testcase
+        ObjAnywhere::deinit();
         GTEST_LOG_FAIL
     }
 };
@@ -250,14 +261,6 @@ TEST_F(MtInQueueTest, GOLD_handle_bothCacheAndQueue_ifPossible_withoutBlocked)
     EXPECT_EQ(0u, mt_getQ().mt_size(true)) << "REQ: shall handle queue_ since unlocked";
     EXPECT_EQ(2u, nCalled);
 }
-TEST_F(MtInQueueTest, discard_noHdlrEle)
-{
-    mt_getQ().mt_push<int>(MAKE_PTR<int>(1));
-    EXPECT_EQ(1u, mt_getQ().mt_size(true));
-
-    mt_getQ().handleAllEle();
-    EXPECT_EQ(0u, mt_getQ().mt_size(true)) << "REQ: discard ele w/o hdlr - simple & no mem leak";
-}
 TEST_F(MtInQueueTest, handle_emptyQ)
 {
     EXPECT_EQ(0u, mt_getQ().mt_size(true)) << "REQ: can handle empty Q";
@@ -294,6 +297,52 @@ TEST_F(MtInQueueTest, handle_via_base)
     }));
     mt_getQ().handleAllEle();
     EXPECT_EQ(0u, mt_getQ().mt_size(true)) << "req: Base & Derive are handled correctly";
+}
+
+#define DEFAULT_HDLR
+// ***********************************************************************************************
+TEST_F(MtInQueueTest, noHdlrEle_default)
+{
+    mt_getQ().mt_push<int>(MAKE_PTR<int>(1));
+    EXPECT_EQ(1u, mt_getQ().mt_size(true));
+
+    mt_getQ().handleAllEle();
+    EXPECT_EQ(0u, mt_getQ().mt_size(true)) << "REQ: discard ele w/o hdlr - simple & no leak/crash";
+}
+TEST_F(MtInQueueTest, noHdlrEle_setInvalidDefaultHdlr)
+{
+    EXPECT_FALSE(mt_getQ().setHdlrOK(nullptr));
+
+    mt_getQ().mt_push<int>(MAKE_PTR<int>(1));
+    EXPECT_EQ(1u, mt_getQ().mt_size(true));
+    mt_getQ().handleAllEle();
+    EXPECT_EQ(0u, mt_getQ().mt_size(true)) << "REQ: discard ele w/o hdlr - simple & no leak/crash";
+}
+TEST_F(MtInQueueTest, GOLD_noHdlrEle_setDefaultHdlr)
+{
+    // domino
+    auto msgSelf = make_safe<MsgSelf>();
+    ObjAnywhere::emplaceObjOK(msgSelf);
+    ObjAnywhere::emplaceObjOK(make_safe<Dom>());
+    const auto en = string(EN_MTQ) + 'i';
+    bool isCalled = false;
+    DAT_DOM->setHdlr(en, [&isCalled]{ isCalled = true; });
+
+    // MtQ:
+    EXPECT_TRUE(mt_getQ().setHdlrOK(bind(&defaultHdlr, _1)));
+    mt_getQ().mt_push<int>(MAKE_PTR<int>(1));
+    mt_getQ().handleAllEle();
+    EXPECT_EQ(1, *dynamic_pointer_cast<int>(DAT_DOM->getData(en)).get())
+        << "REQ: new MtQ default hdlr works";
+    msgSelf->handleAllMsg();
+    EXPECT_TRUE(isCalled) << "REQ: domino hdlr called";
+
+    mt_getQ().clearHdlrPool();  // reset default hdlr
+    isCalled = false;
+    mt_getQ().mt_push<int>(MAKE_PTR<int>(1));
+    mt_getQ().handleAllEle();
+    msgSelf->handleAllMsg();
+    EXPECT_FALSE(isCalled) << "REQ: domino hdlr NOT called";
 }
 
 }  // namespace
