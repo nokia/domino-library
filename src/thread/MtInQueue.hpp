@@ -62,7 +62,10 @@ public:
 
     // shall be called in main thread ONLY!!!
     template<class aEleType> bool setHdlrOK(const EleHdlr&);
-    bool setHdlrOK(const DftHdlr& aHdlr = [](ELE_TID&){ WRN("(MtQ) discard 1 ele since no handler"); });
+    bool setHdlrOK(const DftHdlr& aHdlr = [](ELE_TID& aEle_tid)
+    {
+        WRN("(MtQ) discard 1 ele(=" << aEle_tid.second.name() << ") since no handler");
+    });
     size_t handleAllEle();
     auto nHdlr() const { return tid_hdlr_S_.size(); }
     void clearHdlrPool();
