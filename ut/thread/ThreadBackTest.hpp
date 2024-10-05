@@ -37,12 +37,13 @@ struct THREAD_BACK_TEST : public Test, public UniLog
     {
         EXPECT_EQ(0, threadBack_.nFut()) << "REQ: handle all";
         mt_getQ().clearHdlrPool();
+        ObjAnywhere::deinit();
         GTEST_LOG_FAIL
     }
 
     // -------------------------------------------------------------------------------------------
     THREAD_BACK_TYPE threadBack_;
-    std::shared_ptr<MsgSelf> msgSelf_ = std::make_shared<MsgSelf>(uniLogName());
+    PTR<MsgSelf> msgSelf_ = MAKE_PTR<MsgSelf>(uniLogName());
 };
 
 #define THREAD_AND_BACK
@@ -173,16 +174,21 @@ TEST_F(THREAD_BACK_TEST, invalid_msgSelf_entryFN_backFN)
 {
     EXPECT_FALSE(threadBack_.newTaskOK(
         [] { return make_safe<bool>(true); },  // entryFn
-        viaMsgSelf([](SafePtr<void>) {}, nullptr)  // invalid since msgSelf==nullptr
+        viaMsgSelf([](SafePtr<void>) {})  // invalid since msgSelf==nullptr
     ));
+
+    ObjAnywhere::init();
+    ObjAnywhere::emplaceObjOK(msgSelf_);  // valid MSG_SELF
     EXPECT_FALSE(threadBack_.newTaskOK(
         [] { return make_safe<bool>(true); },  // entryFn
-        viaMsgSelf(nullptr, msgSelf_)  // invalid since backFn==nullptr
+        viaMsgSelf(nullptr)  // invalid since backFn==nullptr
     ));
+
     EXPECT_FALSE(threadBack_.newTaskOK(
         MT_TaskEntryFN(nullptr),  // invalid since entryFn==nullptr
         [](SafePtr<void>) {}  // backFn
     ));
+
     EXPECT_EQ(0, threadBack_.nFut());
 }
 TEST_F(THREAD_BACK_TEST, bugFix_nDoneFut_before_futureReady)
@@ -240,6 +246,8 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     EXPECT_EQ(2u, mt_getQ().nHdlr())  << "REQ: count hdlr";
 
     // push
+    ObjAnywhere::init();
+    ObjAnywhere::emplaceObjOK(msgSelf_);  // valid MSG_SELF
     threadBack_.newTaskOK(
         // entryFn
         [] {
@@ -252,8 +260,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
             {
                 EXPECT_TRUE(*(dynamic_pointer_cast<bool>(aRet).get())) << "entryFn succ";
                 cb_info.emplace("REQ: a's backFn via MsgSelf");
-            },
-            msgSelf_
+            }
         )
     );
     threadBack_.newTaskOK(
@@ -268,8 +275,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
             {
                 EXPECT_TRUE(*(dynamic_pointer_cast<bool>(aRet).get())) << "entryFn succ";
                 cb_info.emplace("REQ: 2's backFn via MsgSelf");
-            },
-            msgSelf_
+            }
         )
     );
 

@@ -15,20 +15,22 @@
 #include <memory>
 
 #include "MsgSelf.hpp"
+#include "ObjAnywhere.hpp"
 #include "ThreadBack.hpp"
 
 namespace rlib
 {
 // ***********************************************************************************************
-// wrap TaskBackFN to queue in MsgSelf
+// wrap TaskBackFN to MsgSelf
 inline
-TaskBackFN viaMsgSelf(const TaskBackFN& aBackFN, std::shared_ptr<MsgSelf> aMsgSelf, EMsgPriority aPri = EMsgPri_NORM)
+TaskBackFN viaMsgSelf(const TaskBackFN& aBackFN, EMsgPriority aPri = EMsgPri_NORM)
 {
-    return ! aBackFN || aMsgSelf == nullptr
+    auto&& msgSelf = MSG_SELF;
+    return ! aBackFN || msgSelf.get() == nullptr
         ? TaskBackFN(nullptr)  // empty fn
-        : [aBackFN, aMsgSelf, aPri](SafePtr<void> aRet)  // must cp aBackFN since lambda run later in diff lifecycle
+        : [aBackFN, msgSelf, aPri](SafePtr<void> aRet)  // must cp aBackFN since lambda run later in diff lifecycle
         {
-            aMsgSelf->newMsg(bind(aBackFN, aRet), aPri);  // wrap aBackFN to queue in MsgSelf
+            msgSelf->newMsg(bind(aBackFN, aRet), aPri);  // wrap aBackFN to queue in MsgSelf
         };
 }
 
@@ -37,4 +39,5 @@ TaskBackFN viaMsgSelf(const TaskBackFN& aBackFN, std::shared_ptr<MsgSelf> aMsgSe
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2023-09-15  CSZ       1)create
+// 2024-10-05  CSZ       - simpler by MSG_SELF instead of para
 // ***********************************************************************************************
