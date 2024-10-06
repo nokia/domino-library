@@ -39,14 +39,12 @@ namespace rlib
 // - ele & its type_index(==/!= ok, but type_info* & hash_code nok)
 // - shared_ptr is safe to cast void since type_index (but not safe as SafePtr's create)
 using ELE_TID = std::pair<UniPtr, std::type_index>;
-using EleHdlr = std::function<void(UniPtr)>;    // NO exception allowed
-using DftHdlr = std::function<void(ELE_TID&)>;  // NO exception allowed
+using EleHdlr = std::function<void(UniPtr)>;  // NO exception allowed
 
 // ***********************************************************************************************
 class MtInQueue
 {
 public:
-    MtInQueue() { setHdlrOK(); }
     ~MtInQueue();
 
     // aEle may not mt-safe, so here mv
@@ -62,13 +60,9 @@ public:
 
     // shall be called in main thread ONLY!!!
     template<class aEleType> bool setHdlrOK(const EleHdlr&);
-    bool setHdlrOK(const DftHdlr& aHdlr = [](ELE_TID& aEle_tid)
-    {
-        WRN("(MtQ) discard 1 ele(=" << aEle_tid.second.name() << ") since no handler");
-    });
     size_t handleAllEle();
     auto nHdlr() const { return tid_hdlr_S_.size(); }
-    void clearHdlrPool();
+    void clearHdlrPool() { tid_hdlr_S_.clear(); }
 
 private:
     std::deque<ELE_TID>::iterator begin_();
@@ -80,7 +74,6 @@ private:
     std::mutex mutex_;
 
     std::unordered_map<std::type_index, EleHdlr> tid_hdlr_S_;
-    DftHdlr defaultHdlr_;
 
     // -------------------------------------------------------------------------------------------
 #ifdef IN_GTEST
@@ -179,5 +172,5 @@ MtInQueue& mt_getQ();
 // 2023-10-29  CSZ       - integrate handler
 // 2024-02-15  CSZ       3)use SafePtr (mem-safe); shared_ptr is not mem-safe
 // 2024-03-10  CSZ       - enhance safe of setHdlrOK()
-// 2024-10-05  CSZ       - integrate with domino
+// 2024-10-05  CSZ       - integrate with domino (giveup since multi-same-type)
 // ***********************************************************************************************

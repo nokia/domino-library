@@ -45,13 +45,6 @@ deque<ELE_TID>::iterator MtInQueue::begin_()
 }
 
 // ***********************************************************************************************
-void MtInQueue::clearHdlrPool()
-{
-    tid_hdlr_S_.clear();
-    setHdlrOK();
-}
-
-// ***********************************************************************************************
 size_t MtInQueue::handleCacheEle_()
 {
     const auto nEle = cache_.size();
@@ -63,7 +56,7 @@ size_t MtInQueue::handleCacheEle_()
         auto&& id_hdlr = tid_hdlr_S_.find(ele_tid.second);
         if (id_hdlr == tid_hdlr_S_.end())
         {
-            defaultHdlr_(ele_tid);
+            WRN("(MtQ) discard 1 ele(=" << ele_tid.second.name() << ") since no handler.");
             continue;
         }
         id_hdlr->second(ele_tid.first);
@@ -127,21 +120,6 @@ ELE_TID MtInQueue::pop()
     auto ele_tid = move(*it);  // must copy
     cache_.pop_front();
     return ele_tid;
-}
-
-// ***********************************************************************************************
-bool MtInQueue::setHdlrOK(const DftHdlr& aHdlr)
-{
-    if (aHdlr)
-    {
-        defaultHdlr_ = aHdlr;
-        return true;
-    }
-    else
-    {
-        WRN("(MtQ) why set null hdlr?");
-        return false;
-    }
 }
 
 // ***********************************************************************************************
