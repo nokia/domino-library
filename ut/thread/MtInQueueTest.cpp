@@ -12,6 +12,7 @@
 
 #include "MT_Semaphore.hpp"
 #include "UniLog.hpp"
+#include "UniPtr.hpp"
 
 #define IN_GTEST
 #include "MT_PingMainTH.hpp"
@@ -280,7 +281,7 @@ TEST_F(MtInQueueTest, handle_via_base)
     EXPECT_TRUE(mt_getQ().setHdlrOK<Base>([](UniPtr aEle)
     {
         static int exp = 1;
-        auto ele = static_pointer_cast<Base>(aEle);
+        auto ele = STATIC_PTR_CAST<Base>(aEle);
         EXPECT_NE(nullptr, ele.get());
         EXPECT_EQ(exp++, ele.get()->value());
     }));

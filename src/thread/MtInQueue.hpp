@@ -126,7 +126,7 @@ PTR<aEleType> MtInQueue::pop()
     // pop
     auto ele = std::move(it->first);
     cache_.pop_front();
-    return std::static_pointer_cast<aEleType>(ele);
+    return STATIC_PTR_CAST<aEleType>(ele);
 }
 
 // ***********************************************************************************************

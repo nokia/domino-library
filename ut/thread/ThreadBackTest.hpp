@@ -96,7 +96,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_entryFnResult_toBackFn_withoutTimedWait)
             // TaskBackFN
             [idxThread](SafePtr<void> aRet)
             {
-                EXPECT_EQ(idxThread % 2 != 0, *(dynamic_pointer_cast<bool>(aRet).get())) << "REQ: check true & false";
+                EXPECT_EQ(idxThread % 2 != 0, *(dynPtrCast<bool>(aRet).get())) << "REQ: check true & false";
             }
         ));
     }
@@ -227,7 +227,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         msgSelf_->newMsg(  // REQ: via MsgSelf
             [aMsg, &cb_info]
             {
-                EXPECT_EQ("a", *(static_pointer_cast<string>(aMsg).get()));
+                EXPECT_EQ("a", *(staticPtrCast<string>(aMsg).get()));
                 cb_info.emplace("REQ: a's Q hdlr via MsgSelf");
             }
         );
@@ -238,7 +238,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         msgSelf_->newMsg(
             [aMsg, &cb_info]
             {
-                EXPECT_EQ(2, *(static_pointer_cast<int>(aMsg).get()));
+                EXPECT_EQ(2, *(staticPtrCast<int>(aMsg).get()));
                 cb_info.emplace("REQ: 2's Q hdlr via MsgSelf");
             }
         );
@@ -258,7 +258,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         viaMsgSelf(  // REQ: via MsgSelf
             [this, &cb_info](SafePtr<void> aRet)
             {
-                EXPECT_TRUE(*(dynamic_pointer_cast<bool>(aRet).get())) << "entryFn succ";
+                EXPECT_TRUE(*(dynPtrCast<bool>(aRet).get())) << "entryFn succ";
                 cb_info.emplace("REQ: a's backFn via MsgSelf");
             }
         )
@@ -273,7 +273,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         viaMsgSelf(
             [this, &cb_info](SafePtr<void> aRet)
             {
-                EXPECT_TRUE(*(dynamic_pointer_cast<bool>(aRet).get())) << "entryFn succ";
+                EXPECT_TRUE(*(dynPtrCast<bool>(aRet).get())) << "entryFn succ";
                 cb_info.emplace("REQ: 2's backFn via MsgSelf");
             }
         )

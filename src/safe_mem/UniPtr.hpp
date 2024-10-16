@@ -19,17 +19,21 @@
 namespace rlib
 {
 // std::~, or ambiguous with boost::~
-using   UniPtr =  std::shared_ptr<void>;
-#define MAKE_PTR  std::make_shared
-#define PTR       std::shared_ptr
+using   UniPtr =         std::shared_ptr<void>;
+#define MAKE_PTR         std::make_shared
+#define PTR              std::shared_ptr
+#define DYN_PTR_CAST     std::dynamic_pointer_cast
+#define STATIC_PTR_CAST  std::static_pointer_cast
 
 #else
 #include "SafePtr.hpp"
 namespace rlib
 {
-using   UniPtr =  SafePtr<void>;
-#define MAKE_PTR  make_safe
-#define PTR       SafePtr
+using   UniPtr =         SafePtr<void>;
+#define MAKE_PTR         make_safe
+#define PTR              SafePtr
+#define DYN_PTR_CAST     rlib::dynPtrCast
+#define STATIC_PTR_CAST  rlib::staticPtrCast
 // 4th req: SafePtr.get() return same as shared_ptr
 #endif
 

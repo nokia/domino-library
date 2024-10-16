@@ -18,7 +18,7 @@
 #include <unordered_map>
 
 #include "SafePtr.hpp"  // can't UniPtr.hpp since ut(=req) build-err
-#include "UniLog.hpp"   // debug
+#include "UniLog.hpp"
 
 namespace rlib
 {
@@ -80,7 +80,7 @@ SafePtr<aDataT> DataStore<aDataKey>::get(const aDataKey& aKey) const
         HID("(DataStore) can't find key=" << aKey);
         return nullptr;
     }
-    return std::dynamic_pointer_cast<aDataT>(key_data->second);
+    return dynPtrCast<aDataT>(key_data->second);
 }
 
 // ***********************************************************************************************

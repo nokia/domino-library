@@ -51,11 +51,11 @@ public:
     template<typename U, typename... ConstructArgs> friend SafePtr<U> make_safe(ConstructArgs&&... aArgs);
 
     // safe-only cast (vs shared_ptr, eg static_pointer_cast<any> is not safe)
-    template<typename From> SafePtr(const SafePtr<From>&) noexcept;          // cp  ok or compile err
-    template<typename From> SafePtr(SafePtr<From>&&) noexcept;               // mv  ok or compile err
-    template<typename To> std::shared_ptr<To> cast() const noexcept;         // ret ok or null
+    template<typename From> SafePtr(const SafePtr<From>&) noexcept;   // cp  ok or compile err
+    template<typename From> SafePtr(SafePtr<From>&&) noexcept;        // mv  ok or compile err
+    template<typename To> std::shared_ptr<To> cast() const noexcept;  // ret ok or null
     template<typename To, typename From>
-    friend SafePtr<To> std::dynamic_pointer_cast(const SafePtr<From>&) noexcept;  // ret ok or null
+    friend SafePtr<To> dynPtrCast(const SafePtr<From>&) noexcept;  // ret ok or null
 
     // safe usage: convenient(compatible shared_ptr), equivalent & min
     // . ret shared_ptr is safer than T* (but not safest since to call T's func easily)
@@ -191,11 +191,10 @@ bool operator<(SafePtr<T> lhs, SafePtr<U> rhs)
 {
     return lhs.get() < rhs.get();
 }
-}  // namespace
 
 // ***********************************************************************************************
 template<typename To, typename From>
-rlib::SafePtr<To> std::dynamic_pointer_cast(const rlib::SafePtr<From>& aSafeFrom) noexcept
+rlib::SafePtr<To> dynPtrCast(const rlib::SafePtr<From>& aSafeFrom) noexcept
 {
     rlib::SafePtr<To> safeTo;
     safeTo.pT_ = aSafeFrom.template cast<To>();
@@ -205,10 +204,11 @@ rlib::SafePtr<To> std::dynamic_pointer_cast(const rlib::SafePtr<From>& aSafeFrom
 
 // ***********************************************************************************************
 template<typename To, typename From>
-rlib::SafePtr<To> std::static_pointer_cast(const rlib::SafePtr<From>& aSafeFrom) noexcept
+rlib::SafePtr<To> staticPtrCast(const rlib::SafePtr<From>& aSafeFrom) noexcept
 {
-    return std::dynamic_pointer_cast<To>(aSafeFrom);
+    return dynPtrCast<To>(aSafeFrom);
 }
+}  // namespace
 
 // ***********************************************************************************************
 template<typename T>
@@ -225,6 +225,7 @@ struct std::hash<rlib::SafePtr<T>>
 // 2024-04-17  CSZ       3)strict constructor - illegal->compile-err (while *cast() can ret null)
 // 2024-05-06  CSZ       - AI-gen-code
 // 2024-06-28  CSZ       - dynamic_pointer_cast ok or ret null
+// 2024-10-16  CSZ       - dynamic_pointer_cast to dynPtrCast since std not allowed
 // ***********************************************************************************************
 // - Q&A
 //   . How to solve safety issue:
@@ -254,12 +255,11 @@ struct std::hash<rlib::SafePtr<T>>
 //     . it's possible but rare to use T* unsafely - SafePtr has this risk to exchange convenient
 //     . shared_ptr reduces mem-lifecycle-mgmt(1 major-possible-bug) - so worth
 //
-//   . why dynamic_pointer_cast?
+//   . why dynPtrCast?
 //     . cast all possible eg base->derived (more than cp constructor)
 //     . explicit cast so ok or nullptr (cp constructor is implicit & ok/compile-err)
 //       . unified-ret is predictable & simple
-//       . dynamic_cast & dynamic_pointer_cast follow the same rule
-//     . align/compatible with shared_ptr
+//     . std not allow overload dynamic_pointer_cast so dynPtrCast & DYN_PTR_CAST
 //   . why cp constructor?
 //     . dyn-cast & cp cover diff scenario - implicit convert is useful/convenient also
 //   . why mv constructor?

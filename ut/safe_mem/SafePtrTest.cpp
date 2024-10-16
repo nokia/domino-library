@@ -73,29 +73,29 @@ struct Derive : public Base { int value() const override { return 1; } };
 TEST(SafePtrTest, GOLD_safeCast_self_base_void_back)
 {
     auto d = make_safe<Derive>();
-    EXPECT_EQ(1, dynamic_pointer_cast<Derive>(d)->value()) << "REQ: cast to self";
-    EXPECT_EQ(1, dynamic_pointer_cast<Base  >(d)->value()) << "REQ: cast to base";
+    EXPECT_EQ(1, dynPtrCast<Derive>(d)->value()) << "REQ: cast to self";
+    EXPECT_EQ(1, dynPtrCast<Base  >(d)->value()) << "REQ: cast to base";
 
-    EXPECT_EQ(1, dynamic_pointer_cast<Derive>(dynamic_pointer_cast<Base>(d))->value()) << "REQ: (derived->)base->derived";
+    EXPECT_EQ(1, dynPtrCast<Derive>(dynPtrCast<Base>(d))->value()) << "REQ: (derived->)base->derived";
 
-    EXPECT_EQ(1, dynamic_pointer_cast<Derive>(dynamic_pointer_cast<void>(dynamic_pointer_cast<Base>(d)))->value()) << "REQ: ->void & void->origin";
-    EXPECT_EQ(1, dynamic_pointer_cast<Base  >(dynamic_pointer_cast<void>(dynamic_pointer_cast<Base>(d)))->value()) << "REQ: ->void & void->preVoid";
+    EXPECT_EQ(1, dynPtrCast<Derive>(dynPtrCast<void>(dynPtrCast<Base>(d)))->value()) << "REQ: ->void & void->origin";
+    EXPECT_EQ(1, dynPtrCast<Base  >(dynPtrCast<void>(dynPtrCast<Base>(d)))->value()) << "REQ: ->void & void->preVoid";
 
-    //EXPECT_EQ(1, dynamic_pointer_cast<Base>(dynamic_pointer_cast<void>(make_safe<Derive>())).get()) << "safe cast, but not support";
+    //EXPECT_EQ(1, dynPtrCast<Base>(dynPtrCast<void>(make_safe<Derive>())).get()) << "safe cast, but not support";
 }
 struct D_protect : protected Derive { int value() const override { return 2; } };
 struct D_private : private   Derive { int value() const override { return 3; } };
 TEST(SafePtrTest, invalidCast_retNull)
 {
-    EXPECT_EQ(nullptr, dynamic_pointer_cast<char  >(make_safe<int >(7)).get()) << "REQ: invalid int ->char";
-    EXPECT_EQ(nullptr, dynamic_pointer_cast<Derive>(make_safe<Base>() ).get()) << "REQ: invalid base->derived";
+    EXPECT_EQ(nullptr, dynPtrCast<char  >(make_safe<int >(7)).get()) << "REQ: invalid int ->char";
+    EXPECT_EQ(nullptr, dynPtrCast<Derive>(make_safe<Base>() ).get()) << "REQ: invalid base->derived";
 
-    //EXPECT_EQ(nullptr, dynamic_pointer_cast<Base>(make_safe<D_private>()).get());  // invalid, not ret null but compile err
-    //EXPECT_EQ(nullptr, dynamic_pointer_cast<Base>(make_safe<D_protect>()).get());  // invalid, not ret null but compile err
+    //EXPECT_EQ(nullptr, dynPtrCast<Base>(make_safe<D_private>()).get());  // invalid, not ret null but compile err
+    //EXPECT_EQ(nullptr, dynPtrCast<Base>(make_safe<D_protect>()).get());  // invalid, not ret null but compile err
 
     auto msgInQ = SafePtr<void>(SafePtr<Base>(make_safe<Derive>()));
-    auto msgOutQ = dynamic_pointer_cast<char>(msgInQ);
-    EXPECT_EQ(1, dynamic_pointer_cast<Base>(msgInQ)->value ()) << "REQ: failed cast -> keep src";
+    auto msgOutQ = dynPtrCast<char>(msgInQ);
+    EXPECT_EQ(1, dynPtrCast<Base>(msgInQ)->value ()) << "REQ: failed cast -> keep src";
     EXPECT_EQ(type_index(typeid(Derive)),   msgInQ.realType()) << "REQ: failed cast -> keep src";
     EXPECT_EQ(type_index(typeid(Base  )),   msgInQ.lastType()) << "REQ: failed cast -> keep src";
 
@@ -108,8 +108,8 @@ TEST(SafePtrTest, safe_cast_bugFix)
 {
     SafePtr<Base> b = make_safe<D2>();  // realType_ is D2
     SafePtr<void> v = b;  // diffType_ is Base
-    auto vv = dynamic_pointer_cast<void>(v);  // bug fix for multi-void
-    EXPECT_EQ(2, static_pointer_cast<Base>(vv)->value()) << "REQ: can cast D2->Base->void->void->Base";
+    auto vv = dynPtrCast<void>(v);  // bug fix for multi-void
+    EXPECT_EQ(2, staticPtrCast<Base>(vv)->value()) << "REQ: can cast D2->Base->void->void->Base";
 }
 
 #define COPY
@@ -132,21 +132,21 @@ TEST(SafePtrTest, GOLD_safeCp_self_base_void)
     EXPECT_EQ(1, SafePtr<Derive>(d)->value()) << "REQ: cp to self";
     EXPECT_EQ(1, SafePtr<Base  >(d)->value()) << "REQ: cp to base";
 
-    EXPECT_EQ(0, dynamic_pointer_cast<Base  >(SafePtr<void>(make_safe<Base  >()))->value()) << "REQ: cp any->void";
-    EXPECT_EQ(1, dynamic_pointer_cast<Derive>(SafePtr<void>(make_safe<Derive>()))->value()) << "req: cp any->void";
+    EXPECT_EQ(0, dynPtrCast<Base  >(SafePtr<void>(make_safe<Base  >()))->value()) << "REQ: cp any->void";
+    EXPECT_EQ(1, dynPtrCast<Derive>(SafePtr<void>(make_safe<Derive>()))->value()) << "req: cp any->void";
 }
-TEST(SafePtrTest, invalidCp_compileErr)  // cp's compile-err is safer than dynamic_pointer_cast that may ret nullptr
+TEST(SafePtrTest, invalidCp_compileErr)  // cp's compile-err is safer than dynPtrCast that may ret nullptr
 {
-    //SafePtr<Derive>(SafePtr<Base>(make_safe<Derive>()));  // derived->base->derive: cp compile err, can dynamic_pointer_cast instead
-    //SafePtr<Derive>(SafePtr<void>(make_safe<Derive>()));  // void->origin: cp compile err, can dynamic_pointer_cast instead
-    //SafePtr<Base  >(SafePtr<void>(make_safe<Derive>()));  // derive->void->base: cp compile err, dynamic_pointer_cast ret nullptr
+    //SafePtr<Derive>(SafePtr<Base>(make_safe<Derive>()));  // derived->base->derive: cp compile err, can dynPtrCast instead
+    //SafePtr<Derive>(SafePtr<void>(make_safe<Derive>()));  // void->origin: cp compile err, can dynPtrCast instead
+    //SafePtr<Base  >(SafePtr<void>(make_safe<Derive>()));  // derive->void->base: cp compile err, dynPtrCast ret nullptr
 
-    //SafePtr<Derive>(make_safe<Base>());  // base->derived: cp compile-err; dynamic_pointer_cast ret nullptr
+    //SafePtr<Derive>(make_safe<Base>());  // base->derived: cp compile-err; dynPtrCast ret nullptr
 
-    //SafePtr<char>(make_safe<int>(7));  // int->char: both cp & dynamic_pointer_cast will compile err
+    //SafePtr<char>(make_safe<int>(7));  // int->char: both cp & dynPtrCast will compile err
 
-    //SafePtr<Base>(make_safe<D_private>());  // private->base: both cp & dynamic_pointer_cast will compile err
-    //SafePtr<Base>(make_safe<D_protect>());  // protect->base: both cp & dynamic_pointer_cast will compile err
+    //SafePtr<Base>(make_safe<D_private>());  // private->base: both cp & dynPtrCast will compile err
+    //SafePtr<Base>(make_safe<D_protect>());  // protect->base: both cp & dynPtrCast will compile err
 }
 TEST(SafePtrTest, GOLD_const_and_back)
 {
@@ -188,9 +188,9 @@ TEST(SafePtrTest, GOLD_mtQ_req_mv)
     EXPECT_EQ(type_index(typeid(Base)), msg.realType()) << "REQ: reset src all";
     EXPECT_EQ(type_index(typeid(Base)), msg.lastType()) << "REQ: reset src all";
 
-    EXPECT_EQ(1                         , dynamic_pointer_cast<Base>(msgInQ)->value()  ) << "REQ: takeover msg";
-    EXPECT_EQ(type_index(typeid(Derive)), dynamic_pointer_cast<Base>(msgInQ).realType()) << "REQ: reset src all";
-    EXPECT_EQ(type_index(typeid(Base  )), dynamic_pointer_cast<Base>(msgInQ).lastType()) << "REQ: reset src all";
+    EXPECT_EQ(1                         , dynPtrCast<Base>(msgInQ)->value()  ) << "REQ: takeover msg";
+    EXPECT_EQ(type_index(typeid(Derive)), dynPtrCast<Base>(msgInQ).realType()) << "REQ: reset src all";
+    EXPECT_EQ(type_index(typeid(Base  )), dynPtrCast<Base>(msgInQ).lastType()) << "REQ: reset src all";
 }
 TEST(SafePtrTest, nothing_cp_mv_assign)
 {

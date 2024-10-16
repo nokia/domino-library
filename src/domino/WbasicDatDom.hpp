@@ -12,6 +12,8 @@
 #pragma once
 
 #include <vector>
+
+#include "SafePtr.hpp"
 #include "UniLog.hpp"
 
 namespace rlib
@@ -134,7 +136,7 @@ bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName, const bo
 template<typename aDataDominoType, typename aDataType>
 SafePtr<aDataType> wbasic_getData(aDataDominoType& aDom, const Domino::EvName& aEvName)
 {
-    return std::static_pointer_cast<aDataType>(aDom.wbasic_getData(aEvName));
+    return staticPtrCast<aDataType>(aDom.wbasic_getData(aEvName));
 }
 
 // ***********************************************************************************************

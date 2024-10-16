@@ -7,6 +7,7 @@
 #include <set>
 #include <string>
 
+#include "SafePtr.hpp"
 #include "UtInitObjAnywhere.hpp"
 
 namespace rlib
@@ -42,7 +43,7 @@ TYPED_TEST_P(DataDominoTest, setShared_thenGetIt_thenRmIt)
     EXPECT_EQ(nullptr, PARA_DOM->getData("ev0").get()) << "REQ: get null since ev0 not exist";
 
     PARA_DOM->replaceData("ev0", make_safe<string>("ev0's data"));  // req: any type data (2nd=string)
-    auto pString = static_pointer_cast<string>(PARA_DOM->getData("ev0"));  // directly get() will destruct shared_ptr afterward
+    auto pString = staticPtrCast<string>(PARA_DOM->getData("ev0"));  // directly get() will destruct shared_ptr afterward
     ASSERT_NE(nullptr, pString.get());
     EXPECT_EQ("ev0's data", *(pString.get())) << "REQ: get = set";
 
@@ -51,7 +52,7 @@ TYPED_TEST_P(DataDominoTest, setShared_thenGetIt_thenRmIt)
 
     PARA_DOM->replaceData("ev0", make_safe<string>("replace ev0's data"));
     EXPECT_EQ("replace ev0's data", *(getData<TypeParam, string>(*PARA_DOM, "ev0").get())) << "REQ: get replaced";
-    EXPECT_NE(pString.get(), static_pointer_cast<string>(PARA_DOM->getData("ev0")).get()) << "REQ: replace != old";
+    EXPECT_NE(pString.get(), staticPtrCast<string>(PARA_DOM->getData("ev0")).get()) << "REQ: replace != old";
 
     PARA_DOM->replaceData("ev0");  // req: rm data
     EXPECT_EQ(nullptr, PARA_DOM->getData("ev0").get()) << "REQ: get null";
