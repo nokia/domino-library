@@ -26,9 +26,9 @@ using LogName = std::string;
 #else
 #define BUF(content)                         __func__ << "():" << __LINE__ << ": " << content << std::endl
 #endif
-#define INF(content) { oneLog() << "INF] " << BUF(content); }
-#define WRN(content) { oneLog() << "WRN] " << BUF(content); }
-#define ERR(content) { oneLog() << "ERR] " << BUF(content); }
+#define INF(content) { oneLog() << "INF/" << std::this_thread::get_id() << "] " << BUF(content); }
+#define WRN(content) { oneLog() << "WRN/" << std::this_thread::get_id() << "] " << BUF(content); }
+#define ERR(content) { oneLog() << "ERR/" << std::this_thread::get_id() << "] " << BUF(content); }
 
 // - HID() is to be more debug but product code shall disable them
 // - HID() uses cout since UniSmartLog is NOT MT safe
