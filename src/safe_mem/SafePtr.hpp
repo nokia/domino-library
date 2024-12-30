@@ -91,7 +91,7 @@ template<typename From>
 SafePtr<T>::SafePtr(SafePtr<From>&& aSafeFrom) noexcept  // mv - MtQ need
     : SafePtr(aSafeFrom)  // cp
 {
-    if (pT_ != nullptr)  // cp succ, clear src
+    if (pT_ != nullptr)   // cp succ, clear src
         aSafeFrom = nullptr;
 }
 
