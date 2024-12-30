@@ -24,6 +24,7 @@ TEST(SafePtrTest, GOLD_safeCreate_normal)
     EXPECT_EQ(1, i.use_count()) << "REQ: compatible shared_ptr";
 
     auto content = i.get();
+    ASSERT_NE(nullptr, content) << "REQ: shared_ptr should not be null";
     EXPECT_EQ(42, *content) << "REQ: valid construct & get";
     EXPECT_EQ(2, i.use_count()) << "REQ: compatible shared_ptr";
 

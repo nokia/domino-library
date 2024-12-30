@@ -29,11 +29,9 @@
 // ***********************************************************************************************
 #pragma once
 
-#include <functional>
 #include <memory>
 #include <type_traits>
 #include <typeindex>
-#include <utility>
 
 #include "UniLog.hpp"
 
@@ -63,7 +61,7 @@ public:
     std::shared_ptr<T> get() const noexcept { return pT_; }
     std::shared_ptr<T> operator->() const noexcept { return pT_; }  // convenient
     explicit operator bool() const noexcept { return pT_ != nullptr; }
-    auto use_count() const noexcept { return pT_.use_count();  }
+    auto use_count() const noexcept { return pT_.use_count(); }
 
     // most for debug
     auto realType() const noexcept { return realType_; }  // ret cp is safer than ref
@@ -134,7 +132,7 @@ std::shared_ptr<To> SafePtr<T>::cast() const noexcept
         return std::static_pointer_cast<To>(pT_);
     }
     HID("(SafePtr) can't cast from=void/" << typeid(T).name() << " to=" << typeid(To).name());
-    return nullptr;  // since dynamic_pointer_cast<To>(pT_) may fail compile DataStore::get(); cast or or null
+    return nullptr;  // non-constexpr branch: dynamic_pointer_cast<To>(pT_) may fail compile
 }
 
 // ***********************************************************************************************
@@ -151,10 +149,9 @@ void SafePtr<T>::init_(const SafePtr<From>& aSafeFrom) noexcept
 
     realType_ = aSafeFrom.realType();
     // save last useful type
-    if (!std::is_same_v<T, void> && realType_ != typeid(T))
-        lastType_ = typeid(T);
-    else
-        lastType_ = aSafeFrom.lastType();
+    lastType_ = std::is_same_v<T, void> || realType_ == typeid(T)
+        ? aSafeFrom.lastType()
+        : typeid(T);
 
     /* HID("cp from=" << typeid(From).name() << " to=" << typeid(T).name()
         << ", diff=" << (lastType_ == nullptr ? "null" : lastType_->name())
