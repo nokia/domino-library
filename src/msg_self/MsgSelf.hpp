@@ -40,9 +40,9 @@
 
 #include <deque>
 #include <functional>
-#include <memory>
 
 #include "UniLog.hpp"
+#include "UniPtr.hpp"
 
 #define MSG_SELF (ObjAnywhere::getObj<MsgSelf>())
 
