@@ -20,20 +20,17 @@
 //
 // - class safe: yes
 //   . no duty to hdlr itself's any unsafe behavior
-//   . why shared_ptr rather than SafePtr to store hdlr?
-//     . HdlrDomino ensures safely usage of shared_ptr
-//     . principle: safe class can base on unsafe materials
+//   . mem safe: yes SafePtr, no shared_ptr
 // ***********************************************************************************************
 #pragma once
 
 #include <functional>
-#include <memory>
 #include <unordered_map>
 
 #include "MsgSelf.hpp"
 #include "ObjAnywhere.hpp"
-#include "SafePtr.hpp"
 #include "UniLog.hpp"
+#include "UniPtr.hpp"
 
 namespace rlib
 {
@@ -43,7 +40,7 @@ class HdlrDomino : public aDominoType
 {
 public:
     explicit HdlrDomino(const LogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
-    bool setMsgSelfOK(const SafePtr<MsgSelf>& aMsgSelf);  // replace default
+    bool setMsgSelfOK(const S_PTR<MsgSelf>& aMsgSelf);  // replace default; safe: yes SafePtr, no shared_ptr
 
     Domino::Event setHdlr(const Domino::EvName&, const MsgCB& aHdlr);
     bool rmOneHdlrOK(const Domino::EvName&);  // rm by EvName
@@ -71,7 +68,7 @@ protected:
 private:
     std::unordered_map<Domino::Event, SharedMsgCB> ev_hdlr_S_;
 protected:
-    SafePtr<MsgSelf> msgSelf_ = ObjAnywhere::getObj<MsgSelf>();
+    S_PTR<MsgSelf> msgSelf_ = ObjAnywhere::getObj<MsgSelf>();
 public:
     using aDominoType::oneLog;
 };
@@ -167,7 +164,7 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
     }
 
     // set
-    auto newHdlr = std::make_shared<MsgCB>(aHdlr);
+    auto newHdlr = MAKE_PTR<MsgCB>(aHdlr);
     ev_hdlr_S_.emplace(newEv, newHdlr);
     HID("(HdlrDom) Succeed for EvName=" << aEvName);
 
@@ -182,7 +179,7 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
 
 // ***********************************************************************************************
 template<class aDominoType>
-bool HdlrDomino<aDominoType>::setMsgSelfOK(const SafePtr<MsgSelf>& aMsgSelf)
+bool HdlrDomino<aDominoType>::setMsgSelfOK(const S_PTR<MsgSelf>& aMsgSelf)
 {
     // validate
     const auto nMsgUnhandled = msgSelf_ ? msgSelf_->nMsg() : 0;  // HdlrDomino ensure msgSelf_ always NOT null
@@ -211,7 +208,7 @@ void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, const 
         [weakMsgCB = WeakMsgCB(aValidHdlr)]() mutable  // WeakMsgCB is to support rm hdlr
         {
             if (! weakMsgCB.expired())
-                (*weakMsgCB.lock())();  // setHdlr() forbid cb==null
+                (*(weakMsgCB.lock().get()))();  // setHdlr() forbid cb==null
         },
         getPriority(aValidEv)
     );
@@ -231,4 +228,5 @@ void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, const 
 // 2023-01-23  CSZ       - rename pureRmHdlrOK to rmOneHdlrOK
 // 2023-05-24  CSZ       - support force call hdlr
 // 2024-03-10  CSZ       - enhance safe eg setMsgSelf()
+// 2025-02-13  CSZ       - support both SafePtr & shared_ptr
 // ***********************************************************************************************

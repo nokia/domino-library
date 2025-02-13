@@ -356,7 +356,7 @@ TYPED_TEST_P(HdlrDominoTest, replace_msgSelf)  // checked by CI valgrind
 
     PARA_DOM->setHdlr("event", this->hdlr0_);
     PARA_DOM->setState({{"event", true}});  // 1 msg in old msgSelf
-    auto msgSelf = make_safe<MsgSelf>(this->uniLogName());
+    auto msgSelf = MAKE_PTR<MsgSelf>(this->uniLogName());
     ASSERT_FALSE(PARA_DOM->setMsgSelfOK(msgSelf)) << "REQ: can NOT set new msgSelf when unhandled msg in old";
 
     this->pongMsgSelf_();
@@ -365,7 +365,7 @@ TYPED_TEST_P(HdlrDominoTest, replace_msgSelf)  // checked by CI valgrind
 TYPED_TEST_P(HdlrDominoTest, bugFix_invalidMsgSelf)  // checked by CI valgrind
 {
     ObjAnywhere::deinit();  // free MsgSelf
-    auto dom = make_safe<TypeParam>();  // now dom's MsgSelf = null/invalid
+    auto dom = MAKE_PTR<TypeParam>();  // now dom's MsgSelf = null/invalid
     dom->setHdlr("en", this->hdlr0_);
     dom->forceAllHdlr("en");  // bug fix: shall not crash
 

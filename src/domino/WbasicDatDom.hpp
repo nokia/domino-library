@@ -13,8 +13,8 @@
 
 #include <vector>
 
-#include "SafePtr.hpp"
 #include "UniLog.hpp"
+#include "UniPtr.hpp"
 
 namespace rlib
 {
@@ -28,11 +28,11 @@ public:
     bool isWrCtrl(const Domino::EvName&) const;
     bool wrCtrlOk(const Domino::EvName&, const bool aNewState = true);
 
-    SafePtr<void> getData(const Domino::EvName&) const override;
-    SafePtr<void> wbasic_getData(const Domino::EvName&) const;
+    S_PTR<void> getData(const Domino::EvName&) const override;
+    S_PTR<void> wbasic_getData(const Domino::EvName&) const;
 
-    void replaceData(const Domino::EvName&, SafePtr<void> aData = nullptr) override;
-    void wbasic_replaceData(const Domino::EvName&, SafePtr<void> aData = nullptr);
+    void replaceData(const Domino::EvName&, S_PTR<void> aData = nullptr) override;
+    void wbasic_replaceData(const Domino::EvName&, S_PTR<void> aData = nullptr);
 
 protected:
     void rmEv_(const Domino::Event& aValidEv) override;
@@ -50,7 +50,7 @@ public:
 
 // ***********************************************************************************************
 template<typename aDominoType>
-SafePtr<void> WbasicDatDom<aDominoType>::getData(const Domino::EvName& aEvName) const
+S_PTR<void> WbasicDatDom<aDominoType>::getData(const Domino::EvName& aEvName) const
 {
     if (not isWrCtrl(aEvName))
         return aDominoType::getData(aEvName);
@@ -69,7 +69,7 @@ bool WbasicDatDom<aDominoType>::isWrCtrl(const Domino::EvName& aEvName) const
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void WbasicDatDom<aDominoType>::replaceData(const Domino::EvName& aEvName, SafePtr<void> aData)
+void WbasicDatDom<aDominoType>::replaceData(const Domino::EvName& aEvName, S_PTR<void> aData)
 {
     if (isWrCtrl(aEvName))
         WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!")
@@ -88,7 +88,7 @@ void WbasicDatDom<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 
 // ***********************************************************************************************
 template<typename aDominoType>
-SafePtr<void> WbasicDatDom<aDominoType>::wbasic_getData(const Domino::EvName& aEvName) const
+S_PTR<void> WbasicDatDom<aDominoType>::wbasic_getData(const Domino::EvName& aEvName) const
 {
     if (isWrCtrl(aEvName))
         return aDominoType::getData(aEvName);
@@ -99,7 +99,7 @@ SafePtr<void> WbasicDatDom<aDominoType>::wbasic_getData(const Domino::EvName& aE
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void WbasicDatDom<aDominoType>::wbasic_replaceData(const Domino::EvName& aEvName, SafePtr<void> aData)
+void WbasicDatDom<aDominoType>::wbasic_replaceData(const Domino::EvName& aEvName, S_PTR<void> aData)
 {
     if (isWrCtrl(aEvName))
         aDominoType::replaceData(aEvName, aData);
@@ -134,16 +134,16 @@ bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName, const bo
 //   . so getData() instead of getValue()
 // - this func cast type so more convenient than WbasicDatDom's
 template<typename aDataDominoType, typename aDataType>
-SafePtr<aDataType> wbasic_getData(aDataDominoType& aDom, const Domino::EvName& aEvName)
+S_PTR<aDataType> wbasic_getData(aDataDominoType& aDom, const Domino::EvName& aEvName)
 {
-    return staticPtrCast<aDataType>(aDom.wbasic_getData(aEvName));
+    return STATIC_PTR_CAST<aDataType>(aDom.wbasic_getData(aEvName));  // mem safe: yes SafePtr, no shared_ptr
 }
 
 // ***********************************************************************************************
 template<typename aDataDominoType, typename aDataType>
 void wbasic_setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData)
 {
-    aDom.wbasic_replaceData(aEvName, make_safe<aDataType>(aData));
+    aDom.wbasic_replaceData(aEvName, MAKE_PTR<aDataType>(aData));
 }
 
 }  // namespace
@@ -168,4 +168,5 @@ void wbasic_setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const
 // 2022-12-03  CSZ       - simple & natural
 // 2022-12-31  CSZ       - rm data
 // 2024-02-12  CSZ       2)use SafePtr (mem-safe); shared_ptr is not mem-safe
+// 2025-02-13  CSZ       - support both SafePtr & shared_ptr
 // ***********************************************************************************************

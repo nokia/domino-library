@@ -13,7 +13,8 @@
 //   . safe lifecycle: by shared_ptr (auto mem-mgmt, no use-after-free); major in mem-bug
 //   . safe ptr array: no need since std::array
 //   . safe del      : not support self-deletor that maybe unsafe; (by shared_ptr)call correct destructor
-//   . loop-ref      : ???
+//   . loop-ref      : out-duty? user issue than SafePtr?
+//   . SafeWeak      : to&fro with SafePtr, eg SharedMsgCB<->WeakMsgCB
 // - DUTY-BOUND:
 //   . ensure ptr address is safe: legal created, not freed, not wild, etc
 //   . ensure ptr type is valid: origin*, or base*, or void*
@@ -37,6 +38,7 @@
 
 namespace rlib
 {
+template<typename T> class SafeWeak;
 // ***********************************************************************************************
 template<typename T = void>
 class SafePtr
@@ -74,6 +76,11 @@ private:
     std::shared_ptr<T> pT_;  // core
     std::type_index realType_ = typeid(T);  // origin type
     std::type_index lastType_ = typeid(T);  // maybe last valid type than realType_ & void
+
+    // -------------------------------------------------------------------------------------------
+public:
+    friend class SafeWeak<T>;  // so SafeWeak.lock() can construct SafePtr
+    operator SafeWeak<T>() const { return SafeWeak<T>(*this); }
 };
 
 // ***********************************************************************************************
@@ -205,7 +212,50 @@ rlib::SafePtr<To> staticPtrCast(const rlib::SafePtr<From>& aSafeFrom) noexcept
 {
     return dynPtrCast<To>(aSafeFrom);
 }
+
+
+
+// ***********************************************************************************************
+template<typename T = void>
+class SafeWeak
+{
+public:
+    SafeWeak(const SafePtr<T>& aSafeFrom) noexcept;
+    SafePtr<T> lock() const noexcept;
+    bool expired() const noexcept { return pT_.expired(); }
+
+private:
+    // -------------------------------------------------------------------------------------------
+    std::weak_ptr<T> pT_;  // core
+    std::type_index realType_;
+    std::type_index lastType_;
+};
+
+// ***********************************************************************************************
+template<typename T>
+SafeWeak<T>::SafeWeak(const SafePtr<T>& aSafeFrom) noexcept
+    : pT_(aSafeFrom.get())
+    , realType_(aSafeFrom.realType())
+    , lastType_(aSafeFrom.lastType())
+{
+}
+
+// ***********************************************************************************************
+template<typename T>
+SafePtr<T> SafeWeak<T>::lock() const noexcept
+{
+    SafePtr<T> ret;
+    if (pT_.expired())
+        return ret;
+
+    ret.pT_ = pT_.lock();
+    ret.realType_ = realType_;
+    ret.lastType_ = lastType_;
+    return ret;
+}
 }  // namespace
+
+
 
 // ***********************************************************************************************
 template<typename T>
@@ -223,6 +273,7 @@ struct std::hash<rlib::SafePtr<T>>
 // 2024-05-06  CSZ       - AI-gen-code
 // 2024-06-28  CSZ       - dynamic_pointer_cast ok or ret null
 // 2024-10-16  CSZ       - dynamic_pointer_cast to dynPtrCast since std not allowed
+// 2025-02-13  CSZ       4)SafeWeak
 // ***********************************************************************************************
 // - Q&A
 //   . How to solve safety issue:

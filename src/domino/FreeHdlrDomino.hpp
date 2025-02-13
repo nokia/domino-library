@@ -104,7 +104,7 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, co
                 return;  // otherwise crash
             auto hdlr = weakHdlr.lock();  // get
             this->rmOneHdlrOK_(aValidEv, hdlr);  // safer to rm first to avoid hdlr does sth strange
-            (*hdlr)();  // call; setHdlr() forbid cb==null
+            (*(hdlr.get()))();  // call; setHdlr() forbid cb==null
         },
         this->getPriority(aValidEv)
     );
@@ -122,4 +122,5 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, co
 // 2022-03-27  CSZ       - if ut case can test base class, never specify derive
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2022-12-04  CSZ       - simple & natural
+// 2025-02-13  CSZ       - support both SafePtr & shared_ptr
 // ***********************************************************************************************

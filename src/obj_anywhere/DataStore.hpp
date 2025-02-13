@@ -8,17 +8,16 @@
 //   . store data of any type: eg for ObjAnywhere
 //   * store multi-copy of data of the same type: eg for DataDomino
 //   . fetch data by unique key(eg string)
-//   . ensure mem safe of stored data by SafePtr
 //
 // - MT safe: NO
-// - mem safe: yes
+// - mem safe: yes if SafePtr
 // ***********************************************************************************************
 #pragma once
 
 #include <unordered_map>
 
-#include "SafePtr.hpp"  // can't UniPtr.hpp since ut(=req) build-err
 #include "UniLog.hpp"
+#include "UniPtr.hpp"
 
 namespace rlib
 {
@@ -29,26 +28,26 @@ class DataStore
 public:
     // @brief: get a data
     // @ret: ok or nullptr
-    template<typename aDataT> SafePtr<aDataT> get(const aDataKey& aKey) const;
+    template<typename aDataT> S_PTR<aDataT> get(const aDataKey& aKey) const;
 
     // @brief: store a new data (ie not replace but add new or rm old by aData=nullptr)
     // @ret: store ok/nok
-    bool emplaceOK(const aDataKey& aKey, SafePtr<void> aData);
+    bool emplaceOK(const aDataKey& aKey, S_PTR<void> aData);
 
     // @brief: store a data (add new, replace old, or rm old by aData=nullptr)
-    void replace(const aDataKey& aKey, SafePtr<void> aData);
+    void replace(const aDataKey& aKey, S_PTR<void> aData);
 
     size_t nData() const { return key_data_S_.size(); }
     ~DataStore() { HID("(DataStore) discard nData=" << nData()); }  // debug
 
 private:
     // -------------------------------------------------------------------------------------------
-    std::unordered_map<aDataKey, SafePtr<void>> key_data_S_;
+    std::unordered_map<aDataKey, S_PTR<void>> key_data_S_;
 };
 
 // ***********************************************************************************************
 template<typename aDataKey>
-bool DataStore<aDataKey>::emplaceOK(const aDataKey& aKey, SafePtr<void> aData)
+bool DataStore<aDataKey>::emplaceOK(const aDataKey& aKey, S_PTR<void> aData)
 {
     if (! aData)
     {
@@ -72,7 +71,7 @@ bool DataStore<aDataKey>::emplaceOK(const aDataKey& aKey, SafePtr<void> aData)
 // ***********************************************************************************************
 template<typename aDataKey>
 template<typename aDataT>
-SafePtr<aDataT> DataStore<aDataKey>::get(const aDataKey& aKey) const
+S_PTR<aDataT> DataStore<aDataKey>::get(const aDataKey& aKey) const
 {
     auto&& key_data = key_data_S_.find(aKey);
     if (key_data == key_data_S_.end())
@@ -80,12 +79,12 @@ SafePtr<aDataT> DataStore<aDataKey>::get(const aDataKey& aKey) const
         HID("(DataStore) can't find key=" << aKey);
         return nullptr;
     }
-    return dynPtrCast<aDataT>(key_data->second);
+    return STATIC_PTR_CAST<aDataT>(key_data->second);  // mem safe: yes SafePtr, no shared_ptr
 }
 
 // ***********************************************************************************************
 template<typename aDataKey>
-void DataStore<aDataKey>::replace(const aDataKey& aKey, SafePtr<void> aData)
+void DataStore<aDataKey>::replace(const aDataKey& aKey, S_PTR<void> aData)
 {
     if (! aData)
     {
@@ -101,4 +100,5 @@ void DataStore<aDataKey>::replace(const aDataKey& aKey, SafePtr<void> aData)
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2024-06-05  CSZ       1)create
+// 2025-02-13  CSZ       - support both SafePtr & shared_ptr
 // ***********************************************************************************************

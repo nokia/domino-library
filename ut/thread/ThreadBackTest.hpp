@@ -43,7 +43,7 @@ struct THREAD_BACK_TEST : public Test, public UniLog
 
     // -------------------------------------------------------------------------------------------
     THREAD_BACK_TYPE threadBack_;
-    PTR<MsgSelf> msgSelf_ = MAKE_PTR<MsgSelf>(uniLogName());
+    S_PTR<MsgSelf> msgSelf_ = MAKE_PTR<MsgSelf>(uniLogName());
 };
 
 #define THREAD_AND_BACK
@@ -227,7 +227,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         msgSelf_->newMsg(  // REQ: via MsgSelf
             [aMsg, &cb_info]
             {
-                EXPECT_EQ("a", *(staticPtrCast<string>(aMsg).get()));
+                EXPECT_EQ("a", *(STATIC_PTR_CAST<string>(aMsg).get()));
                 cb_info.emplace("REQ: a's Q hdlr via MsgSelf");
             }
         );
@@ -238,7 +238,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
         msgSelf_->newMsg(
             [aMsg, &cb_info]
             {
-                EXPECT_EQ(2, *(staticPtrCast<int>(aMsg).get()));
+                EXPECT_EQ(2, *(STATIC_PTR_CAST<int>(aMsg).get()));
                 cb_info.emplace("REQ: 2's Q hdlr via MsgSelf");
             }
         );

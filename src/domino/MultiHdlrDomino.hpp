@@ -97,7 +97,7 @@ Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvNa
     }
 
     // set hdlr
-    auto&& newHdlr = std::make_shared<MsgCB>(aHdlr);
+    auto&& newHdlr = MAKE_PTR<MsgCB>(aHdlr);
     auto&& ev = this->getEventBy(aEvName);
     auto&& ev_hdlrs = ev_hdlrs_S_.find(ev);
     if (ev_hdlrs == ev_hdlrs_S_.end())
@@ -207,4 +207,5 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, c
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2023-05-25  CSZ       - support force call hdlr
 // 2023-05-29  CSZ       - rmAllHdlr
+// 2025-02-13  CSZ       - support both SafePtr & shared_ptr
 // ***********************************************************************************************

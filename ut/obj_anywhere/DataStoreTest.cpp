@@ -9,7 +9,7 @@
 #include <type_traits>
 
 #include "DataStore.hpp"
-#include "SafePtr.hpp"
+#include "UniPtr.hpp"
 
 using namespace std;
 using namespace testing;
@@ -31,22 +31,22 @@ TEST_F(DataStoreTest, GOLD_store_diffType)
     EXPECT_EQ(nullptr, dataStore_.get<int>("int").get()) << "REQ: ret null if no set";
 
     // 1 inner type
-    EXPECT_TRUE(dataStore_.emplaceOK("int", make_safe<int>(7))) << "REQ: succeed";
+    EXPECT_TRUE(dataStore_.emplaceOK("int", MAKE_PTR<int>(7))) << "REQ: succeed";
     EXPECT_EQ(1u, dataStore_.nData()) << "REQ: insert OK";
     EXPECT_EQ(7, *(dataStore_.get<int>("int").get())) << "REQ: get OK";
 
     // 1 class type
-    EXPECT_TRUE(dataStore_.emplaceOK("string", make_safe<string>("hello")));
+    EXPECT_TRUE(dataStore_.emplaceOK("string", MAKE_PTR<string>("hello")));
     EXPECT_EQ(2u, dataStore_.nData()) << "req: insert OK";
     EXPECT_EQ("hello", *(dataStore_.get<string>("string").get())) << "req: get OK";
 }
 TEST_F(DataStoreTest, GOLD_store_sameType)
 {
-    EXPECT_TRUE(dataStore_.emplaceOK("string", make_safe<string>("hello")));
+    EXPECT_TRUE(dataStore_.emplaceOK("string", MAKE_PTR<string>("hello")));
     EXPECT_EQ(1u, dataStore_.nData()) << "req: insert OK";
     EXPECT_EQ("hello", *(dataStore_.get<string>("string").get())) << "req: get OK";
 
-    EXPECT_TRUE(dataStore_.emplaceOK("s2", make_safe<string>("world")));
+    EXPECT_TRUE(dataStore_.emplaceOK("s2", MAKE_PTR<string>("world")));
     EXPECT_EQ(2u, dataStore_.nData()) << "REQ: insert OK for same type with diff DataName";
     EXPECT_EQ("world", *(dataStore_.get<string>("s2").get())) << "req: get OK";
 }
@@ -55,7 +55,7 @@ TEST_F(DataStoreTest, noNeedToStoreNull)
     EXPECT_TRUE(dataStore_.emplaceOK("string", nullptr));
     EXPECT_EQ(0u, dataStore_.nData()) << "REQ: no need to store null";
 
-    EXPECT_TRUE(dataStore_.emplaceOK("string", make_safe<string>("hello")));
+    EXPECT_TRUE(dataStore_.emplaceOK("string", MAKE_PTR<string>("hello")));
     EXPECT_EQ(1u, dataStore_.nData()) << "req: insert OK";
 
     EXPECT_TRUE(dataStore_.emplaceOK("string", nullptr)) << "REQ: erase OK";
@@ -63,11 +63,11 @@ TEST_F(DataStoreTest, noNeedToStoreNull)
 }
 TEST_F(DataStoreTest, replace)
 {
-    EXPECT_TRUE (dataStore_.emplaceOK("string", make_safe<string>("hello")));
-    EXPECT_FALSE(dataStore_.emplaceOK("string", make_safe<string>("world"))) << "REQ: failed";
+    EXPECT_TRUE (dataStore_.emplaceOK("string", MAKE_PTR<string>("hello")));
+    EXPECT_FALSE(dataStore_.emplaceOK("string", MAKE_PTR<string>("world"))) << "REQ: failed";
     EXPECT_EQ("hello", *(dataStore_.get<string>("string").get())) << "req: emplaceOK can't replace";
 
-    dataStore_.replace("string", make_safe<string>("world"));
+    dataStore_.replace("string", MAKE_PTR<string>("world"));
     EXPECT_EQ("world", *(dataStore_.get<string>("string").get())) << "req: explicit rm then set ok";
 }
 
@@ -75,7 +75,7 @@ TEST_F(DataStoreTest, replace)
 // ***********************************************************************************************
 TEST_F(DataStoreTest, GOLD_safe_lifecycle)
 {
-    dataStore_.emplaceOK("int", make_safe<int>(7));
+    dataStore_.emplaceOK("int", MAKE_PTR<int>(7));
     auto i = dataStore_.get<int>("int");
     *(i.get()) = 8;
     EXPECT_EQ(8, *(dataStore_.get<int>("int").get())) << "REQ: shared";
@@ -87,19 +87,19 @@ TEST_F(DataStoreTest, GOLD_safe_lifecycle)
 }
 TEST_F(DataStoreTest, GOLD_safe_cast)
 {
-    dataStore_.emplaceOK("int", make_safe<int>(7));
+    dataStore_.emplaceOK("int", MAKE_PTR<int>(7));
     EXPECT_EQ(7, *(dataStore_.get<int>("int").get())) << "REQ: get origin OK";
-    EXPECT_EQ(nullptr, dataStore_.get<char>("int").get()) << "REQ: ret null for invalid type";
+    EXPECT_EQ(nullptr, dataStore_.get<char>("int").get()) << "REQ: ret null for invalid type (shared_ptr failed here)";
 
     struct Base                   { virtual int value() const  { return 0; } };
     struct Derive : public Base   { int value() const override { return 1; } };
     struct D2     : public Derive { int value() const override { return 2; } };
 
-    SafePtr<Base> b = make_safe<Derive>();
+    S_PTR<Base> b = MAKE_PTR<Derive>();
     dataStore_.emplaceOK("Base", b);
     EXPECT_EQ(1      , dataStore_.get<Base  >("Base")->value()) << "REQ: get real type";
     EXPECT_EQ(1      , dataStore_.get<Derive>("Base")->value()) << "REQ: get real type";
-    EXPECT_EQ(nullptr, dataStore_.get<D2    >("Base").get   ()) << "REQ: get invalid type";
+    EXPECT_EQ(nullptr, dataStore_.get<D2    >("Base").get   ()) << "REQ: get invalid type (shared_ptr failed here)";
 }
 TEST_F(DataStoreTest, GOLD_safe_destruct)
 {
@@ -121,7 +121,7 @@ TEST_F(DataStoreTest, GOLD_safe_destruct)
 
     bool isBaseOver;
     bool isDeriveOver;
-    dataStore_.emplaceOK("Base", make_safe<TestDerive>(isBaseOver, isDeriveOver));
+    dataStore_.emplaceOK("Base", MAKE_PTR<TestDerive>(isBaseOver, isDeriveOver));
     EXPECT_FALSE(isBaseOver);
     EXPECT_FALSE(isDeriveOver);
 

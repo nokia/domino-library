@@ -9,11 +9,11 @@
 #pragma once
 
 #include <gtest/gtest.h>
-#include <memory>  // shared_ptr
 
+#include "UniLog.hpp"
+#include "UniPtr.hpp"
 #include "MsgSelf.hpp"
 #include "ObjAnywhere.hpp"
-#include "UniLog.hpp"
 
 #include "Domino.hpp"
 #include "DataDomino.hpp"
@@ -55,19 +55,19 @@ struct UtInitObjAnywhere : public UniLog, public Test
     {
         ObjAnywhere::init(*this);
 
-        ObjAnywhere::emplaceObjOK(make_safe<MsgSelf>(uniLogName()), *this);
+        ObjAnywhere::emplaceObjOK(MAKE_PTR<MsgSelf>(uniLogName()), *this);
 
-        ObjAnywhere::emplaceObjOK(make_safe<Domino>         (uniLogName()), *this);
-        ObjAnywhere::emplaceObjOK(make_safe<MinDatDom>      (uniLogName()), *this);
-        ObjAnywhere::emplaceObjOK(make_safe<MinWbasicDatDom>(uniLogName()), *this);
-        ObjAnywhere::emplaceObjOK(make_safe<MinHdlrDom>     (uniLogName()), *this);
-        ObjAnywhere::emplaceObjOK(make_safe<MinMhdlrDom>    (uniLogName()), *this);
-        ObjAnywhere::emplaceObjOK(make_safe<MinPriDom>      (uniLogName()), *this);
-        ObjAnywhere::emplaceObjOK(make_safe<MinFreeDom>     (uniLogName()), *this);
-        ObjAnywhere::emplaceObjOK(make_safe<MinRmEvDom>     (uniLogName()), *this);
+        ObjAnywhere::emplaceObjOK(MAKE_PTR<Domino>         (uniLogName()), *this);
+        ObjAnywhere::emplaceObjOK(MAKE_PTR<MinDatDom>      (uniLogName()), *this);
+        ObjAnywhere::emplaceObjOK(MAKE_PTR<MinWbasicDatDom>(uniLogName()), *this);
+        ObjAnywhere::emplaceObjOK(MAKE_PTR<MinHdlrDom>     (uniLogName()), *this);
+        ObjAnywhere::emplaceObjOK(MAKE_PTR<MinMhdlrDom>    (uniLogName()), *this);
+        ObjAnywhere::emplaceObjOK(MAKE_PTR<MinPriDom>      (uniLogName()), *this);
+        ObjAnywhere::emplaceObjOK(MAKE_PTR<MinFreeDom>     (uniLogName()), *this);
+        ObjAnywhere::emplaceObjOK(MAKE_PTR<MinRmEvDom>     (uniLogName()), *this);
 
-        ObjAnywhere::emplaceObjOK(make_safe<MaxDom>         (uniLogName()), *this);
-        ObjAnywhere::emplaceObjOK(make_safe<MaxNofreeDom>   (uniLogName()), *this);
+        ObjAnywhere::emplaceObjOK(MAKE_PTR<MaxDom>         (uniLogName()), *this);
+        ObjAnywhere::emplaceObjOK(MAKE_PTR<MaxNofreeDom>   (uniLogName()), *this);
 
         // - example how main() callback MsgSelf to handle all msgs
         // - this lambda hides all impl details but a common interface = function<void()>

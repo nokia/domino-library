@@ -3,7 +3,6 @@
  * Licensed under the BSD 3 Clause license
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#include <memory>
 #include "ObjAnywhere.hpp"
 
 using namespace std;

@@ -48,12 +48,12 @@ public:
     ~MtInQueue();
 
     // aEle may not mt-safe, so here mv
-    template<class aEleType> void mt_push(PTR<aEleType>&& aEle);
+    template<class aEleType> void mt_push(S_PTR<aEleType>&& aEle);
 
     // - shall be called in main thread ONLY!!!
     // - high performance
     ELE_TID pop();
-    template<class aEleType> PTR<aEleType> pop();
+    template<class aEleType> S_PTR<aEleType> pop();
 
     size_t mt_size(bool canBlock);
     void   mt_clearElePool();
@@ -84,7 +84,7 @@ public:
 
 // ***********************************************************************************************
 template<class aEleType>
-void MtInQueue::mt_push(PTR<aEleType>&& aEle)
+void MtInQueue::mt_push(S_PTR<aEleType>&& aEle)
 {
     // validate aEle
     if (aEle.get() == nullptr)
@@ -112,7 +112,7 @@ void MtInQueue::mt_push(PTR<aEleType>&& aEle)
 
 // ***********************************************************************************************
 template<class aEleType>
-PTR<aEleType> MtInQueue::pop()
+S_PTR<aEleType> MtInQueue::pop()
 {
     // nothing
     auto&& it = begin_();

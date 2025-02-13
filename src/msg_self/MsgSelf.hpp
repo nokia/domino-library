@@ -31,8 +31,9 @@
 //
 // - class safe: yes
 //   . not responsible for MsgCB itself's any unsafe behavior
-//   . why shared_ptr rather than SafePtr to store MsgCB?
-//     . MsgSelf ensures safely usage of shared_ptr
+//   . shared_ptr is safe since internal use only (pub-interface is MsgCB&)
+//     . principle: safe class can base on unsafe materials
+//     . SafePtr is just to test SafeWeak in real world
 //   . not support callback after ~MsgSelf() since all msg discarded when ~MsgSelf()
 //     . UtInitObjAnywhere gives example how to provide a common callback for main()
 // ***********************************************************************************************
@@ -64,8 +65,8 @@ enum EMsgPriority : unsigned char
 // - MsgCB can try-catch all exception
 // - exception is bug to be fixed than pretected
 using MsgCB        = std::function<void()>;
-using WeakMsgCB    = std::weak_ptr<MsgCB>;
-using SharedMsgCB  = std::shared_ptr<MsgCB>;
+using WeakMsgCB    = W_PTR<MsgCB>;
+using SharedMsgCB  = S_PTR<MsgCB>;
 
 // ***********************************************************************************************
 class MsgSelf : public UniLog
@@ -109,4 +110,5 @@ private:
 // 2022-12-31  CSZ       - not support MsgCB=nullptr
 // 2023-07-13  CSZ       - copilot compare
 // 2023-10-27  CSZ       - replace pingMainFN_() by mt_pingMainTH()
+// 2025-02-13  CSZ       - support both SafePtr & shared_ptr
 // ***********************************************************************************************

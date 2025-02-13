@@ -333,4 +333,32 @@ TEST(SafePtrTest, GOLD_asKeyOf_map)
     EXPECT_EQ(2, store.size()) << "REQ: diff key";
 }
 
+#define WEAK
+// ***********************************************************************************************
+TEST(SafePtrTest, GOLD_convert_SafePtr_WeakPtr)
+{
+    // create SafeWeak
+    auto d = make_safe<Derive>();
+    SafeWeak<Derive> w = d;
+    EXPECT_EQ(1, d.use_count()) << "REQ: SafeWeak not inc use_count.";
+    EXPECT_FALSE(w.expired()) << "REQ: SafeWeak flag.";
+
+    // SafeWeak -> SafePtr
+    auto dd = w.lock();
+    EXPECT_EQ(d, dd) << "REQ: same";
+    EXPECT_EQ(d.realType(), dd.realType()) << "REQ: same";
+    EXPECT_EQ(d.lastType(), dd.lastType()) << "REQ: same";
+    EXPECT_EQ(2, d.use_count()) << "REQ: SafeWeak not inc use_count.";
+    EXPECT_FALSE(w.expired()) << "REQ: SafeWeak flag.";
+
+    // del SafePtr
+    d = nullptr;
+    EXPECT_EQ(1, dd.use_count()) << "REQ: SafeWeak not inc use_count.";
+    EXPECT_FALSE(w.expired()) << "REQ: SafeWeak flag.";
+
+    dd = nullptr;
+    EXPECT_TRUE(w.expired()) << "REQ: SafeWeak flag.";
+    EXPECT_EQ(nullptr, w.lock().get()) << "REQ: no more.";
+}
+
 }  // namespace

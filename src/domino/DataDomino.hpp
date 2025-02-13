@@ -13,8 +13,8 @@
 #pragma once
 
 #include "DataStore.hpp"
-#include "SafePtr.hpp"
 #include "UniLog.hpp"
+#include "UniPtr.hpp"
 
 namespace rlib
 {
@@ -24,7 +24,8 @@ class DataDomino : public aDominoType
 {
     // -------------------------------------------------------------------------------------------
     // Extend Tile record:
-    // - data: now Tile can store any type of data besides state, optional
+    // - data: now Tile can store any type of data besides state
+    // - data is optional of Tile
     // -------------------------------------------------------------------------------------------
 
 public:
@@ -32,34 +33,34 @@ public:
 
     // -------------------------------------------------------------------------------------------
     // - for read/write data
-    // - if aEvName/data invalid, return null
+    // - if aEvName invalid, return null
     // - not template<aDataType> so can virtual for WrDatDom
     // . & let DataDomino has little idea of read-write ctrl, simpler
-    virtual SafePtr<void> getData(const Domino::EvName&) const;
+    virtual S_PTR<void> getData(const Domino::EvName&) const;
 
     // -------------------------------------------------------------------------------------------
     // - replace old data by new=aData if old != new
     // - for aDataType w/o default constructor!!!
-    virtual void replaceData(const Domino::EvName&, SafePtr<void> = nullptr);
+    virtual void replaceData(const Domino::EvName&, S_PTR<void> = nullptr);
 
 protected:
     void rmEv_(const Domino::Event& aValidEv) override;
 
 private:
     // -------------------------------------------------------------------------------------------
-    DataStore<Domino::Event> ev_data_S_;  // [event]=SafePtr<void>
+    DataStore<Domino::Event> ev_data_S_;  // [event]=S_PTR<void>
 };
 
 // ***********************************************************************************************
 template<typename aDominoType>
-SafePtr<void> DataDomino<aDominoType>::getData(const Domino::EvName& aEvName) const
+S_PTR<void> DataDomino<aDominoType>::getData(const Domino::EvName& aEvName) const
 {
     return ev_data_S_.get<void>(this->getEventBy(aEvName));
 }
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void DataDomino<aDominoType>::replaceData(const Domino::EvName& aEvName, SafePtr<void> aData)
+void DataDomino<aDominoType>::replaceData(const Domino::EvName& aEvName, S_PTR<void> aData)
 {
     ev_data_S_.replace(this->newEvent(aEvName), aData);
 }
@@ -78,17 +79,18 @@ void DataDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 // - getValue() is NOT mem-safe when aEvName not found
 //   . so getData() instead of getValue
 // - this getData() cast type so convenient
+//   . SafePtr's cast is safe, while shared_ptr is NOT
 template<typename aDataDominoType, typename aDataType>
 auto getData(aDataDominoType& aDom, const Domino::EvName& aEvName)
 {
-    return staticPtrCast<aDataType>(aDom.getData(aEvName));
+    return STATIC_PTR_CAST<aDataType>(aDom.getData(aEvName));
 }
 
 // ***********************************************************************************************
 template<typename aDataDominoType, typename aDataType>
 void setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData)
 {
-    aDom.replaceData(aEvName, make_safe<aDataType>(aData));
+    aDom.replaceData(aEvName, MAKE_PTR<aDataType>(aData));
 }
 }  // namespace
 // ***********************************************************************************************
@@ -107,4 +109,5 @@ void setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataT
 // 2022-12-30  CSZ       - rm data
 // 2024-02-12  CSZ       4)use SafePtr (mem-safe); shared_ptr is not mem-safe
 // 2024-06-08  CSZ       5)use DataStore instead of map
+// 2025-02-13  CSZ       - support both SafePtr & shared_ptr
 // ***********************************************************************************************

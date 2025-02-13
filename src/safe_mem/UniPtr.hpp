@@ -5,11 +5,17 @@
  */
 // ***********************************************************************************************
 // - why:
-//   . example to support SafePtr & shared_ptr as UniPtr
-//   . users can modify this file for their req
-// - why support shared_ptr?
+//   . support both SafePtr & shared_ptr as UniPtr
+//   . switch between SafePtr & shared_ptr by modifying just 1 macro in this file
+//   . domino lib is an example on how to use UniPtr & switch SafePtr/shared_ptr
+//
+// - why supports shared_ptr?
 //   . from mem-safe pov, SafePtr is the only choice
-//   . shared_ptr may be same safe as SafePtr, then SafePtr is unnecessary
+//   * but shared_ptr is more common, easier than imposing to SafePtr
+//
+// - principle to use SafePtr
+//   . pub interface: shall use SafePtr for safety
+//   . inner can directly use shared_ptr if safe: simpler & faster
 // ***********************************************************************************************
 #pragma once
 
@@ -21,7 +27,8 @@ namespace rlib
 // std::~, or ambiguous with boost::~
 using   UniPtr =         std::shared_ptr<void>;
 #define MAKE_PTR         std::make_shared
-#define PTR              std::shared_ptr
+#define S_PTR            std::shared_ptr
+#define W_PTR            std::weak_ptr
 #define DYN_PTR_CAST     std::dynamic_pointer_cast
 #define STATIC_PTR_CAST  std::static_pointer_cast
 
@@ -31,10 +38,10 @@ namespace rlib
 {
 using   UniPtr =         SafePtr<void>;
 #define MAKE_PTR         make_safe
-#define PTR              SafePtr
+#define S_PTR            SafePtr
+#define W_PTR            SafeWeak
 #define DYN_PTR_CAST     rlib::dynPtrCast
 #define STATIC_PTR_CAST  rlib::staticPtrCast
-// 4th req: SafePtr.get() return same as shared_ptr
 #endif
 
 }  // namespace
@@ -42,4 +49,5 @@ using   UniPtr =         SafePtr<void>;
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2024-02-13  CSZ       1)create
+// 2025-02-13  CSZ       2)all domino lib support both SafePtr & shared_ptr
 // ***********************************************************************************************
