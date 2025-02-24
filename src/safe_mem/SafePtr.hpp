@@ -7,26 +7,21 @@
 // - ISSUE:
 //   . c++ mem bugs are 1 of the most challenge (eg US gov suggest to replace c++ by Rust)
 //   . ms & google: ~70% safety defects caused by mem safe issue
-// - REQ: this class is to enhance safety of shared_ptr:
-//   . safe create   : null or make_safe only (not allow unsafe create eg via raw ptr); minor in mem-bug
-//   * safe cast     : only among self, base & void; compile-err is safer than ret-null; major in mem-bug
-//   . safe lifecycle: by shared_ptr (auto mem-mgmt, no use-after-free); major in mem-bug
-//   . safe ptr array: no need since std::array
-//   . safe del      : not support self-deletor that maybe unsafe; (by shared_ptr)call correct destructor
-//   . loop-ref      : out-duty? user issue than SafePtr?
+// - REQ/value: this class is to be 100% safe than shared_ptr:
+//   . safe create   : null or make_safe only (not allow unsafe create eg via raw ptr)
+//   * safe cast     : only among self, base & void; ret-null is safe when invalid cast, comile-err is safer
+//   . safe lifespan : by shared_ptr (auto mem-mgmt, no use-after-free)
+//   * safe get      : ret shared_ptr than T* (no duty for usr's abuse to get & use T*)
+//   . safe del      : not support self-deletor that maybe unsafe; call correct destructor via shared_ptr
 //   . SafeWeak      : to&fro with SafePtr, eg SharedMsgCB<->WeakMsgCB
 // - DUTY-BOUND:
-//   . ensure ptr address is safe: legal created, not freed, not wild, etc
-//   . ensure ptr type is valid: origin*, or base*, or void*
-//   . not SafePtr but T to ensure T's inner safety (eg no exception within T's constructor)
-//   . hope cooperate with tool to ensure/track SafePtr, all T, all code's mem safe
-// - Unique Value:
-//   . enhance & integrate safety of shared_ptr (cast, create, etc)
-//
-// - MT safe: NO
-//   . so eg after MtInQueue.mt_push(), shall NOT touch pushed SafePtr
-//   . only HID is MT safe that can be used here
-// - mem safe: yes
+//   . under single thread
+//     . so eg after MtInQueue.mt_push(), shall NOT touch pushed SafePtr
+//     . only HID is MT safe that can be used here
+//   . no exception
+//   . T's duty to ensure it's inner safety (eg no exception from T's constructor)
+//   . loop-ref: out-duty, usr issue than SafePtr
+//   . safe ptr array: no need since std::array
 // ***********************************************************************************************
 #pragma once
 
@@ -52,10 +47,12 @@ public:
 
     // safe-only cast (vs shared_ptr, eg static_pointer_cast<any> is not safe)
     template<typename From> SafePtr(const SafePtr<From>&) noexcept;   // cp  ok or compile err
+    template<typename From> friend class SafePtr;  // let mv access private
     template<typename From> SafePtr(SafePtr<From>&&) noexcept;        // mv  ok or compile err
+    // no assignment, compiler will gen it & enough
     template<typename To> std::shared_ptr<To> cast() const noexcept;  // ret ok or null
     template<typename To, typename From>
-    friend SafePtr<To> dynPtrCast(const SafePtr<From>&) noexcept;  // ret ok or null
+    friend SafePtr<To> dynPtrCast(const SafePtr<From>&) noexcept;     // ret ok or null
 
     // safe usage: convenient(compatible shared_ptr), equivalent & min
     // . ret shared_ptr is safer than T* (but not safest since to call T's func easily)
@@ -84,22 +81,34 @@ public:
 };
 
 // ***********************************************************************************************
+// - safe cp to self/base/void, otherwise compile-err (by shared_ptr's cp which is safe)
+//   . cp/implicit-converter is useful & convenient
+// - void->T: compile-err, can dynPtrCast() if need
+//   . pro: simpler cp/mv constructors
+//   . con: not coherent as dynPtrCast(), surprise usr?
+//   * pro: compile-err is safer than construct-null when invalid?
 template<typename T>
 template<typename From>
 SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom) noexcept  // cp
-    : pT_(aSafeFrom.get())  // safe cp(to self/base/void) or compile err(can dynamic_pointer_cast if really safe)
+    : pT_(aSafeFrom.get())
 {
     init_(aSafeFrom);
 }
 
 // ***********************************************************************************************
+// - safe mv to self/base/void, otherwise compile-err (by shared_ptr's mv which is safe)
 template<typename T>
 template<typename From>
 SafePtr<T>::SafePtr(SafePtr<From>&& aSafeFrom) noexcept  // mv - MtQ need
-    : SafePtr(aSafeFrom)  // cp
+    : pT_(std::move(aSafeFrom.pT_))  // slight faster than pT_(aSafeFrom.get()) - cp
 {
-    if (pT_ != nullptr)   // cp succ, clear src
-        aSafeFrom = nullptr;
+    init_(aSafeFrom);
+    if (pT_ != nullptr)   // mv succ, clear src
+    {
+        // no need reset aSafeFrom.pT_, already by mv
+        aSafeFrom.realType_ = typeid(From);  // must
+        aSafeFrom.lastType_ = typeid(From);
+    }
 }
 
 // ***********************************************************************************************
@@ -197,6 +206,10 @@ bool operator<(SafePtr<T> lhs, SafePtr<U> rhs)
 }
 
 // ***********************************************************************************************
+// - cast all possible eg base->derived (more than cp constructor)
+// - explicit cast so ok or nullptr (cp constructor is implicit & ok/compile-err)
+// - unified-ret is predictable & simple
+// - std not allow overload dynamic_pointer_cast so dynPtrCast & DYN_PTR_CAST
 template<typename To, typename From>
 rlib::SafePtr<To> dynPtrCast(const rlib::SafePtr<From>& aSafeFrom) noexcept
 {
@@ -302,18 +315,6 @@ struct std::hash<rlib::SafePtr<T>>
 //     . not perfect, but SafePtr inc safe than shared_ptr - eg create(minor), cast(major) - so worth
 //     . it's possible but rare to use T* unsafely - SafePtr has this risk to exchange convenient
 //     . shared_ptr reduces mem-lifecycle-mgmt(1 major-possible-bug) - so worth
-//
-//   . why dynPtrCast?
-//     . cast all possible eg base->derived (more than cp constructor)
-//     . explicit cast so ok or nullptr (cp constructor is implicit & ok/compile-err)
-//       . unified-ret is predictable & simple
-//     . std not allow overload dynamic_pointer_cast so dynPtrCast & DYN_PTR_CAST
-//   . why cp constructor?
-//     . dyn-cast & cp cover diff scenario - implicit convert is useful/convenient also
-//   . why mv constructor?
-//     . clean src
-//   . why no assignment?
-//     . compiler will gen it & enough
 //
 //   . std::any vs SafePtr
 //     . SafePtr is safe shared_ptr that is lifecycle ptr, std::any is not ptr nor lifecycle mgmt
