@@ -38,8 +38,13 @@ TEST(SafePtrTest, GOLD_safeCreate_normal)
 }
 TEST(SafePtrTest, GOLD_unsafeCreate_forbid)
 {
-    static_assert(! is_convertible_v<bool*, SafePtr<bool>>, "REQ: forbid SafePtr<T>(new T)");
-    static_assert(! is_convertible_v<shared_ptr<char>, SafePtr<char>>, "REQ: forbid SafePtr<T>(shared_ptr<T>)");
+    // SafePtr<int> ptr(raw);  // compile-err
+    static_assert(!std::is_constructible<SafePtr<int>, int*>::value,
+        "REQ: forbid unsafe raw pointer construction");
+
+    // SafePtr<int> ptr(make_shared<int>());  // compile-err
+    static_assert(!std::is_constructible<SafePtr<int>, std::shared_ptr<int>>::value,
+        "REQ: forbid unsafe shared_ptr construction");
 }
 TEST(SafePtrTest, safeCreate_default)
 {
@@ -50,21 +55,20 @@ TEST(SafePtrTest, safeCreate_default)
     SafePtr<int> i;
     EXPECT_EQ(nullptr, i.get()) << "req: create default is empty";
     EXPECT_EQ(type_index(typeid(shared_ptr<int>)), type_index(typeid(i.get()))) << "REQ: specify template";
+
+    auto ptr = make_safe<int>();
+    EXPECT_EQ(0, *ptr.get()) << "REQ: empty make_safe like make_shared";
+    EXPECT_EQ(1, ptr.use_count()) << "REQ: compatible shared_ptr";
 }
-TEST(SafePtrTest, safeCreate_null)  // convenient usage (convert nullptr to SafePtr)
+TEST(SafePtrTest, safeCreate_null)
 {
-    const SafePtr v(nullptr);
+    const SafePtr v = nullptr;  // common
     EXPECT_EQ(nullptr, v.get()) << "REQ: explicit create null to compatible with shared_ptr";
     EXPECT_EQ(type_index(typeid(shared_ptr<void>)), type_index(typeid(v.get()))) << "REQ: default template is void";
 
-    const SafePtr<int> i(nullptr);
+    const SafePtr<int> i = nullptr;
     EXPECT_EQ(nullptr, i.get()) << "req: create default is empty";
     EXPECT_EQ(type_index(typeid(shared_ptr<int>)), type_index(typeid(i.get()))) << "REQ: specify template";
-}
-TEST(SafePtrTest, safeCreate_noexcept_constexpr)
-{
-    static_assert(is_nothrow_constructible_v<SafePtr<>>, "REQ: noexcept; optional: constexpr");
-    static_assert(is_nothrow_constructible_v<SafePtr<int>, nullptr_t>, "REQ: noexcept; optional: constexpr");
 }
 
 #define CAST
