@@ -110,7 +110,7 @@ TEST(SafePtrTest, safe_cast_bugFix)
     SafePtr<Base> b = make_safe<D2>();  // realType_ is D2
     SafePtr<void> v = b;  // lastType_ is Base
     auto vv = dynPtrCast<void>(v);  // bug fix for multi-void
-    EXPECT_EQ(2, staticPtrCast<Base>(vv)->value()) << "REQ: can cast D2->Base->void->void->Base";
+    EXPECT_EQ(2, dynPtrCast<Base>(vv)->value()) << "REQ: can cast D2->Base->void->void->Base";
 }
 
 #define COPY

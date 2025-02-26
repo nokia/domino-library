@@ -219,13 +219,6 @@ rlib::SafePtr<To> dynPtrCast(const rlib::SafePtr<From>& aSafeFrom) noexcept
     return safeTo;
 }
 
-// ***********************************************************************************************
-template<typename To, typename From>
-rlib::SafePtr<To> staticPtrCast(const rlib::SafePtr<From>& aSafeFrom) noexcept
-{
-    return dynPtrCast<To>(aSafeFrom);
-}
-
 
 
 // ***********************************************************************************************

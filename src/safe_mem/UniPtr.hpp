@@ -41,7 +41,7 @@ using   UniPtr =         SafePtr<void>;
 #define S_PTR            SafePtr
 #define W_PTR            SafeWeak
 #define DYN_PTR_CAST     rlib::dynPtrCast
-#define STATIC_PTR_CAST  rlib::staticPtrCast
+#define STATIC_PTR_CAST  rlib::dynPtrCast
 #endif
 
 }  // namespace
