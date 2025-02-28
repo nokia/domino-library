@@ -78,22 +78,48 @@ struct Derive : public Base { int value() const override { return 1; } };
 TEST(SafePtrTest, GOLD_safeCast_self_base_void_back)
 {
     auto d = make_safe<Derive>();
-    EXPECT_EQ(1, safe_cast<Derive>(d)->value()) << "REQ: cast to self";
-    EXPECT_EQ(1, safe_cast<Base  >(d)->value()) << "REQ: cast to base";
+    auto nRef = d.use_count();
 
-    EXPECT_EQ(1, safe_cast<Derive>(safe_cast<Base>(d))->value()) << "REQ: (derived->)base->derived";
+    // cast to self
+    auto dd = safe_cast<Derive>(d);
+    EXPECT_EQ(1, dd->value())        << "REQ: Derive->Derive";
+    EXPECT_EQ(++nRef, d.use_count()) << "REQ: all are shared";
 
-    EXPECT_EQ(1, safe_cast<Derive>(safe_cast<void>(safe_cast<Base>(d)))->value()) << "REQ: ->void & void->origin";
-    EXPECT_EQ(1, safe_cast<Base  >(safe_cast<void>(safe_cast<Base>(d)))->value()) << "REQ: ->void & void->preVoid";
+    auto dbd = safe_cast<Derive>(safe_cast<Base>(d));
+    EXPECT_EQ(1, dbd->value())       << "REQ: Derive->Base->Derive";
+    EXPECT_EQ(++nRef, d.use_count()) << "REQ: all are shared";
 
-    //EXPECT_EQ(1, safe_cast<Base>(safe_cast<void>(make_safe<Derive>())).get()) << "safe cast, but not support";
+    auto dbvd = safe_cast<Derive>(safe_cast<void>(safe_cast<Base>(d)));
+    EXPECT_EQ(1, dbvd->value())      << "REQ: Derive->Base->void->Derive";
+    EXPECT_EQ(++nRef, d.use_count()) << "REQ: all are shared";
+
+    /*auto dvbd = safe_cast<Derive>(safe_cast<Base>(safe_cast<void>(d)));
+    EXPECT_EQ(1, dvbd->value())      << "REQ: Derive->void->Base->Derive";
+    EXPECT_EQ(++nRef, d.use_count()) << "REQ: all are shared";*/
+
+    // cast to Base
+    auto db = safe_cast<Base  >(d);
+    EXPECT_EQ(1, db->value()) << "REQ: Derive->Base";
+    EXPECT_EQ(++nRef, d.use_count()) << "REQ: all are shared";
+
+    /*auto dvb = safe_cast<Base>(safe_cast<void>(d));
+    EXPECT_EQ(1, dvb->value())       << "REQ: Derive->void->Base";
+    EXPECT_EQ(++nRef, d.use_count()) << "REQ: all are shared";*/
+
+    auto dbvb = safe_cast<Base>(safe_cast<void>(safe_cast<Base>(d)));
+    EXPECT_EQ(1, dbvb->value())      << "REQ: Derive->Base->void->Base";
+    EXPECT_EQ(++nRef, d.use_count()) << "REQ: all are shared";
+
+    auto dbdvb = safe_cast<Base>(safe_cast<void>(safe_cast<Derive>(safe_cast<Base>(d))));
+    EXPECT_EQ(1, dbdvb->value())    << "REQ: Derive->Base->Derive->void->Base";
+    EXPECT_EQ(++nRef, d.use_count()) << "REQ: all are shared";
 }
 struct D_protect : protected Derive { int value() const override { return 2; } };
 struct D_private : private   Derive { int value() const override { return 3; } };
 TEST(SafePtrTest, invalidCast_retNull)
 {
     EXPECT_EQ(nullptr, safe_cast<char  >(make_safe<int >(7)).get()) << "REQ: invalid int ->char";
-    EXPECT_EQ(nullptr, safe_cast<Derive>(make_safe<Base>() ).get()) << "REQ: invalid base->derived";
+    EXPECT_EQ(nullptr, safe_cast<Derive>(make_safe<Base>() ).get()) << "REQ: invalid Base->Derive";
 
     //EXPECT_EQ(nullptr, safe_cast<Base>(make_safe<D_private>()).get());  // invalid, not ret null but compile err
     //EXPECT_EQ(nullptr, safe_cast<Base>(make_safe<D_protect>()).get());  // invalid, not ret null but compile err
@@ -137,23 +163,23 @@ TEST(SafePtrTest, GOLD_safeCp_self_base_void)
 {
     auto d = make_safe<Derive>();
     EXPECT_EQ(1, SafePtr<Derive>(d)->value()) << "REQ: cp to self";
-    EXPECT_EQ(1, SafePtr<Base  >(d)->value()) << "REQ: cp to base";
+    EXPECT_EQ(1, SafePtr<Base  >(d)->value()) << "REQ: cp to Base";
 
     EXPECT_EQ(0, safe_cast<Base  >(SafePtr<void>(make_safe<Base  >()))->value()) << "REQ: cp any->void";
     EXPECT_EQ(1, safe_cast<Derive>(SafePtr<void>(make_safe<Derive>()))->value()) << "req: cp any->void";
 }
 TEST(SafePtrTest, invalidCp_compileErr)  // cp's compile-err is safer than safe_cast that may ret nullptr
 {
-    //SafePtr<Derive>(SafePtr<Base>(make_safe<Derive>()));  // derived->base->derive: cp compile err, can safe_cast instead
+    //SafePtr<Derive>(SafePtr<Base>(make_safe<Derive>()));  // Derive->Base->Derive: cp compile err, can safe_cast instead
     //SafePtr<Derive>(SafePtr<void>(make_safe<Derive>()));  // void->origin: cp compile err, can safe_cast instead
-    //SafePtr<Base  >(SafePtr<void>(make_safe<Derive>()));  // derive->void->base: cp compile err, safe_cast ret nullptr
+    //SafePtr<Base  >(SafePtr<void>(make_safe<Derive>()));  // Derive->void->Base: cp compile err, safe_cast ret nullptr
 
-    //SafePtr<Derive>(make_safe<Base>());  // base->derived: cp compile-err; safe_cast ret nullptr
+    //SafePtr<Derive>(make_safe<Base>());  // Base->Derive: cp compile-err; safe_cast ret nullptr
 
     //SafePtr<char>(make_safe<int>(7));  // int->char: both cp & safe_cast will compile err
 
-    //SafePtr<Base>(make_safe<D_private>());  // private->base: both cp & safe_cast will compile err
-    //SafePtr<Base>(make_safe<D_protect>());  // protect->base: both cp & safe_cast will compile err
+    //SafePtr<Base>(make_safe<D_private>());  // private->Base: both cp & safe_cast will compile err
+    //SafePtr<Base>(make_safe<D_protect>());  // protect->Base: both cp & safe_cast will compile err
 }
 TEST(SafePtrTest, GOLD_const_and_back)
 {

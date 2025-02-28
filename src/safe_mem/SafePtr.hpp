@@ -166,12 +166,11 @@ void SafePtr<T>::init_(const SafePtr<From>& aSafeFrom) noexcept
     realType_ = aSafeFrom.realType();
     // save last useful type
     lastType_ = std::is_same_v<T, void> || realType_ == typeid(T)
-        ? aSafeFrom.lastType()
-        : typeid(T);
+        ? aSafeFrom.lastType()  // eg Derive->Base->void = Base, Derive->Base->Derive = Base
+        : typeid(T);            // eg Derive->Base = Base
 
     /* HID("cp from=" << typeid(From).name() << " to=" << typeid(T).name()
-        << ", diff=" << (lastType_ == nullptr ? "null" : lastType_->name())
-        << ", real=" << (realType_ == nullptr ? "null" : realType_->name())); */
+        << ", diff=" << lastType_.name() << ", real=" << realType_.name());*/
 }
 
 
