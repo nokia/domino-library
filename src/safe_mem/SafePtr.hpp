@@ -52,7 +52,7 @@ public:
     // no assignment, compiler will gen it & enough
     template<typename To> std::shared_ptr<To> cast() const noexcept;  // ret ok or null
     template<typename To, typename From>
-    friend SafePtr<To> safe_cast(const SafePtr<From>&) noexcept;     // ret ok or null
+    friend SafePtr<To> safe_cast(const SafePtr<From>&) noexcept;      // ret ok or null
 
     // safe usage: convenient(compatible shared_ptr), equivalent & min
     // . ret shared_ptr is safer than T* (but not safest since to call T's func easily)
@@ -180,7 +180,7 @@ template<typename U, typename... ConstructArgs>
 SafePtr<U> make_safe(ConstructArgs&&... aArgs)
 {
     SafePtr<U> safeU;
-    safeU.pT_ = std::make_shared<U>(std::forward<ConstructArgs>(aArgs)...);  // std::~, or ambiguous with boost::~
+    safeU.pT_ = std::make_shared<U>(std::forward<ConstructArgs>(aArgs)...);  // std::~ or fail boost::~
     // HID("new ptr=" << (void*)(safeU.pT_.get()));  // too many print; void* print addr rather than content(dangeous)
     return safeU;
 }
@@ -310,6 +310,12 @@ struct std::hash<rlib::SafePtr<T>>
 //
 //   . std::any vs SafePtr
 //     . SafePtr is safe shared_ptr that is lifecycle ptr, std::any is not ptr nor lifecycle mgmt
+//
+//   * realType_ & lastType_ shall be in shared_ptr's ctrl blk - less mem
+//   * like shared_ptr's deleter to cast pT_ to original type?
+//     . then can dyn cast to target type, better than realType_ & lastType_
+//     . need the "caster" be same para & ret - impossible
+//   . encapulate cast related? better in shared_ptr's ctrl blk
 //
 //   . T not ref/ptr/const?
 //   . SafeRef? or like this?

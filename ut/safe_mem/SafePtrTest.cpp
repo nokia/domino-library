@@ -111,25 +111,27 @@ TEST(SafePtrTest, GOLD_safeCast_self_base_void_back)
     EXPECT_EQ(++nRef, d.use_count()) << "REQ: all are shared";
 
     auto dbdvb = safe_cast<Base>(safe_cast<void>(safe_cast<Derive>(safe_cast<Base>(d))));
-    EXPECT_EQ(1, dbdvb->value())    << "REQ: Derive->Base->Derive->void->Base";
+    EXPECT_EQ(1, dbdvb->value())     << "REQ: Derive->Base->Derive->void->Base";
     EXPECT_EQ(++nRef, d.use_count()) << "REQ: all are shared";
 }
-struct D_protect : protected Derive { int value() const override { return 2; } };
-struct D_private : private   Derive { int value() const override { return 3; } };
-TEST(SafePtrTest, invalidCast_retNull)
+TEST(SafePtrTest, invalidCast)
 {
     EXPECT_EQ(nullptr, safe_cast<char  >(make_safe<int >(7)).get()) << "REQ: invalid int ->char";
     EXPECT_EQ(nullptr, safe_cast<Derive>(make_safe<Base>() ).get()) << "REQ: invalid Base->Derive";
 
-    //EXPECT_EQ(nullptr, safe_cast<Base>(make_safe<D_private>()).get());  // invalid, not ret null but compile err
-    //EXPECT_EQ(nullptr, safe_cast<Base>(make_safe<D_protect>()).get());  // invalid, not ret null but compile err
+    struct D_protect : protected Derive { int value() const override { return 2; } };
+    struct D_private : private   Derive { int value() const override { return 3; } };
+    //EXPECT_EQ(nullptr, safe_cast<Base>(make_safe<D_private>()).get());  // invalid, compile err
+    //EXPECT_EQ(nullptr, safe_cast<Base>(make_safe<D_protect>()).get());  // invalid, compile err
 
-    auto msgInQ = SafePtr<void>(SafePtr<Base>(make_safe<Derive>()));
-    auto msgOutQ = safe_cast<char>(msgInQ);
-    EXPECT_EQ(1, safe_cast<Base>(msgInQ)->value ()) << "REQ: failed cast -> keep src";
-    EXPECT_EQ(type_index(typeid(Derive)),   msgInQ.realType()) << "REQ: failed cast -> keep src";
-    EXPECT_EQ(type_index(typeid(Base  )),   msgInQ.lastType()) << "REQ: failed cast -> keep src";
+    struct B { int i=0; };  // no virtual
+    struct D : public B { D(){ i=1; } };
+    auto d = safe_cast<B>(make_safe<D>());
+    EXPECT_EQ(1, d.get()->i) << "D sliced to B but still safe";
+    //EXPECT_EQ(nullptr, safe_cast<D>(d).get());  // invalid, compile err
 
+    auto msgInQ  = SafePtr<void>(SafePtr<Base>(make_safe<Derive>()));
+    auto msgOutQ = safe_cast<char>(msgInQ);  // failed cast
     EXPECT_EQ(nullptr                 , msgOutQ.get     ()) << "REQ: failed cast -> dest get nothing";
     EXPECT_EQ(type_index(typeid(char)), msgOutQ.realType()) << "REQ: failed cast -> dest get nothing";
     EXPECT_EQ(type_index(typeid(char)), msgOutQ.lastType()) << "REQ: failed cast -> dest get nothing";
