@@ -116,7 +116,8 @@ TEST(SafePtrTest, GOLD_safeCast_self_base_void_back)
 }
 TEST(SafePtrTest, invalidCast)
 {
-    EXPECT_EQ(nullptr, safe_cast<char  >(make_safe<int >(7)).get()) << "REQ: invalid int ->char";
+    //EXPECT_EQ(nullptr, safe_cast<char  >(make_safe<int >(7)).get());  // invalid, compile err safer than ret nullptr
+    //EXPECT_EQ(nullptr, safe_cast<char  >(SafePtr  <int >( )).get());  // invalid, same as dynamic_pointer_cast
     EXPECT_EQ(nullptr, safe_cast<Derive>(make_safe<Base>() ).get()) << "REQ: invalid Base->Derive";
 
     struct D_protect : protected Derive { int value() const override { return 2; } };
@@ -136,13 +137,10 @@ TEST(SafePtrTest, invalidCast)
     EXPECT_EQ(type_index(typeid(char)), msgOutQ.realType()) << "REQ: failed cast -> dest get nothing";
     EXPECT_EQ(type_index(typeid(char)), msgOutQ.lastType()) << "REQ: failed cast -> dest get nothing";
 }
-struct D2 : public Derive { int value() const override { return 2; } };
 TEST(SafePtrTest, safe_cast_bugFix)
 {
-    SafePtr<Base> b = make_safe<D2>();  // realType_ is D2
-    SafePtr<void> v = b;  // lastType_ is Base
-    auto vv = safe_cast<void>(v);  // bug fix for multi-void
-    EXPECT_EQ(2, safe_cast<Base>(vv)->value()) << "REQ: can cast D2->Base->void->void->Base";
+    auto dbvvb = safe_cast<Base>(safe_cast<void>(safe_cast<void>(safe_cast<Base>(make_safe<Derive>()))));
+    EXPECT_EQ(1, dbvvb->value()) << "REQ: can cast Derive->Base->void->void->Base (multi-void)";
 }
 
 #define COPY

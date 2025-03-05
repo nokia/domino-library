@@ -67,7 +67,7 @@ public:
     auto lastType() const noexcept { return lastType_; }
 
 private:
-    template<typename From> void init_(const SafePtr<From>&) noexcept;
+    template<typename From> void initType_(const SafePtr<From>&) noexcept;
 
     // -------------------------------------------------------------------------------------------
     std::shared_ptr<T> pT_;  // core
@@ -92,7 +92,7 @@ template<typename From>
 SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom) noexcept  // cp
     : pT_(aSafeFrom.get())
 {
-    init_(aSafeFrom);
+    initType_(aSafeFrom);
 }
 
 // ***********************************************************************************************
@@ -102,7 +102,7 @@ template<typename From>
 SafePtr<T>::SafePtr(SafePtr<From>&& aSafeFrom) noexcept  // mv - MtQ need
     : pT_(std::move(aSafeFrom.pT_))  // slight faster than pT_(aSafeFrom.get()) - cp
 {
-    init_(aSafeFrom);
+    initType_(aSafeFrom);
     if (pT_ != nullptr)   // mv succ, clear src
     {
         // no need reset aSafeFrom.pT_, already by mv
@@ -133,8 +133,8 @@ std::shared_ptr<To> SafePtr<T>::cast() const noexcept
     }
     else if constexpr(!std::is_void_v<T>)
     {
-        HID("(SafePtr) invalid nonVoid-to-nonVoid, from=" << typeid(T).name() << " to=" << typeid(To).name());
-        return nullptr;  // cast ok or null
+        HID("(SafePtr) nonVoid-to-nonVoid, from=" << typeid(T).name() << " to=" << typeid(To).name());
+        return pT_;  // compile err is safer than ret nullptr
     }
 
     else if (realType_ == typeid(To))
@@ -154,7 +154,7 @@ std::shared_ptr<To> SafePtr<T>::cast() const noexcept
 // ***********************************************************************************************
 template<typename T>
 template<typename From>
-void SafePtr<T>::init_(const SafePtr<From>& aSafeFrom) noexcept
+inline void SafePtr<T>::initType_(const SafePtr<From>& aSafeFrom) noexcept
 {
     // validate
     if (pT_ == nullptr)
@@ -164,11 +164,17 @@ void SafePtr<T>::init_(const SafePtr<From>& aSafeFrom) noexcept
     }
 
     realType_ = aSafeFrom.realType();
-    // save last useful type
-    lastType_ = std::is_same_v<T, void> || realType_ == typeid(T)
-        ? aSafeFrom.lastType()  // eg Derive->Base->void = Base, Derive->Base->Derive = Base
-        : typeid(T);            // eg Derive->Base = Base
 
+    // save last useful type
+    if constexpr(std::is_same_v<T, void>) {  // compile opt
+        HID("From->void, recursive From.lastType() is the most diff type before T");
+        lastType_ = aSafeFrom.lastType();  // eg Derive->Base->void = Base
+    }
+    else if (lastType_ == realType_) {
+        HID("T->From->T, From.lastType is the most diff type");
+        lastType_ = aSafeFrom.lastType();  // eg Derive->Base->Derive = Base
+    }
+    // else lastType_=T already  // eg Derive->Base = Base
     /* HID("cp from=" << typeid(From).name() << " to=" << typeid(T).name()
         << ", diff=" << lastType_.name() << ", real=" << realType_.name());*/
 }
@@ -180,7 +186,7 @@ template<typename U, typename... ConstructArgs>
 SafePtr<U> make_safe(ConstructArgs&&... aArgs)
 {
     SafePtr<U> safeU;
-    safeU.pT_ = std::make_shared<U>(std::forward<ConstructArgs>(aArgs)...);  // std::~ or fail boost::~
+    safeU.pT_ = std::make_shared<U>(std::forward<ConstructArgs>(aArgs)...);  // std::make_shared, not boost's
     // HID("new ptr=" << (void*)(safeU.pT_.get()));  // too many print; void* print addr rather than content(dangeous)
     return safeU;
 }
@@ -210,11 +216,11 @@ bool operator<(SafePtr<T> lhs, SafePtr<U> rhs)
 // - unified-ret is predictable & simple
 // - std not allow overload dynamic_pointer_cast so safe_cast & DYN_PTR_CAST
 template<typename To, typename From>
-rlib::SafePtr<To> safe_cast(const rlib::SafePtr<From>& aSafeFrom) noexcept
+SafePtr<To> safe_cast(const SafePtr<From>& aSafeFrom) noexcept
 {
-    rlib::SafePtr<To> safeTo;
+    SafePtr<To> safeTo;
     safeTo.pT_ = aSafeFrom.template cast<To>();
-    safeTo.init_(aSafeFrom);
+    safeTo.initType_(aSafeFrom);
     return safeTo;
 }
 
