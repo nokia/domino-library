@@ -7,13 +7,14 @@
 // - ISSUE:
 //   . c++ mem bugs are 1 of the most challenge (eg US gov suggest to replace c++ by Rust)
 //   . ms & google: ~70% safety defects caused by mem safe issue
-// - REQ/value: this class is to be 100% safe than shared_ptr:
+// - REQ/value: this class is to be same as shared_ptr but 100% safe:
 //   . safe create   : null or make_safe only (not allow unsafe create eg via raw ptr)
 //   * safe cast     : only among self, base & void; ret-null is safe when invalid cast, comile-err is safer
 //   . safe lifespan : by shared_ptr (auto mem-mgmt, no use-after-free)
 //   * safe get      : ret shared_ptr than T* (no duty for usr's abuse to get & use T*)
 //   . safe del      : not support self-deletor that maybe unsafe; call correct destructor via shared_ptr
 //   . SafeWeak      : to&fro with SafePtr, eg SharedMsgCB<->WeakMsgCB
+//   . other behavors/expectation are same as shared_ptr
 // - DUTY-BOUND:
 //   . under single thread
 //     . so eg after MtInQueue.mt_push(), shall NOT touch pushed SafePtr
@@ -45,14 +46,13 @@ public:
     constexpr SafePtr(std::nullptr_t = nullptr) noexcept {}
     template<typename U, typename... ConstructArgs> friend SafePtr<U> make_safe(ConstructArgs&&...);
 
+    template<typename From> friend class SafePtr;  // let cp/mv access private
     // safe-only cast (vs shared_ptr, eg static_pointer_cast<any> is not safe)
-    template<typename From> SafePtr(const SafePtr<From>&) noexcept;   // cp  ok or compile err
-    template<typename From> friend class SafePtr;  // let mv access private
-    template<typename From> SafePtr(SafePtr<From>&&) noexcept;        // mv  ok or compile err
+    template<typename From> SafePtr(const SafePtr<From>&) noexcept;   // cp, always ok (or compile err)
+    template<typename From> SafePtr(SafePtr<From>&&) noexcept;        // mv, always ok (or compile err)
     // no assignment, compiler will gen it & enough
-    template<typename To> std::shared_ptr<To> cast() const noexcept;  // ret ok or null
-    template<typename To, typename From>
-    friend SafePtr<To> safe_cast(const SafePtr<From>&) noexcept;      // ret ok or null
+    template<typename To> std::shared_ptr<To> cast() const noexcept;  // ret ok/null
+    template<typename To, typename From> friend SafePtr<To> safe_cast(const SafePtr<From>&) noexcept;  // ret ok/null
 
     // safe usage: convenient(compatible shared_ptr), equivalent & min
     // . ret shared_ptr is safer than T* (but not safest since to call T's func easily)
@@ -81,26 +81,23 @@ public:
 };
 
 // ***********************************************************************************************
-// - safe cp to self/base/void, otherwise compile-err (by shared_ptr's cp which is safe)
+// - safe cp (self/base/void), otherwise compile-err(safer than nullptr)
 //   . cp/implicit-converter is useful & convenient
 // - void->T: compile-err, can safe_cast() if need
-//   . pro: simpler cp/mv constructors
-//   . con: not coherent as safe_cast(), surprise usr?
-//   * pro: compile-err is safer than construct-null when invalid?
 template<typename T>
 template<typename From>
 SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom) noexcept  // cp
-    : pT_(aSafeFrom.get())
+    : pT_(aSafeFrom.pT_)  // faster than get()
 {
     initType_(aSafeFrom);
 }
 
 // ***********************************************************************************************
-// - safe mv to self/base/void, otherwise compile-err (by shared_ptr's mv which is safe)
+// - safe mv (self/base/void), otherwise compile-err (by shared_ptr's mv which is safe)
 template<typename T>
 template<typename From>
 SafePtr<T>::SafePtr(SafePtr<From>&& aSafeFrom) noexcept  // mv - MtQ need
-    : pT_(std::move(aSafeFrom.pT_))  // slight faster than pT_(aSafeFrom.get()) - cp
+    : pT_(std::move(aSafeFrom.pT_))  // mv faster than cp
 {
     initType_(aSafeFrom);
     if (pT_ != nullptr)   // mv succ, clear src
@@ -119,7 +116,7 @@ std::shared_ptr<To> SafePtr<T>::cast() const noexcept
     if constexpr(std::is_base_of_v<To, T>)  // safer than is_convertible()
     {
         // HID("(SafePtr) cast to base/self");  // ERR() not MT safe
-        return std::dynamic_pointer_cast<To>(pT_);  // private/protected inherit will compile err(rare & no easy fix)
+        return pT_;  // private/protected inherit will compile err
     }
     else if constexpr(std::is_base_of_v<T, To>)  // else if for constexpr
     {
@@ -211,8 +208,8 @@ bool operator<(SafePtr<T> lhs, SafePtr<U> rhs)
 }
 
 // ***********************************************************************************************
-// - cast all possible eg base->derived (more than cp constructor)
-// - explicit cast so ok or nullptr (cp constructor is implicit & ok/compile-err)
+// - safe cast all possible (self/base/dderive/void/back, more than cp constructor)
+// - explicit cast so ok or nullptr (cp/mv constructor is implicit & ok/compile-err)
 // - unified-ret is predictable & simple
 // - std not allow overload dynamic_pointer_cast so safe_cast & DYN_PTR_CAST
 template<typename To, typename From>
