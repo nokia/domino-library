@@ -145,70 +145,97 @@ TEST(SafePtrTest, safe_cast_bugFix)
 
 #define COPY
 // ***********************************************************************************************
-TEST(SafePtrTest, GOLD_safe_cp_sameType)
+struct A
 {
-    auto one = make_safe<int>(42);
-    {
-        auto two(one);
-        EXPECT_EQ(42, *two.get()) << "REQ: valid cp & get";
-        EXPECT_EQ(2, one.use_count()) << "REQ: shared ownership";
+    int value() { return 1; }
+    int value() const { return 0; }
+};
+TEST(SafePtrTest, GOLD_safeCp_toSameType)
+{
+    auto i = make_safe<int>(42);
+    SafePtr<int> i2(i);  // cp, not mv
+    EXPECT_EQ(42, *i2.get()) << "REQ: cp to self";
+    EXPECT_EQ(2, i.use_count()) << "REQ: shared ownership";
 
-        *one.get() = 43;
-        EXPECT_EQ(43, *two.get()) << "REQ: valid update via sharing";
-    }
-    EXPECT_EQ(43, *one.get()) << "REQ: 1 del not impact another";
-    EXPECT_EQ(1, one.use_count()) << "REQ: ownership restored";
+    auto a = make_safe<A>();
+    SafePtr<const A> ac(a);
+    EXPECT_EQ(0, ac->value()) << "REQ: cp to const";
+
+    const SafePtr<A> ca(a);
+    EXPECT_EQ(1, ca->value()) << "REQ: cp ok & calls non-const ok";
+
+    const SafePtr<Base> cb = make_safe<Base>();
+    EXPECT_EQ(0, SafePtr<Base>(cb)->value()) << "REQ: safe cp from const to non-const - like shared_ptr";
 }
-TEST(SafePtrTest, GOLD_safeCp_self_base_void)
+TEST(SafePtrTest, GOLD_safeCp_toVoid)
+{
+    auto b = make_safe<Base>();
+    SafePtr<void> bv(b);
+    EXPECT_EQ(0, safe_cast<Base>(bv)->value()) << "REQ: safe cp any->void->any";
+
+    auto d = make_safe<Derive>();
+    SafePtr<void> dv(d);
+    EXPECT_EQ(1, safe_cast<Derive>(dv)->value()) << "req: safe cp any->void->any";
+
+    SafePtr<const void> cv(b);
+    EXPECT_EQ(0, safe_cast<const Base>(cv)->value()) << "REQ: safe cp any->const void->const any";
+}
+TEST(SafePtrTest, GOLD_safeCp_toPolyBase)
 {
     auto d = make_safe<Derive>();
-    EXPECT_EQ(1, SafePtr<Derive>(d)->value()) << "REQ: cp to self";
-    EXPECT_EQ(1, SafePtr<Base  >(d)->value()) << "REQ: cp to Base";
+    EXPECT_EQ(1, SafePtr<      Base>(d)->value()) << "REQ: cp to Base";
+    EXPECT_EQ(1, SafePtr<const Base>(d)->value()) << "REQ: cp to const Base";
+}
+struct BS             { int i = 10; };
+struct DS : public BS { DS() { i = 11; } };
+TEST(SafePtrTest, safeCp_toStaticBase)
+{
+    auto d = make_safe<DS>();
+    EXPECT_EQ(11, SafePtr<      BS>(d)->i) << "REQ: cp to static Base";
+    EXPECT_EQ(11, SafePtr<const BS>(d)->i) << "REQ: cp to const static Base";
+}
+TEST(SafePtrTest, unsafeCp_toDiffType)
+{
+    auto i = make_safe<int>(7);
+    //SafePtr<char>(i);  // REQ: compile err for diff types
+}
+struct D_private   : private   Base {};
+struct D_protected : protected Base {};
+TEST(SafePtrTest, unsupportCp_toBase)
+{
+    auto b_pri = make_safe<D_private  >();
+    //auto b = SafePtr<Base>(b_pri);  // c++ not allow
+    auto b_pro = make_safe<D_protected>();
+    //auto b = SafePtr<Base>(b_pro);  // c++ not allow
+}
+TEST(SafePtrTest, unsupportCp_toDerive)
+{
+    auto b = make_safe<Base>();
+    //auto bd = SafePtr<Derive>(b);  // REQ: compile err Base->Derive - unsafe
 
-    EXPECT_EQ(0, safe_cast<Base  >(SafePtr<void>(make_safe<Base  >()))->value()) << "REQ: cp any->void";
-    EXPECT_EQ(1, safe_cast<Derive>(SafePtr<void>(make_safe<Derive>()))->value()) << "req: cp any->void";
+    auto db = SafePtr<Base>(make_safe<Derive>());
+    //auto dbd = SafePtr<Derive>(db);  // safe but unsupport since need dynamic_cast that can't bld err if fail
+}
+TEST(SafePtrTest, unsupportCp_voidToNon)
+{
+    auto bv = SafePtr<void>(make_safe<Base>());
+    //auto bvb = SafePtr<Base>(bv);  // safe but unsupport since need dynamic check that can't bld err if fail
+}
+TEST(SafePtrTest, unssafeCp_constToNon)
+{
+    auto bc = make_safe<const Base>();
+    //auto b = SafePtr<Base>(bc);  // REQ: unsafe cp, compile err
 }
 TEST(SafePtrTest, invalidCp_compileErr)  // cp's compile-err is safer than safe_cast that may ret nullptr
 {
-    //SafePtr<Derive>(SafePtr<Base>(make_safe<Derive>()));  // Derive->Base->Derive: cp compile err, can safe_cast instead
+    //auto dv = SafePtr<void>(d);
+    //SafePtr<Derive>(dv);  // bld err; safe but unsupport
+
     //SafePtr<Derive>(SafePtr<void>(make_safe<Derive>()));  // void->origin: cp compile err, can safe_cast instead
     //SafePtr<Base  >(SafePtr<void>(make_safe<Derive>()));  // Derive->void->Base: cp compile err, safe_cast ret nullptr
 
-    //SafePtr<Derive>(make_safe<Base>());  // Base->Derive: cp compile-err; safe_cast ret nullptr
-
-    //SafePtr<char>(make_safe<int>(7));  // int->char: both cp & safe_cast will compile err
-
-    //SafePtr<Base>(make_safe<D_private>());  // private->Base: both cp & safe_cast will compile err
-    //SafePtr<Base>(make_safe<D_protect>());  // protect->Base: both cp & safe_cast will compile err
-}
-TEST(SafePtrTest, GOLD_const_and_back)
-{
-    struct D
-    {
-        int value()       { return 100; }
-        int value() const { return 0; }
-    };
-
-    auto safe_d  = make_safe<D>();
-    auto share_d = make_shared<D>();
-
-    EXPECT_EQ(100, safe_d ->value()) << "REQ: call non-const";
-    EXPECT_EQ(100, share_d->value()) << "req: call non-const";
-
-    SafePtr   <const D> safe_const_d  = safe_d;
-    shared_ptr<const D> share_const_d = share_d;
-
-    EXPECT_EQ(0, safe_const_d ->value()) << "REQ: cp succ & call const)";
-    EXPECT_EQ(0, share_const_d->value()) << "req: cp succ & call const)";
-
 //  SafePtr<D>    safe_dd  = safe_const_d;   // REQ: compile err to cp from const to non
 //  shared_ptr<D> share_dd = share_const_d;  // REQ: compile err to cp from const to non
-
-    const SafePtr   <D> const_safe_d  = safe_d;
-    const shared_ptr<D> const_share_d = share_d;
-
-    EXPECT_EQ(100, const_safe_d ->value()) << "REQ: cp succ & call NON-const (same as shared_ptr)";
-    EXPECT_EQ(100, const_share_d->value()) << "call NON-const since all members are NON-const except 'this'";
 }
 
 #define MOVE

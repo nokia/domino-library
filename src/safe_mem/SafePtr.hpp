@@ -81,7 +81,8 @@ public:
 };
 
 // ***********************************************************************************************
-// - safe cp (self/base/void), otherwise compile-err(safer than nullptr)
+// - safe cp (self/base/void/const), otherwise compile-err(safer than nullptr, like cp shared_ptr)
+//   . no choice but assume shared_ptr cp is safe
 //   . cp/implicit-converter is useful & convenient
 // - void->T: compile-err, can safe_cast() if need
 template<typename T>
