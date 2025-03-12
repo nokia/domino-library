@@ -67,7 +67,8 @@ public:
     auto lastType() const noexcept { return lastType_; }
 
 private:
-    template<typename From> void initType_(const SafePtr<From>&) noexcept;
+    template<typename To> std::type_index genLastType_() const noexcept;
+    constexpr SafePtr(std::shared_ptr<T>&&, const std::type_index&, const std::type_index&) noexcept;
 
     // -------------------------------------------------------------------------------------------
     std::shared_ptr<T> pT_;  // core
@@ -89,8 +90,9 @@ template<typename T>
 template<typename From>
 SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom) noexcept  // cp
     : pT_(aSafeFrom.pT_)  // faster than get()
+    , realType_(pT_ ? aSafeFrom.realType_ : typeid(T))  // init list is faster
+    , lastType_(pT_ ? aSafeFrom.template genLastType_<T>() : typeid(T))  // init list is faster
 {
-    initType_(aSafeFrom);
 }
 
 // ***********************************************************************************************
@@ -99,15 +101,23 @@ template<typename T>
 template<typename From>
 SafePtr<T>::SafePtr(SafePtr<From>&& aSafeFrom) noexcept  // mv - MtQ need
     : pT_(std::move(aSafeFrom.pT_))  // mv faster than cp
+    , realType_(pT_ ? aSafeFrom.realType_ : typeid(T))
+    , lastType_(pT_ ? aSafeFrom.template genLastType_<T>() : typeid(T))
 {
-    initType_(aSafeFrom);
-
     // reset aSafeFrom:
     // - impossible mv fail (compile err)
     // - no need reset aSafeFrom.pT_, done by mv
     aSafeFrom.realType_ = typeid(From);
     aSafeFrom.lastType_ = typeid(From);
 }
+
+// ***********************************************************************************************
+template<typename T>
+constexpr SafePtr<T>::SafePtr(std::shared_ptr<T>&& aPtr, const std::type_index& aReal, const std::type_index& aLast) noexcept
+    : pT_(aPtr)
+    , realType_(pT_ ? aReal : typeid(T))
+    , lastType_(pT_ ? aLast : typeid(T))
+{}
 
 // ***********************************************************************************************
 template<typename T>
@@ -151,30 +161,19 @@ std::shared_ptr<To> SafePtr<T>::cast() const noexcept
 
 // ***********************************************************************************************
 template<typename T>
-template<typename From>
-inline void SafePtr<T>::initType_(const SafePtr<From>& aSafeFrom) noexcept
+template<typename To>
+std::type_index SafePtr<T>::genLastType_() const noexcept
 {
-    // validate
-    if (pT_ == nullptr)
-    {
-        HID("pT_ == nullptr");  // only HID() is multi-thread safe
-        return;
+    if constexpr(std::is_same_v<To, void>) {  // compile opt
+        HID("T->void, recursive T.lastType() is the most diff type before T");
+        return lastType_;  // eg Derive->Base->void = Base
     }
-
-    realType_ = aSafeFrom.realType();
-
-    // save last useful type
-    if constexpr(std::is_same_v<T, void>) {  // compile opt
-        HID("From->void, recursive From.lastType() is the most diff type before T");
-        lastType_ = aSafeFrom.lastType();  // eg Derive->Base->void = Base
+    else if (realType_ == typeid(To)) {
+        HID("To->T->To, T.lastType is the most diff type");
+        return lastType_;  // eg Derive->Base->Derive = Base
     }
-    else if (lastType_ == realType_) {
-        HID("T->From->T, From.lastType is the most diff type");
-        lastType_ = aSafeFrom.lastType();  // eg Derive->Base->Derive = Base
-    }
-    // else lastType_=T already  // eg Derive->Base = Base
-    /* HID("cp from=" << typeid(From).name() << " to=" << typeid(T).name()
-        << ", diff=" << lastType_.name() << ", real=" << realType_.name());*/
+    else
+        return typeid(To);  // eg Derive->Base = Base
 }
 
 
@@ -216,10 +215,11 @@ bool operator<(SafePtr<T> lhs, SafePtr<U> rhs)
 template<typename To, typename From>
 SafePtr<To> safe_cast(const SafePtr<From>& aSafeFrom) noexcept
 {
-    SafePtr<To> safeTo;
-    safeTo.pT_ = aSafeFrom.template cast<To>();  // mv
-    safeTo.initType_(aSafeFrom);
-    return safeTo;
+    return SafePtr<To>(  // constructor is faster
+        aSafeFrom.template cast<To>(),  // mv
+        aSafeFrom.realType_,
+        aSafeFrom.template genLastType_<To>()
+    );
 }
 
 
