@@ -154,7 +154,7 @@ TEST(SafePtrTest, GOLD_safeCp_toSameType)
 {
     auto i = make_safe<int>(42);
     SafePtr<int> i2(i);  // cp, not mv
-    EXPECT_EQ(42, *i2.get()) << "REQ: cp to self";
+    EXPECT_EQ(42, *i2.get())    << "REQ: cp to self";
     EXPECT_EQ(2, i.use_count()) << "REQ: shared ownership";
 
     auto a = make_safe<A>();
@@ -171,11 +171,8 @@ TEST(SafePtrTest, GOLD_safeCp_toVoid)
 {
     auto b = make_safe<Base>();
     SafePtr<void> bv(b);
-    EXPECT_EQ(0, safe_cast<Base>(bv)->value()) << "REQ: safe cp any->void->any";
-
-    auto d = make_safe<Derive>();
-    SafePtr<void> dv(d);
-    EXPECT_EQ(1, safe_cast<Derive>(dv)->value()) << "req: safe cp any->void->any";
+    EXPECT_EQ(0, safe_cast<Base>(bv)->value()) << "REQ: simple cp";
+    EXPECT_EQ(2, bv.use_count()) << "REQ: shared ownership";
 
     SafePtr<const void> cv(b);
     EXPECT_EQ(0, safe_cast<const Base>(cv)->value()) << "REQ: safe cp any->const void->const any";

@@ -101,12 +101,12 @@ SafePtr<T>::SafePtr(SafePtr<From>&& aSafeFrom) noexcept  // mv - MtQ need
     : pT_(std::move(aSafeFrom.pT_))  // mv faster than cp
 {
     initType_(aSafeFrom);
-    if (pT_ != nullptr)   // mv succ, clear src
-    {
-        // no need reset aSafeFrom.pT_, already by mv
-        aSafeFrom.realType_ = typeid(From);  // must
-        aSafeFrom.lastType_ = typeid(From);
-    }
+
+    // reset aSafeFrom:
+    // - impossible mv fail (compile err)
+    // - no need reset aSafeFrom.pT_, done by mv
+    aSafeFrom.realType_ = typeid(From);
+    aSafeFrom.lastType_ = typeid(From);
 }
 
 // ***********************************************************************************************
@@ -217,7 +217,7 @@ template<typename To, typename From>
 SafePtr<To> safe_cast(const SafePtr<From>& aSafeFrom) noexcept
 {
     SafePtr<To> safeTo;
-    safeTo.pT_ = aSafeFrom.template cast<To>();
+    safeTo.pT_ = aSafeFrom.template cast<To>();  // mv
     safeTo.initType_(aSafeFrom);
     return safeTo;
 }
