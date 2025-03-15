@@ -6,7 +6,6 @@
 // ***********************************************************************************************
 #include <gtest/gtest.h>
 #include <map>
-#include <type_traits>
 #include <typeindex>
 #include <unordered_map>
 
@@ -39,11 +38,11 @@ TEST(SafePtrTest, GOLD_safeCreate_normal)
 TEST(SafePtrTest, GOLD_unsafeCreate_forbid)
 {
     // SafePtr<int> ptr(raw);  // compile-err
-    static_assert(!std::is_constructible<SafePtr<int>, int*>::value,
+    static_assert(!is_constructible<SafePtr<int>, int*>::value,
         "REQ: forbid unsafe raw pointer construction");
 
     // SafePtr<int> ptr(make_shared<int>());  // compile-err
-    static_assert(!std::is_constructible<SafePtr<int>, std::shared_ptr<int>>::value,
+    static_assert(!is_constructible<SafePtr<int>, shared_ptr<int>>::value,
         "REQ: forbid unsafe shared_ptr construction");
 }
 TEST(SafePtrTest, safeCreate_default)
@@ -169,32 +168,88 @@ TEST(SafePtrTest, GOLD_safeCp_toSameType)
 }
 TEST(SafePtrTest, GOLD_safeCp_toVoid)
 {
-    auto b = make_safe<Base>();
-    SafePtr<void> bv(b);
-    EXPECT_EQ(0, safe_cast<Base>(bv)->value()) << "REQ: simple cp";
-    EXPECT_EQ(2, bv.use_count()) << "REQ: shared ownership";
+    auto db = SafePtr<Base>(make_safe<Derive>());
+    SafePtr<void> dbv(db);
+    // check target
+    EXPECT_EQ(1,          safe_cast<Base>(dbv)->value ()) << "req: cp Derive->Base->void";
+    EXPECT_EQ(type_index(typeid(Derive)), dbv.realType()) << "REQ: cp to target";
+    EXPECT_EQ(type_index(typeid(Base  )), dbv.lastType()) << "REQ: cp to target";
+    // check src
+    EXPECT_EQ(2,                          db.use_count()) << "REQ: cp is shared";
+    EXPECT_EQ(1,          safe_cast<Base>(db)->value  ()) << "REQ: keep src after cp";
+    EXPECT_EQ(type_index(typeid(Derive)), db.realType ()) << "REQ: keep src after cp";
+    EXPECT_EQ(type_index(typeid(Base  )), db.lastType ()) << "REQ: keep src after cp";
 
-    SafePtr<const void> cv(b);
-    EXPECT_EQ(0, safe_cast<const Base>(cv)->value()) << "REQ: safe cp any->const void->const any";
+    auto dbd = safe_cast<Derive>(db);
+    SafePtr<void> dbdv(dbd);
+    // check target
+    EXPECT_EQ(1,          safe_cast<Base>(dbdv)->value ()) << "req: cp Derive->Base->Derive->void";
+    EXPECT_EQ(type_index(typeid(Derive)), dbdv.realType()) << "REQ: cp to target";
+    EXPECT_EQ(type_index(typeid(Base  )), dbdv.lastType()) << "REQ: cp to target";
+    // check src
+    EXPECT_EQ(4,                          dbd.use_count()) << "REQ: cp is shared";
+    EXPECT_EQ(1,          safe_cast<Base>(dbd)->value  ()) << "REQ: keep src after cp";
+    EXPECT_EQ(type_index(typeid(Derive)), dbd.realType ()) << "REQ: keep src after cp";
+    EXPECT_EQ(type_index(typeid(Base  )), dbd.lastType ()) << "REQ: keep src after cp";
 }
 TEST(SafePtrTest, GOLD_safeCp_toPolyBase)
 {
     auto d = make_safe<Derive>();
-    EXPECT_EQ(1, SafePtr<      Base>(d)->value()) << "REQ: cp to Base";
-    EXPECT_EQ(1, SafePtr<const Base>(d)->value()) << "REQ: cp to const Base";
+    SafePtr<Base> db(d);
+    // check target
+    EXPECT_EQ(1,                          db->value  ()) << "REQ: cp to Base";
+    EXPECT_EQ(type_index(typeid(Derive)), db.realType()) << "REQ: cp to Base";
+    EXPECT_EQ(type_index(typeid(Base  )), db.lastType()) << "REQ: keep diff";
+    // check src
+    EXPECT_EQ(2,                          d.use_count()) << "REQ: cp is shared";
+    EXPECT_EQ(1,                          d->value   ()) << "REQ: keep src after cp";
+    EXPECT_EQ(type_index(typeid(Derive)), d.realType ()) << "REQ: keep src after cp";
+    EXPECT_EQ(type_index(typeid(Derive)), d.lastType ()) << "REQ: keep src after cp";
+
+    SafePtr<const Base> dbc(d);
+    // check target
+    EXPECT_EQ(1,                              dbc->value  ()) << "REQ: cp to const Base";
+    EXPECT_EQ(type_index(typeid(Derive)),     dbc.realType()) << "REQ: cp to const Base";
+    EXPECT_EQ(type_index(typeid(const Base)), dbc.lastType()) << "REQ: keep diff";
+    // check src
+    EXPECT_EQ(3,                          d.use_count()) << "REQ: cp is shared";
+    EXPECT_EQ(1,                          d->value   ()) << "REQ: keep src after cp";
+    EXPECT_EQ(type_index(typeid(Derive)), d.realType ()) << "req: keep src after cp";
+    EXPECT_EQ(type_index(typeid(Derive)), d.lastType ()) << "req: keep src after cp";
 }
 struct BS             { int i = 10; };
-struct DS : public BS { DS() { i = 11; } };
+struct DS : public BS { DS() { i = 20; } };
 TEST(SafePtrTest, safeCp_toStaticBase)
 {
     auto d = make_safe<DS>();
-    EXPECT_EQ(11, SafePtr<      BS>(d)->i) << "REQ: cp to static Base";
-    EXPECT_EQ(11, SafePtr<const BS>(d)->i) << "REQ: cp to const static Base";
+    SafePtr<BS> db(d);
+    // check target
+    EXPECT_EQ(20,                     db->i        ) << "REQ: cp to static Base";
+    EXPECT_EQ(type_index(typeid(DS)), db.realType()) << "REQ: cp to static Base";
+    EXPECT_EQ(type_index(typeid(BS)), db.lastType()) << "REQ: diff";
+    // check src
+    EXPECT_EQ(2,                      d.use_count()) << "REQ: cp is shared";
+    EXPECT_EQ(20,                     d->i         ) << "REQ: access same member";
+    EXPECT_EQ(type_index(typeid(DS)), d.realType ()) << "req: keep src after cp";
+    EXPECT_EQ(type_index(typeid(DS)), d.lastType ()) << "req: keep src after cp";
+    SafePtr<const BS> dbc(db);
+    EXPECT_EQ(20, dbc->i         ) << "REQ: cp to const static Base";
+    EXPECT_EQ(3,  dbc.use_count()) << "REQ: share";
+}
+TEST(SafePtrTest, safeCp_nullptr)
+{
+    auto d = SafePtr<Derive>();
+    SafePtr<void> dv(d);
+    EXPECT_EQ(nullptr, dv.get());
+    EXPECT_EQ(type_index(typeid(void)), dv.realType()) << "REQ: cp nullptr as if cp fail, avoid confuse usr";
+    EXPECT_EQ(type_index(typeid(void)), dv.lastType()) << "REQ: cp nullptr as if cp fail, avoid confuse usr";
+    EXPECT_EQ(0,                        dv.use_count()) << "REQ: none";
+    EXPECT_EQ(0,                        d .use_count()) << "REQ: none";
 }
 TEST(SafePtrTest, unsafeCp_toDiffType)
 {
     auto i = make_safe<int>(7);
-    //SafePtr<char>(i);  // REQ: compile err for diff types
+    //auto c = SafePtr<char>(i);  // REQ: compile err for diff types
 }
 struct D_private   : private   Base {};
 struct D_protected : protected Base {};
@@ -223,44 +278,125 @@ TEST(SafePtrTest, unssafeCp_constToNon)
     auto bc = make_safe<const Base>();
     //auto b = SafePtr<Base>(bc);  // REQ: unsafe cp, compile err
 }
-TEST(SafePtrTest, invalidCp_compileErr)  // cp's compile-err is safer than safe_cast that may ret nullptr
-{
-    //auto dv = SafePtr<void>(d);
-    //SafePtr<Derive>(dv);  // bld err; safe but unsupport
-
-    //SafePtr<Derive>(SafePtr<void>(make_safe<Derive>()));  // void->origin: cp compile err, can safe_cast instead
-    //SafePtr<Base  >(SafePtr<void>(make_safe<Derive>()));  // Derive->void->Base: cp compile err, safe_cast ret nullptr
-
-//  SafePtr<D>    safe_dd  = safe_const_d;   // REQ: compile err to cp from const to non
-//  shared_ptr<D> share_dd = share_const_d;  // REQ: compile err to cp from const to non
-}
 
 #define MOVE
 // ***********************************************************************************************
-TEST(SafePtrTest, GOLD_mtQ_req_mv)
+TEST(SafePtrTest, GOLD_safeMv_toSameType)
 {
-    auto msg = SafePtr<Base>(make_safe<Derive>());  // Derive->Base
-    SafePtr<void> msgInQ = move(msg);
-    EXPECT_EQ(nullptr, msg.get()) << "REQ: src giveup";
-    EXPECT_EQ(type_index(typeid(Base)), msg.realType()) << "REQ: reset src all";
-    EXPECT_EQ(type_index(typeid(Base)), msg.lastType()) << "REQ: reset src all";
+    auto i = make_safe<int>(42);
+    SafePtr<int> i2(move(i));
+    EXPECT_EQ(42, *i2.get())     << "REQ: mv to self";
+    EXPECT_EQ(1, i2.use_count()) << "REQ: mv ownership";
+    EXPECT_EQ(nullptr, i.get())  << "REQ: source is empty after move";
 
-    EXPECT_EQ(1                         , safe_cast<Base>(msgInQ)->value()  ) << "REQ: takeover msg";
-    EXPECT_EQ(type_index(typeid(Derive)), safe_cast<Base>(msgInQ).realType()) << "REQ: reset src all";
-    EXPECT_EQ(type_index(typeid(Base  )), safe_cast<Base>(msgInQ).lastType()) << "REQ: reset src all";
+    auto a = make_safe<A>();
+    SafePtr<const A> ac(move(a));
+    EXPECT_EQ(0, ac->value()) << "REQ: mv to const";
+    EXPECT_EQ(nullptr, a.get())  << "REQ: source is empty after mv";
 }
-TEST(SafePtrTest, nothing_cp_mv_assign)
+TEST(SafePtrTest, GOLD_safeMv_toVoid)
 {
-    SafePtr<Base> cp = SafePtr<Derive>();  // cp nullptr
-    EXPECT_EQ(type_index(typeid(Base)), cp.realType()) << "REQ/cov: cp-nothing=fail so origin is Base instead of Derive";
+    auto db = SafePtr<Base>(make_safe<Derive>());
+    SafePtr<void> dbv(move(db));
+    // check target
+    EXPECT_EQ(1,          safe_cast<Base>(dbv)->value ()) << "req: mv Derive->Base->void";
+    EXPECT_EQ(type_index(typeid(Derive)), dbv.realType()) << "REQ: mv to target";
+    EXPECT_EQ(type_index(typeid(Base  )), dbv.lastType()) << "REQ: mv to target";
+    // check src
+    EXPECT_EQ(nullptr,                  db.get     ()) << "REQ: reset src after mv";
+    EXPECT_EQ(type_index(typeid(Base)), db.realType()) << "REQ: reset src after mv";
+    EXPECT_EQ(type_index(typeid(Base)), db.lastType()) << "REQ: reset src after mv";
 
-    SafePtr<Base> mv = move(SafePtr<Derive>());  // mv nullptr
-    EXPECT_EQ(type_index(typeid(Base)), mv.realType()) << "REQ/cov: mv-nothing=fail so origin is Base instead of Derive";
+    auto dbd = safe_cast<Derive>(SafePtr<Base>(make_safe<Derive>()));
+    SafePtr<void> dbdv(move(dbd));
+    // check target
+    EXPECT_EQ(1,          safe_cast<Base>(dbdv)->value ()) << "req: mv Derive->Base->Derive->void";
+    EXPECT_EQ(type_index(typeid(Derive)), dbdv.realType()) << "REQ: mv to target";
+    EXPECT_EQ(type_index(typeid(Base  )), dbdv.lastType()) << "REQ: mv to target";
+    // check src
+    EXPECT_EQ(nullptr,                    dbd.get     ()) << "REQ: reset src after mv";
+    EXPECT_EQ(type_index(typeid(Derive)), dbd.realType()) << "REQ: reset src after mv";
+    EXPECT_EQ(type_index(typeid(Derive)), dbd.lastType()) << "REQ: reset src after mv";
+}
+TEST(SafePtrTest, GOLD_safeMv_toPolyBase)
+{
+    auto d = make_safe<Derive>();
+    SafePtr<Base> db(move(d));
+    // check target
+    EXPECT_EQ(1,            SafePtr<Base>(db)->value ()) << "REQ: mv to Base";
+    EXPECT_EQ(type_index(typeid(Derive)), db.realType()) << "REQ: mv to Base";
+    EXPECT_EQ(type_index(typeid(Base  )), db.lastType()) << "REQ: keep diff";
+    // check src
+    EXPECT_EQ(nullptr,                    d.get     ()) << "REQ: reset src after mv";
+    EXPECT_EQ(type_index(typeid(Derive)), d.realType()) << "REQ: reset src after mv";
+    EXPECT_EQ(type_index(typeid(Derive)), d.lastType()) << "REQ: reset src after mv";
 
-    SafePtr<Base> as;
-    EXPECT_EQ(type_index(typeid(Base)), mv.realType());
-    as = SafePtr<Derive>();
-    EXPECT_EQ(type_index(typeid(Base)), mv.realType()) << "REQ/cov: assign-nothing=fail so keep origin";
+    SafePtr<const Base> dbc(move(db));
+    // check target
+    EXPECT_EQ(1,                              dbc->value  ()) << "REQ: mv to const Base";
+    EXPECT_EQ(type_index(typeid(Derive    )), dbc.realType()) << "REQ: mv to const Base";
+    EXPECT_EQ(type_index(typeid(const Base)), dbc.lastType()) << "REQ: keep diff";
+    // check src
+    EXPECT_EQ(nullptr,                  db.get     ()) << "req: reset src after mv";
+    EXPECT_EQ(type_index(typeid(Base)), db.realType()) << "REQ: reset src after mv";
+    EXPECT_EQ(type_index(typeid(Base)), db.lastType()) << "REQ: reset src after mv";
+}
+TEST(SafePtrTest, safeMv_toStaticBase)
+{
+    auto d = make_safe<DS>();
+    SafePtr<BS> db(move(d));
+    // check target
+    EXPECT_EQ(20,                     db->i        ) << "REQ: mv to static Base";
+    EXPECT_EQ(type_index(typeid(DS)), db.realType()) << "REQ: mv to static Base";
+    EXPECT_EQ(type_index(typeid(BS)), db.lastType()) << "REQ: diff";
+    // check src
+    EXPECT_EQ(nullptr,                d.get     ()) << "REQ: reset src after mv";
+    EXPECT_EQ(type_index(typeid(DS)), d.realType()) << "req: reset src after mv";
+    EXPECT_EQ(type_index(typeid(DS)), d.lastType()) << "req: reset src after mv";
+
+    SafePtr<const BS> dbc(move(db));
+    EXPECT_EQ(20, dbc->i         ) << "REQ: mv to const static Base";
+    EXPECT_EQ(1,  dbc.use_count()) << "REQ: mv ownership";
+}
+TEST(SafePtrTest, safeMv_nullptr)
+{
+    auto d = SafePtr<Derive>();
+    SafePtr<void> dv(move(d));
+    EXPECT_EQ(nullptr, dv.get());
+    EXPECT_EQ(type_index(typeid(void)), dv.realType ()) << "REQ: mv nullptr as if mv fail, avoid confuse usr";
+    EXPECT_EQ(type_index(typeid(void)), dv.lastType ()) << "REQ: mv nullptr as if mv fail, avoid confuse usr";
+    EXPECT_EQ(0,                        dv.use_count()) << "REQ: none";
+    EXPECT_EQ(0,                        d .use_count()) << "REQ: none";
+}
+TEST(SafePtrTest, unsafeMv_toDiffType)
+{
+    auto i = make_safe<int>(7);
+    //auto c = SafePtr<char>(move(i));  // REQ: compile err for diff types
+}
+TEST(SafePtrTest, unsupportMv_toBase)
+{
+    auto b_pri = make_safe<D_private  >();
+    //auto b = SafePtr<Base>(move(b_pri));  // c++ not allow
+    auto b_pro = make_safe<D_protected>();
+    //auto b = SafePtr<Base>(move(b_pro));  // c++ not allow
+}
+TEST(SafePtrTest, unsupportMv_toDerive)
+{
+    auto b = make_safe<Base>();
+    //auto bd = SafePtr<Derive>(move(b));  // REQ: compile err Base->Derive - unsafe
+
+    auto db = SafePtr<Base>(make_safe<Derive>());
+    //auto dbd = SafePtr<Derive>(move(db));  // safe but unsupport since need dynamic_cast that can't bld err if fail
+}
+TEST(SafePtrTest, unsupportMv_voidToNon)
+{
+    auto bv = SafePtr<void>(make_safe<Base>());
+    //auto bvb = SafePtr<Base>(move(bv));  // safe but unsupport since need dynamic check that can't bld err if fail
+}
+TEST(SafePtrTest, unssafeMv_constToNon)
+{
+    auto bc = make_safe<const Base>();
+    //auto b = SafePtr<Base>(move(bc));  // REQ: unsafe cp, compile err
 }
 
 #define ASSIGN
