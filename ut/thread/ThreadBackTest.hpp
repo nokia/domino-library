@@ -170,6 +170,14 @@ TEST_F(THREAD_BACK_TEST, emptyThreadList_ok)
     size_t nHandled = threadBack_.hdlDoneFut();
     EXPECT_EQ(0u, nHandled);
 }
+TEST_F(THREAD_BACK_TEST, task_exception)
+{
+    EXPECT_TRUE(threadBack_.newTaskOK(
+        [] { throw runtime_error("Fail"); return make_safe<bool>(true); },
+        [](SafePtr<void> aRet) { EXPECT_EQ(nullptr, aRet.get()) << "REQ: except->fail"; }
+    ));
+    while (threadBack_.hdlDoneFut() < 1) timedwait();
+}
 TEST_F(THREAD_BACK_TEST, invalid_msgSelf_entryFN_backFN)
 {
     EXPECT_FALSE(threadBack_.newTaskOK(

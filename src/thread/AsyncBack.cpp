@@ -25,7 +25,9 @@ bool AsyncBack::newTaskOK(const MT_TaskEntryFN& mt_aEntryFN, const TaskBackFN& a
         // - &mt_nDoneFut is better than "this" that can access other non-MT-safe member
         [mt_aEntryFN, &mt_nDoneFut = mt_nDoneFut_]()
         {
-            auto ret = mt_aEntryFN();
+            SafePtr ret;
+            try { ret = mt_aEntryFN(); }
+            catch(...) {}  // continue following
             mt_nDoneFut.fetch_add(1, std::memory_order_relaxed);  // fastest +1
             mt_pingMainTH();
             return ret;

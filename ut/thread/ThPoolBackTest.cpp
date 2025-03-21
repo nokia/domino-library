@@ -17,15 +17,6 @@ TEST_F(ThPoolBackTest, invalid_maxThread)
     while (threadBack_.hdlDoneFut() == 0)
         timedwait();  // REQ: wait new task done
 }
-TEST_F(ThPoolBackTest, task_exception)
-{
-    ThPoolBack myPool(1);
-    EXPECT_TRUE(myPool.newTaskOK(
-        [] { throw std::runtime_error("Fail"); return make_safe<bool>(true); },
-        [](SafePtr<void> aRet) { EXPECT_EQ(nullptr, aRet.get()) << "REQ: except->fail"; }
-    ));
-    while (myPool.hdlDoneFut() < 1) timedwait();
-}
 
 // ***********************************************************************************************
 TEST_F(ThPoolBackTest, performance)
