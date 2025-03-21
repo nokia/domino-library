@@ -30,7 +30,11 @@ size_t ThreadBack::hdlDoneFut(UniLog& oneLog)
         auto& fut = fut_backFN->first;
         if (fut.wait_for(0s) == future_status::ready)
         {
-            fut_backFN->second(fut.get());  // callback
+            try { fut_backFN->second(fut.get()); }  // callback
+            catch(...) {
+                ERR("(ThreadBack) entryFN() except");
+                fut_backFN->second(nullptr);
+            }
             fut_backFN = fut_backFN_S_.erase(fut_backFN);
             ++nHandledFut;
         }

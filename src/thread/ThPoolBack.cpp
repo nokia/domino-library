@@ -43,7 +43,11 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
                         task = move(this->taskQ_.front());
                         this->taskQ_.pop_front();
                     }
-                    try { task(); } catch(...){}  // thread can continue
+
+                    // - thread can continue
+                    // - other except is rare & hard recover
+                    try { task(); }
+                    catch(...){}
 
                     // no lock so can only use MT_safe part in "this"
                     this->mt_nDoneFut_.fetch_add(1, std::memory_order_relaxed);  // fastest +1
