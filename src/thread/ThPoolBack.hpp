@@ -32,12 +32,16 @@ namespace rlib
 class ThPoolBack : public ThreadBack
 {
 public:
+    // @brief Constructs a thread pool with exactly the specified number of threads.
+    // @param aMaxThread: Exact number of threads to create (minimum 1).
+    // @throws runtime_error: If any thread cannot be created, ensuring the pool matches the requested size.
     explicit ThPoolBack(size_t aMaxThread = 10);
     ~ThPoolBack();
 
     bool newTaskOK(const MT_TaskEntryFN&, const TaskBackFN&, UniLog& = UniLog::defaultUniLog_) override;
 
 private:
+    void clean_();
     // -------------------------------------------------------------------------------------------
     std::vector<std::thread>  thPool_;
 
@@ -53,4 +57,5 @@ private:
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2024-07-09  CSZ       1)create
+// 2025-03-21  CSZ       2)enhance to avoid hang; enable exception for safety
 // ***********************************************************************************************

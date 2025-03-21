@@ -13,58 +13,74 @@ namespace rlib
 // ***********************************************************************************************
 ThPoolBack::ThPoolBack(size_t aMaxThread)
 {
-    // validate
-    if (aMaxThread == 0)
-    {
-        WRN("!!! Why 0 thread? Force to create 1 thread for min workable.");
-        aMaxThread = 1;
-    }
+    try {
+        // validate
+        if (aMaxThread == 0)
+        {
+            WRN("!!! Why 0 thread? Force to create 1 thread for min workable.");
+            aMaxThread = 1;
+        }
 
-    // create threads
-    thPool_.reserve(aMaxThread);  // not construct any thread
-    for (size_t i = 0; i < aMaxThread; ++i)
-    {
-        thread th([this]
-        {   // thread main()
-            for (;;)
-            {
-                packaged_task<SafePtr<void>()> task;
+        // create threads
+        thPool_.reserve(aMaxThread);  // not construct any thread
+        for (size_t i = 0; i < aMaxThread; ++i)
+        {
+            thread th([this]
+            {   // thread main()
+                for (;;)
                 {
-                    unique_lock<mutex> lock(this->qMutex_);  // lock to prevent new task/notif until qCv_ sleep
-                    this->qCv_.wait(lock, [this]{ return this->mt_stopAllTH_ || !this->taskQ_.empty(); });
+                    packaged_task<SafePtr<void>()> task;
+                    {
+                        // - lock to prevent new task/notif until my qCv_ sleep/wait-notif (ensure not loss notif)
+                        // - lock to prevent other thread steal task
+                        unique_lock<mutex> lock(this->qMutex_);
+                        this->qCv_.wait(lock, [this]{ return this->mt_stopAllTH_ || !this->taskQ_.empty(); });
 
-                    if (this->mt_stopAllTH_)
-                        return;
-                    if (this->taskQ_.empty())  // for qCv_ spurious wakeup; ut can't cov
-                        continue;
-                    task = move(this->taskQ_.front());
-                    this->taskQ_.pop_front();
+                        if (this->mt_stopAllTH_)
+                            return;
+                        // qCv_.wait() lock then check predicate, so no need check taskQ_.empty() here
+
+                        task = move(this->taskQ_.front());
+                        this->taskQ_.pop_front();
+                    }
+                    task();
+
+                    // no lock so can only use MT_safe part in "this"
+                    this->mt_nDoneFut_.fetch_add(1, std::memory_order_relaxed);  // fastest +1
+                    mt_pingMainTH();  // notify mainTH 1 task done
                 }
-                task();
-
-                // no lock so can only use MT_safe part in "this"
-                this->mt_nDoneFut_.fetch_add(1, std::memory_order_relaxed);  // fastest +1
-                mt_pingMainTH();  // notify mainTH 1 task done
+            });  // thread main()
+            if (th.joinable()) {
+                thPool_.emplace_back(move(th));
             }
-        });
-        if (th.joinable())
-            thPool_.emplace_back(move(th));
-        else
-            throw runtime_error("(ThPoolBack) failed to construct some thread!!!");
-    }  // for
+            else {
+                // - rare
+                // - throw is safer than just log(=hide)
+                throw runtime_error("(ThPoolBack) failed to construct some thread!!!");
+            }
+        }  // for
+    } cache(...) {  // no ut; rare but safer
+        clean_();
+        throw;
+    }
 }
 
 // ***********************************************************************************************
 ThPoolBack::~ThPoolBack()
 {
+    clean_();
+    HID("!!! discard nTask=" << taskQ_.size());
+}
+
+// ***********************************************************************************************
+void ThPoolBack::clean_()
+{
     mt_stopAllTH_ = true;
     qCv_.notify_all();
 
     for (auto&& th : thPool_)
-        if (th.joinable())
+        if (th.joinable())  // safer: if sth wrong during thread lifecycle
             th.join();
-
-    HID("!!! discard nTask=" << taskQ_.size());
 }
 
 // ***********************************************************************************************
