@@ -50,7 +50,7 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
         if (th.joinable())
             thPool_.emplace_back(move(th));
         else
-            ERR("(ThPoolBack) failed to construct nThread=" << aMaxThread - thPool_.size() << "!!!");
+            throw runtime_error("(ThPoolBack) failed to construct some thread!!!");
     }  // for
 }
 
