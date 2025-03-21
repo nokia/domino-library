@@ -40,10 +40,11 @@ public:
 private:
     // -------------------------------------------------------------------------------------------
     std::vector<std::thread>  thPool_;
-    std::deque<std::packaged_task<SafePtr<void>()>>  taskQ_;
 
-    std::mutex  mutex_;
-    std::condition_variable  cv_;
+    std::deque<std::packaged_task<SafePtr<void>()>>  taskQ_;
+    std::mutex  qMutex_;
+    std::condition_variable  qCv_;
+
     std::atomic<bool>  mt_stopAllTH_ = false;
 };
 
