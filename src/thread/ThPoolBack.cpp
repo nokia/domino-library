@@ -38,12 +38,12 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
 
                         if (this->mt_stopAllTH_)
                             return;
-                        // qCv_.wait() lock then check predicate, so no need check taskQ_.empty() here
+                        // qCv_.wait(): lock then check predicate, so no need check taskQ_.empty() here
 
                         task = move(this->taskQ_.front());
                         this->taskQ_.pop_front();
                     }
-                    task();
+                    try { task(); } catch(...){}  // thread can continue
 
                     // no lock so can only use MT_safe part in "this"
                     this->mt_nDoneFut_.fetch_add(1, std::memory_order_relaxed);  // fastest +1
@@ -59,7 +59,7 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
                 throw runtime_error("(ThPoolBack) failed to construct some thread!!!");
             }
         }  // for
-    } cache(...) {  // no ut; rare but safer
+    } catch(...) {  // no ut; rare but safer
         clean_();
         throw;
     }
