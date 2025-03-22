@@ -46,9 +46,9 @@ public:
     // @return: The number of completed tasks processed.
     size_t hdlDoneFut(UniLog& = UniLog::defaultUniLog_) noexcept;
 
-    auto nFut() { return fut_backFN_S_.size(); }
+    auto nFut() noexcept { return fut_backFN_S_.size(); }
 
-    static bool mt_inMyMainTH()
+    static bool mt_inMyMainTH() noexcept
     {
         static const auto s_myMainTH = std::this_thread::get_id();
         return s_myMainTH == std::this_thread::get_id();

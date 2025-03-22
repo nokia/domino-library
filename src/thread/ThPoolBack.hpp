@@ -12,8 +12,10 @@
 // - Use-safe: yes with condition:
 //   . not support TOO many tasks that exceeds fut_backFN_S_/mt_nDoneFut_/.. (impossible in most/normal cases)
 //   . destructor will FOREVER wait all thread finished
-// - MT safe: NO (can be used in main thread only)
-// - Exception-safe: NO
+// - MT safe:
+//   . MT_/mt_ prefix: yes
+//   . others: no (must call in main thread)
+// - Exception-safe: follow noexcept-declare
 // ***********************************************************************************************
 #pragma once
 
@@ -35,13 +37,13 @@ public:
     // @brief Constructs a thread pool with exactly the specified number of threads.
     // @param aMaxThread: Exact number of threads to create (minimum 1).
     // @throws runtime_error: If any thread cannot be created, ensuring the pool matches the requested size.
-    explicit ThPoolBack(size_t aMaxThread = 10);
+    explicit ThPoolBack(size_t aMaxThread = 10) noexcept(false);
     ~ThPoolBack();
 
-    bool newTaskOK(const MT_TaskEntryFN&, const TaskBackFN&, UniLog& = UniLog::defaultUniLog_) override;
+    bool newTaskOK(const MT_TaskEntryFN&, const TaskBackFN&, UniLog& = UniLog::defaultUniLog_) noexcept override;
 
 private:
-    void clean_();
+    void clean_() noexcept;
     // -------------------------------------------------------------------------------------------
     std::vector<std::thread>  thPool_;
 

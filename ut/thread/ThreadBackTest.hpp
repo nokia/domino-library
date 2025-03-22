@@ -165,12 +165,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_entryFn_notify_insteadof_timeout)
 
 #define ABNORMAL
 // ***********************************************************************************************
-TEST_F(THREAD_BACK_TEST, emptyThreadList_ok)
-{
-    size_t nHandled = threadBack_.hdlDoneFut();
-    EXPECT_EQ(0u, nHandled);
-}
-TEST_F(THREAD_BACK_TEST, task_exception)
+TEST_F(THREAD_BACK_TEST, GOLD_except_entryFN_backFN)
 {
     atomic<int> step{0};
     EXPECT_TRUE(threadBack_.newTaskOK(
@@ -195,6 +190,11 @@ TEST_F(THREAD_BACK_TEST, task_exception)
     EXPECT_EQ(2, step.load()) << "REQ: backFN() executed";
     EXPECT_EQ(0, threadBack_.nFut()) << "REQ: task removed from fut_backFN_S_ after exceptions";
     EXPECT_EQ(0, threadBack_.mt_nDoneFut().load()) << "REQ: ok after backFN() except";
+}
+TEST_F(THREAD_BACK_TEST, emptyThreadList_ok)
+{
+    size_t nHandled = threadBack_.hdlDoneFut();
+    EXPECT_EQ(0u, nHandled);
 }
 TEST_F(THREAD_BACK_TEST, invalid_msgSelf_entryFN_backFN)
 {

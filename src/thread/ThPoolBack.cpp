@@ -77,7 +77,7 @@ ThPoolBack::~ThPoolBack()
 }
 
 // ***********************************************************************************************
-void ThPoolBack::clean_()
+void ThPoolBack::clean_() noexcept
 {
     mt_stopAllTH_ = true;
     qCv_.notify_all();
@@ -88,7 +88,7 @@ void ThPoolBack::clean_()
 }
 
 // ***********************************************************************************************
-bool ThPoolBack::newTaskOK(const MT_TaskEntryFN& mt_aEntryFN, const TaskBackFN& aBackFN, UniLog& oneLog)
+bool ThPoolBack::newTaskOK(const MT_TaskEntryFN& mt_aEntryFN, const TaskBackFN& aBackFN, UniLog& oneLog) noexcept
 {
     // validate
     if (! ThreadBack::newTaskOK(mt_aEntryFN, aBackFN, oneLog))
