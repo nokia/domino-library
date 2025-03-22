@@ -172,11 +172,29 @@ TEST_F(THREAD_BACK_TEST, emptyThreadList_ok)
 }
 TEST_F(THREAD_BACK_TEST, task_exception)
 {
+    atomic<int> step{0};
     EXPECT_TRUE(threadBack_.newTaskOK(
-        [] { throw runtime_error("Fail"); return make_safe<bool>(true); },
-        [](SafePtr<void> aRet) { EXPECT_EQ(nullptr, aRet.get()) << "REQ: except->fail"; }
+        [&step]  // entryFN()
+        {
+            ++step;
+            throw runtime_error("entryFN() exception");
+            return make_safe<bool>(true);
+        },
+        [&step](SafePtr<void> aRet)  // backFN()
+        {
+            EXPECT_EQ(1, step.load()) << "REQ: entryFN() executed";
+            EXPECT_EQ(nullptr, aRet.get()) << "REQ: entryFN() except -> aRet=null";
+            ++step;
+            throw runtime_error("backFN() exception");
+        }
     ));
-    while (threadBack_.hdlDoneFut() < 1) timedwait();
+    while (threadBack_.mt_nDoneFut().load() < 1) {  // REQ: counter++ after entryFN() except
+        timedwait();
+    }
+    threadBack_.hdlDoneFut();
+    EXPECT_EQ(2, step.load()) << "REQ: backFN() executed";
+    EXPECT_EQ(0, threadBack_.nFut()) << "REQ: task removed from fut_backFN_S_ after exceptions";
+    EXPECT_EQ(0, threadBack_.mt_nDoneFut().load()) << "REQ: ok after backFN() except";
 }
 TEST_F(THREAD_BACK_TEST, invalid_msgSelf_entryFN_backFN)
 {

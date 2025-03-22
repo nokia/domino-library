@@ -17,7 +17,7 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
         // validate
         if (aMaxThread == 0)
         {
-            WRN("!!! Why 0 thread? Force to create 1 thread for min workable.");
+            WRN("!!! Force to create 1 thread for min workable. Safe since > usr req.");
             aMaxThread = 1;
         }
 
@@ -44,10 +44,10 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
                         this->taskQ_.pop_front();
                     }
 
-                    // - thread can continue
-                    // - other except is rare & hard recover
+                    // - thread can continue when task() throw
+                    // - other excepts (eg bad_alloc) are rare & hard-recover
                     try { task(); }
-                    catch(...){}
+                    catch(...) {}  // packaged_task already saved exception in its future
 
                     // no lock so can only use MT_safe part in "this"
                     this->mt_nDoneFut_.fetch_add(1, std::memory_order_relaxed);  // fastest +1
@@ -57,15 +57,15 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
             if (th.joinable()) {
                 thPool_.emplace_back(move(th));
             }
-            else {
+            else {  // ut can't cover this branch
                 // - rare
                 // - throw is safer than just log(=hide)
                 throw runtime_error("(ThPoolBack) failed to construct some thread!!!");
             }
-        }  // for
-    } catch(...) {  // no ut; rare but safer
+        }  // for-loop to create threads
+    } catch(...) {  // ut can't cover this branch; rare but safer
         clean_();
-        throw;
+        throw;  // break constructor
     }
 }
 
@@ -84,7 +84,7 @@ void ThPoolBack::clean_()
 
     for (auto&& th : thPool_)
         if (th.joinable())  // safer: if sth wrong during thread lifecycle
-            th.join();
+            th.join();  // safer: avoid terminate when destruct th
 }
 
 // ***********************************************************************************************

@@ -44,7 +44,7 @@ public:
     // @brief: Processes completed threads and invokes their callbacks.
     // @param UniLog: The logger to use for this operation.
     // @return: The number of completed tasks processed.
-    size_t hdlDoneFut(UniLog& = UniLog::defaultUniLog_);
+    size_t hdlDoneFut(UniLog& = UniLog::defaultUniLog_) noexcept;
 
     auto nFut() { return fut_backFN_S_.size(); }
 
@@ -73,6 +73,7 @@ public:
 // 2024-07-09  CSZ       1)create
 // 2024-08-05  CSZ       - mt_nDoneFut_ to improve iteration of fut_backFN_S_
 //                       - MT_TaskEntryFN ret SafePtr<void> instead of bool
+// 2025-03-21  CSZ       2)enhance to avoid hang; enable exception for safety
 // ***********************************************************************************************
 // - why SafePtr
 //   . thread can ret any type data include bool

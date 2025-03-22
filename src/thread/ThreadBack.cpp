@@ -15,7 +15,7 @@ using namespace std;
 namespace rlib
 {
 // ***********************************************************************************************
-size_t ThreadBack::hdlDoneFut(UniLog& oneLog)
+size_t ThreadBack::hdlDoneFut(UniLog& oneLog) noexcept
 {
     size_t nHandledFut = 0;
     const auto nDoneFut = mt_nDoneFut_.load(memory_order_relaxed);  // since mt_nDoneFut_+1 may before future::ready
@@ -30,11 +30,13 @@ size_t ThreadBack::hdlDoneFut(UniLog& oneLog)
         auto& fut = fut_backFN->first;
         if (fut.wait_for(0s) == future_status::ready)
         {
-            try { fut_backFN->second(fut.get()); }  // callback
-            catch(...) {
-                ERR("(ThreadBack) entryFN() except");
-                fut_backFN->second(nullptr);
-            }
+            SafePtr ret;
+            try { ret = fut.get(); }
+            catch(...) { ERR("(ThreadBack) entryFN() except"); }  // ERR() ok since in main thread
+
+            try { fut_backFN->second(move(ret)); }  // callback
+            catch(...) { ERR("(ThreadBack) backFN() except"); }  // ERR() ok since in main thread
+
             fut_backFN = fut_backFN_S_.erase(fut_backFN);
             ++nHandledFut;
         }
@@ -42,7 +44,7 @@ size_t ThreadBack::hdlDoneFut(UniLog& oneLog)
             ++fut_backFN;
     }  // 1 loop, simple & safe
 
-    mt_nDoneFut_.fetch_sub(nHandledFut, memory_order_relaxed);
+    mt_nDoneFut_.fetch_sub(nHandledFut, memory_order_relaxed);  // memory_order_relaxed is faster but not so realtime
     return nHandledFut;
 }
 

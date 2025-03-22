@@ -82,6 +82,7 @@ public:
 // 2023-09-14  CSZ       2)align with MsgSelf
 // 2023-10-25  CSZ       - with semaphore's wait-notify
 // 2024-07-10  CSZ       - mv common to base=ThreadBack
+// 2025-03-21  CSZ       3)enhance to avoid hang; enable exception for safety
 // ***********************************************************************************************
 // - Q&A:
 //   . MT_/mt_ prefix
