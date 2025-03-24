@@ -211,7 +211,7 @@ TEST_F(THREAD_BACK_TEST, invalid_msgSelf_entryFN_backFN)
     ));
 
     EXPECT_FALSE(threadBack_.newTaskOK(
-        MT_TaskEntryFN(nullptr),  // invalid since entryFn==nullptr
+        MT_TaskEntryFN(),  // invalid entryFn
         [](SafePtr<void>) {}  // backFn
     ));
 

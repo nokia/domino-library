@@ -23,11 +23,11 @@ namespace rlib
 // ***********************************************************************************************
 // wrap TaskBackFN to MsgSelf
 inline
-TaskBackFN viaMsgSelf(const TaskBackFN& aBackFN, EMsgPriority aPri = EMsgPri_NORM)
+TaskBackFN viaMsgSelf(const TaskBackFN& aBackFN, EMsgPriority aPri = EMsgPri_NORM) noexcept
 {
     auto&& msgSelf = MSG_SELF;
     return ! aBackFN || msgSelf.get() == nullptr
-        ? TaskBackFN(nullptr)  // empty fn
+        ? TaskBackFN()  // empty fn
         : [aBackFN, msgSelf, aPri](SafePtr<void> aRet)  // must cp aBackFN since lambda run later in diff lifecycle
         {
             msgSelf->newMsg(bind(aBackFN, aRet), aPri);  // wrap aBackFN to queue in MsgSelf

@@ -44,7 +44,7 @@ public:
     // - can't create by SafePtr(ConstructArgs...) that confuse cp constructor, make_safe() instead
     // - T(ConstructArgs) SHALL mem-safe
     constexpr SafePtr(std::nullptr_t = nullptr) noexcept {}
-    template<typename U, typename... ConstructArgs> friend SafePtr<U> make_safe(ConstructArgs&&...);
+    template<typename U, typename... ConstructArgs> friend SafePtr<U> make_safe(ConstructArgs&&...) noexcept;
 
     template<typename From> friend class SafePtr;  // let cp/mv access private
     // safe-only cast (vs shared_ptr, eg static_pointer_cast<any> is not safe)
@@ -78,7 +78,7 @@ private:
     // -------------------------------------------------------------------------------------------
 public:
     friend class SafeWeak<T>;  // so SafeWeak.lock() can construct SafePtr
-    operator SafeWeak<T>() const { return SafeWeak<T>(*this); }
+    operator SafeWeak<T>() const noexcept { return SafeWeak<T>(*this); }
 };
 
 // ***********************************************************************************************
@@ -182,11 +182,15 @@ std::type_index SafePtr<T>::genLastType_() const noexcept
 
 // ***********************************************************************************************
 template<typename U, typename... ConstructArgs>
-SafePtr<U> make_safe(ConstructArgs&&... aArgs)
+SafePtr<U> make_safe(ConstructArgs&&... aArgs) noexcept
 {
     SafePtr<U> safeU;
-    safeU.pT_ = std::make_shared<U>(std::forward<ConstructArgs>(aArgs)...);  // std::make_shared, not boost's
-    // HID("new ptr=" << (void*)(safeU.pT_.get()));  // too many print; void* print addr rather than content(dangeous)
+    try {
+        safeU.pT_ = std::make_shared<U>(std::forward<ConstructArgs>(aArgs)...);  // std::make_shared, not boost's
+        // HID("new ptr=" << (void*)(safeU.pT_.get()));  // too many print; void* print addr rather than content(dangeous)
+    } catch(...) {
+        HID("failed since construct exception!!!");
+    }
     return safeU;
 }
 
@@ -285,6 +289,7 @@ struct std::hash<rlib::SafePtr<T>>
 // 2024-06-28  CSZ       - dynamic_pointer_cast ok or ret null
 // 2024-10-16  CSZ       - dynamic_pointer_cast to safe_cast since std not allowed
 // 2025-02-13  CSZ       4)SafeWeak
+// 2025-03-24  CSZ       5)enable exception, tolerate except is safer
 // ***********************************************************************************************
 // - Q&A
 //   . How to solve safety issue:

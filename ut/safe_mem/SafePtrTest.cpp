@@ -553,4 +553,14 @@ TEST(SafePtrTest, GOLD_convert_SafePtr_WeakPtr)
     EXPECT_EQ(nullptr, w.lock().get()) << "REQ: no more.";
 }
 
+#define WEAK
+// ***********************************************************************************************
+TEST(SafePtrTest, except_safe)
+{
+    struct E {
+        E() { throw runtime_error("construct except"); }
+    };
+    EXPECT_EQ(nullptr, make_safe<E>().get()) << "REQ: except->nullptr";
+}
+
 }  // namespace
