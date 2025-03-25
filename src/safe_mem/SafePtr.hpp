@@ -198,17 +198,17 @@ SafePtr<U> make_safe(ConstructArgs&&... aArgs) noexcept
 // - SafePtr can be key of map & unordered_map (like shared_ptr)
 // - convenient usage
 template<typename T, typename U>
-bool operator==(SafePtr<T> lhs, SafePtr<U> rhs)
+bool operator==(SafePtr<T> lhs, SafePtr<U> rhs) noexcept
 {
     return lhs.get() == rhs.get();
 }
 template<typename T, typename U>
-bool operator!=(SafePtr<T> lhs, SafePtr<U> rhs)
+bool operator!=(SafePtr<T> lhs, SafePtr<U> rhs) noexcept
 {
     return !(lhs == rhs);
 }
 template<typename T, typename U>
-bool operator<(SafePtr<T> lhs, SafePtr<U> rhs)
+bool operator<(SafePtr<T> lhs, SafePtr<U> rhs) noexcept
 {
     return lhs.get() < rhs.get();
 }

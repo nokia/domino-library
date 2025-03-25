@@ -70,7 +70,7 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
 }
 
 // ***********************************************************************************************
-ThPoolBack::~ThPoolBack()
+ThPoolBack::~ThPoolBack() noexcept
 {
     clean_();
     HID("!!! discard nTask=" << taskQ_.size());

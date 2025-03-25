@@ -15,7 +15,7 @@ using namespace std;
 namespace rlib
 {
 // ***********************************************************************************************
-MtInQueue::~MtInQueue()
+MtInQueue::~MtInQueue() noexcept
 {
     const auto nEle = mt_size(true);
     if (nEle)
@@ -23,7 +23,7 @@ MtInQueue::~MtInQueue()
 }
 
 // ***********************************************************************************************
-deque<ELE_TID>::iterator MtInQueue::begin_()
+deque<ELE_TID>::iterator MtInQueue::begin_() noexcept
 {
     if (cache_.empty())
     {
@@ -45,7 +45,7 @@ deque<ELE_TID>::iterator MtInQueue::begin_()
 }
 
 // ***********************************************************************************************
-size_t MtInQueue::handleCacheEle_()
+size_t MtInQueue::handleCacheEle_() noexcept
 {
     const auto nEle = cache_.size();
     while (! cache_.empty())
@@ -59,13 +59,15 @@ size_t MtInQueue::handleCacheEle_()
             WRN("(MtQ) discard 1 ele(=" << ele_tid.second.name() << ") since no handler.");
             continue;
         }
-        id_hdlr->second(ele_tid.first);
+
+        try { id_hdlr->second(ele_tid.first); }
+        catch(...) { HID("(MtQ) hdlr except for " << ele_tid.second.name()); }  // continue next ele
     }  // while
     return nEle;
 }
 
 // ***********************************************************************************************
-size_t MtInQueue::handleAllEle()
+size_t MtInQueue::handleAllEle() noexcept
 {
     const auto nEle = handleCacheEle_();
 
@@ -83,7 +85,7 @@ size_t MtInQueue::handleAllEle()
 }
 
 // ***********************************************************************************************
-void MtInQueue::mt_clearElePool()
+void MtInQueue::mt_clearElePool() noexcept
 {
     lock_guard<mutex> guard(mutex_);
     queue_.clear();
@@ -92,7 +94,7 @@ void MtInQueue::mt_clearElePool()
 }
 
 // ***********************************************************************************************
-size_t MtInQueue::mt_size(bool canBlock)
+size_t MtInQueue::mt_size(bool canBlock) noexcept
 {
     if (canBlock)
     {
@@ -109,7 +111,7 @@ size_t MtInQueue::mt_size(bool canBlock)
 }
 
 // ***********************************************************************************************
-ELE_TID MtInQueue::pop()
+ELE_TID MtInQueue::pop() noexcept
 {
     // nothing
     auto&& it = begin_();
@@ -123,7 +125,7 @@ ELE_TID MtInQueue::pop()
 }
 
 // ***********************************************************************************************
-MtInQueue& mt_getQ()
+MtInQueue& mt_getQ() noexcept
 {
     // - not exist if nobody call this func
     // - c++14 support MT safe for static var

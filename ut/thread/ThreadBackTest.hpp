@@ -183,10 +183,9 @@ TEST_F(THREAD_BACK_TEST, GOLD_except_entryFN_backFN)
             throw runtime_error("backFN() exception");
         }
     ));
-    while (threadBack_.mt_nDoneFut().load() < 1) {  // REQ: counter++ after entryFN() except
+    while (threadBack_.hdlDoneFut() < 1) {  // REQ: counter++ after entryFN() except
         timedwait();
     }
-    threadBack_.hdlDoneFut();
     EXPECT_EQ(2, step.load()) << "REQ: backFN() executed";
     EXPECT_EQ(0, threadBack_.nFut()) << "REQ: task removed from fut_backFN_S_ after exceptions";
     EXPECT_EQ(0, threadBack_.mt_nDoneFut().load()) << "REQ: ok after backFN() except";
@@ -277,7 +276,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     threadBack_.newTaskOK(
         // entryFn
         [] {
-            mt_getQ().mt_push(MAKE_PTR<string>("a"));
+            mt_getQ().mt_pushOK(MAKE_PTR<string>("a"));
             return make_safe<bool>(true);
         },
         // backFn
@@ -292,7 +291,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     threadBack_.newTaskOK(
         // entryFn
         [] {
-            mt_getQ().mt_push(MAKE_PTR<int>(2));
+            mt_getQ().mt_pushOK(MAKE_PTR<int>(2));
             return make_safe<bool>(true);
         },
         // backFn

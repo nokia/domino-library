@@ -38,7 +38,7 @@ public:
     // @param aMaxThread: Exact number of threads to create (minimum 1).
     // @throws runtime_error: If any thread cannot be created, ensuring the pool matches the requested size.
     explicit ThPoolBack(size_t aMaxThread = 10) noexcept(false);
-    ~ThPoolBack();
+    ~ThPoolBack() noexcept;
 
     bool newTaskOK(const MT_TaskEntryFN&, const TaskBackFN&, UniLog& = UniLog::defaultUniLog_) noexcept override;
 
