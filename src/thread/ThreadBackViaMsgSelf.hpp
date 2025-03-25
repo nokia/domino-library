@@ -28,7 +28,7 @@ TaskBackFN viaMsgSelf(const TaskBackFN& aBackFN, EMsgPriority aPri = EMsgPri_NOR
     auto&& msgSelf = MSG_SELF;
     return ! aBackFN || msgSelf.get() == nullptr
         ? TaskBackFN()  // empty fn
-        : [aBackFN, msgSelf, aPri](SafePtr<void> aRet)  // must cp aBackFN since lambda run later in diff lifecycle
+        : [aBackFN, msgSelf, aPri](SafePtr<void> aRet) noexcept  // must cp aBackFN since lambda run later in diff lifecycle
         {
             msgSelf->newMsg(bind(aBackFN, aRet), aPri);  // wrap aBackFN to queue in MsgSelf
         };

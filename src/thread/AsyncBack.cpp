@@ -18,12 +18,12 @@ bool AsyncBack::newTaskOK(const MT_TaskEntryFN& mt_aEntryFN, const TaskBackFN& a
             return false;
 
         // create new thread
-        // - ensure AsyncBack alive when thread alive - yes since ~AsyncBack() will wait all fut over
+        // - impossible thread alive but AsyncBack destructed, since ~AsyncBack() will wait all fut over
         auto fut = async(
             launch::async,
             // - must cp mt_aEntryFN than ref, otherwise dead loop
             // - &mt_nDoneFut is better than "this" that can access other non-MT-safe member
-            [mt_aEntryFN, &mt_nDoneFut = mt_nDoneFut_]()  // thread main
+            [mt_aEntryFN, &mt_nDoneFut = mt_nDoneFut_]() noexcept  // thread main
             {
                 SafePtr ret;
                 try { ret = mt_aEntryFN(); }

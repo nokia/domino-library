@@ -19,7 +19,6 @@
 //   . under single thread
 //     . so eg after MtInQueue.mt_push(), shall NOT touch pushed SafePtr
 //     . only HID is MT safe that can be used here
-//   . no exception
 //   . T's duty to ensure it's inner safety (eg no exception from T's constructor)
 //   . loop-ref: out-duty, usr issue than SafePtr
 //   . safe ptr array: no need since std::array
@@ -185,7 +184,7 @@ template<typename U, typename... ConstructArgs>
 SafePtr<U> make_safe(ConstructArgs&&... aArgs) noexcept
 {
     SafePtr<U> safeU;
-    try {
+    try {  // bad_alloc, or except from U's constructor
         safeU.pT_ = std::make_shared<U>(std::forward<ConstructArgs>(aArgs)...);  // std::make_shared, not boost's
         // HID("new ptr=" << (void*)(safeU.pT_.get()));  // too many print; void* print addr rather than content(dangeous)
     } catch(...) {
@@ -259,14 +258,9 @@ SafeWeak<T>::SafeWeak(const SafePtr<T>& aSafeFrom) noexcept
 template<typename T>
 SafePtr<T> SafeWeak<T>::lock() const noexcept
 {
-    SafePtr<T> ret;
-    if (pT_.expired())
-        return ret;
-
-    ret.pT_ = pT_.lock();
-    ret.realType_ = realType_;
-    ret.lastType_ = lastType_;
-    return ret;
+    return (pT_.expired())
+        ? nullptr
+        : SafePtr<T>(pT_.lock(), realType_, lastType_);  // constructor is faster
 }
 }  // namespace
 
@@ -289,7 +283,7 @@ struct std::hash<rlib::SafePtr<T>>
 // 2024-06-28  CSZ       - dynamic_pointer_cast ok or ret null
 // 2024-10-16  CSZ       - dynamic_pointer_cast to safe_cast since std not allowed
 // 2025-02-13  CSZ       4)SafeWeak
-// 2025-03-24  CSZ       5)enable exception, tolerate except is safer
+// 2025-03-24  CSZ       5)enable exception: tolerate except is safer; can't recover except->terminate
 // ***********************************************************************************************
 // - Q&A
 //   . How to solve safety issue:

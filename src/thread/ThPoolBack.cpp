@@ -25,7 +25,7 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
         thPool_.reserve(aMaxThread);  // not construct any thread
         for (size_t i = 0; i < aMaxThread; ++i)
         {
-            thread th([this]
+            thread th([this]() noexcept
             {   // thread main()
                 for (;;)
                 {

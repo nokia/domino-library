@@ -175,5 +175,5 @@ MtInQueue& mt_getQ() noexcept;
 // 2024-02-15  CSZ       3)use SafePtr (mem-safe); shared_ptr is not mem-safe
 // 2024-03-10  CSZ       - enhance safe of setHdlrOK()
 // 2024-10-05  CSZ       - integrate with domino (giveup since multi-same-type)
-// 2025-03-24  CSZ       4)enable exception: tolerate except is safer; can't recover->terminate
+// 2025-03-24  CSZ       4)enable exception: tolerate except is safer; can't recover except->terminate
 // ***********************************************************************************************

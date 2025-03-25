@@ -15,7 +15,6 @@
 // - MT safe:
 //   . MT_/mt_ prefix: yes
 //   . others: no (must call in main thread)
-// - Exception-safe: follow noexcept-declare
 // ***********************************************************************************************
 #pragma once
 
@@ -36,7 +35,7 @@ class ThPoolBack : public ThreadBack
 public:
     // @brief Constructs a thread pool with exactly the specified number of threads.
     // @param aMaxThread: Exact number of threads to create (minimum 1).
-    // @throws runtime_error: If any thread cannot be created, ensuring the pool matches the requested size.
+    // @except if any thread cannot be created/joinable
     explicit ThPoolBack(size_t aMaxThread = 10) noexcept(false);
     ~ThPoolBack() noexcept;
 
@@ -59,5 +58,5 @@ private:
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................
 // 2024-07-09  CSZ       1)create
-// 2025-03-21  CSZ       2)enhance to avoid hang; enable exception for safety
+// 2025-03-21  CSZ       2)enable exception: tolerate except is safer; can't recover except->terminate
 // ***********************************************************************************************

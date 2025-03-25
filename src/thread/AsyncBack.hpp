@@ -42,12 +42,8 @@
 //   . no duty to any unsafe behavior of MT_TaskEntryFN & TaskBackFN
 // - MT safe:
 //   . MT_/mt_ prefix: yes
-//   . others: NO (only use in main thread - most dom lib code shall in main thread - simple & nsesilbe)
-//     . AsyncBack can call mt_inMyMainTH() to ensure this
-//     . but can all rlib func call mt_inMyMainTH()? little benefit so giveup
-//       * common sense/principle: rlib (include AsyncBack) not call mt_inMyMainTH()
-//       . mt_inMyMainTH() for user debug - any main-thread func shall ret T if call mt_inMyMainTH()
-// - Exception-safe: follow noexcept-declare
+//   . others: NO (only in main thread - most dom lib code shall be in main thread - simple)
+//     . mt_inMyMainTH() for user debug - any main-thread func shall ret true if call mt_inMyMainTH()
 // ***********************************************************************************************
 #pragma once
 
@@ -77,7 +73,7 @@ public:
 // 2023-09-14  CSZ       2)align with MsgSelf
 // 2023-10-25  CSZ       - with semaphore's wait-notify
 // 2024-07-10  CSZ       - mv common to base=ThreadBack
-// 2025-03-21  CSZ       3)enhance to avoid hang; enable exception for safety
+// 2025-03-21  CSZ       3)enable exception: tolerate except is safer; can't recover except->terminate
 // ***********************************************************************************************
 // - Q&A:
 //   . MT_/mt_ prefix

@@ -73,7 +73,7 @@ public:
 // 2024-07-09  CSZ       1)create
 // 2024-08-05  CSZ       - mt_nDoneFut_ to improve iteration of fut_backFN_S_
 //                       - MT_TaskEntryFN ret SafePtr<void> instead of bool
-// 2025-03-21  CSZ       2)enhance to avoid hang; enable exception for safety
+// 2025-03-21  CSZ       2)enable exception: tolerate except is safer; can't recover except->terminate
 // ***********************************************************************************************
 // - why SafePtr
 //   . thread can ret any type data include bool
