@@ -11,14 +11,14 @@
 //   . can withdraw on-road MsgCB (eg HdlrDomino.rmHdlr())
 //
 // - how:
-//   . newMsg(): send msgHdlr into msgQueues_ (all info are in msgHdlr so func<void()> is enough)
+//   . newMsgOK(): send msgHdlr into msgQueues_ (all info are in msgHdlr so func<void()> is enough)
 //   . handleAllMsg(): call all msgHdlr in msgQueues_, priority then FIFO
 //   . single thread (in main thread)
 //   * support diff cb mechanism (async, IM, syscom, etc)
 //
 // - core: msgQueues_[priority][FIFO]
 //   . msgQueues_ is a 2D array, 1st dim is priority, 2nd dim is FIFO
-//   . perf better than priority_queue that need search & insert for newMsg()
+//   . perf better than priority_queue that need search & insert for newMsgOK()
 //
 // - which way?    speed                   UT                           code
 //   . async task  may slow if async busy  no but direct-CB instead     simple
@@ -72,18 +72,18 @@ using SharedMsgCB  = S_PTR<MsgCB>;
 class MsgSelf : public UniLog
 {
 public:
-    explicit MsgSelf(const LogName& aUniLogName = ULN_DEFAULT) : UniLog(aUniLogName) {}
-    ~MsgSelf() { if (nMsg_) WRN("discard nMsg=" << nMsg_); }
+    explicit MsgSelf(const LogName& aUniLogName = ULN_DEFAULT) noexcept : UniLog(aUniLogName) {}
+    ~MsgSelf() noexcept { if (nMsg_) WRN("discard nMsg=" << nMsg_); }
 
-    void   newMsg(const MsgCB&, const EMsgPriority = EMsgPri_NORM);  // can't withdraw CB but easier usage
-    size_t nMsg() const { return nMsg_; }
-    size_t nMsg(const EMsgPriority aPri) const { return aPri < EMsgPri_MAX ?  msgQueues_[aPri].size() : 0; }
-    void   handleAllMsg() { while (handleOneMsg_()); }  // handleOneMsg_() may create new high priority msg(s)
+    bool   newMsgOK(const MsgCB&, const EMsgPriority = EMsgPri_NORM) noexcept;
+    size_t nMsg() const noexcept { return nMsg_; }
+    size_t nMsg(const EMsgPriority aPri) const noexcept { return aPri < EMsgPri_MAX ?  msgQueues_[aPri].size() : 0; }
+    void   handleAllMsg() noexcept { while (handleOneMsg_()); }  // handleOneMsg_() may create new high priority msg(s)
 
-    static bool isLowPri(const EMsgPriority aPri) { return aPri < EMsgPri_NORM; }
+    static constexpr bool isLowPri(const EMsgPriority aPri) noexcept { return aPri < EMsgPri_NORM; }
 
 private:
-    bool handleOneMsg_();
+    bool handleOneMsg_() noexcept;
 
     // -------------------------------------------------------------------------------------------
     std::deque<MsgCB> msgQueues_[EMsgPri_MAX];
@@ -103,7 +103,7 @@ private:
 // 2022-01-01  PJ & CSZ  - formal log & naming
 // 2022-03-10  CSZ       - inc code coverage rate
 // 2022-08-18  CSZ       - replace CppLog by UniLog
-// 2022-11-04  CSZ       4)simplify newMsg(WeakMsgCB -> MsgCB)
+// 2022-11-04  CSZ       4)simplify newMsgOK(WeakMsgCB -> MsgCB)
 //                         . easier to user
 //                         . support both MsgCB & WeakMsgCB(by lambda)
 // 2022-12-02  CSZ       - simple & natural
@@ -111,4 +111,5 @@ private:
 // 2023-07-13  CSZ       - copilot compare
 // 2023-10-27  CSZ       - replace pingMainFN_() by mt_pingMainTH()
 // 2025-02-13  CSZ       - support both SafePtr & shared_ptr
+// 2025-03-25  CSZ       5)enable exception: tolerate is safer; can't recover except->terminate
 // ***********************************************************************************************

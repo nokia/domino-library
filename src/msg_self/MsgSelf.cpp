@@ -10,9 +10,7 @@
 namespace rlib
 {
 // ***********************************************************************************************
-// - performance optimization need 5 lines code, with a little benfit in most cases
-//   . so giveup until real need
-bool MsgSelf::handleOneMsg_()
+bool MsgSelf::handleOneMsg_() noexcept
 {
     for (auto msgPri = EMsgPri_MAX-1; msgPri >= EMsgPri_MIN ; msgPri--)
     {
@@ -20,8 +18,10 @@ bool MsgSelf::handleOneMsg_()
         if (oneQueue.empty())
             continue;
 
-        oneQueue.front()();  // run 1st MsgCB; newMsg() prevent nullptr into msgQueues_
-        oneQueue.pop_front();
+        try { oneQueue.front()(); } // run 1st MsgCB; newMsgOK() prevent nullptr into msgQueues_
+        catch(...) { ERR("(MsgSelf) except->failed!!!"); }
+
+        oneQueue.pop_front();  // except can't recover->terminate
         --nMsg_;
 
         if (not nMsg())
@@ -37,27 +37,28 @@ bool MsgSelf::handleOneMsg_()
 }
 
 // ***********************************************************************************************
-void MsgSelf::newMsg(const MsgCB& aMsgCB, const EMsgPriority aMsgPri)
+bool MsgSelf::newMsgOK(const MsgCB& aMsgCB, const EMsgPriority aMsgPri) noexcept
 {
     // validate
     if (! aMsgCB)
     {
         WRN("(MsgSelf) failed!!! aMsgCB=nullptr doesn't make sense.");
-        return;
+        return false;
     }
     if (aMsgPri >= EMsgPri_MAX)
     {
         WRN("(MsgSelf) failed!!! outbound aMsgPri=" << aMsgPri);
-        return;
+        return false;
     }
 
     // store
-    msgQueues_[aMsgPri].emplace_back(aMsgCB);
+    msgQueues_[aMsgPri].emplace_back(aMsgCB);  // except eg bad_alloc: can't recover->terminate
     ++nMsg_;
     HID("(MsgSelf) nMsg=" << nMsg_);
 
     // ping main thread
     mt_pingMainTH();
+    return true;
 }
 
 }  // namespace

@@ -249,7 +249,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     EXPECT_EQ(0u, mt_getQ().nHdlr())  << "REQ: init no hdlr";
     mt_getQ().setHdlrOK<string>([this, &cb_info](UniPtr aMsg)
     {
-        msgSelf_->newMsg(  // REQ: via MsgSelf
+        msgSelf_->newMsgOK(  // REQ: via MsgSelf
             [aMsg, &cb_info]
             {
                 EXPECT_EQ("a", *(STATIC_PTR_CAST<string>(aMsg).get()));
@@ -260,7 +260,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     EXPECT_EQ(1u, mt_getQ().nHdlr())  << "REQ: count hdlr";
     mt_getQ().setHdlrOK<int>([this, &cb_info](UniPtr aMsg)
     {
-        msgSelf_->newMsg(
+        msgSelf_->newMsgOK(
             [aMsg, &cb_info]
             {
                 EXPECT_EQ(2, *(STATIC_PTR_CAST<int>(aMsg).get()));

@@ -204,7 +204,7 @@ template<class aDominoType>
 void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv)
 {
     HID("(HdlrDom) trigger a new msg.");
-    msgSelf_->newMsg(
+    msgSelf_->newMsgOK(
         [weakMsgCB = WeakMsgCB(aValidHdlr)]() mutable  // WeakMsgCB is to support rm hdlr
         {
             if (! weakMsgCB.expired())
