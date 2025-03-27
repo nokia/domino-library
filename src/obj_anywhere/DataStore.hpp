@@ -28,17 +28,18 @@ class DataStore
 public:
     // @brief: get a data
     // @ret: ok or nullptr
-    template<typename aDataT> S_PTR<aDataT> get(const aDataKey& aKey) const;
+    template<typename aDataT> S_PTR<aDataT> get(const aDataKey& aKey) const noexcept;
 
     // @brief: store a new data (ie not replace but add new or rm old by aData=nullptr)
     // @ret: store ok/nok
-    bool emplaceOK(const aDataKey& aKey, S_PTR<void> aData);
+    bool emplaceOK(const aDataKey& aKey, S_PTR<void> aData) noexcept;
 
     // @brief: store a data (add new, replace old, or rm old by aData=nullptr)
-    void replace(const aDataKey& aKey, S_PTR<void> aData);
+    // @ret: store ok/nok
+    bool replaceOK(const aDataKey& aKey, S_PTR<void> aData) noexcept;
 
-    size_t nData() const { return key_data_S_.size(); }
-    ~DataStore() { HID("(DataStore) discard nData=" << nData()); }  // debug
+    size_t nData() const noexcept { return key_data_S_.size(); }
+    ~DataStore() noexcept { HID("(DataStore) discard nData=" << nData()); }  // debug
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -47,52 +48,68 @@ private:
 
 // ***********************************************************************************************
 template<typename aDataKey>
-bool DataStore<aDataKey>::emplaceOK(const aDataKey& aKey, S_PTR<void> aData)
+bool DataStore<aDataKey>::emplaceOK(const aDataKey& aKey, S_PTR<void> aData) noexcept
 {
-    if (! aData)
-    {
-        HID("(DataStore) erase key=" << aKey);
-        key_data_S_.erase(aKey);
-        return true;
-    }
-    else
-    {
-        auto&& it_ok = key_data_S_.emplace(aKey, aData);
-        if (it_ok.second)
+    try {
+        if (! aData)
+        {
+            HID("(DataStore) erase key=" << aKey);
+            key_data_S_.erase(aKey);
             return true;
+        }
         else
         {
-            HID("(DataStore) ERR!!! not support to replace key=" << aKey);
-            return false;
+            auto&& it_ok = key_data_S_.emplace(aKey, aData);
+            if (it_ok.second)
+                return true;
+            else
+            {
+                HID("(DataStore) ERR!!! not support to replace key=" << aKey);
+                return false;
+            }
         }
+    } catch(...) {
+        ERR("(DataStore) except->failed!!! key=" << typeid(aDataKey).name());
+        return false;
     }
 }
 
 // ***********************************************************************************************
 template<typename aDataKey>
 template<typename aDataT>
-S_PTR<aDataT> DataStore<aDataKey>::get(const aDataKey& aKey) const
+S_PTR<aDataT> DataStore<aDataKey>::get(const aDataKey& aKey) const noexcept
 {
-    auto&& key_data = key_data_S_.find(aKey);
-    if (key_data == key_data_S_.end())
-    {
-        HID("(DataStore) can't find key=" << aKey);
+    try {
+        auto&& key_data = key_data_S_.find(aKey);
+        if (key_data == key_data_S_.end())
+        {
+            HID("(DataStore) can't find key=" << aKey);
+            return nullptr;
+        }
+        return STATIC_PTR_CAST<aDataT>(key_data->second);  // mem safe: yes SafePtr, no shared_ptr
+    } catch(...) {
+        ERR("(DataStore) except->failed!!! key=" << typeid(aDataKey).name());
         return nullptr;
     }
-    return STATIC_PTR_CAST<aDataT>(key_data->second);  // mem safe: yes SafePtr, no shared_ptr
 }
 
 // ***********************************************************************************************
 template<typename aDataKey>
-void DataStore<aDataKey>::replace(const aDataKey& aKey, S_PTR<void> aData)
+bool DataStore<aDataKey>::replaceOK(const aDataKey& aKey, S_PTR<void> aData) noexcept
 {
-    if (! aData)
-    {
-        HID("(DataStore) erase key=" << aKey);
-        key_data_S_.erase(aKey);
+    try {
+        if (! aData)
+        {
+            HID("(DataStore) erase key=" << aKey);
+            key_data_S_.erase(aKey);
+        }
+        else
+            key_data_S_[aKey] = aData;
+        return true;
+    } catch(...) {
+        ERR("(DataStore) except->failed!!! key=" << typeid(aDataKey).name());
+        return false;
     }
-    else
-        key_data_S_[aKey] = aData;
 }
 
 }  // namespace

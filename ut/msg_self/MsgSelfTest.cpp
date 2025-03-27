@@ -172,5 +172,10 @@ TEST_F(MsgSelfTest, exceptMsg_noCrash)
     EXPECT_EQ(1, step) << "REQ: msg executed";
     EXPECT_EQ(0, msgSelf_->nMsg()) << "REQ: handled & no crash";
 }
+TEST_F(MsgSelfTest, invalid_nMsg)
+{
+    EXPECT_EQ(0, msgSelf_->nMsg(EMsgPri_MAX))      << "REQ: not accept out bound priority";
+    EXPECT_EQ(0, msgSelf_->nMsg(EMsgPriority(-1))) << "REQ: not accept out bound priority";
+}
 
 }  // namespace

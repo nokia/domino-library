@@ -42,7 +42,7 @@ TYPED_TEST_P(DataDominoTest, setShared_thenGetIt_thenRmIt)
 {
     EXPECT_EQ(nullptr, PARA_DOM->getData("ev0").get()) << "REQ: get null since ev0 not exist";
 
-    PARA_DOM->replaceData("ev0", MAKE_PTR<string>("ev0's data"));  // req: any type data (2nd=string)
+    PARA_DOM->replaceDataOK("ev0", MAKE_PTR<string>("ev0's data"));  // req: any type data (2nd=string)
     auto pString = STATIC_PTR_CAST<string>(PARA_DOM->getData("ev0"));  // directly get() will destruct shared_ptr afterward
     ASSERT_NE(nullptr, pString.get());
     EXPECT_EQ("ev0's data", *(pString.get())) << "REQ: get = set";
@@ -50,11 +50,11 @@ TYPED_TEST_P(DataDominoTest, setShared_thenGetIt_thenRmIt)
     *(pString.get()) = "ev0's updated data";
     EXPECT_EQ("ev0's updated data", *(getData<TypeParam, string>(*PARA_DOM, "ev0").get())) << "REQ: get=update";
 
-    PARA_DOM->replaceData("ev0", MAKE_PTR<string>("replace ev0's data"));
+    PARA_DOM->replaceDataOK("ev0", MAKE_PTR<string>("replace ev0's data"));
     EXPECT_EQ("replace ev0's data", *(getData<TypeParam, string>(*PARA_DOM, "ev0").get())) << "REQ: get replaced";
     EXPECT_NE(pString.get(), STATIC_PTR_CAST<string>(PARA_DOM->getData("ev0")).get()) << "REQ: replace != old";
 
-    PARA_DOM->replaceData("ev0");  // req: rm data
+    PARA_DOM->replaceDataOK("ev0");  // req: rm data
     EXPECT_EQ(nullptr, PARA_DOM->getData("ev0").get()) << "REQ: get null";
 }
 
@@ -70,9 +70,9 @@ TYPED_TEST_P(DataDominoTest, correct_data_destructor)
     };
     bool isDestructed;
 
-    PARA_DOM->replaceData("ev", MAKE_PTR<TestData>(isDestructed));  // req: any type data (4th=TestData)
+    PARA_DOM->replaceDataOK("ev", MAKE_PTR<TestData>(isDestructed));  // req: any type data (4th=TestData)
     EXPECT_FALSE(isDestructed);
-    PARA_DOM->replaceData("ev", nullptr);
+    PARA_DOM->replaceDataOK("ev", nullptr);
     EXPECT_TRUE(isDestructed);
 }
 
@@ -87,7 +87,7 @@ TYPED_TEST_P(DataDominoTest, nonConstInterface_shall_createUnExistEvent_withStat
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1")) << "REQ: nonexistent";
     EXPECT_FALSE(PARA_DOM->state("e1"));
 
-    PARA_DOM->replaceData("e2", MAKE_PTR<int>(0));  // REQ: any type data (5th=int)
+    PARA_DOM->replaceDataOK("e2", MAKE_PTR<int>(0));  // REQ: any type data (5th=int)
     EXPECT_NE(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e2")) << "REQ: new Event";
     EXPECT_FALSE(PARA_DOM->state("e2"));
 }

@@ -11,12 +11,33 @@
 #include "DataStore.hpp"
 #include "UniPtr.hpp"
 
+// ***********************************************************************************************
+namespace std
+{
+    struct Key {
+        int except_ = 1;
+        Key() = default;
+        Key(const Key& aSrc) : except_(aSrc.except_) {  // cp constructor
+            if (except_ == 1)
+                throw runtime_error("REQ: simulate except from Key constructor");
+        }
+        bool operator==(const Key& other) const { return except_ == other.except_; }
+    };
+    template<> struct hash<Key> {
+        size_t operator()(const Key& aK) const {
+            if (aK.except_ == 1)
+                throw runtime_error("REQ: simulate except from Key's hash");
+            return std::hash<int>()(aK.except_);
+        }
+    };
+}
+
+// ***********************************************************************************************
 using namespace std;
 using namespace testing;
 
 namespace rlib
 {
-// ***********************************************************************************************
 struct DataStoreTest : public Test
 {
     DataStore<string> dataStore_;
@@ -67,7 +88,7 @@ TEST_F(DataStoreTest, replace)
     EXPECT_FALSE(dataStore_.emplaceOK("string", MAKE_PTR<string>("world"))) << "REQ: failed";
     EXPECT_EQ("hello", *(dataStore_.get<string>("string").get())) << "req: emplaceOK can't replace";
 
-    dataStore_.replace("string", MAKE_PTR<string>("world"));
+    EXPECT_TRUE(dataStore_.replaceOK("string", MAKE_PTR<string>("world"))) << "REQ: replace OK";
     EXPECT_EQ("world", *(dataStore_.get<string>("string").get())) << "req: explicit rm then set ok";
 }
 
@@ -128,6 +149,25 @@ TEST_F(DataStoreTest, GOLD_safe_destruct)
     dataStore_.emplaceOK("Base", nullptr);
     EXPECT_TRUE(isBaseOver);
     EXPECT_TRUE(isDeriveOver);
+}
+TEST_F(DataStoreTest, except)
+{
+    DataStore<Key> ds;
+    EXPECT_FALSE(ds.emplaceOK(Key(), MAKE_PTR<int>())) << "REQ: emplaceOK() except->fail";  // 1 except as example
+    EXPECT_EQ(0u, ds.nData()) << "REQ: except->not stored";
+
+    Key k;
+    k.except_ = 0;
+    EXPECT_TRUE(ds.emplaceOK(k, MAKE_PTR<int>(0)));
+    EXPECT_EQ(1u, ds.nData()) << "REQ: emplace OK";
+    k.except_ = 1;
+    EXPECT_EQ(nullptr, ds.get<int>(k).get())  << "REQ: get<>() except->nullptr";
+    k.except_ = 0;
+    EXPECT_EQ(0,     *(ds.get<int>(k).get())) << "REQ: get<>() noexcept->value";
+
+    EXPECT_FALSE(ds.replaceOK(Key(), MAKE_PTR<int>(100))) << "REQ: replaceOK() except->fail";
+    EXPECT_EQ(0, *(ds.get<int>(k).get())) << "REQ: no change";
+    EXPECT_EQ(1u, ds.nData()) << "REQ: no change";
 }
 
 }  // namespace

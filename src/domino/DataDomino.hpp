@@ -41,7 +41,8 @@ public:
     // -------------------------------------------------------------------------------------------
     // - replace old data by new=aData if old != new
     // - for aDataType w/o default constructor!!!
-    virtual void replaceData(const Domino::EvName&, S_PTR<void> = nullptr);
+    // - ret true=succ, false=fail
+    virtual bool replaceDataOK(const Domino::EvName&, S_PTR<void> = nullptr) noexcept;
 
 protected:
     void rmEv_(const Domino::Event& aValidEv) override;
@@ -60,16 +61,16 @@ S_PTR<void> DataDomino<aDominoType>::getData(const Domino::EvName& aEvName) cons
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void DataDomino<aDominoType>::replaceData(const Domino::EvName& aEvName, S_PTR<void> aData)
+bool DataDomino<aDominoType>::replaceDataOK(const Domino::EvName& aEvName, S_PTR<void> aData) noexcept
 {
-    ev_data_S_.replace(this->newEvent(aEvName), aData);
+    return ev_data_S_.replaceOK(this->newEvent(aEvName), aData);
 }
 
 // ***********************************************************************************************
 template<typename aDominoType>
 void DataDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 {
-    ev_data_S_.replace(aValidEv, nullptr);
+    ev_data_S_.replaceOK(aValidEv, nullptr);
     aDominoType::rmEv_(aValidEv);
 }
 
@@ -90,7 +91,7 @@ auto getData(aDataDominoType& aDom, const Domino::EvName& aEvName)
 template<typename aDataDominoType, typename aDataType>
 void setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData)
 {
-    aDom.replaceData(aEvName, MAKE_PTR<aDataType>(aData));
+    aDom.replaceDataOK(aEvName, MAKE_PTR<aDataType>(aData));
 }
 }  // namespace
 // ***********************************************************************************************

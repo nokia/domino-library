@@ -31,8 +31,8 @@ public:
     S_PTR<void> getData(const Domino::EvName&) const override;
     S_PTR<void> wbasic_getData(const Domino::EvName&) const;
 
-    void replaceData(const Domino::EvName&, S_PTR<void> aData = nullptr) override;
-    void wbasic_replaceData(const Domino::EvName&, S_PTR<void> aData = nullptr);
+    bool replaceDataOK(const Domino::EvName&, S_PTR<void> aData = nullptr) noexcept override;
+    bool wbasic_replaceDataOK(const Domino::EvName&, S_PTR<void> aData = nullptr) noexcept;
 
 protected:
     void rmEv_(const Domino::Event& aValidEv) override;
@@ -40,7 +40,7 @@ protected:
 private:
     // forbid ouside usage
     using aDominoType::getData;
-    using aDominoType::replaceData;
+    using aDominoType::replaceDataOK;
     // -------------------------------------------------------------------------------------------
     std::vector<bool> wrCtrl_;
 
@@ -69,11 +69,13 @@ bool WbasicDatDom<aDominoType>::isWrCtrl(const Domino::EvName& aEvName) const
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void WbasicDatDom<aDominoType>::replaceData(const Domino::EvName& aEvName, S_PTR<void> aData)
+bool WbasicDatDom<aDominoType>::replaceDataOK(const Domino::EvName& aEvName, S_PTR<void> aData) noexcept
 {
-    if (isWrCtrl(aEvName))
+    if (isWrCtrl(aEvName)) {
         WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!")
-    else aDominoType::replaceData(aEvName, aData);
+        return false;
+    }
+    else return aDominoType::replaceDataOK(aEvName, aData);
 }
 
 // ***********************************************************************************************
@@ -99,12 +101,14 @@ S_PTR<void> WbasicDatDom<aDominoType>::wbasic_getData(const Domino::EvName& aEvN
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void WbasicDatDom<aDominoType>::wbasic_replaceData(const Domino::EvName& aEvName, S_PTR<void> aData)
+bool WbasicDatDom<aDominoType>::wbasic_replaceDataOK(const Domino::EvName& aEvName, S_PTR<void> aData) noexcept
 {
     if (isWrCtrl(aEvName))
-        aDominoType::replaceData(aEvName, aData);
-    else
+        return aDominoType::replaceDataOK(aEvName, aData);
+    else {
         WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!")
+        return false;
+    }
 }
 
 // ***********************************************************************************************
@@ -141,18 +145,18 @@ S_PTR<aDataType> wbasic_getData(aDataDominoType& aDom, const Domino::EvName& aEv
 
 // ***********************************************************************************************
 template<typename aDataDominoType, typename aDataType>
-void wbasic_setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData)
+bool wbasic_setValueOK(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData) noexcept
 {
-    aDom.wbasic_replaceData(aEvName, MAKE_PTR<aDataType>(aData));
+    return aDom.wbasic_replaceDataOK(aEvName, MAKE_PTR<aDataType>(aData));
 }
 
 }  // namespace
 // ***********************************************************************************************
-// - why not wbasic_setValue() auto call wrCtrlOk()?
+// - why not wbasic_setValueOK() auto call wrCtrlOk()?
 //   . auto is more convient & efficient
-//   . but impact wbasic_setValue(), wbasic_getData(), setValue(), getData(), logic complex
+//   . but impact wbasic_setValueOK(), wbasic_getData(), setValue(), getData(), logic complex
 //   . user may mis-use setValue/getData(write-ctrl-data)
-// - why not throw when getData/setValue/wbasic_getData/wbasic_setValue fail?
+// - why not throw when getData/setValue/wbasic_getData/wbasic_setValueOK fail?
 //   . fit for larger scope that can't accept throw
 //   . achieve basic req but may mislead user
 // - why also read ctrl?

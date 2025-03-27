@@ -95,7 +95,7 @@ TYPED_TEST_P(RmDataDomTest, GOLD_rm_DataDom_resrc)
     };
     bool isDestructed;
 
-    PARA_DOM->replaceData("ev", MAKE_PTR<TestData>(isDestructed));
+    PARA_DOM->replaceDataOK("ev", MAKE_PTR<TestData>(isDestructed));
     EXPECT_FALSE(isDestructed);
     const auto ev = PARA_DOM->getEventBy("ev");
 
@@ -129,7 +129,7 @@ TYPED_TEST_P(RmWdatDomTest, GOLD_rm_WdatDom_resrc)
     bool isDestructed;
 
     EXPECT_TRUE(PARA_DOM->wrCtrlOk("ev", true)) << "REQ: test wctrl data.";
-    PARA_DOM->wbasic_replaceData("ev", MAKE_PTR<TestData>(isDestructed));
+    PARA_DOM->wbasic_replaceDataOK("ev", MAKE_PTR<TestData>(isDestructed));
     EXPECT_FALSE(isDestructed);
     const auto ev = PARA_DOM->getEventBy("ev");
 
