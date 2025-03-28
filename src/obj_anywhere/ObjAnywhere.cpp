@@ -12,14 +12,14 @@ namespace rlib
 shared_ptr<DataStore<ObjName>> ObjAnywhere::name_obj_S_;
 
 // ***********************************************************************************************
-void ObjAnywhere::deinit()
+void ObjAnywhere::deinit() noexcept
 {
     if (isInit())
         name_obj_S_.reset();
 }
 
 // ***********************************************************************************************
-void ObjAnywhere::init(UniLog& oneLog)
+void ObjAnywhere::init(UniLog& oneLog) noexcept
 {
     if (isInit())
         WRN("(ObjAnywhere) !!! Refuse dup init.")

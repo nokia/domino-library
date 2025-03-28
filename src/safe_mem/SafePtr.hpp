@@ -283,9 +283,16 @@ struct std::hash<rlib::SafePtr<T>>
 // 2024-06-28  CSZ       - dynamic_pointer_cast ok or ret null
 // 2024-10-16  CSZ       - dynamic_pointer_cast to safe_cast since std not allowed
 // 2025-02-13  CSZ       4)SafeWeak
-// 2025-03-24  CSZ       5)enable exception: tolerate except is safer; can't recover except->terminate
+// 2025-03-24  CSZ       5)tolerate exception
 // ***********************************************************************************************
 // - Q&A
+//   * noexcept & constexpr (for whole lib)
+//     * noexcept is for safe commitment/long-term to usr
+//       . so as many as possible
+//       . unless unrecover (eg bad_alloc)->terminate
+//       . or eg interrupt constructing (not terminate)
+//     . constexpr is for performance (so not suitable as a long-term commitment)
+//
 //   . How to solve safety issue:
 //     . way#1: Rust is language-based mem ctrl (heavy)
 //     . way#2: tool (dynamic eg valdrind, or static eg coverity)

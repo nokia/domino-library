@@ -5,7 +5,7 @@
  */
 // ***********************************************************************************************
 // - ISSUE:
-//   . how easily share obj within a process? like cout sharing
+//   . how easily share obj within a process? like cout
 //
 // - how:
 //   . eg ObjAnywhere::emplaceObjOK<Obj>(): create/register/store Obj
@@ -36,23 +36,23 @@ using ObjName = std::string;
 class ObjAnywhere
 {
 public:
-    static void init(UniLog& = UniLog::defaultUniLog_);  // init name_obj_S_
-    static void deinit();  // rm name_obj_S_
-    static bool isInit() { return name_obj_S_ != nullptr; }  // init name_obj_S_?
-    static size_t nObj() { return name_obj_S_ ? name_obj_S_->nData() : 0; }
+    static void init(UniLog& = UniLog::defaultUniLog_) noexcept;
+    static void deinit() noexcept;  // rm name_obj_S_
+    static bool isInit() noexcept { return name_obj_S_ != nullptr; }
+    static size_t nObj() noexcept { return name_obj_S_ ? name_obj_S_->nData() : 0; }
 
     // @brief: store an obj
     // @param SafePtr<aObjType>: an obj to be stored
     // @param UniLog           : log
     // @param ObjName          : key of the obj; default is typeid(aObjType).name()
-    template<typename aObjType> static
-    bool emplaceObjOK(S_PTR<aObjType>, UniLog& = UniLog::defaultUniLog_, const ObjName& = typeid(aObjType).name());
+    template<typename aObjType> static bool emplaceObjOK(S_PTR<aObjType>,
+        UniLog& = UniLog::defaultUniLog_, const ObjName& = typeid(aObjType).name()) noexcept;
 
     // @brief: get an obj
     // @param ObjName: key of the obj when stored; default is typeid(aObjType).name()
     // @ret: ok or nullptr
     template<typename aObjType> static
-    S_PTR<aObjType> getObj(const ObjName& = typeid(aObjType).name());
+    S_PTR<aObjType> getObj(const ObjName& = typeid(aObjType).name()) noexcept;
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -61,24 +61,22 @@ private:
 
 // ***********************************************************************************************
 template<typename aObjType>
-S_PTR<aObjType> ObjAnywhere::getObj(const ObjName& aObjName)
+S_PTR<aObjType> ObjAnywhere::getObj(const ObjName& aObjName) noexcept
 {
-    if (isInit())
-        return name_obj_S_->get<aObjType>(aObjName);
-    return nullptr;
+    return isInit()
+        ? name_obj_S_->get<aObjType>(aObjName)
+        : nullptr;
 }
 
 // ***********************************************************************************************
 template<typename aObjType>
-bool ObjAnywhere::emplaceObjOK(S_PTR<aObjType> aObj, UniLog& oneLog, const ObjName& aObjName)
+bool ObjAnywhere::emplaceObjOK(S_PTR<aObjType> aObj, UniLog& oneLog, const ObjName& aObjName) noexcept
 {
     if (isInit())
         return name_obj_S_->emplaceOK(aObjName, aObj);
-    else
-    {
-        ERR("(ObjAnywhere) !!! Failed, pls call ObjAnywhere::init() beforehand.");
-        return false;
-    }
+
+    ERR("(ObjAnywhere) !!! Failed, pls call ObjAnywhere::init() beforehand.");
+    return false;
 }
 
 }  // namespace
@@ -104,4 +102,5 @@ bool ObjAnywhere::emplaceObjOK(S_PTR<aObjType> aObj, UniLog& oneLog, const ObjNa
 // 2024-02-15  CSZ       7)use SafePtr (mem-safe); shared_ptr is not mem-safe
 // 2024-06-07  CSZ       8)use DataStore instead of map
 // 2025-02-13  CSZ       - support both SafePtr & shared_ptr
+// 2025-03-28  CSZ       9)tolerate exception
 // ***********************************************************************************************
