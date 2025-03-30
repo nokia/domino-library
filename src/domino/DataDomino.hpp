@@ -29,14 +29,14 @@ class DataDomino : public aDominoType
     // -------------------------------------------------------------------------------------------
 
 public:
-    explicit DataDomino(const LogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
+    explicit DataDomino(const LogName& aUniLogName = ULN_DEFAULT) noexcept : aDominoType(aUniLogName) {}
 
     // -------------------------------------------------------------------------------------------
     // - for read/write data
     // - if aEvName invalid, return null
     // - not template<aDataType> so can virtual for WrDatDom
     // . & let DataDomino has little idea of read-write ctrl, simpler
-    virtual S_PTR<void> getData(const Domino::EvName&) const;
+    virtual S_PTR<void> getData(const Domino::EvName&) const noexcept;
 
     // -------------------------------------------------------------------------------------------
     // - replace old data by new=aData if old != new
@@ -54,7 +54,7 @@ private:
 
 // ***********************************************************************************************
 template<typename aDominoType>
-S_PTR<void> DataDomino<aDominoType>::getData(const Domino::EvName& aEvName) const
+S_PTR<void> DataDomino<aDominoType>::getData(const Domino::EvName& aEvName) const noexcept
 {
     return ev_data_S_.get<void>(this->getEventBy(aEvName));
 }
@@ -75,23 +75,21 @@ void DataDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 }
 
 
-#define EXTEND_INTERFACE_FOR_DATA_DOMINO  // more friendly than min DataDomino interface
+#define EXTEND_INTERFACE_FOR_DATA_DOMINO  // more friendly with min DataDomino interface
 // ***********************************************************************************************
-// - getValue() is NOT mem-safe when aEvName not found
-//   . so getData() instead of getValue
 // - this getData() cast type so convenient
-//   . SafePtr's cast is safe, while shared_ptr is NOT
+// - SafePtr is safe, while shared_ptr maybe NOT
 template<typename aDataDominoType, typename aDataType>
-auto getData(aDataDominoType& aDom, const Domino::EvName& aEvName)
+S_PTR<aDataType> getData(aDataDominoType& aDom, const Domino::EvName& aEvName) noexcept
 {
     return STATIC_PTR_CAST<aDataType>(aDom.getData(aEvName));
 }
 
 // ***********************************************************************************************
 template<typename aDataDominoType, typename aDataType>
-void setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData)
+bool setValueOK(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData) noexcept
 {
-    aDom.replaceDataOK(aEvName, MAKE_PTR<aDataType>(aData));
+    return aDom.replaceDataOK(aEvName, MAKE_PTR<aDataType>(aData));
 }
 }  // namespace
 // ***********************************************************************************************
@@ -111,4 +109,5 @@ void setValue(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataT
 // 2024-02-12  CSZ       4)use SafePtr (mem-safe); shared_ptr is not mem-safe
 // 2024-06-08  CSZ       5)use DataStore instead of map
 // 2025-02-13  CSZ       - support both SafePtr & shared_ptr
+// 2025-03-29  CSZ       6)tolerate exception
 // ***********************************************************************************************

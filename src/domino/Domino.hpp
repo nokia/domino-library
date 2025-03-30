@@ -74,7 +74,7 @@ public:
     // - state:  tile's up/down state, mandatory, default=false
     // - prev:   prev tile(s)        , optional
     // -------------------------------------------------------------------------------------------
-    explicit Domino(const LogName& aUniLogName = ULN_DEFAULT) : UniLog(aUniLogName) {}
+    explicit Domino(const LogName& aUniLogName = ULN_DEFAULT) noexcept : UniLog(aUniLogName) {}
     virtual ~Domino() = default;
 
     Event newEvent(const EvName&);

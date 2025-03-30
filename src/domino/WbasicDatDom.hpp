@@ -23,13 +23,13 @@ template<typename aDominoType>
 class WbasicDatDom : public aDominoType
 {
 public:
-    explicit WbasicDatDom(const LogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
+    explicit WbasicDatDom(const LogName& aUniLogName = ULN_DEFAULT) noexcept : aDominoType(aUniLogName) {}
 
-    bool isWrCtrl(const Domino::EvName&) const;
-    bool wrCtrlOk(const Domino::EvName&, const bool aNewState = true);
+    bool isWrCtrl(const Domino::EvName&) const noexcept;
+    bool wrCtrlOk(const Domino::EvName&, const bool aNewState = true) noexcept;
 
-    S_PTR<void> getData(const Domino::EvName&) const override;
-    S_PTR<void> wbasic_getData(const Domino::EvName&) const;
+    S_PTR<void> getData(const Domino::EvName&) const noexcept override;
+    S_PTR<void> wbasic_getData(const Domino::EvName&) const noexcept;
 
     bool replaceDataOK(const Domino::EvName&, S_PTR<void> aData = nullptr) noexcept override;
     bool wbasic_replaceDataOK(const Domino::EvName&, S_PTR<void> aData = nullptr) noexcept;
@@ -38,7 +38,7 @@ protected:
     void rmEv_(const Domino::Event& aValidEv) override;
 
 private:
-    // forbid ouside usage
+    // forbid ouside use base directly
     using aDominoType::getData;
     using aDominoType::replaceDataOK;
     // -------------------------------------------------------------------------------------------
@@ -50,7 +50,7 @@ public:
 
 // ***********************************************************************************************
 template<typename aDominoType>
-S_PTR<void> WbasicDatDom<aDominoType>::getData(const Domino::EvName& aEvName) const
+S_PTR<void> WbasicDatDom<aDominoType>::getData(const Domino::EvName& aEvName) const noexcept
 {
     if (not isWrCtrl(aEvName))
         return aDominoType::getData(aEvName);
@@ -61,7 +61,7 @@ S_PTR<void> WbasicDatDom<aDominoType>::getData(const Domino::EvName& aEvName) co
 
 // ***********************************************************************************************
 template<typename aDominoType>
-bool WbasicDatDom<aDominoType>::isWrCtrl(const Domino::EvName& aEvName) const
+bool WbasicDatDom<aDominoType>::isWrCtrl(const Domino::EvName& aEvName) const noexcept
 {
     const auto ev = this->getEventBy(aEvName);
     return ev < wrCtrl_.size() ? wrCtrl_[ev] : false;
@@ -90,7 +90,7 @@ void WbasicDatDom<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 
 // ***********************************************************************************************
 template<typename aDominoType>
-S_PTR<void> WbasicDatDom<aDominoType>::wbasic_getData(const Domino::EvName& aEvName) const
+S_PTR<void> WbasicDatDom<aDominoType>::wbasic_getData(const Domino::EvName& aEvName) const noexcept
 {
     if (isWrCtrl(aEvName))
         return aDominoType::getData(aEvName);
@@ -113,7 +113,7 @@ bool WbasicDatDom<aDominoType>::wbasic_replaceDataOK(const Domino::EvName& aEvNa
 
 // ***********************************************************************************************
 template<typename aDominoType>
-bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName, const bool aNewState)
+bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName, const bool aNewState) noexcept
 {
     if (aDominoType::getData(aEvName).get() != nullptr)
     {
@@ -134,11 +134,10 @@ bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName, const bo
 
 #define EXTEND_INTERFACE_FOR_WBASIC_DATA_DOMINO  // more friendly than min WbasicDatDom interface
 // ***********************************************************************************************
-// - getValue() is NOT mem-safe when aEvName not found
-//   . so getData() instead of getValue()
 // - this func cast type so more convenient than WbasicDatDom's
+// - SafePtr is safe, while shared_ptr maybe NOT
 template<typename aDataDominoType, typename aDataType>
-S_PTR<aDataType> wbasic_getData(aDataDominoType& aDom, const Domino::EvName& aEvName)
+S_PTR<aDataType> wbasic_getData(aDataDominoType& aDom, const Domino::EvName& aEvName) noexcept
 {
     return STATIC_PTR_CAST<aDataType>(aDom.wbasic_getData(aEvName));  // mem safe: yes SafePtr, no shared_ptr
 }
@@ -156,9 +155,6 @@ bool wbasic_setValueOK(aDataDominoType& aDom, const Domino::EvName& aEvName, con
 //   . auto is more convient & efficient
 //   . but impact wbasic_setValueOK(), wbasic_getData(), setValue(), getData(), logic complex
 //   . user may mis-use setValue/getData(write-ctrl-data)
-// - why not throw when getData/setValue/wbasic_getData/wbasic_setValueOK fail?
-//   . fit for larger scope that can't accept throw
-//   . achieve basic req but may mislead user
 // - why also read ctrl?
 //   . SIMPLY separate interface: 1)get/set legacy 2)get/set write-protected
 // ***********************************************************************************************
@@ -173,4 +169,5 @@ bool wbasic_setValueOK(aDataDominoType& aDom, const Domino::EvName& aEvName, con
 // 2022-12-31  CSZ       - rm data
 // 2024-02-12  CSZ       2)use SafePtr (mem-safe); shared_ptr is not mem-safe
 // 2025-02-13  CSZ       - support both SafePtr & shared_ptr
+// 2025-03-29  CSZ       3)tolerate exception
 // ***********************************************************************************************

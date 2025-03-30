@@ -292,6 +292,7 @@ struct std::hash<rlib::SafePtr<T>>
 //       . unless unrecover (eg bad_alloc)->terminate
 //       . or eg interrupt constructing (not terminate)
 //     . constexpr is for performance (so not suitable as a long-term commitment)
+//   * std::function can't + noexcept (since it's a template class, not a func)
 //
 //   . How to solve safety issue:
 //     . way#1: Rust is language-based mem ctrl (heavy)

@@ -34,7 +34,7 @@ TYPED_TEST_P(WbasicDatDomTest, GOLD_wrCtrl_set_get_rm)  // non-wrData is covered
     valGet = *(wbasic_getData<TypeParam, size_t>(*PARA_DOM, "ev0").get());
     EXPECT_EQ(2u, valGet) << "REQ: get = update";
 
-    setValue<TypeParam, size_t>(*PARA_DOM, "ev0", 3);
+    setValueOK<TypeParam, size_t>(*PARA_DOM, "ev0", 3);
     valGet = *(wbasic_getData<TypeParam, size_t>(*PARA_DOM, "ev0").get());
     EXPECT_EQ(2u, valGet) << "REQ: legacy set failed";
 
@@ -49,7 +49,7 @@ TYPED_TEST_P(WbasicDatDomTest, GOLD_wrCtrl_set_get_rm)  // non-wrData is covered
 }
 TYPED_TEST_P(WbasicDatDomTest, wrCtrlInterface_cannotHdl_nonWrDat)
 {
-    setValue<TypeParam, int>(*PARA_DOM, "ev0", 1);  // req: any type data (2nd=int>)
+    setValueOK<TypeParam, int>(*PARA_DOM, "ev0", 1);  // req: any type data (2nd=int>)
     EXPECT_EQ(nullptr, (wbasic_getData<TypeParam, int>(*PARA_DOM, "ev0").get())) << "REQ: w-get nonexist";
 
     wbasic_setValueOK<TypeParam, int>(*PARA_DOM, "ev0", 2);
@@ -62,7 +62,7 @@ TYPED_TEST_P(WbasicDatDomTest, wrCtrlInterface_cannotHdl_nonWrDat)
 }
 TYPED_TEST_P(WbasicDatDomTest, canNOT_setWriteCtrl_afterOwnData)
 {
-    setValue<TypeParam, char>(*PARA_DOM, "ev0", 'a');  // req: any type data (3rd=char>)
+    setValueOK<TypeParam, char>(*PARA_DOM, "ev0", 'a');  // req: any type data (3rd=char>)
     EXPECT_FALSE(PARA_DOM->wrCtrlOk("ev0")) << "REQ: failed to avoid out-ctrl";
     EXPECT_FALSE(PARA_DOM->isWrCtrl("ev0")) << "REQ: flag no change";
 

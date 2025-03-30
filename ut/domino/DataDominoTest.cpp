@@ -29,12 +29,12 @@ TYPED_TEST_P(DataDominoTest, GOLD_setValue_thenGetIt)
     EXPECT_EQ(nullptr, (getData<TypeParam, size_t>(*PARA_DOM, XPATH_BW).get())) << "REQ: for nonexistent event";
 
     size_t initValue = 50000;
-    setValue<TypeParam, size_t>(*PARA_DOM, XPATH_BW, initValue);
+    EXPECT_TRUE((setValueOK<TypeParam, size_t>(*PARA_DOM, XPATH_BW, initValue))) << "REQ: set OK";
     auto valGet = *(getData<TypeParam, size_t>(*PARA_DOM, XPATH_BW).get());
     EXPECT_EQ(initValue, valGet) << "REQ: get = set";
 
     size_t newValue = 10000;
-    setValue<TypeParam, size_t>(*PARA_DOM, XPATH_BW, newValue);
+    setValueOK<TypeParam, size_t>(*PARA_DOM, XPATH_BW, newValue);
     valGet = *(getData<TypeParam, size_t>(*PARA_DOM, XPATH_BW).get());
     EXPECT_EQ(newValue, valGet) << "REQ: new get = new set";
 }
@@ -42,7 +42,7 @@ TYPED_TEST_P(DataDominoTest, setShared_thenGetIt_thenRmIt)
 {
     EXPECT_EQ(nullptr, PARA_DOM->getData("ev0").get()) << "REQ: get null since ev0 not exist";
 
-    PARA_DOM->replaceDataOK("ev0", MAKE_PTR<string>("ev0's data"));  // req: any type data (2nd=string)
+    EXPECT_TRUE(PARA_DOM->replaceDataOK("ev0", MAKE_PTR<string>("ev0's data"))) << "req: any type data (2nd=string)";
     auto pString = STATIC_PTR_CAST<string>(PARA_DOM->getData("ev0"));  // directly get() will destruct shared_ptr afterward
     ASSERT_NE(nullptr, pString.get());
     EXPECT_EQ("ev0's data", *(pString.get())) << "REQ: get = set";
