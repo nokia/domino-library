@@ -42,7 +42,7 @@ bool Domino::deduceStateSelf_(const Event& aValidEv, bool aPrevType) const
 }
 
 // ***********************************************************************************************
-void Domino::effect_()
+void Domino::effect_() noexcept
 {
     for (auto&& ev : effectEVs_)
         if (state(ev) == true)  // avoid multi-change
@@ -51,9 +51,9 @@ void Domino::effect_()
 }
 
 // ***********************************************************************************************
-const Domino::Events& Domino::findPeerEVs(const Event& aEv, const EvLinks& aLinks)
+const Domino::Events& Domino::findPeerEVs(const Event& aEv, const EvLinks& aLinks) noexcept
 {
-    auto ev_peerEVs = aLinks.find(aEv);
+    auto&& ev_peerEVs = aLinks.find(aEv);
     return ev_peerEVs == aLinks.end()
         ? defaultEVs
         : ev_peerEVs->second;
@@ -81,7 +81,7 @@ bool Domino::isNextFromToVia_(const Event& aFromValidEv, const Event& aToValidEv
 }
 
 // ***********************************************************************************************
-Domino::Event Domino::getEventBy(const EvName& aEvName) const
+Domino::Event Domino::getEventBy(const EvName& aEvName) const noexcept
 {
     auto&& en_ev = en_ev_.find(aEvName);
     return en_ev == en_ev_.end()
@@ -90,7 +90,7 @@ Domino::Event Domino::getEventBy(const EvName& aEvName) const
 }
 
 // ***********************************************************************************************
-Domino::Event Domino::newEvent(const EvName& aEvName)
+Domino::Event Domino::newEvent(const EvName& aEvName) noexcept
 {
     // exist?
     auto&& newEv = getEventBy(aEvName);
@@ -142,7 +142,7 @@ void Domino::pureSetPrev_(const Event& aValidEv, const SimuEvents& aSimuPrevEven
 }
 
 // ***********************************************************************************************
-bool Domino::pureSetStateOK_(const Event& aValidEv, const bool aNewState)
+bool Domino::pureSetStateOK_(const Event& aValidEv, const bool aNewState) noexcept
 {
     if (states_[aValidEv] != aNewState)  // do need change
     {
@@ -218,7 +218,7 @@ size_t Domino::setState(const SimuEvents& aSimuEvents)
     {
         const auto ev = getEventBy(en_state.first);  // not create new ev if validation fail
         if (ev == D_EVENT_FAILED_RET)
-            continue;
+            continue;  // new ev, need to create in next step
         if (prev_[true].find(ev) != prev_[true].end() || prev_[false].find(ev) != prev_[false].end())
         {
             ERR("(Domino) refuse since en=" << en_state.first << " has prev (avoid break its prev logic)");
@@ -250,7 +250,7 @@ size_t Domino::setState(const SimuEvents& aSimuEvents)
 }
 
 // ***********************************************************************************************
-Domino::EvName Domino::whyFalse(const Event& aEv) const
+Domino::EvName Domino::whyFalse(const Event& aEv) const noexcept
 {
     auto&& ev_en = ev_en_.find(aEv);
     if (ev_en == ev_en_.end())
@@ -286,7 +286,7 @@ Domino::EvName Domino::whyFalse(const Event& aEv) const
     // - but newEvent() doesn't forbid this kind of EvName to ensure safe of other Domino func
     //   that assume newEvent() always succ
 }
-Domino::EvName Domino::whyTrue_(const Event& aValidEv) const
+Domino::EvName Domino::whyTrue_(const Event& aValidEv) const noexcept
 {
     auto&& truePrevEVs = findPeerEVs(aValidEv, prev_[true]);
     const size_t nTruePrev = truePrevEVs.size();

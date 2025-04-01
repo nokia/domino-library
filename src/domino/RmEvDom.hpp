@@ -44,7 +44,7 @@ public:
     bool isRemoved(const Domino::Event& aEv) const { return isRemovedEv_.count(aEv); }
 protected:
     void rmEv_(const Domino::Event& aValidEv) override;
-    Domino::Event recycleEv_() override;
+    Domino::Event recycleEv_() noexcept override;
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -59,7 +59,7 @@ public:
 
 // ***********************************************************************************************
 template<typename aDominoType>
-Domino::Event RmEvDom<aDominoType>::recycleEv_()
+Domino::Event RmEvDom<aDominoType>::recycleEv_() noexcept
 {
     if (isRemovedEv_.empty())
         return Domino::D_EVENT_FAILED_RET;

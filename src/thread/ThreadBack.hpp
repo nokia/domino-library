@@ -33,7 +33,7 @@ using StoreThreadBack = std::list<std::pair<std::future<SafePtr<void>>, TaskBack
 class ThreadBack
 {
 public:
-    virtual ~ThreadBack() = default;
+    virtual ~ThreadBack() noexcept = default;
 
     // @brief: Schedules an asynchronous task to be executed in a background thread.
     // @param MT_TaskEntryFN: The task to be executed asynchronously.

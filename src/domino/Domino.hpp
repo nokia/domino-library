@@ -75,43 +75,43 @@ public:
     // - prev:   prev tile(s)        , optional
     // -------------------------------------------------------------------------------------------
     explicit Domino(const LogName& aUniLogName = ULN_DEFAULT) noexcept : UniLog(aUniLogName) {}
-    virtual ~Domino() = default;
+    virtual ~Domino() noexcept = default;
 
-    Event newEvent(const EvName&);
-    Event getEventBy(const EvName&) const;
-    const EvNames evNames() const { return ev_en_; }
+    Event newEvent(const EvName&) noexcept;
+    Event getEventBy(const EvName&) const noexcept;
+    const EvNames evNames() const noexcept { return ev_en_; }
 
-    bool   state(const EvName& aEvName) const { return state(getEventBy(aEvName)); }
-    bool   state(const Event& aEv) const { return aEv < states_.size() ? states_[aEv] : false; }
+    bool   state(const EvName& aEvName) const noexcept { return state(getEventBy(aEvName)); }
+    bool   state(const Event& aEv) const noexcept { return aEv < states_.size() ? states_[aEv] : false; }
     size_t setState(const SimuEvents&);  // ret real changed ev#
 
     Event  setPrev(const EvName&, const SimuEvents&);  // be careful not create eg ttue-false loop
-    EvName whyFalse(const Event&) const;
+    EvName whyFalse(const Event&) const noexcept;
 
 protected:
-    const EvName& evName_(const Event& aValidEv) const { return ev_en_.at(aValidEv); }
-    virtual void  effect_(const Event& aEv) {}  // can't const since FreeDom will rm hdlr
+    const EvName& evName_(const Event& aValidEv) const noexcept { return ev_en_.at(aValidEv); }
+    virtual void  effect_(const Event& aEv) noexcept {}  // can't const since FreeDom will rm hdlr
 
     // - rm self dom's resource (RISK: aEv's leaf(s) may become orphan!!!)
     // - virtual for each dom (& trigger base to free its resource)
     virtual void  rmEv_(const Event& aValidEv);
-    virtual Event recycleEv_() { return D_EVENT_FAILED_RET; }
+    virtual Event recycleEv_() noexcept { return D_EVENT_FAILED_RET; }
 
 private:
     void deduceStateFrom_(const Event& aValidEv);
     bool deduceStateSelf_(const Event& aValidEv, bool aPrevType) const;
-    void effect_();
+    void effect_() noexcept;
 
-    bool pureSetStateOK_(const Event& aValidEv, const bool aNewState);
+    bool pureSetStateOK_(const Event& aValidEv, const bool aNewState) noexcept;
     void pureSetPrev_(const Event& aValidEv, const SimuEvents&);
     void pureRmLink_(const Event& aValidEv, EvLinks& aMyLinks, EvLinks& aNeighborLinks);
 
     bool isNextFromTo_   (const Event& aFromValidEv, const Event& aToValidEv) const;
     bool isNextFromToVia_(const Event& aFromValidEv, const Event& aToValidEv, const EvLinks& aViaEvLinks) const;
 
-    EvName whyTrue_(const Event& aValidEv) const;
+    EvName whyTrue_(const Event& aValidEv) const noexcept;
 
-    static const Events& findPeerEVs(const Event&, const EvLinks&);
+    static const Events& findPeerEVs(const Event&, const EvLinks&) noexcept;
 
     // -------------------------------------------------------------------------------------------
     std::vector<bool>                 states_;               // bitmap & dyn expand, [event]=t/f
@@ -169,6 +169,7 @@ private:
 // 2024-03-03  CSZ       - enhance safe of rm ev (shall deduceState_(next))
 //                       - enhance safe of whyFalse() while keep safe of newEvent()
 // 2024-03-19  CSZ       9)1-go domino -> n-go domino
+// 2025-03-31  CSZ       10)tolerate exception
 // ***********************************************************************************************
 // - where:
 //   . start using domino for time-cost events
@@ -181,16 +182,8 @@ private:
 //   . no need new/share_ptr the Event class
 //   . only 1 class(Domino) is for all access
 //
-// - why whole DomLib not throw exception?
-//   * simpler code without exception that inc 77% branches (Dec,2022)
-//     . means exception may break current code
-//   . wider usage (eg moam not allow exception)
-//   . alloc resrc for new Ev may throw exception (from std lib)
-//     . dom try to reuse rm-ed Ev as early as possible to avoid mem-use-up in the most usage
-//     . dom  can't solve mem-use-up so no code to handle exception
-// - why not noexcept for all member func?
-//   * std::function not support noexcept (Feb,2024; g++11)
-//   * no class level noexcept, func level is verbose, compile-opt -fno-exceptions is simpler
+// - dom try to reuse rm-ed Ev as early as possible to avoid mem-use-up in the most usage
+//   . dom  can't solve mem-use-up so no code to handle exception
 //
 // - why template PriDomino, etc
 //   . easy combine: eg Basic + Pri + Rw or Basic + Rw or Basic + Pri

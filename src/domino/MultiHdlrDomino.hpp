@@ -51,7 +51,7 @@ public:
     size_t nHdlr(const Domino::EvName& aEN) const override;
 
 protected:
-    void effect_(const Domino::Event& aEv) override;  // key/min change other Dominos
+    void effect_(const Domino::Event& aEv) noexcept override;  // key/min change other Dominos
     bool rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr) override;  // rm by aValidHdlr
     void rmEv_(const Domino::Event& aValidEv) override;
 
@@ -64,7 +64,7 @@ public:
 
 // ***********************************************************************************************
 template<class aDominoType>
-void MultiHdlrDomino<aDominoType>::effect_(const Domino::Event& aEv)
+void MultiHdlrDomino<aDominoType>::effect_(const Domino::Event& aEv) noexcept
 {
     // call parent's hdlr
     aDominoType::effect_(aEv);

@@ -58,8 +58,8 @@ public:
     virtual EMsgPriority getPriority(const Domino::Event&) const { return EMsgPri_NORM; }
 
 protected:
-    void effect_(const Domino::Event& aEv) override;
-    virtual void triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv);
+    void effect_(const Domino::Event& aEv) noexcept override;
+    virtual void triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv) noexcept;
     virtual bool rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr);  // rm by aValidHdlr
 
     void rmEv_(const Domino::Event& aValidEv) override;
@@ -75,7 +75,7 @@ public:
 
 // ***********************************************************************************************
 template<class aDominoType>
-void HdlrDomino<aDominoType>::effect_(const Domino::Event& aEv)
+void HdlrDomino<aDominoType>::effect_(const Domino::Event& aEv) noexcept
 {
     // validate
     auto&& ev_hdlr = ev_hdlr_S_.find(aEv);
@@ -201,14 +201,16 @@ bool HdlrDomino<aDominoType>::setMsgSelfOK(const S_PTR<MsgSelf>& aMsgSelf)
 
 // ***********************************************************************************************
 template<class aDominoType>
-void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv)
+void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv) noexcept
 {
     HID("(HdlrDom) trigger a new msg.");
     msgSelf_->newMsgOK(
         [weakMsgCB = WeakMsgCB(aValidHdlr)]() mutable  // WeakMsgCB is to support rm hdlr
         {
-            if (! weakMsgCB.expired())
-                (*(weakMsgCB.lock().get()))();  // setHdlr() forbid cb==null
+            if (! weakMsgCB.expired()) {
+                try { (*(weakMsgCB.lock().get()))(); }  // setHdlr() forbid cb==null
+                catch(...) { ERR("(HdlrDom) except when exe callback!!!"); }
+            }
         },
         getPriority(aValidEv)
     );

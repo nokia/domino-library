@@ -35,7 +35,7 @@ public:
     bool isRepeatHdlr(const Domino::Event&) const;
 
 protected:
-    void triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv) override;
+    void triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv) noexcept override;
 
     void rmEv_(const Domino::Event& aValidEv) override;
 
@@ -88,7 +88,7 @@ void FreeHdlrDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 
 // ***********************************************************************************************
 template<class aDominoType>
-void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv)
+void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv) noexcept
 {
     // repeated hdlr
     if (isRepeatHdlr(aValidEv))
@@ -98,13 +98,14 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, co
     }
 
     HID("(FreeHdlrDom) trigger a call-then-rm msg for en=" << this->evName_(aValidEv));
-    this->msgSelf_->newMsgOK([this, aValidEv, weakHdlr = WeakMsgCB(aValidHdlr)]()
-        {
+    this->msgSelf_->newMsgOK(
+        [this, aValidEv, weakHdlr = WeakMsgCB(aValidHdlr)]() {
             if (weakHdlr.expired())  // validate
                 return;  // otherwise crash
             auto hdlr = weakHdlr.lock();  // get
             this->rmOneHdlrOK_(aValidEv, hdlr);  // safer to rm first to avoid hdlr does sth strange
-            (*(hdlr.get()))();  // call; setHdlr() forbid cb==null
+            try { (*(hdlr.get()))(); }  // call; setHdlr() forbid cb==null
+            catch(...) { ERR("(FreeHdlrDom) except when exe callback!!! ev=" << aValidEv); }
         },
         this->getPriority(aValidEv)
     );
