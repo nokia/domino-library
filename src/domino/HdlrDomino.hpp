@@ -209,7 +209,7 @@ void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, const 
         {
             if (! weakMsgCB.expired()) {
                 try { (*(weakMsgCB.lock().get()))(); }  // setHdlr() forbid cb==null
-                catch(...) { ERR("(HdlrDom) except when exe callback!!!"); }
+                catch(...) {}
             }
         },
         getPriority(aValidEv)
