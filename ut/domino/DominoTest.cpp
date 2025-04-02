@@ -126,7 +126,7 @@ TYPED_TEST_P(DominoTest, invalid_mixLoop)
     EXPECT_NE(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e0", {{"e1", false}}));
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e1", {{"e0", true}})) << "REQ: can't T/F mix loop";
 }
-TYPED_TEST_P(DominoTest, strangeLoop_prevBothTrueAndFalse)
+TYPED_TEST_P(DominoTest, strangePrev_toTrueAndFalse)
 {
     // e11 <- (T) <- e10
     //    \         /
@@ -297,7 +297,7 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , invalid_deepLoop
     , invalid_deeperLoop
     , invalid_mixLoop
-    , strangeLoop_prevBothTrueAndFalse
+    , strangePrev_toTrueAndFalse
 
     , GOLD_multi_retOne
     , trueEvent_retEmpty

@@ -3,7 +3,9 @@
  * Licensed under the BSD 3 Clause license
  * SPDX-License-Identifier: BSD-3-Clause
  */
+#include <stack>
 #include <string>
+#include <unordered_set>
 
 #include "Domino.hpp"
 
@@ -60,24 +62,23 @@ const Domino::Events& Domino::findPeerEVs(const Event& aEv, const EvLinks& aLink
 }
 
 // ***********************************************************************************************
-bool Domino::isNextFromTo_(const Event& aFromValidEv, const Event& aToValidEv) const
+bool Domino::isNextFromTo_(const Event& aFromValidEv, const Event& aToValidEv) const noexcept
 {
-    if (aFromValidEv == aToValidEv)  // self loop
-        return true;
-    if (isNextFromToVia_(aFromValidEv, aToValidEv, next_[true]))  // loop via T-br
-        return true;
-    return isNextFromToVia_(aFromValidEv, aToValidEv, next_[false]);  // may loop via F-br
-}
-bool Domino::isNextFromToVia_(const Event& aFromValidEv, const Event& aToValidEv, const EvLinks& aViaEvLinks) const
-{
-    for (auto&& nextEV : findPeerEVs(aFromValidEv, aViaEvLinks))
-    {
-        if (nextEV == aToValidEv)
-            return true;
-        else if (isNextFromTo_(nextEV, aToValidEv))
-            return true;
+    unordered_set<Event> evVisited{aFromValidEv};  // rare to search huge events
+    stack<Event> evStack;  // recursive func may stack overflow
+
+    for (auto curEv = aFromValidEv; curEv != aToValidEv; curEv = evStack.top(), evStack.pop()) {
+        for (bool branch : {true, false}) {  // search next_[true] & next_[false]
+            for (auto&& nextEV : findPeerEVs(curEv, next_[branch])) {
+                if (evVisited.insert(nextEV).second) {  // insert OK
+                    evStack.push(nextEV);
+                }
+            }
+        }
+        if (evStack.empty())
+            return false;
     }
-    return false;
+    return true;
 }
 
 // ***********************************************************************************************
@@ -127,7 +128,7 @@ void Domino::pureRmLink_(const Event& aValidEv, EvLinks& aMyLinks, EvLinks& aNei
 }
 
 // ***********************************************************************************************
-void Domino::pureSetPrev_(const Event& aValidEv, const SimuEvents& aSimuPrevEvents)
+void Domino::pureSetPrev_(const Event& aValidEv, const SimuEvents& aSimuPrevEvents) noexcept
 {
     HID("(Domino) before: nPrev[true]=" << prev_[true].size() << ", nNext[true]=" << next_[true].size()
         << ", nPrev[false]=" << prev_[false].size() << ", nNext[false]=" << next_[false].size());
@@ -194,7 +195,7 @@ Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrev
     {
         if (isNextFromTo_(fromEv, newEvent(prevEn_state.first)))
         {
-            WRN("(Domino) !!!Failed, avoid loop between " << aEvName << " & " << prevEn_state.first);
+            WRN("(Domino) !!!Failed since loop between " << aEvName << " & " << prevEn_state.first);
             return D_EVENT_FAILED_RET;
         }
     }
@@ -272,7 +273,6 @@ Domino::EvName Domino::whyFalse(const Event& aEv) const noexcept
             continue;
         return whyFalse(prevEV);
     }
-
     // root F-br
     for (auto&& prevEV : findPeerEVs(aEv, prev_[false]))
     {

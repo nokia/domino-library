@@ -103,11 +103,10 @@ private:
     void effect_() noexcept;
 
     bool pureSetStateOK_(const Event& aValidEv, const bool aNewState) noexcept;
-    void pureSetPrev_(const Event& aValidEv, const SimuEvents&);
+    void pureSetPrev_(const Event& aValidEv, const SimuEvents&) noexcept;
     void pureRmLink_(const Event& aValidEv, EvLinks& aMyLinks, EvLinks& aNeighborLinks);
 
-    bool isNextFromTo_   (const Event& aFromValidEv, const Event& aToValidEv) const;
-    bool isNextFromToVia_(const Event& aFromValidEv, const Event& aToValidEv, const EvLinks& aViaEvLinks) const;
+    bool isNextFromTo_(const Event& aFromValidEv, const Event& aToValidEv) const noexcept;
 
     EvName whyTrue_(const Event& aValidEv) const noexcept;
 
