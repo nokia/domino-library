@@ -3,6 +3,7 @@
  * Licensed under the BSD 3 Clause license
  * SPDX-License-Identifier: BSD-3-Clause
  */
+#include <algorithm>
 #include <stack>
 #include <string>
 #include <unordered_set>
@@ -266,40 +267,49 @@ Domino::EvName Domino::whyFalse(const Event& aEv) const noexcept
     }
     HID("(Domino) en=" << ev_en->second);
 
-    // root T-br
-    for (auto&& prevEV : findPeerEVs(aEv, prev_[true]))
-    {
-        if (states_[prevEV] == true)
-            continue;
-        return whyFalse(prevEV);
+    Events::iterator it;
+    // search true prev
+    for (auto curEV = aEv;; curEV = *it) {
+        auto&& prevEVs = findPeerEVs(curEV, prev_[true]);
+        it = find_if(prevEVs.begin(), prevEVs.end(), [this](auto&& aPrevEV){ return states_[aPrevEV] == false; });
+        if (it == prevEVs.end()) {  // no further true-prev to check
+            if (curEV == aEv)
+                break;  // try false-prev
+            HID("(Domino) found unsatisfied en=" << evName_(curEV) << " from true prevEVs=" << prevEVs.size());
+            return evName_(curEV) + "==false";  // found
+        }
     }
-    // root F-br
-    for (auto&& prevEV : findPeerEVs(aEv, prev_[false]))
-    {
-        if (states_[prevEV] == false)
-            continue;
-        return whyTrue_(prevEV);
+    // nothing in true prev, search false prev
+    auto&& prevEVs = findPeerEVs(aEv, prev_[false]);
+    it = find_if(prevEVs.begin(), prevEVs.end(), [this](auto&& aPrevEV){ return states_[aPrevEV] == true; });
+    if (it == prevEVs.end()) {  // no further false-prev to check
+        HID("(Domino) found unsatisfied en=" << ev_en->second << " from false prevEVs=" << prevEVs.size());
+        return ev_en->second + "==false";
     }
-
-    return ev_en->second + "==false";
+    return whyTrue_(*it);
     // - doesn't make sense that user define EvName like this
     // - but newEvent() doesn't forbid this kind of EvName to ensure safe of other Domino func
     //   that assume newEvent() always succ
 }
 Domino::EvName Domino::whyTrue_(const Event& aValidEv) const noexcept
 {
-    auto&& truePrevEVs = findPeerEVs(aValidEv, prev_[true]);
-    const size_t nTruePrev = truePrevEVs.size();
+    for (auto curEV = aValidEv; ; ) {
+        auto&& truePrevEVs = findPeerEVs(curEV, prev_[true]);
+        const size_t nTruePrev = truePrevEVs.size();
 
-    auto&& falsePrevEVs = findPeerEVs(aValidEv, prev_[false]);
-    const size_t nFalsePrev = falsePrevEVs.size();
+        auto&& falsePrevEVs = findPeerEVs(curEV, prev_[false]);
+        const size_t nFalsePrev = falsePrevEVs.size();
 
-    HID("(Domino en=" << evName_(aValidEv) << ", nTruePrev=" << nTruePrev << ", nFalsePrev=" << nFalsePrev);
-    if (nTruePrev == 1 && nFalsePrev == 0)
-        return whyTrue_(*(truePrevEVs.begin()));
-    if (nTruePrev == 0 && nFalsePrev == 1)
-        return whyFalse(*(falsePrevEVs.begin()));
-    return ev_en_.at(aValidEv) + "==true";  // here is the futhest unique prev
+        HID("(Domino en=" << evName_(curEV) << ", nTruePrev=" << nTruePrev << ", nFalsePrev=" << nFalsePrev);
+        if (nTruePrev == 1 && nFalsePrev == 0) {
+            curEV = *(truePrevEVs.begin());
+            continue;
+        }
+        if (nTruePrev == 0 && nFalsePrev == 1)
+            return whyFalse(*(falsePrevEVs.begin()));
+        HID("(Domino) found true en=" << ev_en_.at(curEV));
+        return ev_en_.at(curEV) + "==true";  // here is the futhest unique prev
+    }
 }
 
 }  // namespace
