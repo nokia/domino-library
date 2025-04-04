@@ -254,6 +254,7 @@ size_t Domino::setState(const SimuEvents& aSimuEvents)
 // ***********************************************************************************************
 Domino::EvName Domino::whyFalse(const Event& aEv) const noexcept
 {
+    // validate to safe public interface
     auto&& ev_en = ev_en_.find(aEv);
     if (ev_en == ev_en_.end())
     {
@@ -267,48 +268,64 @@ Domino::EvName Domino::whyFalse(const Event& aEv) const noexcept
     }
     HID("(Domino) en=" << ev_en->second);
 
+    // loop search
+    WhyStep step{aEv, false, EvName()};
+    while (step.resultEN_.empty()) {
+        step.whyFlag_ ? whyTrue_ (step) : whyFalse_(step);
+    }
+    return step.resultEN_;
+}
+void Domino::whyFalse_(WhyStep& aStep) const noexcept
+{
     Events::iterator it;
     // search true prev
-    for (auto curEV = aEv;; curEV = *it) {
+    for (auto curEV = aStep.curEV_;; curEV = *it) {
         auto&& prevEVs = findPeerEVs(curEV, prev_[true]);
         it = find_if(prevEVs.begin(), prevEVs.end(), [this](auto&& aPrevEV){ return states_[aPrevEV] == false; });
-        if (it == prevEVs.end()) {  // no further true-prev to check
-            if (curEV == aEv)
+        if (it == prevEVs.end()) {  // nothing in true-prev
+            if (curEV == aStep.curEV_) {
                 break;  // try false-prev
-            HID("(Domino) found unsatisfied en=" << evName_(curEV) << " from true prevEVs=" << prevEVs.size());
-            return evName_(curEV) + "==false";  // found
+            }
+
+            aStep.resultEN_ = evName_(curEV) + "==false";  // found
+            HID("(Domino) found false en=" << evName_(curEV) << " from true prevEVs=" << prevEVs.size());
+            return;
         }
     }
-    // nothing in true prev, search false prev
-    auto&& prevEVs = findPeerEVs(aEv, prev_[false]);
+
+    // search false prev
+    auto&& prevEVs = findPeerEVs(aStep.curEV_, prev_[false]);
     it = find_if(prevEVs.begin(), prevEVs.end(), [this](auto&& aPrevEV){ return states_[aPrevEV] == true; });
-    if (it == prevEVs.end()) {  // no further false-prev to check
-        HID("(Domino) found unsatisfied en=" << ev_en->second << " from false prevEVs=" << prevEVs.size());
-        return ev_en->second + "==false";
+    if (it == prevEVs.end()) {  // nothing in false-prev
+        HID("(Domino) found true en=" << evName_(aStep.curEV_) << " from false prevEVs=" << prevEVs.size());
+        aStep.resultEN_ = evName_(aStep.curEV_) + "==false";
+        return;
     }
-    return whyTrue_(*it);
-    // - doesn't make sense that user define EvName like this
-    // - but newEvent() doesn't forbid this kind of EvName to ensure safe of other Domino func
-    //   that assume newEvent() always succ
+    // found true-ev in false-prev, next whyTrue_()
+    aStep.curEV_ = *it;
+    aStep.whyFlag_ = true;
 }
-Domino::EvName Domino::whyTrue_(const Event& aValidEv) const noexcept
+void Domino::whyTrue_(WhyStep& aStep) const noexcept
 {
-    for (auto curEV = aValidEv; ; ) {
-        auto&& truePrevEVs = findPeerEVs(curEV, prev_[true]);
-        const size_t nTruePrev = truePrevEVs.size();
+    for (;;) {
+        auto&&  truePrevEVs = findPeerEVs(aStep.curEV_, prev_[true]);
+        auto&& falsePrevEVs = findPeerEVs(aStep.curEV_, prev_[false]);
 
-        auto&& falsePrevEVs = findPeerEVs(curEV, prev_[false]);
-        const size_t nFalsePrev = falsePrevEVs.size();
-
-        HID("(Domino en=" << evName_(curEV) << ", nTruePrev=" << nTruePrev << ", nFalsePrev=" << nFalsePrev);
-        if (nTruePrev == 1 && nFalsePrev == 0) {
-            curEV = *(truePrevEVs.begin());
+        HID("(Domino en=" << evName_(aStep.curEV_) << ", nTruePrev=" << truePrevEVs.size()
+            << ", nFalsePrev=" << falsePrevEVs.size());
+        if (truePrevEVs.size() == 1 && falsePrevEVs.empty()) {
+            aStep.curEV_ = *(truePrevEVs.begin());
             continue;
         }
-        if (nTruePrev == 0 && nFalsePrev == 1)
-            return whyFalse(*(falsePrevEVs.begin()));
-        HID("(Domino) found true en=" << ev_en_.at(curEV));
-        return ev_en_.at(curEV) + "==true";  // here is the futhest unique prev
+        if (truePrevEVs.empty() && falsePrevEVs.size() == 1) {
+            aStep.curEV_ = *(falsePrevEVs.begin());
+            aStep.whyFlag_ = false;
+            return;  // next whyFalse_()
+        }
+        // found true-ev with 0-prev/multi-prev, stop here for single root cause
+        HID("(Domino) found true en=" << evName_(aStep.curEV_));
+        aStep.resultEN_ = evName_(aStep.curEV_) + "==true";
+        return;
     }
 }
 

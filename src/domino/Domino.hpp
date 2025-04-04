@@ -108,7 +108,9 @@ private:
 
     bool isNextFromTo_(const Event& aFromValidEv, const Event& aToValidEv) const noexcept;
 
-    EvName whyTrue_(const Event& aValidEv) const noexcept;
+    struct WhyStep { Event curEV_; bool whyFlag_; EvName resultEN_; };
+    void whyTrue_ (WhyStep&) const noexcept;
+    void whyFalse_(WhyStep&) const noexcept;
 
     static const Events& findPeerEVs(const Event&, const EvLinks&) noexcept;
 
