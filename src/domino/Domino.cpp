@@ -17,26 +17,33 @@ namespace rlib
 static const Domino::Events defaultEVs;  // internal use only
 
 // ***********************************************************************************************
-void Domino::deduceStateFrom_(const Event& aValidEv)
+void Domino::deduceStateFrom_(const Event& aValidEv) noexcept
 {
-    HID("(Domino) en=" << evName_(aValidEv));
+    stack<Event> evStack;
+    unordered_set<Event> evVisited{aValidEv};
+    for (auto curEV = aValidEv; ; curEV = move(evStack.top()), evStack.pop()) {
+        HID("(Domino) en=" << evName_(curEV));
 
-    // recalc self state
-    auto newState = deduceStateSelf_(aValidEv, true) && deduceStateSelf_(aValidEv, false);
-    if (pureSetStateOK_(aValidEv, newState))
-    {
-        // deduce impacted (true branch)
-        for (auto&& nextEV : findPeerEVs(aValidEv, next_[true]))
-            deduceStateFrom_(nextEV);
-
-        // deduce impacted (false branch)
-        for (auto&& nextEV : findPeerEVs(aValidEv, next_[false]))
-            deduceStateFrom_(nextEV);
+        // recalc self state
+        auto newState = deduceStateSelf_(curEV, true) && deduceStateSelf_(curEV, false);
+        if (pureSetStateOK_(curEV, newState))
+        {
+            for (bool branch : {true, false}) {  // search next_[true] & next_[false]
+                for (auto&& nextEV : findPeerEVs(curEV, next_[branch])) {
+                    if (evVisited.insert(nextEV).second) {  // insert OK
+                        evStack.push(move(nextEV));
+                    }
+                }
+            }
+        }
+        if (evStack.empty()) {
+            return;
+        }
     }
 }
 
 // ***********************************************************************************************
-bool Domino::deduceStateSelf_(const Event& aValidEv, bool aPrevType) const
+bool Domino::deduceStateSelf_(const Event& aValidEv, bool aPrevType) const noexcept
 {
     for (auto&& prevEV : findPeerEVs(aValidEv, prev_[aPrevType]))
         if (states_[prevEV] != aPrevType)  // 1 prev not satisfied
@@ -188,7 +195,7 @@ void Domino::rmEv_(const Event& aValidEv)
 }
 
 // ***********************************************************************************************
-Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrevEvents)
+Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrevEvents) noexcept
 {
     // validate
     auto fromEv = newEvent(aEvName);  // complex by getEventBy(), not worth

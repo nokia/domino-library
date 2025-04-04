@@ -85,7 +85,7 @@ public:
     bool   state(const Event& aEv) const noexcept { return aEv < states_.size() ? states_[aEv] : false; }
     size_t setState(const SimuEvents&);  // ret real changed ev#
 
-    Event  setPrev(const EvName&, const SimuEvents&);  // be careful not create eg ttue-false loop
+    Event  setPrev(const EvName&, const SimuEvents&) noexcept;  // be careful not create eg ttue-false loop
     EvName whyFalse(const Event&) const noexcept;
 
 protected:
@@ -98,8 +98,8 @@ protected:
     virtual Event recycleEv_() noexcept { return D_EVENT_FAILED_RET; }
 
 private:
-    void deduceStateFrom_(const Event& aValidEv);
-    bool deduceStateSelf_(const Event& aValidEv, bool aPrevType) const;
+    void deduceStateFrom_(const Event& aValidEv) noexcept;
+    bool deduceStateSelf_(const Event& aValidEv, bool aPrevType) const noexcept;
     void effect_() noexcept;
 
     bool pureSetStateOK_(const Event& aValidEv, const bool aNewState) noexcept;
@@ -108,7 +108,7 @@ private:
 
     bool isNextFromTo_(const Event& aFromValidEv, const Event& aToValidEv) const noexcept;
 
-    struct WhyStep { Event curEV_; bool whyFlag_; EvName resultEN_; };
+    struct WhyStep{ Event curEV_; bool whyFlag_; EvName resultEN_; };
     void whyTrue_ (WhyStep&) const noexcept;
     void whyFalse_(WhyStep&) const noexcept;
 
