@@ -38,7 +38,7 @@
 #pragma once
 
 #include <map>
-#include <set>
+#include <stack>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -55,7 +55,7 @@ class Domino : public UniLog
 {
 public:
     using Event      = size_t;  // smaller size can save mem; larger size can support more events
-    using Events     = std::set<Event>;
+    using Events     = std::unordered_set<Event>;  // better performance than set in most cases
     using EvName     = std::string;
     using SimuEvents = std::map<EvName, bool>;  // not unordered-map since most traversal
     using EvNames    = std::unordered_map<Event, EvName>;  // map is less mem than vector<EvName>

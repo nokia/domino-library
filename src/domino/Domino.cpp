@@ -4,9 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <algorithm>
-#include <stack>
 #include <string>
-#include <unordered_set>
 
 #include "Domino.hpp"
 
@@ -20,23 +18,22 @@ static const Domino::Events defaultEVs;  // internal use only
 void Domino::deduceStateFrom_(const Event& aValidEv) noexcept
 {
     stack<Event> evStack;
-    unordered_set<Event> evVisited{aValidEv};
     for (auto curEV = aValidEv; ; curEV = move(evStack.top()), evStack.pop()) {
         HID("(Domino) en=" << evName_(curEV));
 
         // recalc self state
         auto newState = deduceStateSelf_(curEV, true) && deduceStateSelf_(curEV, false);
-        if (pureSetStateOK_(curEV, newState))
+        if (pureSetStateOK_(curEV, newState))  // state real changed
         {
+            // deduce next
             for (bool branch : {true, false}) {  // search next_[true] & next_[false]
                 for (auto&& nextEV : findPeerEVs(curEV, next_[branch])) {
-                    if (evVisited.insert(nextEV).second) {  // insert OK
-                        evStack.push(move(nextEV));
-                    }
+                    evStack.push(move(nextEV));
                 }
             }
         }
-        if (evStack.empty()) {
+
+        if (evStack.empty()) {  // no more to deduce
             return;
         }
     }
@@ -72,12 +69,15 @@ const Domino::Events& Domino::findPeerEVs(const Event& aEv, const EvLinks& aLink
 // ***********************************************************************************************
 bool Domino::isNextFromTo_(const Event& aFromValidEv, const Event& aToValidEv) const noexcept
 {
-    unordered_set<Event> evVisited{aFromValidEv};  // rare to search huge events
+    Events evVisited{aFromValidEv};  // rare to search huge events
     stack<Event> evStack;  // recursive func may stack overflow
 
-    for (auto curEv = aFromValidEv; curEv != aToValidEv; curEv = evStack.top(), evStack.pop()) {
-        for (bool branch : {true, false}) {  // search next_[true] & next_[false]
-            for (auto&& nextEV : findPeerEVs(curEv, next_[branch])) {
+    for (auto curEv = aFromValidEv; curEv != aToValidEv; curEv = evStack.top(), evStack.pop())
+    {
+        for (bool branch : {true, false})  // search next_[true] & next_[false]
+        {
+            for (auto&& nextEV : findPeerEVs(curEv, next_[branch]))
+            {
                 if (evVisited.insert(nextEV).second) {  // insert OK
                     evStack.push(nextEV);
                 }
@@ -184,7 +184,7 @@ void Domino::rmEv_(const Event& aValidEv)
     auto ret = ev_en_.erase(aValidEv);
     HID("[Domino] ev=" << aValidEv << ", ret=" << ret);
 
-    // deduce impacted
+    // deduce impacted; safer to dup-deduce same ev
     for (auto&& nextEV : trueNextEVs)
         deduceStateFrom_(nextEV);
     for (auto&& nextEV : falseNextEVs)
@@ -235,27 +235,28 @@ size_t Domino::setState(const SimuEvents& aSimuEvents)
         }
     }
 
-    // set state(s)
-    set<Event> evs;
+    // set ALL state(s) before deduce
+    Events simuEVs;
     for (auto&& en_state : aSimuEvents)
     {
         const auto ev = newEvent(en_state.first);
-        if (pureSetStateOK_(ev, en_state.second))  // real changed
-            evs.insert(ev);
+        if (pureSetStateOK_(ev, en_state.second)) {  // real changed
+            simuEVs.insert(ev);  // insert unique
+        }
     }
 
-    // decude state(s)
-    for (auto&& ev : evs)
-    {
-        for (auto&& nextEV : findPeerEVs(ev, next_[true]))
-            deduceStateFrom_(nextEV);
-        for (auto&& nextEV : findPeerEVs(ev, next_[false]))
-            deduceStateFrom_(nextEV);
+    // decude next(s)
+    for (auto&& curEV : simuEVs) {
+        for (bool branch : {true, false}) {
+            for (auto&& nextEV : findPeerEVs(curEV, next_[branch])) {
+                deduceStateFrom_(nextEV);  // dup-deduce is safer (like real domino)
+            }
+        }
     }
 
-    // call hdlr(s)
+    // safer to call hdlr(s) after deduce
     effect_();
-    return evs.size();
+    return simuEVs.size();  // real changed
 }
 
 // ***********************************************************************************************
@@ -284,7 +285,7 @@ Domino::EvName Domino::whyFalse(const Event& aEv) const noexcept
 }
 void Domino::whyFalse_(WhyStep& aStep) const noexcept
 {
-    Events::iterator it;
+    Events::const_iterator it;
     // search true prev
     for (auto curEV = aStep.curEV_;; curEV = *it) {
         auto&& prevEVs = findPeerEVs(curEV, prev_[true]);
