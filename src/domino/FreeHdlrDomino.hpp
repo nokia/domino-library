@@ -29,10 +29,10 @@ template<class aDominoType>
 class FreeHdlrDomino : public aDominoType
 {
 public:
-    explicit FreeHdlrDomino(const LogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
+    explicit FreeHdlrDomino(const LogName& aUniLogName = ULN_DEFAULT) noexcept : aDominoType(aUniLogName) {}
 
-    Domino::Event repeatedHdlr(const Domino::EvName&, const bool isRepeated = true);  // set false = simple rm
-    bool isRepeatHdlr(const Domino::Event&) const;
+    Domino::Event repeatedHdlr(const Domino::EvName&, const bool isRepeated = true) noexcept;  // set false = simple rm
+    bool isRepeatHdlr(const Domino::Event&) const noexcept;
 
 protected:
     void triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv) noexcept override;
@@ -50,7 +50,7 @@ public:
 
 // ***********************************************************************************************
 template<class aDominoType>
-bool FreeHdlrDomino<aDominoType>::isRepeatHdlr(const Domino::Event& aEv) const
+bool FreeHdlrDomino<aDominoType>::isRepeatHdlr(const Domino::Event& aEv) const noexcept
 {
     return aEv < isRepeatHdlr_.size()
         ? isRepeatHdlr_[aEv]
@@ -59,7 +59,7 @@ bool FreeHdlrDomino<aDominoType>::isRepeatHdlr(const Domino::Event& aEv) const
 
 // ***********************************************************************************************
 template<class aDominoType>
-Domino::Event FreeHdlrDomino<aDominoType>::repeatedHdlr(const Domino::EvName& aEvName, const bool isRepeated)
+Domino::Event FreeHdlrDomino<aDominoType>::repeatedHdlr(const Domino::EvName& aEvName, const bool isRepeated) noexcept
 {
     // validate
     if (this->nHdlr(aEvName) > 0)
@@ -124,4 +124,5 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, co
 // 2022-08-18  CSZ       - replace CppLog by UniLog
 // 2022-12-04  CSZ       - simple & natural
 // 2025-02-13  CSZ       - support both SafePtr & shared_ptr
+// 2025-04-05  CSZ       3)tolerate exception
 // ***********************************************************************************************

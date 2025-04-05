@@ -36,18 +36,18 @@ public:
     using HdlrName  = std::string;
     using HName_Hdlr_S = std::map<HdlrName, SharedMsgCB>;
 
-    explicit MultiHdlrDomino(const LogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
+    explicit MultiHdlrDomino(const LogName& aUniLogName = ULN_DEFAULT) noexcept : aDominoType(aUniLogName) {}
 
     // -------------------------------------------------------------------------------------------
     // - add multi-hdlr on 1 event
     // . cons: can NOT FreeHdlrDomino::repeatedHdlr() for each hdlr
     // . pros: 1 state, always sync
     // -------------------------------------------------------------------------------------------
-    Domino::Event multiHdlrOnSameEv(const Domino::EvName&, const MsgCB& aHdlr, const HdlrName&);
+    Domino::Event multiHdlrOnSameEv(const Domino::EvName&, const MsgCB& aHdlr, const HdlrName&) noexcept;
 
     using aDominoType::rmOneHdlrOK;  // rm HdlrDom's by EvName
-    bool rmOneHdlrOK(const Domino::EvName&, const HdlrName&);  // rm MultiDom's by HdlrName
-    void rmAllHdlr(const Domino::EvName&);
+    bool rmOneHdlrOK(const Domino::EvName&, const HdlrName&) noexcept;  // rm MultiDom's by HdlrName
+    void rmAllHdlr(const Domino::EvName&) noexcept;
     size_t nHdlr(const Domino::EvName& aEN) const noexcept override;
 
 protected:
@@ -87,7 +87,7 @@ void MultiHdlrDomino<aDominoType>::effect_(const Domino::Event& aEv) noexcept
 // ***********************************************************************************************
 template<class aDominoType>
 Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvName& aEvName,
-    const MsgCB& aHdlr, const HdlrName& aHdlrName)
+    const MsgCB& aHdlr, const HdlrName& aHdlrName) noexcept
 {
     // validate
     if (aHdlr == nullptr)
@@ -137,7 +137,7 @@ size_t MultiHdlrDomino<aDominoType>::nHdlr(const Domino::EvName& aEN) const noex
 
 // ***********************************************************************************************
 template<class aDominoType>
-void MultiHdlrDomino<aDominoType>::rmAllHdlr(const Domino::EvName& aEN)
+void MultiHdlrDomino<aDominoType>::rmAllHdlr(const Domino::EvName& aEN) noexcept
 {
     aDominoType::rmOneHdlrOK(aEN);
 
@@ -154,7 +154,7 @@ void MultiHdlrDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 
 // ***********************************************************************************************
 template<class aDominoType>
-bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName, const HdlrName& aHdlrName)
+bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName, const HdlrName& aHdlrName) noexcept
 {
     // find
     auto&& ev_hdlrs = ev_hdlrs_S_.find(this->getEventBy(aEvName));
@@ -208,4 +208,5 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, c
 // 2023-05-25  CSZ       - support force call hdlr
 // 2023-05-29  CSZ       - rmAllHdlr
 // 2025-02-13  CSZ       - support both SafePtr & shared_ptr
+// 2025-04-05  CSZ       3)tolerate exception
 // ***********************************************************************************************
