@@ -35,7 +35,7 @@ public:
     bool wbasic_replaceDataOK(const Domino::EvName&, S_PTR<void> aData = nullptr) noexcept;
 
 protected:
-    void rmEv_(const Domino::Event& aValidEv) override;
+    void rmEv_(const Domino::Event& aValidEv) noexcept override;
 
 private:
     // forbid ouside use base directly
@@ -80,7 +80,7 @@ bool WbasicDatDom<aDominoType>::replaceDataOK(const Domino::EvName& aEvName, S_P
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void WbasicDatDom<aDominoType>::rmEv_(const Domino::Event& aValidEv)
+void WbasicDatDom<aDominoType>::rmEv_(const Domino::Event& aValidEv) noexcept
 {
     if (aValidEv < wrCtrl_.size())
         wrCtrl_[aValidEv] = false;

@@ -94,7 +94,7 @@ protected:
 
     // - rm self dom's resource (RISK: aEv's leaf(s) may become orphan!!!)
     // - virtual for each dom (& trigger base to free its resource)
-    virtual void  rmEv_(const Event& aValidEv);
+    virtual void  rmEv_(const Event& aValidEv) noexcept;
     virtual Event recycleEv_() noexcept { return D_EVENT_FAILED_RET; }
 
 private:
@@ -104,7 +104,7 @@ private:
 
     bool pureSetStateOK_(const Event& aValidEv, const bool aNewState) noexcept;
     void pureSetPrev_(const Event& aValidEv, const SimuEvents&) noexcept;
-    void pureRmLink_(const Event& aValidEv, EvLinks& aMyLinks, EvLinks& aNeighborLinks);
+    void pureRmLink_(const Event& aValidEv, EvLinks& aMyLinks, EvLinks& aNeighborLinks) noexcept;
 
     bool isNextFromTo_(const Event& aFromValidEv, const Event& aToValidEv) const noexcept;
 

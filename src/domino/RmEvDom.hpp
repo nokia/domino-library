@@ -38,12 +38,12 @@ template<typename aDominoType>
 class RmEvDom : public aDominoType
 {
 public:
-    explicit RmEvDom(const LogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
+    explicit RmEvDom(const LogName& aUniLogName = ULN_DEFAULT) noexcept : aDominoType(aUniLogName) {}
 
-    bool rmEvOK(const Domino::EvName& aEN);
-    bool isRemoved(const Domino::Event& aEv) const { return isRemovedEv_.count(aEv); }
+    bool rmEvOK(const Domino::EvName& aEN) noexcept;
+    bool isRemoved(const Domino::Event& aEv) const noexcept { return isRemovedEv_.count(aEv); }
 protected:
-    void rmEv_(const Domino::Event& aValidEv) override;
+    void rmEv_(const Domino::Event& aValidEv) noexcept override;
     Domino::Event recycleEv_() noexcept override;
 
 private:
@@ -71,7 +71,7 @@ Domino::Event RmEvDom<aDominoType>::recycleEv_() noexcept
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void RmEvDom<aDominoType>::rmEv_(const Domino::Event& aValidEv)
+void RmEvDom<aDominoType>::rmEv_(const Domino::Event& aValidEv) noexcept
 {
     aDominoType::rmEv_(aValidEv);
     isRemovedEv_.insert(aValidEv);
@@ -79,7 +79,7 @@ void RmEvDom<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 
 // ***********************************************************************************************
 template<typename aDominoType>
-bool RmEvDom<aDominoType>::rmEvOK(const Domino::EvName& aEN)
+bool RmEvDom<aDominoType>::rmEvOK(const Domino::EvName& aEN) noexcept
 {
     const auto validEv = this->getEventBy(aEN);
     if (validEv == Domino::D_EVENT_FAILED_RET)  // invalid; most beginning check, avoid useless exe
@@ -96,4 +96,5 @@ bool RmEvDom<aDominoType>::rmEvOK(const Domino::EvName& aEN)
 // 2023-11-14  CSZ       1)create
 // 2023-11-22  CSZ       - better isRemovedEv_
 // 2023-11-24  CSZ       - rmEvOK->rmEv_ since ev para (EN can outer use)
+// 2025-04-05  CSZ       2)tolerate exception
 // ***********************************************************************************************

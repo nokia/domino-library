@@ -24,16 +24,16 @@ template<class aDominoType>
 class PriDomino : public aDominoType
 {
 public:
-    explicit PriDomino(const LogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
+    explicit PriDomino(const LogName& aUniLogName = ULN_DEFAULT) noexcept : aDominoType(aUniLogName) {}
 
     // -------------------------------------------------------------------------------------------
     // Extend Tile record:
     // - priority: Tile's priority to call hdlr, optional
     // -------------------------------------------------------------------------------------------
     EMsgPriority  getPriority(const Domino::Event&) const noexcept override;  // key/min change other Dominos
-    Domino::Event setPriority(const Domino::EvName&, const EMsgPriority);
+    Domino::Event setPriority(const Domino::EvName&, const EMsgPriority) noexcept;
 protected:
-    void rmEv_(const Domino::Event& aValidEv) override;
+    void rmEv_(const Domino::Event& aValidEv) noexcept override;
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -55,7 +55,7 @@ EMsgPriority PriDomino<aDominoType>::getPriority(const Domino::Event& aEv) const
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void PriDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
+void PriDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv) noexcept
 {
     ev_pri_S_.erase(aValidEv);
     aDominoType::rmEv_(aValidEv);
@@ -63,7 +63,7 @@ void PriDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 
 // ***********************************************************************************************
 template<class aDominoType>
-Domino::Event PriDomino<aDominoType>::setPriority(const Domino::EvName& aEvName, const EMsgPriority aPri)
+Domino::Event PriDomino<aDominoType>::setPriority(const Domino::EvName& aEvName, const EMsgPriority aPri) noexcept
 {
     // validate
     if (this->nHdlr(aEvName) > 0)
@@ -91,4 +91,5 @@ Domino::Event PriDomino<aDominoType>::setPriority(const Domino::EvName& aEvName,
 // 2022-03-26  CSZ       - ut's PARA_DOM include self class & ALL its base class(es)
 // 2022-03-27  CSZ       - if ut case can test base class, never specify derive
 // 2022-08-18  CSZ       - replace CppLog by UniLog
+// 2025-04-05  CSZ       2)tolerate exception
 // ***********************************************************************************************

@@ -119,7 +119,7 @@ Domino::Event Domino::newEvent(const EvName& aEvName) noexcept
 }
 
 // ***********************************************************************************************
-void Domino::pureRmLink_(const Event& aValidEv, EvLinks& aMyLinks, EvLinks& aNeighborLinks)
+void Domino::pureRmLink_(const Event& aValidEv, EvLinks& aMyLinks, EvLinks& aNeighborLinks) noexcept
 {
     // rm neighbor's link
     for (auto&& peerEv : findPeerEVs(aValidEv, aMyLinks))
@@ -165,7 +165,7 @@ bool Domino::pureSetStateOK_(const Event& aValidEv, const bool aNewState) noexce
 }
 
 // ***********************************************************************************************
-void Domino::rmEv_(const Event& aValidEv)
+void Domino::rmEv_(const Event& aValidEv) noexcept
 {
     // cp for later deduceStateFrom_(next)
     auto trueNextEVs  = findPeerEVs(aValidEv, next_[true]);

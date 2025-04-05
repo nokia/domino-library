@@ -62,7 +62,7 @@ protected:
     virtual void triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv) noexcept;
     virtual bool rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr) noexcept;  // by aValidHdlr
 
-    void rmEv_(const Domino::Event& aValidEv) override;
+    void rmEv_(const Domino::Event& aValidEv) noexcept override;
 
     // -------------------------------------------------------------------------------------------
 private:
@@ -109,7 +109,7 @@ Domino::Event HdlrDomino<aDominoType>::multiHdlrByAliasEv(const Domino::EvName& 
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void HdlrDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
+void HdlrDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv) noexcept
 {
     ev_hdlr_S_.erase(aValidEv);
     aDominoType::rmEv_(aValidEv);

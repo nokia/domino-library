@@ -53,7 +53,7 @@ public:
 protected:
     void effect_(const Domino::Event& aEv) noexcept override;  // key/min change other Dominos
     bool rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr) noexcept override; // by aValidHdlr
-    void rmEv_(const Domino::Event& aValidEv) override;
+    void rmEv_(const Domino::Event& aValidEv) noexcept override;
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -146,7 +146,7 @@ void MultiHdlrDomino<aDominoType>::rmAllHdlr(const Domino::EvName& aEN) noexcept
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void MultiHdlrDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
+void MultiHdlrDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv) noexcept
 {
     ev_hdlrs_S_.erase(aValidEv);
     aDominoType::rmEv_(aValidEv);

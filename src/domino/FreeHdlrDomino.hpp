@@ -37,7 +37,7 @@ public:
 protected:
     void triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv) noexcept override;
 
-    void rmEv_(const Domino::Event& aValidEv) override;
+    void rmEv_(const Domino::Event& aValidEv) noexcept override;
 
     // -------------------------------------------------------------------------------------------
 private:
@@ -78,7 +78,7 @@ Domino::Event FreeHdlrDomino<aDominoType>::repeatedHdlr(const Domino::EvName& aE
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void FreeHdlrDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
+void FreeHdlrDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv) noexcept
 {
     if (aValidEv < isRepeatHdlr_.size())
         isRepeatHdlr_[aValidEv] = false;

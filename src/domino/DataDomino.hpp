@@ -45,7 +45,7 @@ public:
     virtual bool replaceDataOK(const Domino::EvName&, S_PTR<void> = nullptr) noexcept;
 
 protected:
-    void rmEv_(const Domino::Event& aValidEv) override;
+    void rmEv_(const Domino::Event& aValidEv) noexcept override;
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -68,7 +68,7 @@ bool DataDomino<aDominoType>::replaceDataOK(const Domino::EvName& aEvName, S_PTR
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void DataDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
+void DataDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv) noexcept
 {
     ev_data_S_.replaceOK(aValidEv, nullptr);
     aDominoType::rmEv_(aValidEv);
