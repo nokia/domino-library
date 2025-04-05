@@ -28,7 +28,7 @@ void Domino::deduceStateFrom_(const Event& aValidEv) noexcept
             // deduce next
             for (bool branch : {true, false}) {  // search next_[true] & next_[false]
                 for (auto&& nextEV : findPeerEVs(curEV, next_[branch])) {
-                    evStack.push(move(nextEV));
+                    evStack.push(move(nextEV));  // dup-deduce is safer (like real domino)
                 }
             }
         }
@@ -78,7 +78,7 @@ bool Domino::isNextFromTo_(const Event& aFromValidEv, const Event& aToValidEv) c
         {
             for (auto&& nextEV : findPeerEVs(curEv, next_[branch]))
             {
-                if (evVisited.insert(nextEV).second) {  // insert OK
+                if (evVisited.insert(nextEV).second) {  // no dup ev (since Dom not changed)
                     evStack.push(nextEV);
                 }
             }

@@ -48,11 +48,11 @@ public:
     using aDominoType::rmOneHdlrOK;  // rm HdlrDom's by EvName
     bool rmOneHdlrOK(const Domino::EvName&, const HdlrName&);  // rm MultiDom's by HdlrName
     void rmAllHdlr(const Domino::EvName&);
-    size_t nHdlr(const Domino::EvName& aEN) const override;
+    size_t nHdlr(const Domino::EvName& aEN) const noexcept override;
 
 protected:
     void effect_(const Domino::Event& aEv) noexcept override;  // key/min change other Dominos
-    bool rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr) override;  // rm by aValidHdlr
+    bool rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr) noexcept override; // by aValidHdlr
     void rmEv_(const Domino::Event& aValidEv) override;
 
 private:
@@ -129,7 +129,7 @@ Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvNa
 
 // ***********************************************************************************************
 template<class aDominoType>
-size_t MultiHdlrDomino<aDominoType>::nHdlr(const Domino::EvName& aEN) const
+size_t MultiHdlrDomino<aDominoType>::nHdlr(const Domino::EvName& aEN) const noexcept
 {
     auto&& ev_hdlrs = ev_hdlrs_S_.find(this->getEventBy(aEN));
     return (ev_hdlrs == ev_hdlrs_S_.end() ? 0 : ev_hdlrs->second.size()) + aDominoType::nHdlr(aEN);
@@ -168,7 +168,7 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName, co
 
 // ***********************************************************************************************
 template<class aDominoType>
-bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr)
+bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr) noexcept
 {
     // parent's hdlr?
     if (aDominoType::rmOneHdlrOK_(aValidEv, aValidHdlr))

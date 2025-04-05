@@ -30,7 +30,7 @@ public:
     // Extend Tile record:
     // - priority: Tile's priority to call hdlr, optional
     // -------------------------------------------------------------------------------------------
-    EMsgPriority  getPriority(const Domino::Event&) const override;  // key/min change other Dominos
+    EMsgPriority  getPriority(const Domino::Event&) const noexcept override;  // key/min change other Dominos
     Domino::Event setPriority(const Domino::EvName&, const EMsgPriority);
 protected:
     void rmEv_(const Domino::Event& aValidEv) override;
@@ -44,7 +44,7 @@ public:
 
 // ***********************************************************************************************
 template<class aDominoType>
-EMsgPriority PriDomino<aDominoType>::getPriority(const Domino::Event& aEv) const
+EMsgPriority PriDomino<aDominoType>::getPriority(const Domino::Event& aEv) const noexcept
 {
     auto&& ev_pri = ev_pri_S_.find(aEv);
     if (ev_pri == ev_pri_S_.end())

@@ -170,7 +170,7 @@ private:
 // 2024-03-03  CSZ       - enhance safe of rm ev (shall deduceState_(next))
 //                       - enhance safe of whyFalse() while keep safe of newEvent()
 // 2024-03-19  CSZ       9)1-go domino -> n-go domino
-// 2025-03-31  CSZ       10)tolerate exception
+// 2025-03-31  CSZ       10)tolerate exception; rm recursion
 // ***********************************************************************************************
 // - where:
 //   . start using domino for time-cost events

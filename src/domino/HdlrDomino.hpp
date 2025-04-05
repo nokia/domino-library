@@ -39,13 +39,13 @@ template<class aDominoType>
 class HdlrDomino : public aDominoType
 {
 public:
-    explicit HdlrDomino(const LogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
-    bool setMsgSelfOK(const S_PTR<MsgSelf>& aMsgSelf);  // replace default; safe: yes SafePtr, no shared_ptr
+    explicit HdlrDomino(const LogName& aUniLogName = ULN_DEFAULT) noexcept : aDominoType(aUniLogName) {}
+    bool setMsgSelfOK(const S_PTR<MsgSelf>& aMsgSelf) noexcept;  // replace default; safe: yes SafePtr, no shared_ptr
 
-    Domino::Event setHdlr(const Domino::EvName&, const MsgCB& aHdlr);
-    bool rmOneHdlrOK(const Domino::EvName&);  // rm by EvName
-    void forceAllHdlr(const Domino::EvName& aEN) { effect_(this->getEventBy(aEN)); }
-    virtual size_t nHdlr(const Domino::EvName& aEN) const { return ev_hdlr_S_.count(this->getEventBy(aEN)); }
+    Domino::Event setHdlr(const Domino::EvName&, const MsgCB& aHdlr) noexcept;
+    bool rmOneHdlrOK(const Domino::EvName&) noexcept;  // rm by EvName
+    void forceAllHdlr(const Domino::EvName& aEN) noexcept { effect_(this->getEventBy(aEN)); }
+    virtual size_t nHdlr(const Domino::EvName& aEN) const noexcept { return ev_hdlr_S_.count(this->getEventBy(aEN)); }
 
     // -------------------------------------------------------------------------------------------
     // - add a new ev=aAliasEN to store aHdlr (aAliasEN's true prev is aHostEN)
@@ -53,14 +53,14 @@ public:
     // . cons: the state of aHostEN & aAliasEN may not sync
     // -------------------------------------------------------------------------------------------
     Domino::Event multiHdlrByAliasEv(const Domino::EvName& aAliasEN, const MsgCB& aHdlr,
-        const Domino::EvName& aHostEN);
+        const Domino::EvName& aHostEN) noexcept;
 
-    virtual EMsgPriority getPriority(const Domino::Event&) const { return EMsgPri_NORM; }
+    virtual EMsgPriority getPriority(const Domino::Event&) const noexcept { return EMsgPri_NORM; }
 
 protected:
     void effect_(const Domino::Event& aEv) noexcept override;
     virtual void triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv) noexcept;
-    virtual bool rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr);  // rm by aValidHdlr
+    virtual bool rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr) noexcept;  // by aValidHdlr
 
     void rmEv_(const Domino::Event& aValidEv) override;
 
@@ -89,7 +89,7 @@ void HdlrDomino<aDominoType>::effect_(const Domino::Event& aEv) noexcept
 // ***********************************************************************************************
 template<class aDominoType>
 Domino::Event HdlrDomino<aDominoType>::multiHdlrByAliasEv(const Domino::EvName& aAliasEN,
-    const MsgCB& aHdlr, const Domino::EvName& aHostEN)
+    const MsgCB& aHdlr, const Domino::EvName& aHostEN) noexcept
 {
     if (this->getEventBy(aAliasEN) != Domino::D_EVENT_FAILED_RET)
     {
@@ -117,7 +117,7 @@ void HdlrDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv)
 
 // ***********************************************************************************************
 template<class aDominoType>
-bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName)
+bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName) noexcept
 {
     HID("(HdlrDom) EvName=" << aEvName);
     return ev_hdlr_S_.erase(this->getEventBy(aEvName));
@@ -125,7 +125,7 @@ bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName)
 
 // ***********************************************************************************************
 template<class aDominoType>
-bool HdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr)
+bool HdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr) noexcept
 {
     auto&& ev_hdlr = ev_hdlr_S_.find(aValidEv);
     if (ev_hdlr == ev_hdlr_S_.end())
@@ -143,7 +143,7 @@ bool HdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, const 
 
 // ***********************************************************************************************
 template<class aDominoType>
-Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, const MsgCB& aHdlr)
+Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, const MsgCB& aHdlr) noexcept
 {
     // validate
     if (! msgSelf_)
@@ -179,7 +179,7 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
 
 // ***********************************************************************************************
 template<class aDominoType>
-bool HdlrDomino<aDominoType>::setMsgSelfOK(const S_PTR<MsgSelf>& aMsgSelf)
+bool HdlrDomino<aDominoType>::setMsgSelfOK(const S_PTR<MsgSelf>& aMsgSelf) noexcept
 {
     // validate
     const auto nMsgUnhandled = msgSelf_ ? msgSelf_->nMsg() : 0;  // HdlrDomino ensure msgSelf_ always NOT null
@@ -231,4 +231,5 @@ void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, const 
 // 2023-05-24  CSZ       - support force call hdlr
 // 2024-03-10  CSZ       - enhance safe eg setMsgSelf()
 // 2025-02-13  CSZ       - support both SafePtr & shared_ptr
+// 2025-04-05  CSZ       3)tolerate exception
 // ***********************************************************************************************

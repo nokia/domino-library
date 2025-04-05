@@ -71,6 +71,18 @@ TYPED_TEST_P(NofreeHdlrDominoTest, UC_reTrigger_reCall)
     PARA_DOM->setState({{"event", true}});  // 2nd trigger
     this->pongMsgSelf_();
 }
+TYPED_TEST_P(HdlrDominoTest, except_hdlr)
+{
+    int step = 0;
+    PARA_DOM->setHdlr("event", [&step](){
+        step = 1;
+        throw runtime_error("hdlr except");
+        step = 2;
+    });
+    PARA_DOM->setState({{"event", true}});
+    this->pongMsgSelf_();
+    EXPECT_EQ(1, step) << "REQ: HdlrDom shall tolerate except hdlr";
+}
 
 #define CHAIN
 // ***********************************************************************************************
@@ -376,6 +388,7 @@ TYPED_TEST_P(HdlrDominoTest, bugFix_invalidMsgSelf)  // checked by CI valgrind
 REGISTER_TYPED_TEST_SUITE_P(HdlrDominoTest
     , GOLD_add_and_call
     , immediate_call
+    , except_hdlr
 
     , GOLD_trigger_chain_call
     , immediate_chain_call
