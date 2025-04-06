@@ -34,7 +34,8 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
                         // - lock to prevent new task/notif until my qCv_ sleep/wait-notif (ensure not loss notif)
                         // - lock to prevent other thread steal task
                         unique_lock<mutex> lock(this->qMutex_);
-                        this->qCv_.wait(lock, [this]{ return this->mt_stopAllTH_ || !this->taskQ_.empty(); });
+                        this->qCv_.wait(lock,
+                            [this]() noexcept { return this->mt_stopAllTH_ || !this->taskQ_.empty(); });
 
                         if (this->mt_stopAllTH_)
                             return;

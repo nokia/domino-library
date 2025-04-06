@@ -99,7 +99,7 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, co
 
     HID("(FreeHdlrDom) trigger a call-then-rm msg for en=" << this->evName_(aValidEv));
     this->msgSelf_->newMsgOK(
-        [this, aValidEv, weakHdlr = WeakMsgCB(aValidHdlr)]() {
+        [this, aValidEv, weakHdlr = WeakMsgCB(aValidHdlr)]() noexcept {
             if (weakHdlr.expired())  // validate
                 return;  // otherwise crash
             auto hdlr = weakHdlr.lock();  // get

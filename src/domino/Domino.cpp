@@ -289,7 +289,8 @@ void Domino::whyFalse_(WhyStep& aStep) const noexcept
     // search true prev
     for (auto curEV = aStep.curEV_;; curEV = *it) {
         auto&& prevEVs = findPeerEVs(curEV, prev_[true]);
-        it = find_if(prevEVs.begin(), prevEVs.end(), [this](auto&& aPrevEV){ return states_[aPrevEV] == false; });
+        it = find_if(prevEVs.begin(), prevEVs.end(),
+            [this](auto&& aPrevEV) noexcept { return states_[aPrevEV] == false; });
         if (it == prevEVs.end()) {  // nothing in true-prev
             if (curEV == aStep.curEV_) {
                 break;  // try false-prev
@@ -303,7 +304,8 @@ void Domino::whyFalse_(WhyStep& aStep) const noexcept
 
     // search false prev
     auto&& prevEVs = findPeerEVs(aStep.curEV_, prev_[false]);
-    it = find_if(prevEVs.begin(), prevEVs.end(), [this](auto&& aPrevEV){ return states_[aPrevEV] == true; });
+    it = find_if(prevEVs.begin(), prevEVs.end(),
+        [this](auto&& aPrevEV) noexcept { return states_[aPrevEV] == true; });
     if (it == prevEVs.end()) {  // nothing in false-prev
         HID("(Domino) found true en=" << evName_(aStep.curEV_) << " from false prevEVs=" << prevEVs.size());
         aStep.resultEN_ = evName_(aStep.curEV_) + "==false";

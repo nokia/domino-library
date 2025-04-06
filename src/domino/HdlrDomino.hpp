@@ -205,7 +205,7 @@ void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, const 
 {
     HID("(HdlrDom) trigger a new msg.");
     msgSelf_->newMsgOK(
-        [weakMsgCB = WeakMsgCB(aValidHdlr)]() mutable  // WeakMsgCB is to support rm hdlr
+        [weakMsgCB = WeakMsgCB(aValidHdlr)]() mutable noexcept  // WeakMsgCB is to support rm hdlr
         {
             if (! weakMsgCB.expired()) {
                 try { (*(weakMsgCB.lock().get()))(); }  // setHdlr() forbid cb==null
