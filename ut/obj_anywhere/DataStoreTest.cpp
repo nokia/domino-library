@@ -73,7 +73,7 @@ TEST_F(DataStoreTest, GOLD_store_sameType)
 }
 TEST_F(DataStoreTest, noNeedToStoreNull)
 {
-    EXPECT_TRUE(dataStore_.emplaceOK("string", nullptr));
+    EXPECT_FALSE(dataStore_.emplaceOK("string", nullptr)) << "REQ: erase NOK";
     EXPECT_EQ(0u, dataStore_.nData()) << "REQ: no need to store null";
 
     EXPECT_TRUE(dataStore_.emplaceOK("string", MAKE_PTR<string>("hello")));
@@ -82,7 +82,7 @@ TEST_F(DataStoreTest, noNeedToStoreNull)
     EXPECT_TRUE(dataStore_.emplaceOK("string", nullptr)) << "REQ: erase OK";
     EXPECT_EQ(0u, dataStore_.nData()) << "REQ: erase OK";
 }
-TEST_F(DataStoreTest, replace)
+TEST_F(DataStoreTest, GOLD_replace)
 {
     EXPECT_TRUE (dataStore_.emplaceOK("string", MAKE_PTR<string>("hello")));
     EXPECT_FALSE(dataStore_.emplaceOK("string", MAKE_PTR<string>("world"))) << "REQ: failed";
@@ -90,6 +90,10 @@ TEST_F(DataStoreTest, replace)
 
     EXPECT_TRUE(dataStore_.replaceOK("string", MAKE_PTR<string>("world"))) << "REQ: replace OK";
     EXPECT_EQ("world", *(dataStore_.get<string>("string").get())) << "req: explicit rm then set ok";
+
+    EXPECT_TRUE(dataStore_.replaceOK("string", nullptr)) << "REQ: replace/rm OK";
+    EXPECT_EQ(nullptr, dataStore_.get<string>("string").get()) << "req: replace/rm OK";
+    EXPECT_FALSE(dataStore_.replaceOK("string", nullptr)) << "REQ: replace/rm again NOK";
 }
 
 #define SAFE

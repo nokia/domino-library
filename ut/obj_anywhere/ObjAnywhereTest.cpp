@@ -95,7 +95,7 @@ TEST_F(ObjAnywhereTest, destructBySetNull)
     EXPECT_TRUE(isDestructed) << "REQ: destruct correctly";
     EXPECT_EQ(nullptr, ObjAnywhere::getObj<TestObj>().get()) << "REQ: destruct TestObj";
 
-    EXPECT_TRUE(ObjAnywhere::emplaceObjOK(S_PTR<TestObj>(), *this)) << "REQ: rm again";
+    EXPECT_FALSE(ObjAnywhere::emplaceObjOK(S_PTR<TestObj>(), *this)) << "REQ: rm again NOK";
     EXPECT_EQ(0u, ObjAnywhere::nObj());
 
     ObjAnywhere::deinit();

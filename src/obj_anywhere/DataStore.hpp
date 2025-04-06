@@ -54,13 +54,11 @@ bool DataStore<aDataKey>::emplaceOK(const aDataKey& aKey, S_PTR<void> aData) noe
         if (! aData)
         {
             HID("(DataStore) erase key=" << typeid(aDataKey).name());
-            key_data_S_.erase(aKey);
-            return true;
+            return key_data_S_.erase(aKey) > 0;
         }
         else
         {
-            auto&& it_ok = key_data_S_.emplace(aKey, aData);
-            if (it_ok.second)
+            if (key_data_S_.emplace(aKey, aData).second)
                 return true;
             else
             {
@@ -98,14 +96,14 @@ template<typename aDataKey>
 bool DataStore<aDataKey>::replaceOK(const aDataKey& aKey, S_PTR<void> aData) noexcept
 {
     try {
-        if (! aData)
-        {
+        if (! aData) {
             HID("(DataStore) erase key=" << typeid(aDataKey).name());
-            key_data_S_.erase(aKey);
+            return key_data_S_.erase(aKey) > 0;
         }
-        else
+        else {
             key_data_S_[aKey] = aData;
-        return true;
+            return true;
+        }
     } catch(...) {
         ERR("(DataStore) except->failed!!! key=" << typeid(aDataKey).name());
         return false;
