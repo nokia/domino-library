@@ -37,15 +37,15 @@ using LogStore = std::unordered_map<LogName, std::shared_ptr<SmartLog> >;
 class UniSmartLog
 {
 public:
-    explicit UniSmartLog(const LogName& = ULN_DEFAULT);
-    ~UniSmartLog() { if (smartLog_.use_count() == 2) name_log_S_.erase(uniLogName_); }
+    explicit UniSmartLog(const LogName& = ULN_DEFAULT) noexcept;  // all except can't be recovered, eg bad_alloc
+    ~UniSmartLog() noexcept { if (smartLog_.use_count() == 2) name_log_S_.erase(uniLogName_); }
 
-    SmartLog& oneLog() const;  // for logging; ret ref is not mem-safe when use the ref after del
-    SmartLog& operator()() const { return oneLog(); }  // not mem-safe as oneLog()
-    void needLog() { smartLog_->needLog(); }  // flag to dump
-    LogName uniLogName() const { return uniLogName_; }
+    SmartLog& oneLog() const noexcept;  // for logging; ret ref is not mem-safe when use the ref after del
+    SmartLog& operator()() const noexcept { return oneLog(); }  // not mem-safe as oneLog()
+    void needLog() noexcept { smartLog_->needLog(); }  // flag to dump
+    LogName uniLogName() const noexcept { return uniLogName_; }
 
-    static size_t nLog() { return name_log_S_.size(); }
+    static size_t nLog() noexcept { return name_log_S_.size(); }
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -80,7 +80,7 @@ public:
 
 // ***********************************************************************************************
 // static than inline, avoid ut conflict when coexist both UniLog
-static SmartLog& oneLog() { return UniSmartLog::defaultUniLog_.oneLog(); }  // ret ref is not mem-safe
+static SmartLog& oneLog() noexcept { return UniSmartLog::defaultUniLog_.oneLog(); }  // ret ref is not mem-safe
 
 using UniLog = UniSmartLog;
 

@@ -11,7 +11,7 @@ using namespace std;
 namespace rlib
 {
 // ***********************************************************************************************
-UniSmartLog::UniSmartLog(const LogName& aUniLogName) : uniLogName_(aUniLogName)
+UniSmartLog::UniSmartLog(const LogName& aUniLogName) noexcept : uniLogName_(aUniLogName)
 {
     // for(auto&& name_log : name_log_S_) cout << name_log.first<<", p=" << name_log.second.get() << endl;
     auto&& name_log = name_log_S_.find(aUniLogName);
@@ -29,7 +29,7 @@ UniSmartLog::UniSmartLog(const LogName& aUniLogName) : uniLogName_(aUniLogName)
 }
 
 // ***********************************************************************************************
-SmartLog& UniSmartLog::oneLog() const
+SmartLog& UniSmartLog::oneLog() const noexcept
 {
     *smartLog_ << "s[" << mt_timestamp() << ' ' << uniLogName_ << '/';
     return *smartLog_;

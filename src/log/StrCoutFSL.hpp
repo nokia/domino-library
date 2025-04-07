@@ -33,16 +33,16 @@ class StrCoutFSL  // FSL = Formatted Smart Log
     , public std::stringstream   // for operator<<(); must not ostringstream since dump need read it!!!
 {
 public :
-    ~StrCoutFSL();
+    ~StrCoutFSL() noexcept;
 
     // for gtest/etc that failure maybe after testcase destruction
     // void forceDel() { stringstream().swap(*this); }
-    void forceSave() const;
+    void forceSave() const noexcept;
 };
 
 // ***********************************************************************************************
 inline
-StrCoutFSL::~StrCoutFSL()
+StrCoutFSL::~StrCoutFSL() noexcept
 {
     if (canDelLog())
         return;
@@ -52,7 +52,7 @@ StrCoutFSL::~StrCoutFSL()
 
 // ***********************************************************************************************
 inline
-void StrCoutFSL::forceSave() const
+void StrCoutFSL::forceSave() const noexcept
 {
     std::cout << rdbuf() << std::endl;  // internet says rdbuf() is faster than str()
 }
