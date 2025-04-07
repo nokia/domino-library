@@ -65,9 +65,9 @@ inline const char* mt_timestamp() noexcept
 const char ULN_DEFAULT[] = "DEFAULT";
 
 // ***********************************************************************************************
-// - MT safe : no (aStr maybe not)
+// - MT safe : yes (aStr is copied)
 // - mem safe: yes
-inline void cout_ascii(const std::string& aStr) noexcept
+inline void cout_ascii(std::string aStr) noexcept
 {
     try {  // cout may except(eg ios_base::failure) though rare; try-catch is safest as a log
         std::cout << std::hex;
@@ -100,5 +100,5 @@ inline void cout_ascii(const std::string& aStr) noexcept
 // 2022-08-29  CSZ       1)create
 // 2023-05-29  CSZ       - ms/us in mt_timestamp
 // 2024-02-22  CSZ       2)mem-safe
-// 2025-04-07  CSZ       3)tolerate exception
+// 2025-04-07  CSZ       3)tolerate exception; MT safe
 // ***********************************************************************************************

@@ -91,4 +91,5 @@ using UniLog = UniSmartLog;
 // 2022-08-25  CSZ       1)mv major from UniLog.hpp
 // 2022-12-02  CSZ       - simple & natural
 // 2024-02-21  CSZ       2)mem-safe
+// 2025-04-07  CSZ       3)tolerate exception
 // ***********************************************************************************************
