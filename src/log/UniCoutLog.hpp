@@ -30,15 +30,15 @@ namespace rlib
 class UniCoutLog
 {
 public:
-    explicit UniCoutLog(const LogName&) {}  // compatible UniSmartLog
+    explicit UniCoutLog(const LogName&) noexcept {}  // compatible UniSmartLog
     UniCoutLog() = default;
 
-    static std::ostream& oneLog();
-    std::ostream& operator()() const { return oneLog(); }
-    static void needLog() {}
+    static std::ostream& oneLog() noexcept;
+    std::ostream& operator()() const noexcept { return oneLog(); }
+    static void needLog() noexcept {}
 
-    static LogName uniLogName() { return ULN_DEFAULT; }
-    static size_t nLog() { return 1; }
+    static LogName uniLogName() noexcept { return ULN_DEFAULT; }
+    static size_t nLog() noexcept { return 1; }
 
     // -------------------------------------------------------------------------------------------
 public:
@@ -68,4 +68,5 @@ using UniLog = UniCoutLog;
 // 2022-08-26  CSZ       1)create
 // 2022-12-02  CSZ       - simple & natural
 // 2024-02-21  CSZ       2)mem-safe
+// 2025-04-07  CSZ       3)tolerate exception
 // ***********************************************************************************************

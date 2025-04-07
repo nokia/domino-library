@@ -48,7 +48,7 @@ namespace rlib
 // ***********************************************************************************************
 // - MT safe : yes
 // - mem safe: yes
-inline const char* mt_timestamp()
+inline const char* mt_timestamp() noexcept
 {
     static thread_local char buf[] = "ddd/HH:MM:SS.123456";  // ddd is days/year; thread_local is MT safe
 
@@ -67,28 +67,31 @@ const char ULN_DEFAULT[] = "DEFAULT";
 // ***********************************************************************************************
 // - MT safe : no (aStr maybe not)
 // - mem safe: yes
-inline void cout_ascii(const std::string& aStr)
+inline void cout_ascii(const std::string& aStr) noexcept
 {
-    std::cout << std::hex;
-    unsigned char preC = 0;
-    for (unsigned char c : aStr)
-    {
-        if (std::isprint(c))
+    try {  // cout may except(eg ios_base::failure) though rare; try-catch is safest as a log
+        std::cout << std::hex;
+        unsigned char preC = 0;
+        for (unsigned char c : aStr)
         {
-            if (preC == 0xd || preC == 0xa)
+            if (std::isprint(c))
             {
-                std::cout << std::endl;
-                preC = 0;
+                if (preC == 0xd || preC == 0xa)
+                {
+                    std::cout << std::endl;
+                    preC = 0;
+                }
+                std::cout << c;
             }
-            std::cout << c;
+            else
+            {
+                std::cout << "[`" << static_cast<size_t>(c) << "'}";  // [`'} is rare
+                preC = c;
+            }
         }
-        else
-        {
-            std::cout << "[`" << static_cast<size_t>(c) << "'}";  // [`'} is rare
-            preC = c;
-        }
+        std::cout << std::dec << std::endl;
     }
-    std::cout << std::dec << std::endl;
+    catch(...) {}
 }
 }  // namespace
 // ***********************************************************************************************
@@ -97,4 +100,5 @@ inline void cout_ascii(const std::string& aStr)
 // 2022-08-29  CSZ       1)create
 // 2023-05-29  CSZ       - ms/us in mt_timestamp
 // 2024-02-22  CSZ       2)mem-safe
+// 2025-04-07  CSZ       3)tolerate exception
 // ***********************************************************************************************

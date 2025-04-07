@@ -11,10 +11,12 @@ using namespace std;
 namespace rlib
 {
 // ***********************************************************************************************
-ostream& UniCoutLog::oneLog()
+ostream& UniCoutLog::oneLog() noexcept
 {
-    ++nLogLine_;  // ut only; no impact product's MT safe & mem safe
-    cout << "c[" << mt_timestamp() << ' ' << ULN_DEFAULT << '/';
+    try {
+        ++nLogLine_;  // ut only; no impact product's MT safe & mem safe
+        cout << "c[" << mt_timestamp() << ' ' << ULN_DEFAULT << '/';
+    } catch(...) {}
     return cout;
 }
 
