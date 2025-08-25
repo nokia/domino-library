@@ -50,7 +50,7 @@ public:
     template<typename From> SafePtr(const SafePtr<From>&) noexcept;   // cp, always ok (or compile err)
     template<typename From> SafePtr(SafePtr<From>&&) noexcept;        // mv, always ok (or compile err)
     // no assignment, compiler will gen it & enough
-    template<typename To> std::shared_ptr<To> cast() const noexcept;  // ret ok/null
+    template<typename To> std::shared_ptr<To> cast() const noexcept;  // ret ok/null; safe cast
     template<typename To, typename From> friend SafePtr<To> safe_cast(const SafePtr<From>&) noexcept;  // ret ok/null
 
     // safe usage: convenient(compatible shared_ptr), equivalent & min
@@ -98,7 +98,7 @@ SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom) noexcept  // cp
 template<typename T>
 template<typename From>
 SafePtr<T>::SafePtr(SafePtr<From>&& aSafeFrom) noexcept  // mv - MtQ need
-    : pT_(std::move(aSafeFrom.pT_))  // mv faster than cp
+    : pT_(std::move(aSafeFrom.pT_))  // mv is faster than cp
     , realType_(pT_ ? aSafeFrom.realType_ : typeid(T))
     , lastType_(pT_ ? aSafeFrom.template genLastType_<T>() : typeid(T))
 {
@@ -113,7 +113,7 @@ SafePtr<T>::SafePtr(SafePtr<From>&& aSafeFrom) noexcept  // mv - MtQ need
 // - for safe_cast; constructor is faster; private is safe
 template<typename T>
 constexpr SafePtr<T>::SafePtr(std::shared_ptr<T>&& aPtr, const std::type_index& aReal, const std::type_index& aLast) noexcept
-    : pT_(aPtr)
+    : pT_(aPtr)  // mv
     , realType_(pT_ ? aReal : typeid(T))
     , lastType_(pT_ ? aLast : typeid(T))
 {}

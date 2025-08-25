@@ -12,8 +12,8 @@
 //   . smartLog_
 //
 // - MT safe: NO!!! since eg name_log_S_; so shall NOT cross-thread use
-//   . SmartLog is to min log scope for better debug
-//   . cross-thread is not SmartLog purpose, but user can add mutex if really need
+//   . SmartLog is to min log scope for better debug (cross-thread is not SmartLog purpose)
+//   . simplest MT safe: 1 global mutex in UniBaseLog.hpp
 // - class safe: yes except
 //   . keep ret of oneLog() - doesn't make sense, but then may use-after-free
 //     . UniSmartLog can provide template<T/...Args> operator<<() but both can't deduce endl, etc
