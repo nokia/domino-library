@@ -104,7 +104,7 @@ size_t MtInQueue::mt_size(bool canBlock) noexcept
 
     // non block
     unique_lock<mutex> tryGuard(mutex_, try_to_lock);
-    HID(__LINE__ << " owns=" << tryGuard.owns_lock());
+    //HID(__LINE__ << " owns=" << tryGuard.owns_lock());
     return tryGuard.owns_lock()
         ? queue_.size() + cache_.size()
         : cache_.size();
