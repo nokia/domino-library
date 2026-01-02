@@ -75,6 +75,10 @@ struct TestObj  // req: ObjAnywhere need not include Obj.hpp
     explicit TestObj(bool& aExtFlag) : isDestructed_(aExtFlag) { isDestructed_ = false; }
     ~TestObj() { isDestructed_ = true; }
 };
+TEST_F(ObjAnywhereTest, noInit_getNull)
+{
+    EXPECT_EQ(nullptr, ObjAnywhere::getObj<TestObj>().get()) << "REQ: getObj before init";
+}
 TEST_F(ObjAnywhereTest, GOLD_destructCorrectly)
 {
     bool isDestructed;
