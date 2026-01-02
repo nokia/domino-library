@@ -48,6 +48,13 @@ TYPED_TEST_P(FreeHdlrDominoTest, GOLD_setFlag_thenGetIt)
     PARA_DOM->repeatedHdlr("e2", false);  // explicit set bitmap to false
     EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e2)) << "REQ: get=set";
 }
+TYPED_TEST_P(FreeHdlrDominoTest, forbid_setRepeatedFlag_whenHdlrExist)
+{
+    auto e1 = PARA_DOM->setHdlr("e1", this->h1_);
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->repeatedHdlr("e1", true))
+        << "REQ: forbid set repeated flag when hdlr exists";
+    EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e1)) << "REQ: flag not changed";
+}
 TYPED_TEST_P(FreeMultiHdlrDominoTest, forbid_changeFlag)
 {
     auto e1 = PARA_DOM->setHdlr("e1", this->h1_);
@@ -237,6 +244,7 @@ TYPED_TEST_P(FreeHdlrDominoTest, nonConstInterface_shall_createUnExistEvent_with
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(FreeHdlrDominoTest
     , GOLD_setFlag_thenGetIt
+    , forbid_setRepeatedFlag_whenHdlrExist
 
     , GOLD_afterCallback_autoRmHdlr
     , afterCallback_autoRmHdlr_aliasMultiHdlr
