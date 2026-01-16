@@ -1,0 +1,15 @@
+action: follow these steps to setup execution environment
+
+steps:
+    - Read .vscode/settings.json for tai.ssh and tai.docker parameters
+    - Read CMakeLists.txt for build commands and options
+    - Execute commands via ssh_cmd + docker_exec template
+
+ssh_cmd: ssh -i "{tai.ssh.privateKeyPath}" -o StrictHostKeyChecking=no {tai.ssh.username}@{tai.ssh.host}
+docker_exec: docker exec {tai.docker.name} bash -l -c '{command}'
+
+build_dir: /domino/build
+
+notes:
+    - Compiler is configured in container ~/.bashrc, must use bash -l -c to execute
+    - Local U:\domino is mapped to container /domino
