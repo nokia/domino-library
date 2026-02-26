@@ -18,9 +18,8 @@
 //   . 1-go domino is like SW upgrade - 1-go then discard, next will use new domino
 //     . n-go domino is like IM - repeat working till reboot
 //     . after 024-03-19 domino supports n-go
-// - Q&A: (below; lots)
-//
-// - core: states_
+//   . setState() only works on tiles without prev_ (chain head) - safe & simple
+//   . tiles form DAG (directed acyclic graph), cycle links forbidden
 //
 // - VALUE:
 //   * auto broadcast, auto callback, auto shape [MUST-HAVE!]
@@ -29,11 +28,14 @@
 //   . template extension (PriDomino, etc)
 //   . n-go domino
 //
+// - core: states_
+//
 // - MT safe: no
 // - use-safe: yes with conditions:
 //   . no too many events/.. that use-up mem (impossible in most cases)
 //   . user shall not loop ev-link (impossible unless deliberate)
 //     . domino prevent is not 100%, see UT for details
+// - Q&A: (below; lots)
 // ***********************************************************************************************
 #pragma once
 

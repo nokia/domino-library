@@ -103,8 +103,23 @@ TYPED_TEST_P(DominoTest, bugFix_shallDeduceAll)
     EXPECT_TRUE(PARA_DOM->state("e2"));
 }
 
-#define INVALID_PREV
+#define PREV
 // ***********************************************************************************************
+TYPED_TEST_P(DominoTest, GOLD_multi_allPrevSatisfied_thenPropagate)
+{
+    // e3 depends on e1(T) AND e2(F)
+    PARA_DOM->setPrev("e3", {{"e1", true}, {"e2", false}});
+    EXPECT_FALSE(PARA_DOM->state("e3")) << "REQ: not all prev satisfied yet";
+
+    PARA_DOM->setState({{"e1", true}});
+    EXPECT_TRUE(PARA_DOM->state("e3")) << "REQ: all prev satisfied => propagate T";
+
+    PARA_DOM->setState({{"e2", true}});  // now e2==true breaks link=false
+    EXPECT_FALSE(PARA_DOM->state("e3")) << "REQ: one prev unsatisfied => propagate F";
+
+    PARA_DOM->setState({{"e1", false}});  // e1==false breaks link=true too
+    EXPECT_FALSE(PARA_DOM->state("e3")) << "REQ: no prev satisfied => stay F";
+}
 TYPED_TEST_P(DominoTest, invalid_loopSelf)
 {
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e1", {{"e1", true }})) << "REQ: can't loop self";
@@ -126,7 +141,7 @@ TYPED_TEST_P(DominoTest, invalid_mixLoop)
     EXPECT_NE(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e0", {{"e1", false}}));
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e1", {{"e0", true}})) << "REQ: can't T/F mix loop";
 }
-TYPED_TEST_P(DominoTest, invalidPrev_toBothTrueAndFalse)
+TYPED_TEST_P(DominoTest, whyFalse_diagnoseTrueFalseConflict)
 {
     // e11 <- (T) <- e10
     //    \         /
@@ -293,11 +308,12 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , setState_onlyAtChainHead
     , bugFix_shallDeduceAll
 
+    , GOLD_multi_allPrevSatisfied_thenPropagate
     , invalid_loopSelf
     , invalid_deepLoop
     , invalid_deeperLoop
     , invalid_mixLoop
-    , invalidPrev_toBothTrueAndFalse
+    , whyFalse_diagnoseTrueFalseConflict
 
     , GOLD_multi_retOne
     , trueEvent_retEmpty
