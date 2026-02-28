@@ -38,6 +38,11 @@ TYPED_TEST_P(DominoTest, GOLD_setState_thenGetIt)
     EXPECT_EQ(0u, PARA_DOM->setState({{"e1", false}})) << "REQ: no state change";
     EXPECT_FALSE(PARA_DOM->state("e1")) << "REQ: no state change";
 }
+TYPED_TEST_P(DominoTest, invalidEv_retStateFalse)
+{
+    EXPECT_FALSE(PARA_DOM->state(Domino::D_EVENT_FAILED_RET)) << "REQ: invalid event returns false";
+    EXPECT_FALSE(PARA_DOM->state(99999)) << "REQ: out-of-range event returns false";
+}
 
 #define BROADCAST_STATE
 // ***********************************************************************************************
@@ -101,6 +106,15 @@ TYPED_TEST_P(DominoTest, bugFix_shallDeduceAll)
         {"e1", true},
         {"e0", false}});
     EXPECT_TRUE(PARA_DOM->state("e2"));
+}
+TYPED_TEST_P(DominoTest, GOLD_simuSetState)
+{
+    PARA_DOM->setPrev("e2", {{"e1", true}});
+    PARA_DOM->setPrev("e4", {{"e3", true}});
+
+    EXPECT_EQ(2u, PARA_DOM->setState({{"e1", true}, {"e3", true}}));
+    EXPECT_TRUE(PARA_DOM->state("e2"));
+    EXPECT_TRUE(PARA_DOM->state("e4"));
 }
 
 #define PREV
@@ -268,6 +282,11 @@ TYPED_TEST_P(DominoTest, search_partial_evName)
 // ***********************************************************************************************
 // req: both event & EvName are ID
 // ***********************************************************************************************
+TYPED_TEST_P(DominoTest, getEventBy_existing_event)
+{
+    auto ev = PARA_DOM->newEvent("e1");
+    EXPECT_EQ(ev, PARA_DOM->getEventBy("e1")) << "REQ: get existing event";
+}
 TYPED_TEST_P(DominoTest, nonConstInterface_shall_createUnExistEvent_withStateFalse)
 {
     // req: new ID by newEvent()
@@ -302,11 +321,13 @@ TYPED_TEST_P(DominoTest, noID_for_not_exist_EvName)
 // ***********************************************************************************************
 REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , GOLD_setState_thenGetIt
+    , invalidEv_retStateFalse
 
     , GOLD_forward_broadcast_trueLink
     , GOLD_forward_broadcast_falseLink
     , setState_onlyAtChainHead
     , bugFix_shallDeduceAll
+    , GOLD_simuSetState
 
     , GOLD_multi_allPrevSatisfied_thenPropagate
     , invalid_loopSelf
@@ -323,6 +344,7 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
 
     , search_partial_evName
 
+    , getEventBy_existing_event
     , nonConstInterface_shall_createUnExistEvent_withStateFalse
     , noID_for_not_exist_EvName
 );
