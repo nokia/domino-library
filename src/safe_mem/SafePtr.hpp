@@ -4,24 +4,30 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
-// - ISSUE:
-//   . c++ mem bugs are 1 of the most challenge (eg US gov suggest to replace c++ by Rust)
-//   . ms & google: ~70% safety defects caused by mem safe issue
-// - REQ/value: this class is to be same as shared_ptr but 100% safe:
-//   . safe create   : null or make_safe only (not allow unsafe create eg via raw ptr)
-//   * safe cast     : only among self, base & void; ret-null is safe when invalid cast, comile-err is safer
-//   . safe lifespan : by shared_ptr (auto mem-mgmt, no use-after-free)
-//   * safe get      : ret shared_ptr than T* (no duty for usr's abuse to get & use T*)
-//   . safe del      : not support self-deletor that maybe unsafe; call correct destructor via shared_ptr
-//   . SafeWeak      : to&fro with SafePtr, eg SharedMsgCB<->WeakMsgCB
-//   . other behavors/expectation are same as shared_ptr
-// - DUTY-BOUND:
-//   . under single thread
-//     . so eg after MtInQueue.mt_push(), shall NOT touch pushed SafePtr
-//     . only HID is MT safe that can be used here
-//   . T's duty to ensure it's inner safety (eg no exception from T's constructor)
-//   . loop-ref: out-duty, usr issue than SafePtr
-//   . safe ptr array: no need since std::array
+// ISSUE: C++ memory bugs (US Gov suggests Rust; MS/Google: ~70% safety defects are mem-related)
+//
+// REQ/value: 100% safe smart pointer (like shared_ptr but prevents all unsafe operations)
+// - Create:
+//   . Only allow safe creation via eg make_safe<T>() or nullptr
+//   . Forbid unsafe eg via raw pointer/shared_ptr construction
+// - Cast (safe_cast<T>()):
+//   . Only allow safe cast eg among self, base & void
+//   . Unsafe cast: return nullptr, or compile-time error (better)
+// - Copy/Move/Assign:
+//   . Only allow safe operations eg between same type, to base/void/const
+//   . Unsafe operations (eg to derive, const→non-const): return nullptr, or compile-time error (better)
+// - Access, eg:
+//   . safe get() returns shared_ptr<T> (not raw T*, safer lifecycle management)
+//   . Correct destructor call via shared_ptr (even through void*/base*)
+// - Additional Features:
+//   . SafeWeak: weak reference support (lock()/expired())
+//   . Container support: usable as map/unordered_map key
+//   . Exception safe: construction exception → nullptr
+//
+// CONSTRAINTS:
+//   - Single-threaded usage (e.g., after MtInQueue.mt_push(), don't touch SafePtr)
+//   - T must be internally safe (eg no constructor exceptions expected)
+//   - Circular reference: user's responsibility (like shared_ptr)
 // ***********************************************************************************************
 #pragma once
 
