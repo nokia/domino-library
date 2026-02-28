@@ -1,0 +1,6 @@
+principle: execution environment
+
+select_gcc: source /opt/EE_LinSEE/bin/seesetenv --nopreserve gcc gcc=12.2.0a
+build_dir: /var/fpwork/fchn289/fchn289/rootfs/home/fchn289/DomLib/build
+ut_cmd: make -j run
+    - all details in CMakeLists.txt
