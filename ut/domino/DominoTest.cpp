@@ -133,6 +133,13 @@ TYPED_TEST_P(DominoTest, GOLD_multi_allPrevSatisfied_thenPropagate)
 
     PARA_DOM->setState({{"e1", false}});  // e1==false breaks link=true too
     EXPECT_FALSE(PARA_DOM->state("e3")) << "REQ: no prev satisfied => stay F";
+    // REQ: cumulative setPrev - add more prev to e3
+    PARA_DOM->setPrev("e3", {{"e4", true}});  // add second prev e4(T)
+    EXPECT_FALSE(PARA_DOM->state("e3")) << "REQ: both old & new prev unsatisfied";
+    PARA_DOM->setState({{"e1", true}});  // restore e1=T
+    EXPECT_FALSE(PARA_DOM->state("e3")) << "REQ: still need e2 & e4 both T";
+    PARA_DOM->setState({{"e2", false}, {"e4", true}});  // restore e2=F, set e4=T
+    EXPECT_TRUE(PARA_DOM->state("e3")) << "REQ: all prev satisfied => propagate T";
 }
 TYPED_TEST_P(DominoTest, invalid_loopSelf)
 {
@@ -255,7 +262,7 @@ TYPED_TEST_P(DominoTest, incCov_whyFalse_whyTrue)
     EXPECT_EQ("e11==true", PARA_DOM->whyFalse(e10)) << "REQ: inc branch coverage";
 }
 
-#define SEARCH_PARTIAL_EVNAME
+#define SEARCH_EVNAME
 // ***********************************************************************************************
 TYPED_TEST_P(DominoTest, search_partial_evName)
 {
@@ -276,6 +283,27 @@ TYPED_TEST_P(DominoTest, search_partial_evName)
         if (evName.second.find("/X") != string::npos) ++nFound;
     }
     EXPECT_EQ(0u, nFound) << "REQ: not found";
+}
+TYPED_TEST_P(DominoTest, search_all_evNames)
+{
+    // REQ: evNames() must contain all created events - completeness verification
+    PARA_DOM->newEvent("e1");
+    PARA_DOM->newEvent("e2");
+    PARA_DOM->newEvent("e3");
+
+    auto&& evNames = PARA_DOM->evNames();
+    EXPECT_EQ(3u, evNames.size()) << "REQ: evNames should contain all 3 created events";
+
+    // Verify each created event is in the returned container
+    bool found_e1 = false, found_e2 = false, found_e3 = false;
+    for (auto&& evPair : evNames) {
+        if (evPair.second == "e1") found_e1 = true;
+        if (evPair.second == "e2") found_e2 = true;
+        if (evPair.second == "e3") found_e3 = true;
+    }
+    EXPECT_TRUE(found_e1) << "REQ: e1 must be in evNames()";
+    EXPECT_TRUE(found_e2) << "REQ: e2 must be in evNames()";
+    EXPECT_TRUE(found_e3) << "REQ: e3 must be in evNames()";
 }
 
 #define ID
@@ -310,8 +338,14 @@ TYPED_TEST_P(DominoTest, nonConstInterface_shall_createUnExistEvent_withStateFal
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e4"));
     EXPECT_EQ(4u, this->uniqueEVs_.size());
 
+    // REQ: newEvent() with explicit name is idempotent (Event:EvName=1:1)
+    auto ev1 = PARA_DOM->newEvent("myEvent");
+    auto ev2 = PARA_DOM->newEvent("myEvent");
+    EXPECT_EQ(ev1, ev2) << "REQ: repeated newEvent() with same name returns same Event";
+
+    this->uniqueEVs_.insert(ev1);  // add myEvent to set
     this->uniqueEVs_.insert(Domino::D_EVENT_FAILED_RET);  // REQ: new ID != Domino::D_EVENT_FAILED_RET
-    EXPECT_EQ(5u, this->uniqueEVs_.size());
+    EXPECT_EQ(6u, this->uniqueEVs_.size());
 }
 TYPED_TEST_P(DominoTest, noID_for_not_exist_EvName)
 {
@@ -343,6 +377,7 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , incCov_whyFalse_whyTrue
 
     , search_partial_evName
+    , search_all_evNames
 
     , getEventBy_existing_event
     , nonConstInterface_shall_createUnExistEvent_withStateFalse
