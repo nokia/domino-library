@@ -31,6 +31,7 @@
 // ***********************************************************************************************
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <type_traits>
 #include <typeindex>
@@ -51,6 +52,10 @@ public:
     constexpr SafePtr(std::nullptr_t = nullptr) noexcept {}
     template<typename U, typename... ConstructArgs> friend SafePtr<U> make_safe(ConstructArgs&&...) noexcept;
 
+    // clarity: forbid unsafe create from raw ptr / shared_ptr
+    template<typename U> SafePtr(U*) = delete;
+    template<typename U> SafePtr(const std::shared_ptr<U>&) = delete;
+
     template<typename From> friend class SafePtr;  // let cp/mv access private
     // safe-only cast (vs shared_ptr, eg static_pointer_cast<any> is not safe)
     template<typename From> SafePtr(const SafePtr<From>&) noexcept;   // cp, always ok (or compile err)
@@ -63,7 +68,7 @@ public:
     // . ret shared_ptr is safer than T* (but not safest since to call T's func easily)
     // . no operator*() since T& is unsafe
     std::shared_ptr<T> get() const noexcept { return pT_; }
-    std::shared_ptr<T> operator->() const noexcept { return pT_; }  // convenient
+    const std::shared_ptr<T>& operator->() const noexcept { return pT_; }  // convenient, zero-copy
     explicit operator bool() const noexcept { return pT_ != nullptr; }
     auto use_count() const noexcept { return pT_.use_count(); }
 
@@ -146,8 +151,9 @@ std::shared_ptr<To> SafePtr<T>::cast() const noexcept
     }
     else if constexpr(!std::is_void_v<T>)
     {
-        HID("(SafePtr) nonVoid-to-nonVoid, from=" << typeid(T).name() << " to=" << typeid(To).name());
-        return pT_;  // compile err is safer than ret nullptr
+        // compile-err (safer than ret nullptr)
+        static_assert(std::is_same_v<T, To>, "(SafePtr) unsafe cast not allowed: unrelated nonVoid-to-nonVoid.");
+        return pT_;  // unreachable, but satisfies return type
     }
 
     else if (realType_ == typeid(To))
