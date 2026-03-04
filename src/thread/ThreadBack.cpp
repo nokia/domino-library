@@ -3,11 +3,6 @@
  * Licensed under the BSD 3 Clause license
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#include <functional>
-#include <future>
-#include <iostream>
-#include <memory>
-
 #include "ThreadBack.hpp"
 
 using namespace std;

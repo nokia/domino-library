@@ -84,8 +84,7 @@ void ThPoolBack::clean_() noexcept
     qCv_.notify_all();
 
     for (auto&& th : thPool_)
-        if (th.joinable())  // safer: if sth wrong during thread lifecycle
-            th.join();  // safer: avoid terminate when destruct th
+        th.join();  // safer: avoid terminate when destruct th
 }
 
 // ***********************************************************************************************
@@ -98,7 +97,7 @@ bool ThPoolBack::newTaskOK(const MT_TaskEntryFN& mt_aEntryFN, const TaskBackFN& 
     packaged_task<SafePtr<void>()> task(mt_aEntryFN);  // packaged_task can get_future()="task result"
     fut_backFN_S_.emplace_back(task.get_future(), aBackFN);  // save future<> & aBackFN()
     {
-        unique_lock<mutex> lock(qMutex_);
+        lock_guard<mutex> lock(qMutex_);
         taskQ_.emplace_back(move(task));
     }
     qCv_.notify_one();  // notify thread pool to run a new task
