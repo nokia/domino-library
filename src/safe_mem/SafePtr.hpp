@@ -124,7 +124,7 @@ SafePtr<T>::SafePtr(SafePtr<From>&& aSafeFrom) noexcept  // mv - MtQ need
 // - for safe_cast; constructor is faster; private is safe
 template<typename T>
 constexpr SafePtr<T>::SafePtr(std::shared_ptr<T>&& aPtr, const std::type_index& aReal, const std::type_index& aLast) noexcept
-    : pT_(aPtr)  // mv
+    : pT_(std::move(aPtr))  // mv
     , realType_(pT_ ? aReal : typeid(T))
     , lastType_(pT_ ? aLast : typeid(T))
 {}
@@ -175,18 +175,14 @@ template<typename T>
 template<typename To>
 std::type_index SafePtr<T>::genLastType_() const noexcept
 {
-    if constexpr(std::is_same_v<To, void>) {  // compile opt
-        HID("T->void, recursive T.lastType_ is the most diff type before To=void");
-        return lastType_;  // eg Derive->Base->void = Base
-    }
-    else if (realType_ == typeid(To)) {
-        HID("To->T->To, T.lastType is the most diff type");
-        return lastType_;  // eg Derive->Base->Derive = Base
-    }
-    else {
+    if constexpr(!std::is_same_v<To, void>) {
+        if (realType_ != typeid(To)) {
         HID("most diff type=" << typeid(To).name());
         return typeid(To);  // eg Derive->Base = Base
+        }
     }
+    HID("T->void, or To->T->To, T.lastType_ is the most diff type");
+    return lastType_;  // eg Derive->Base->void = Base, Derive->Base->Derive = Base
 }
 
 
