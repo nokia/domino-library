@@ -73,9 +73,25 @@ TYPED_TEST_P(RmDomTest, GOLD_reuse_ev)
     EXPECT_EQ(0u, evs.count(PARA_DOM->newEvent("e100"))) << "REQ: recycle used-up, create new.";
 }
 
+TYPED_TEST_P(RmDomTest, bugFix_recycleShallNotGrowInternalStateSpace)
+{
+    const auto reusedEv = PARA_DOM->newEvent("reused ev");
+
+    constexpr size_t nRound = 128;
+    for (size_t i = 0; i < nRound; ++i)
+    {
+        EXPECT_TRUE(PARA_DOM->rmEvOK("reused ev")) << "REQ: can remove existing ev each round";
+        EXPECT_EQ(reusedEv, PARA_DOM->newEvent("reused ev")) << "REQ: shall reuse same removed ev id";
+    }
+
+    const auto freshEv = PARA_DOM->newEvent("fresh ev");
+    EXPECT_EQ(reusedEv + 1, freshEv) << "REQ: repeated recycle shall not inflate internal event space";
+}
+
 REGISTER_TYPED_TEST_SUITE_P(RmDomTest
     , GOLD_rm_dom_resrc
     , GOLD_reuse_ev
+    , bugFix_recycleShallNotGrowInternalStateSpace
 );
 using AnyRmDom = Types<MinRmEvDom, MaxNofreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, RmDomTest, AnyRmDom);

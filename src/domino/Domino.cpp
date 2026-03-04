@@ -114,7 +114,9 @@ Domino::Event Domino::newEvent(const EvName& aEvName) noexcept
     HID("(Domino) init new EvName=" << aEvName << ", event=" << newEv);
     en_ev_[aEvName] = newEv;
     ev_en_[newEv] = aEvName;
-    states_.push_back(false);
+    if (newEv >= states_.size())
+        states_.push_back(false);  // create new slot
+
     return newEv;
 }
 
