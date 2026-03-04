@@ -11,6 +11,7 @@ if(ci  STREQUAL  "cov")
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fPIC")               # gcov req
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O0")                 # gcov req
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fprofile-abs-path")  # gcc 8
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -g")                  # valgrind req
 
     add_compile_definitions(SMART_LOG)
     add_compile_definitions(WITH_HID_LOG)  # more info to debug ci
@@ -20,6 +21,9 @@ elseif(ci  STREQUAL  "asan")
     set(CMAKE_CXX_STANDARD  17)  # low c++ version for wide usage; 17 since "if constexpr()"
     message("!!! asan+lsan+ubsan for: use-after-free, double-free, out-of-bound, leak, undef behavior")
     add_compile_options(-g -fno-omit-frame-pointer)
+    add_compile_options(-fstack-protector-strong)  # stack overflow protection
+    add_compile_options(-O2)  # required for FORTIFY_SOURCE
+    add_compile_definitions(_FORTIFY_SOURCE=2)     # buffer overflow checks
     add_compile_options(-fsanitize=address,undefined)
     add_link_options   (-fsanitize=address,undefined)
 
@@ -27,6 +31,9 @@ elseif(ci  STREQUAL  "tsan")  # asan/lsan/msan cover by valgrind(memcheck)
     set(CMAKE_CXX_STANDARD  17)
     message("!!! SANITIZE for: thread")
     add_compile_options(-g -fno-omit-frame-pointer)
+    add_compile_options(-fstack-protector-strong)  # stack overflow protection
+    add_compile_options(-O2)  # required for FORTIFY_SOURCE
+    add_compile_definitions(_FORTIFY_SOURCE=2)     # buffer overflow checks
     add_compile_options(-fsanitize=thread)
     add_link_options   (-fsanitize=thread)
 
