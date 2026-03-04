@@ -58,7 +58,7 @@ bool DataStore<aDataKey>::emplaceOK(const aDataKey& aKey, S_PTR<void> aData) noe
         }
         else
         {
-            if (key_data_S_.emplace(aKey, aData).second)
+            if (key_data_S_.emplace(aKey, std::move(aData)).second)
                 return true;
             else
             {
@@ -96,14 +96,11 @@ template<typename aDataKey>
 bool DataStore<aDataKey>::replaceOK(const aDataKey& aKey, S_PTR<void> aData) noexcept
 {
     try {
-        if (! aData) {
-            HID("(DataStore) erase key=" << typeid(aDataKey).name());
-            return key_data_S_.erase(aKey) > 0;
-        }
-        else {
-            key_data_S_[aKey] = aData;
-            return true;
-        }
+        if (! aData)
+            return emplaceOK(aKey, nullptr);
+
+        key_data_S_[aKey] = std::move(aData);
+        return true;
     } catch(...) {
         ERR("(DataStore) except->failed!!! key=" << typeid(aDataKey).name());
         return false;

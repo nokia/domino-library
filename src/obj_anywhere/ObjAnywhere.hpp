@@ -73,7 +73,7 @@ template<typename aObjType>
 bool ObjAnywhere::emplaceObjOK(S_PTR<aObjType> aObj, UniLog& oneLog, const ObjName& aObjName) noexcept
 {
     if (isInit())
-        return name_obj_S_->emplaceOK(aObjName, aObj);
+        return name_obj_S_->emplaceOK(aObjName, std::move(aObj));
 
     ERR("(ObjAnywhere) !!! Failed, pls call ObjAnywhere::init() beforehand.");
     return false;

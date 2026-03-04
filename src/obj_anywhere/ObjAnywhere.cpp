@@ -14,8 +14,7 @@ shared_ptr<DataStore<ObjName>> ObjAnywhere::name_obj_S_;
 // ***********************************************************************************************
 void ObjAnywhere::deinit() noexcept
 {
-    if (isInit())
-        name_obj_S_.reset();
+    name_obj_S_.reset();
 }
 
 // ***********************************************************************************************
