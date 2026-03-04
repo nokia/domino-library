@@ -25,7 +25,7 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
         thPool_.reserve(aMaxThread);  // not construct any thread
         for (size_t i = 0; i < aMaxThread; ++i)
         {
-            thread th([this]() noexcept
+            thPool_.emplace_back([this]() noexcept
             {   // thread main()
                 for (;;)
                 {
@@ -47,22 +47,13 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
 
                     // - thread can continue when task() throw
                     // - other excepts (eg bad_alloc) are rare & hard-recover
-                    try { task(); }
-                    catch(...) {}  // packaged_task already saved exception in its future
+                    task();  // packaged_task saves exception in its future
 
                     // no lock so can only use MT_safe part in "this"
                     this->mt_nDoneFut_.fetch_add(1, std::memory_order_relaxed);  // fastest +1
                     mt_pingMainTH();  // notify mainTH 1 task done
                 }
             });  // thread main()
-            if (th.joinable()) {
-                thPool_.emplace_back(move(th));
-            }
-            else {  // ut can't cover this branch
-                // - rare
-                // - throw is safer than just log(=hide)
-                throw runtime_error("(ThPoolBack) failed to construct some thread!!!");
-            }
         }  // for-loop to create threads
     } catch(...) {  // ut can't cover this branch; rare but safer
         clean_();
