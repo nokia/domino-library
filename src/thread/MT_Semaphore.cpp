@@ -43,8 +43,6 @@ void MT_Semaphore::timedwait(const size_t aSec, const size_t aRestNsec) noexcept
         // impossible since MT_Semaphore's constructor
         // else if (errno == EINVAL)  // avoid dead loop
         //    return;
-
-        continue;  // restart for EINTR
     }  // for
 }
 

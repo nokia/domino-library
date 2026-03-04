@@ -14,11 +14,11 @@ namespace rlib
 UniSmartLog::UniSmartLog(const LogName& aUniLogName) noexcept : uniLogName_(aUniLogName)
 {
     // for(auto&& name_log : name_log_S_) cout << name_log.first<<", p=" << name_log.second.get() << endl;
-    auto&& name_log = name_log_S_.find(aUniLogName);
-    if (name_log == name_log_S_.end())
+    auto [name_log, insertNew] = name_log_S_.try_emplace(aUniLogName);
+    if (insertNew)
     {
         smartLog_ = make_shared<SmartLog>();
-        name_log_S_[aUniLogName] = smartLog_;
+        name_log->second = smartLog_;
         HID("creatd new log=" << (void*)(smartLog_.get()) << ", name=" << aUniLogName << ", nLog=" << nLog());
     }
     else
