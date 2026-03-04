@@ -141,15 +141,10 @@ bool MtInQueue::setHdlrOK(const EleHdlr& aHdlr) noexcept
         return false;
     }
 
-    auto&& tid = std::type_index(typeid(aEleType));
-    if (tid_hdlr_S_.find(tid) != tid_hdlr_S_.end())
-    {
+    auto [_, ok] = tid_hdlr_S_.try_emplace(std::type_index(typeid(aEleType)), aHdlr);
+    if (!ok)
         ERR("(MtQ) failed!!! overwrite hdlr may unsafe existing data");
-        return false;
-    }
-
-    tid_hdlr_S_.emplace(tid, aHdlr);  // except eg bad_alloc: can't recover->terminate
-    return true;
+    return ok;
 }
 
 
