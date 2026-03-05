@@ -21,13 +21,13 @@ using LogName = std::string;
 // - mem safe: yes
 // - MT safe : yes of UniCoutLog, no of UniSmartLog
 #ifdef __FILE_NAME__  // g++12/c++20
-#define BUF(content) __FILE_NAME__ << ':' << __func__ << "():" << __LINE__ << ": " << content << std::endl
+#define BUF(content) __FILE_NAME__ << ':' << __func__ << "():" << __LINE__ << ": " << content << '\n'
 #else
-#define BUF(content)                         __func__ << "():" << __LINE__ << ": " << content << std::endl
+#define BUF(content)                         __func__ << "():" << __LINE__ << ": " << content << '\n'
 #endif
-#define INF(content) { oneLog() << "INF/" << std::this_thread::get_id() << "] " << BUF(content); }
-#define WRN(content) { oneLog() << "WRN/" << std::this_thread::get_id() << "] " << BUF(content); }
-#define ERR(content) { oneLog() << "ERR/" << std::this_thread::get_id() << "] " << BUF(content); }
+#define INF(content) { oneLog() << "INF/" << std::this_thread::get_id() << "] " << BUF(content) << std::flush; }
+#define WRN(content) { oneLog() << "WRN/" << std::this_thread::get_id() << "] " << BUF(content) << std::flush; }
+#define ERR(content) { oneLog() << "ERR/" << std::this_thread::get_id() << "] " << BUF(content) << std::flush; }
 
 // - HID() is to be more debug but product code shall disable them
 // - HID() uses cout since UniSmartLog is NOT MT safe
@@ -35,7 +35,7 @@ using LogName = std::string;
 // - HID() is MT safe also upon UniSmartLog
 #if WITH_HID_LOG
 #define HID(content) { std::cout << "cout[" << rlib::mt_timestamp() << "/HID/" \
-    << std::this_thread::get_id() << "] " << BUF(content) << std::dec; }
+    << std::this_thread::get_id() << "] " << BUF(content) << std::dec << std::flush; }
 #else
 #define HID(content) {}
 #endif

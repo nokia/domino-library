@@ -73,7 +73,7 @@ public:
         auto&& name_log = name_log_S_.find(aUniLogName);
         return name_log == name_log_S_.end()
             ? 0
-            : static_cast<size_t>(name_log->second->tellp());  // avoid str().size() which creates string copy
+            : name_log->second->size();  // direct string size, no stream position query
     }
 #endif
 };
