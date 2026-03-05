@@ -46,13 +46,25 @@ public:
     // @param UniLog           : log
     // @param ObjName          : key of the obj; default is typeid(aObjType).name()
     template<typename aObjType> static bool emplaceObjOK(S_PTR<aObjType>,
-        UniLog& = UniLog::defaultUniLog_, const ObjName& = typeid(aObjType).name()) noexcept;
+        UniLog&, const ObjName&) noexcept;
+    template<typename aObjType> static bool emplaceObjOK(S_PTR<aObjType> aObj,
+        UniLog& oneLog = UniLog::defaultUniLog_) noexcept
+    {
+        static const ObjName name(typeid(aObjType).name());
+        return emplaceObjOK<aObjType>(std::move(aObj), oneLog, name);
+    }
 
     // @brief: get an obj
     // @param ObjName: key of the obj when stored; default is typeid(aObjType).name()
     // @ret: ok or nullptr
     template<typename aObjType> static
-    S_PTR<aObjType> getObj(const ObjName& = typeid(aObjType).name()) noexcept;
+    S_PTR<aObjType> getObj(const ObjName&) noexcept;
+    template<typename aObjType> static
+    S_PTR<aObjType> getObj() noexcept
+    {
+        static const ObjName name(typeid(aObjType).name());
+        return getObj<aObjType>(name);
+    }
 
 private:
     // -------------------------------------------------------------------------------------------
