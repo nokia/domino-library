@@ -24,11 +24,12 @@ bool AsyncBack::newTaskOK(const MT_TaskEntryFN& mt_aEntryFN, const TaskBackFN& a
                 launch::async,
                 // - must cp mt_aEntryFN than ref, otherwise dead loop
                 // - &mt_nDoneFut is better than "this" that can access other non-MT-safe member
-                [mt_aEntryFN, &mt_nDoneFut = mt_nDoneFut_]() noexcept  // thread main
+                [mt_aEntryFN = std::move(mt_aEntryFN), &mt_nDoneFut = mt_nDoneFut_]() mutable noexcept  // thread main
                 {
                     SafePtr ret;
                     try { ret = mt_aEntryFN(); }
                     catch(...) {}  // continue following
+                    mt_aEntryFN = nullptr;  // early release captured function
 
                     mt_nDoneFut.fetch_add(1, std::memory_order_relaxed);  // fastest +1
                     mt_pingMainTH();

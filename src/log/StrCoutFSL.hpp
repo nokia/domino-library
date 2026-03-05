@@ -54,7 +54,7 @@ StrCoutFSL::~StrCoutFSL() noexcept
 inline
 void StrCoutFSL::forceSave() const noexcept
 {
-    std::cout << rdbuf() << std::endl;  // internet says rdbuf() is faster than str()
+    std::cout << rdbuf() << '\n';  // rdbuf() faster than str(); newline w/o flush faster than endl
 }
 
 }  // namespace

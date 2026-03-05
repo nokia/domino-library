@@ -25,15 +25,16 @@ size_t ThreadBack::hdlDoneFut(UniLog& oneLog) noexcept
         auto& fut = fut_backFN->first;
         if (fut.wait_for(0s) == future_status::ready)
         {
-            SafePtr ret;
-            try { ret = fut.get(); }
-            catch(...) { ERR("(ThreadBack) entryFN() except"); }  // ERR() ok since in main thread
-
-            try { fut_backFN->second(move(ret)); }  // callback
-            catch(...) { ERR("(ThreadBack) backFN() except"); }  // ERR() ok since in main thread
-
+            auto task_pair = std::move(*fut_backFN);
             fut_backFN = fut_backFN_S_.erase(fut_backFN);
             ++nHandledFut;
+
+            SafePtr ret;
+            try { ret = task_pair.first.get(); }
+            catch(...) { ERR("(ThreadBack) entryFN() except"); }  // ERR() ok since in main thread
+
+            try { task_pair.second(move(ret)); }  // callback
+            catch(...) { ERR("(ThreadBack) backFN() except"); }  // ERR() ok since in main thread
         }
         else
             ++fut_backFN;

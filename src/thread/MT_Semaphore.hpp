@@ -40,8 +40,8 @@ public:
     void timedwait(const size_t aSec = 0, const size_t aRestNsec = 100'000'000) noexcept;
 
 private:
-    sem_t mt_sem_;
-    std::atomic_flag mt_notified_ = ATOMIC_FLAG_INIT;  // = false
+    alignas(64) sem_t mt_sem_;
+    alignas(64) std::atomic_flag mt_notified_ = ATOMIC_FLAG_INIT;  // = false
 
     // -------------------------------------------------------------------------------------------
 #ifdef IN_GTEST

@@ -16,7 +16,7 @@
 //   . cache_: if mt_pushOK() heavily, cache_ avoid ~all mutex from pop()
 //
 // - core:
-//   . queue_
+//   . mt_queue_
 //
 // - class safe: true (when use SafePtr instead of shared_ptr)
 //   . MtInQueue is for normal/most scenario, may NOK for high throughput, etc
@@ -70,7 +70,7 @@ private:
     size_t  handleCacheEle_() noexcept;
 
     // -------------------------------------------------------------------------------------------
-    std::deque<ELE_TID> queue_;  // most suitable container
+    std::deque<ELE_TID> mt_queue_;  // most suitable container
     std::deque<ELE_TID> cache_;  // main-thread use ONLY (so no mutex protect)
     std::mutex mutex_;
 
@@ -104,7 +104,7 @@ bool MtInQueue::mt_pushOK(S_PTR<aEleType>&& aEle) noexcept
     {
         std::lock_guard<std::mutex> guard(mutex_);
         // HID("(MtQ) nRef=" << aEle.use_count() << ", ptr=" << aEle.get());  // HID supports MT
-        queue_.push_back(ELE_TID(std::move(aEle), typeid(aEleType)));  // except eg bad_alloc: can't recover->terminate
+        mt_queue_.emplace_back(std::move(aEle), typeid(aEleType));  // except eg bad_alloc: can't recover->terminate
     }
 
     // unlock then notify main thread

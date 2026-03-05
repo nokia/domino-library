@@ -64,8 +64,9 @@ Domino::Event RmEvDom<aDominoType>::recycleEv_() noexcept
     if (isRemovedEv_.empty())
         return Domino::D_EVENT_FAILED_RET;
 
-    const auto ev = *(isRemovedEv_.begin());
-    isRemovedEv_.erase(ev);
+    const auto it = isRemovedEv_.begin();
+    const auto ev = *it;
+    isRemovedEv_.erase(it);  // erase by iterator to avoid second lookup
     return ev;
 }
 

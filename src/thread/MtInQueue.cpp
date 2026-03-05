@@ -31,9 +31,9 @@ deque<ELE_TID>::iterator MtInQueue::begin_() noexcept
             this_thread::yield();  // avoid main thread keep checking
             return cache_.end();
         }
-        if (queue_.empty())
+        if (mt_queue_.empty())
             return cache_.end();
-        cache_.swap(queue_);  // fast & for at most ele
+        cache_.swap(mt_queue_);  // fast & for at most ele
     }
     // unlocked
 
@@ -57,7 +57,7 @@ size_t MtInQueue::handleCacheEle_() noexcept
             continue;
         }
 
-        try { id_hdlr->second(ele_tid.first); }
+        try { id_hdlr->second(std::move(ele_tid.first)); }
         catch(...) { HID("(MtQ) hdlr except for " << ele_tid.second.name()); }  // continue next ele
     }  // while
     return nEle;
@@ -72,11 +72,11 @@ size_t MtInQueue::handleAllEle() noexcept
         unique_lock<mutex> guard(mutex_, try_to_lock);  // avoid block main thread
         if (! guard.owns_lock())
         {
-            mt_pingMainTH();  // for possible ele in queue_
+            mt_pingMainTH();  // for possible ele in mt_queue_
             this_thread::yield();  // avoid main thread keep checking; no ut for optimization
             return nEle;
         }
-        cache_.swap(queue_);
+        cache_.swap(mt_queue_);
     }
     return nEle + handleCacheEle_();
 }
@@ -84,8 +84,10 @@ size_t MtInQueue::handleAllEle() noexcept
 // ***********************************************************************************************
 void MtInQueue::mt_clearElePool() noexcept
 {
-    lock_guard<mutex> guard(mutex_);
-    queue_.clear();
+    {
+        lock_guard<mutex> guard(mutex_);
+        mt_queue_.clear();
+    }
     cache_.clear();
     tid_hdlr_S_.clear();
 }
@@ -96,14 +98,14 @@ size_t MtInQueue::mt_size(bool canBlock) noexcept
     if (canBlock)
     {
         lock_guard<mutex> guard(mutex_);
-        return queue_.size() + cache_.size();
+        return mt_queue_.size() + cache_.size();
     }
 
     // non block
     unique_lock<mutex> tryGuard(mutex_, try_to_lock);
     //HID(__LINE__ << " owns=" << tryGuard.owns_lock());
     return tryGuard.owns_lock()
-        ? queue_.size() + cache_.size()
+        ? mt_queue_.size() + cache_.size()
         : cache_.size();
 }
 

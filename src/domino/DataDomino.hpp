@@ -63,7 +63,7 @@ S_PTR<void> DataDomino<aDominoType>::getData(const Domino::EvName& aEvName) cons
 template<typename aDominoType>
 bool DataDomino<aDominoType>::replaceDataOK(const Domino::EvName& aEvName, S_PTR<void> aData) noexcept
 {
-    return ev_data_S_.replaceOK(this->newEvent(aEvName), aData);
+    return ev_data_S_.replaceOK(this->newEvent(aEvName), std::move(aData));
 }
 
 // ***********************************************************************************************

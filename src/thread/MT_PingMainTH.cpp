@@ -7,5 +7,5 @@
 
 namespace rlib
 {
-MT_Semaphore g_semToMainTH;
+alignas(64) MT_Semaphore g_semToMainTH;
 }  // namespace

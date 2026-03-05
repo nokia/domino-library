@@ -56,7 +56,7 @@ public:
 
 private:
     // -------------------------------------------------------------------------------------------
-    static std::shared_ptr<DataStore<ObjName>> name_obj_S_;  // store aObj w/o include aObj.hpp; shared_ptr is safe here
+    static std::unique_ptr<DataStore<ObjName>> name_obj_S_;  // store aObj w/o include aObj.hpp; unique_ptr is safe here
 };
 
 // ***********************************************************************************************

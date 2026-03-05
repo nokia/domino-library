@@ -9,7 +9,7 @@ using namespace std;
 
 namespace rlib
 {
-shared_ptr<DataStore<ObjName>> ObjAnywhere::name_obj_S_;
+unique_ptr<DataStore<ObjName>> ObjAnywhere::name_obj_S_;
 
 // ***********************************************************************************************
 void ObjAnywhere::deinit() noexcept
@@ -24,7 +24,7 @@ void ObjAnywhere::init(UniLog& oneLog) noexcept
         WRN("(ObjAnywhere) !!! Refuse dup init.")
     else
     {
-        name_obj_S_ = make_shared<DataStore<ObjName>>();
+        name_obj_S_ = make_unique<DataStore<ObjName>>();
         HID("(ObjAnywhere) Succeed.");
     }
 }

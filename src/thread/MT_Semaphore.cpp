@@ -17,7 +17,7 @@ void MT_Semaphore::mt_notify() noexcept
 {
     // - can't sem_getvalue() as NOT mt-safe
     // - mt_notified_ is to avoid sem counter overflow; & not rouse main-thread repeatedly
-    if (!mt_notified_.test_and_set())  // memory_order_seq_cst to ensure other thread(s) see the flag
+    if (!mt_notified_.test_and_set(std::memory_order_acquire))  // acquire: ensure sem_post visibility
         sem_post(&mt_sem_);  // impossible failed since MT_Semaphore's constructor
 }
 
@@ -34,9 +34,9 @@ void MT_Semaphore::timedwait(const size_t aSec, const size_t aRestNsec) noexcept
     for (;;)
     {
         const auto ret = sem_timedwait(&mt_sem_, &ts);
-        if (errno == ETIMEDOUT || ret == 0)  // timeout or notified -> wakeup to handle sth
+        if (ret == 0 || errno == ETIMEDOUT)  // notified or timeout -> wakeup to handle sth
         {
-            mt_notified_.clear();  // memory_order_seq_cst to ensure other thread(s) see the flag
+            mt_notified_.clear(std::memory_order_release);  // release: publish flag clear to other threads
             return;
         }
 

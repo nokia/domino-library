@@ -58,7 +58,7 @@ bool DataStore<aDataKey>::emplaceOK(const aDataKey& aKey, S_PTR<void> aData) noe
         }
         else
         {
-            if (key_data_S_.emplace(aKey, std::move(aData)).second)
+            if (key_data_S_.try_emplace(aKey, std::move(aData)).second)
                 return true;
             else
             {
@@ -99,7 +99,7 @@ bool DataStore<aDataKey>::replaceOK(const aDataKey& aKey, S_PTR<void> aData) noe
         if (! aData)
             return emplaceOK(aKey, nullptr);
 
-        key_data_S_[aKey] = std::move(aData);
+        key_data_S_.insert_or_assign(aKey, std::move(aData));
         return true;
     } catch(...) {
         ERR("(DataStore) except->failed!!! key=" << typeid(aDataKey).name());
