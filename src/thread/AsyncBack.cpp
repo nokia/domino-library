@@ -10,7 +10,7 @@ using namespace std;
 namespace rlib
 {
 // ***********************************************************************************************
-bool AsyncBack::newTaskOK(const MT_TaskEntryFN& mt_aEntryFN, const TaskBackFN& aBackFN, UniLog& oneLog) noexcept
+bool AsyncBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog& oneLog) noexcept
 {
     try {
         // validate
@@ -36,7 +36,7 @@ bool AsyncBack::newTaskOK(const MT_TaskEntryFN& mt_aEntryFN, const TaskBackFN& a
                     return ret;
                 }
             ),
-            aBackFN
+            std::move(aBackFN)
         );
         return true;
     } catch(...) {  // - ut can't cover this branch

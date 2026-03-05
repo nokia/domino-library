@@ -79,14 +79,14 @@ void ThPoolBack::clean_() noexcept
 }
 
 // ***********************************************************************************************
-bool ThPoolBack::newTaskOK(const MT_TaskEntryFN& mt_aEntryFN, const TaskBackFN& aBackFN, UniLog& oneLog) noexcept
+bool ThPoolBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog& oneLog) noexcept
 {
     // validate
     if (! ThreadBack::newTaskOK(mt_aEntryFN, aBackFN, oneLog))
         return false;
 
-    packaged_task<SafePtr<void>()> task(mt_aEntryFN);  // packaged_task can get_future()="task result"
-    fut_backFN_S_.emplace_back(task.get_future(), aBackFN);  // save future<> & aBackFN()
+    packaged_task<SafePtr<void>()> task(std::move(mt_aEntryFN));  // packaged_task can get_future()="task result"
+    fut_backFN_S_.emplace_back(task.get_future(), std::move(aBackFN));  // save future<> & aBackFN()
     {
         lock_guard<mutex> lock(qMutex_);
         taskQ_.emplace_back(move(task));

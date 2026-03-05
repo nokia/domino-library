@@ -39,7 +39,7 @@ public:
     explicit ThPoolBack(size_t aMaxThread = 10) noexcept(false);
     ~ThPoolBack() noexcept;
 
-    bool newTaskOK(const MT_TaskEntryFN&, const TaskBackFN&, UniLog& = UniLog::defaultUniLog_) noexcept override;
+    bool newTaskOK(MT_TaskEntryFN, TaskBackFN, UniLog& = UniLog::defaultUniLog_) noexcept override;
 
 private:
     void clean_() noexcept;
