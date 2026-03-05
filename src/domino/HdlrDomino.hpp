@@ -157,15 +157,15 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
         return Domino::D_EVENT_FAILED_RET;
     }
     auto&& newEv = this->newEvent(aEvName);
-    if (ev_hdlr_S_.find(newEv) != ev_hdlr_S_.end())
+
+    // set
+    auto newHdlr = MAKE_PTR<MsgCB>(aHdlr);
+    auto&& ev_hdlr = ev_hdlr_S_.emplace(newEv, newHdlr);
+    if (! ev_hdlr.second)
     {
         ERR("(HdlrDom) Failed!!! Can't overwrite hdlr for " << aEvName << ". Rm old or Use MultiHdlrDomino instead.");
         return Domino::D_EVENT_FAILED_RET;
     }
-
-    // set
-    auto newHdlr = MAKE_PTR<MsgCB>(aHdlr);
-    ev_hdlr_S_.emplace(newEv, newHdlr);
     HID("(HdlrDom) Succeed for EvName=" << aEvName);
 
     // call
@@ -207,8 +207,8 @@ void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, const 
     msgSelf_->newMsgOK(
         [weakMsgCB = WeakMsgCB(aValidHdlr)]() mutable noexcept  // WeakMsgCB is to support rm hdlr
         {
-            if (! weakMsgCB.expired()) {
-                try { (*(weakMsgCB.lock().get()))(); }  // setHdlr() forbid cb==null
+            if (auto cb = weakMsgCB.lock()) {
+                try { (*(cb.get()))(); }  // setHdlr() forbid cb==null
                 catch(...) {}
             }
         },

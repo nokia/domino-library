@@ -34,7 +34,7 @@ class MultiHdlrDomino : public aDominoType
 {
 public:
     using HdlrName  = std::string;
-    using HName_Hdlr_S = std::map<HdlrName, SharedMsgCB>;
+    using HName_Hdlr_S = std::unordered_map<HdlrName, SharedMsgCB>;
 
     explicit MultiHdlrDomino(const LogName& aUniLogName = ULN_DEFAULT) noexcept : aDominoType(aUniLogName) {}
 
@@ -98,22 +98,14 @@ Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvNa
 
     // set hdlr
     auto&& newHdlr = MAKE_PTR<MsgCB>(aHdlr);
-    auto&& ev = this->getEventBy(aEvName);
-    auto&& ev_hdlrs = ev_hdlrs_S_.find(ev);
-    if (ev_hdlrs == ev_hdlrs_S_.end())
+    auto&& ev = this->newEvent(aEvName);
+
+    auto [ev_hdlrs, _] = ev_hdlrs_S_.try_emplace(ev);
+    auto [name_hdlr, insertNew] = ev_hdlrs->second.try_emplace(aHdlrName, newHdlr);
+    if (!insertNew)
     {
-        ev = this->newEvent(aEvName);
-        ev_hdlrs_S_[ev].emplace(aHdlrName, newHdlr);
-    }
-    else
-    {
-        auto&& name_hdlr = ev_hdlrs->second.find(aHdlrName);
-        if (name_hdlr != ev_hdlrs->second.end())
-        {
-            WRN("(MultiHdlrDom)!!! Failed since dup EvName=" << aEvName << " + HdlrName=" << aHdlrName);
-            return Domino::D_EVENT_FAILED_RET;
-        }
-        ev_hdlrs->second.emplace(aHdlrName, newHdlr);
+        WRN("(MultiHdlrDom)!!! Failed since dup EvName=" << aEvName << " + HdlrName=" << aHdlrName);
+        return Domino::D_EVENT_FAILED_RET;
     }
     HID("(MultiHdlrDom) Succeed for EvName=" << aEvName << ", HdlrName=" << aHdlrName);
 

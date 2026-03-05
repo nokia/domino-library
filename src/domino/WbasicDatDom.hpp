@@ -75,7 +75,7 @@ bool WbasicDatDom<aDominoType>::replaceDataOK(const Domino::EvName& aEvName, S_P
         WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!")
         return false;
     }
-    else return aDominoType::replaceDataOK(aEvName, aData);
+    else return aDominoType::replaceDataOK(aEvName, std::move(aData));
 }
 
 // ***********************************************************************************************
@@ -104,7 +104,7 @@ template<typename aDominoType>
 bool WbasicDatDom<aDominoType>::wbasic_replaceDataOK(const Domino::EvName& aEvName, S_PTR<void> aData) noexcept
 {
     if (isWrCtrl(aEvName))
-        return aDominoType::replaceDataOK(aEvName, aData);
+        return aDominoType::replaceDataOK(aEvName, std::move(aData));
     else {
         WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!")
         return false;

@@ -18,11 +18,12 @@ bool MsgSelf::handleOneMsg_() noexcept
         if (oneQueue.empty())
             continue;
 
-        try { oneQueue.front()(); } // run 1st MsgCB; newMsgOK() prevent nullptr into msgQueues_
-        catch(...) { ERR("(MsgSelf) except->failed!!!"); }
-
+        auto msg = std::move(oneQueue.front());
         oneQueue.pop_front();  // except can't recover->terminate
         --nMsg_;
+
+        try { msg(); } // run 1st MsgCB; newMsgOK() prevent nullptr into msgQueues_
+        catch(...) { ERR("(MsgSelf) except->failed!!!"); }
 
         if (not nMsg())
             return false;    // no more to continue

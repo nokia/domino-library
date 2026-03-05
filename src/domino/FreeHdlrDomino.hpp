@@ -100,9 +100,9 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, co
     HID("(FreeHdlrDom) trigger a call-then-rm msg for en=" << this->evName_(aValidEv));
     this->msgSelf_->newMsgOK(
         [this, aValidEv, weakHdlr = WeakMsgCB(aValidHdlr)]() noexcept {
-            if (weakHdlr.expired())  // validate
+            auto hdlr = weakHdlr.lock();  // get & validate
+            if (! hdlr)
                 return;  // otherwise crash
-            auto hdlr = weakHdlr.lock();  // get
             this->rmOneHdlrOK_(aValidEv, hdlr);  // safer to rm first to avoid hdlr does sth strange
             try { (*(hdlr.get()))(); }  // call; setHdlr() forbid cb==null
             catch(...) { ERR("(FreeHdlrDom) except when exe callback!!! ev=" << aValidEv); }
