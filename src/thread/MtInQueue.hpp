@@ -88,7 +88,7 @@ template<class aEleType>
 bool MtInQueue::mt_pushOK(S_PTR<aEleType>&& aEle) noexcept
 {
     // validate aEle
-    if (aEle.get() == nullptr)
+    if (!aEle)
     {
         HID("!!! can't push nullptr since pop empty will ret nullptr");
         return false;

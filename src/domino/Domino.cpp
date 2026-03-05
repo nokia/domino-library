@@ -52,7 +52,7 @@ bool Domino::deduceStateSelf_(const Event& aValidEv, bool aPrevType) const noexc
 void Domino::effect_() noexcept
 {
     for (auto&& ev : effectEVs_)
-        if (state(ev) == true)  // avoid multi-change
+        if (states_[ev] == true)  // avoid multi-change; skip bounds check since effectEVs_ are validated
             effect_(ev);
     effectEVs_.clear();
 }

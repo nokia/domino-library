@@ -50,8 +50,8 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
                     task();  // packaged_task saves exception in its future
 
                     // no lock so can only use MT_safe part in "this"
-                    this->mt_nDoneFut_.fetch_add(1, std::memory_order_relaxed);  // fastest +1
-                    mt_pingMainTH();  // notify mainTH 1 task done
+                    if (this->mt_nDoneFut_.fetch_add(1, std::memory_order_release) == 0)  // +1 & ping only if first done
+                        mt_pingMainTH();
                 }
             });  // thread main()
         }  // for-loop to create threads

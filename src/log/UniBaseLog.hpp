@@ -64,12 +64,13 @@ inline const char* mt_timestamp() noexcept
 const char ULN_DEFAULT[] = "DEFAULT";
 
 // ***********************************************************************************************
-// - MT safe : yes (aStr is copied)
+// - MT safe : yes (aStr is const ref)
 // - mem safe: yes
-inline void cout_ascii(std::string aStr) noexcept
+inline void cout_ascii(const std::string& aStr) noexcept
 {
     try {  // cout may except(eg ios_base::failure) though rare; try-catch is safest as a log
-        std::cout << std::hex;
+        std::string buf;
+        buf.reserve(aStr.size() * 2);
         unsigned char preC = 0;
         for (unsigned char c : aStr)
         {
@@ -77,14 +78,16 @@ inline void cout_ascii(std::string aStr) noexcept
             {
                 if (preC == 0xd || preC == 0xa)
                 {
-                    std::cout << std::endl;
+                    buf += '\n';
                     preC = 0;
                 }
-                std::cout << c;
+                buf += static_cast<char>(c);
             }
             else
             {
-                std::cout << "[`" << static_cast<size_t>(c) << "'}";  // [`'} is rare
+                char hex[16];
+                snprintf(hex, sizeof(hex), "[`%zx'}", static_cast<size_t>(c));
+                buf += hex;
                 preC = c;
             }
         }

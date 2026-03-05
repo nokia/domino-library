@@ -14,6 +14,7 @@ size_t ThreadBack::hdlDoneFut(UniLog& oneLog) noexcept
 {
     size_t nHandledFut = 0;
     const auto nDoneFut = mt_nDoneFut_.load(memory_order_relaxed);  // since mt_nDoneFut_+1 may before future::ready
+    if (nDoneFut == 0) return 0;
     // HID("(ThreadBack) nHandled=" << nHandledFut << '/' << nDoneFut << '|' << nFut());
 
     // bugFix: may mt_nDoneFut_+1 before future::ready, so must check "fut_backFN != fut_backFN_S_.end()"

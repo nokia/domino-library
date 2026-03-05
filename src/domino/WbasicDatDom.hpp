@@ -115,7 +115,7 @@ bool WbasicDatDom<aDominoType>::wbasic_replaceDataOK(const Domino::EvName& aEvNa
 template<typename aDominoType>
 bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName, const bool aNewState) noexcept
 {
-    if (aDominoType::getData(aEvName).get() != nullptr)
+    if (aDominoType::getData(aEvName))
     {
         WRN("(WbasicDatDom) !!! Failed to change wrCtrl when aleady own data(out-of-ctrl), EvName=" << aEvName);
         return false;
