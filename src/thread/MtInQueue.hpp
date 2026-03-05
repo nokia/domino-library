@@ -60,7 +60,7 @@ public:
     void   mt_clearElePool() noexcept;
 
     // shall be called in main thread ONLY!!!
-    template<class aEleType> bool setHdlrOK(const EleHdlr&) noexcept;  // except eg bad_alloc: can't recover->terminate
+    template<class aEleType> bool setHdlrOK(EleHdlr) noexcept;  // except eg bad_alloc: can't recover->terminate
     size_t handleAllEle() noexcept;
     auto nHdlr() const noexcept { return tid_hdlr_S_.size(); }
     void clearHdlrPool() noexcept { tid_hdlr_S_.clear(); }
@@ -133,7 +133,7 @@ S_PTR<aEleType> MtInQueue::pop() noexcept
 
 // ***********************************************************************************************
 template<class aEleType>
-bool MtInQueue::setHdlrOK(const EleHdlr& aHdlr) noexcept
+bool MtInQueue::setHdlrOK(EleHdlr aHdlr) noexcept
 {
     if (! aHdlr)
     {
@@ -141,7 +141,7 @@ bool MtInQueue::setHdlrOK(const EleHdlr& aHdlr) noexcept
         return false;
     }
 
-    auto [_, ok] = tid_hdlr_S_.try_emplace(std::type_index(typeid(aEleType)), aHdlr);
+    auto [_, ok] = tid_hdlr_S_.try_emplace(std::type_index(typeid(aEleType)), std::move(aHdlr));
     if (!ok)
         ERR("(MtQ) failed!!! overwrite hdlr may unsafe existing data");
     return ok;
