@@ -38,7 +38,7 @@ bool MsgSelf::handleOneMsg_() noexcept
 }
 
 // ***********************************************************************************************
-bool MsgSelf::newMsgOK(const MsgCB& aMsgCB, const EMsgPriority aMsgPri) noexcept
+bool MsgSelf::newMsgOK(MsgCB aMsgCB, const EMsgPriority aMsgPri) noexcept
 {
     // validate
     if (! aMsgCB)
@@ -53,7 +53,7 @@ bool MsgSelf::newMsgOK(const MsgCB& aMsgCB, const EMsgPriority aMsgPri) noexcept
     }
 
     // store
-    msgQueues_[aMsgPri].emplace_back(aMsgCB);  // except eg bad_alloc: can't recover->terminate
+    msgQueues_[aMsgPri].emplace_back(std::move(aMsgCB));  // except eg bad_alloc: can't recover->terminate
     ++nMsg_;
     HID("(MsgSelf) nMsg=" << nMsg_);
 

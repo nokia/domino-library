@@ -75,7 +75,7 @@ public:
     explicit MsgSelf(const LogName& aUniLogName = ULN_DEFAULT) noexcept : UniLog(aUniLogName) {}
     ~MsgSelf() noexcept { if (nMsg_) WRN("discard nMsg=" << nMsg_); }
 
-    bool   newMsgOK(const MsgCB&, const EMsgPriority = EMsgPri_NORM) noexcept;
+    bool   newMsgOK(MsgCB, const EMsgPriority = EMsgPri_NORM) noexcept;
     size_t nMsg() const noexcept { return nMsg_; }
     size_t nMsg(const EMsgPriority aPri) const noexcept { return aPri < EMsgPri_MAX ?  msgQueues_[aPri].size() : 0; }
     void   handleAllMsg() noexcept { while (handleOneMsg_()); }  // handleOneMsg_() may create new high priority msg(s)
