@@ -51,9 +51,9 @@ public:
     size_t nHdlr(const Domino::EvName& aEN) const noexcept override;
 
 protected:
-    void effect_(const Domino::Event& aEv) noexcept override;  // key/min change other Dominos
-    bool rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr) noexcept override; // by aValidHdlr
-    void rmEv_(const Domino::Event& aValidEv) noexcept override;
+    void effect_(Domino::Event aEv) noexcept override;  // key/min change other Dominos
+    bool rmOneHdlrOK_(Domino::Event aValidEv, const SharedMsgCB& aValidHdlr) noexcept override; // by aValidHdlr
+    void rmEv_(Domino::Event aValidEv) noexcept override;
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ public:
 
 // ***********************************************************************************************
 template<class aDominoType>
-void MultiHdlrDomino<aDominoType>::effect_(const Domino::Event& aEv) noexcept
+void MultiHdlrDomino<aDominoType>::effect_(Domino::Event aEv) noexcept
 {
     // call parent's hdlr
     aDominoType::effect_(aEv);
@@ -138,7 +138,7 @@ void MultiHdlrDomino<aDominoType>::rmAllHdlr(const Domino::EvName& aEN) noexcept
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void MultiHdlrDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv) noexcept
+void MultiHdlrDomino<aDominoType>::rmEv_(Domino::Event aValidEv) noexcept
 {
     ev_hdlrs_S_.erase(aValidEv);
     aDominoType::rmEv_(aValidEv);
@@ -160,7 +160,7 @@ bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName, co
 
 // ***********************************************************************************************
 template<class aDominoType>
-bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr) noexcept
+bool MultiHdlrDomino<aDominoType>::rmOneHdlrOK_(Domino::Event aValidEv, const SharedMsgCB& aValidHdlr) noexcept
 {
     // parent's hdlr?
     if (aDominoType::rmOneHdlrOK_(aValidEv, aValidHdlr))

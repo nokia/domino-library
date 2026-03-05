@@ -32,12 +32,12 @@ public:
     explicit FreeHdlrDomino(const LogName& aUniLogName = ULN_DEFAULT) noexcept : aDominoType(aUniLogName) {}
 
     Domino::Event repeatedHdlr(const Domino::EvName&, const bool isRepeated = true) noexcept;  // set false = simple rm
-    bool isRepeatHdlr(const Domino::Event&) const noexcept;
+    bool isRepeatHdlr(Domino::Event) const noexcept;
 
 protected:
-    void triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv) noexcept override;
+    void triggerHdlr_(const SharedMsgCB& aValidHdlr, Domino::Event aValidEv) noexcept override;
 
-    void rmEv_(const Domino::Event& aValidEv) noexcept override;
+    void rmEv_(Domino::Event aValidEv) noexcept override;
 
     // -------------------------------------------------------------------------------------------
 private:
@@ -50,7 +50,7 @@ public:
 
 // ***********************************************************************************************
 template<class aDominoType>
-bool FreeHdlrDomino<aDominoType>::isRepeatHdlr(const Domino::Event& aEv) const noexcept
+bool FreeHdlrDomino<aDominoType>::isRepeatHdlr(Domino::Event aEv) const noexcept
 {
     return aEv < isRepeatHdlr_.size()
         ? isRepeatHdlr_[aEv]
@@ -78,7 +78,7 @@ Domino::Event FreeHdlrDomino<aDominoType>::repeatedHdlr(const Domino::EvName& aE
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void FreeHdlrDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv) noexcept
+void FreeHdlrDomino<aDominoType>::rmEv_(Domino::Event aValidEv) noexcept
 {
     if (aValidEv < isRepeatHdlr_.size())
         isRepeatHdlr_[aValidEv] = false;
@@ -88,7 +88,7 @@ void FreeHdlrDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv) noexcept
 
 // ***********************************************************************************************
 template<class aDominoType>
-void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv) noexcept
+void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, Domino::Event aValidEv) noexcept
 {
     // repeated hdlr
     if (isRepeatHdlr(aValidEv))

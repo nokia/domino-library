@@ -30,10 +30,10 @@ public:
     // Extend Tile record:
     // - priority: Tile's priority to call hdlr, optional
     // -------------------------------------------------------------------------------------------
-    EMsgPriority  getPriority(const Domino::Event&) const noexcept override;  // key/min change other Dominos
+    EMsgPriority  getPriority(Domino::Event) const noexcept override;  // key/min change other Dominos
     Domino::Event setPriority(const Domino::EvName&, const EMsgPriority) noexcept;
 protected:
-    void rmEv_(const Domino::Event& aValidEv) noexcept override;
+    void rmEv_(Domino::Event aValidEv) noexcept override;
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ public:
 
 // ***********************************************************************************************
 template<class aDominoType>
-EMsgPriority PriDomino<aDominoType>::getPriority(const Domino::Event& aEv) const noexcept
+EMsgPriority PriDomino<aDominoType>::getPriority(Domino::Event aEv) const noexcept
 {
     auto&& ev_pri = ev_pri_S_.find(aEv);
     if (ev_pri == ev_pri_S_.end())
@@ -55,7 +55,7 @@ EMsgPriority PriDomino<aDominoType>::getPriority(const Domino::Event& aEv) const
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void PriDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv) noexcept
+void PriDomino<aDominoType>::rmEv_(Domino::Event aValidEv) noexcept
 {
     ev_pri_S_.erase(aValidEv);
     aDominoType::rmEv_(aValidEv);

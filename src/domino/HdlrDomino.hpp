@@ -55,14 +55,14 @@ public:
     Domino::Event multiHdlrByAliasEv(const Domino::EvName& aAliasEN, MsgCB aHdlr,
         const Domino::EvName& aHostEN) noexcept;
 
-    virtual EMsgPriority getPriority(const Domino::Event&) const noexcept { return EMsgPri_NORM; }
+    virtual EMsgPriority getPriority(Domino::Event) const noexcept { return EMsgPri_NORM; }
 
 protected:
-    void effect_(const Domino::Event& aEv) noexcept override;
-    virtual void triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv) noexcept;
-    virtual bool rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr) noexcept;  // by aValidHdlr
+    void effect_(Domino::Event aEv) noexcept override;
+    virtual void triggerHdlr_(const SharedMsgCB& aValidHdlr, Domino::Event aValidEv) noexcept;
+    virtual bool rmOneHdlrOK_(Domino::Event aValidEv, const SharedMsgCB& aValidHdlr) noexcept;  // by aValidHdlr
 
-    void rmEv_(const Domino::Event& aValidEv) noexcept override;
+    void rmEv_(Domino::Event aValidEv) noexcept override;
 
     // -------------------------------------------------------------------------------------------
 private:
@@ -75,7 +75,7 @@ public:
 
 // ***********************************************************************************************
 template<class aDominoType>
-void HdlrDomino<aDominoType>::effect_(const Domino::Event& aEv) noexcept
+void HdlrDomino<aDominoType>::effect_(Domino::Event aEv) noexcept
 {
     // validate
     auto&& ev_hdlr = ev_hdlr_S_.find(aEv);
@@ -109,7 +109,7 @@ Domino::Event HdlrDomino<aDominoType>::multiHdlrByAliasEv(const Domino::EvName& 
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void HdlrDomino<aDominoType>::rmEv_(const Domino::Event& aValidEv) noexcept
+void HdlrDomino<aDominoType>::rmEv_(Domino::Event aValidEv) noexcept
 {
     ev_hdlr_S_.erase(aValidEv);
     aDominoType::rmEv_(aValidEv);
@@ -125,7 +125,7 @@ bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName) noexcep
 
 // ***********************************************************************************************
 template<class aDominoType>
-bool HdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, const SharedMsgCB& aValidHdlr) noexcept
+bool HdlrDomino<aDominoType>::rmOneHdlrOK_(Domino::Event aValidEv, const SharedMsgCB& aValidHdlr) noexcept
 {
     auto&& ev_hdlr = ev_hdlr_S_.find(aValidEv);
     if (ev_hdlr == ev_hdlr_S_.end())
@@ -201,7 +201,7 @@ bool HdlrDomino<aDominoType>::setMsgSelfOK(const S_PTR<MsgSelf>& aMsgSelf) noexc
 
 // ***********************************************************************************************
 template<class aDominoType>
-void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, const Domino::Event& aValidEv) noexcept
+void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, Domino::Event aValidEv) noexcept
 {
     HID("(HdlrDom) trigger a new msg.");
     msgSelf_->newMsgOK(

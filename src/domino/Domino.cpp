@@ -15,7 +15,7 @@ namespace rlib
 static const Domino::Events defaultEVs;  // internal use only
 
 // ***********************************************************************************************
-void Domino::deduceStateFrom_(const Event& aValidEv) noexcept
+void Domino::deduceStateFrom_(Event aValidEv) noexcept
 {
     stack<Event> evStack;
     for (auto curEV = aValidEv; ; curEV = evStack.top(), evStack.pop()) {
@@ -40,7 +40,7 @@ void Domino::deduceStateFrom_(const Event& aValidEv) noexcept
 }
 
 // ***********************************************************************************************
-bool Domino::deduceStateSelf_(const Event& aValidEv, bool aPrevType) const noexcept
+bool Domino::deduceStateSelf_(Event aValidEv, bool aPrevType) const noexcept
 {
     for (auto&& prevEV : findPeerEVs(aValidEv, prev_[aPrevType]))
         if (states_[prevEV] != aPrevType)  // 1 prev not satisfied
@@ -58,7 +58,7 @@ void Domino::effect_() noexcept
 }
 
 // ***********************************************************************************************
-const Domino::Events& Domino::findPeerEVs(const Event& aEv, const EvLinks& aLinks) noexcept
+const Domino::Events& Domino::findPeerEVs(Event aEv, const EvLinks& aLinks) noexcept
 {
     auto&& ev_peerEVs = aLinks.find(aEv);
     return ev_peerEVs == aLinks.end()
@@ -67,7 +67,7 @@ const Domino::Events& Domino::findPeerEVs(const Event& aEv, const EvLinks& aLink
 }
 
 // ***********************************************************************************************
-bool Domino::isNextFromTo_(const Event& aFromValidEv, const Event& aToValidEv) const noexcept
+bool Domino::isNextFromTo_(Event aFromValidEv, Event aToValidEv) const noexcept
 {
     Events evVisited{aFromValidEv};  // rare to search huge events
     stack<Event> evStack;  // recursive func may stack overflow
@@ -121,7 +121,7 @@ Domino::Event Domino::newEvent(const EvName& aEvName) noexcept
 }
 
 // ***********************************************************************************************
-void Domino::pureRmLink_(const Event& aValidEv, EvLinks& aMyLinks, EvLinks& aNeighborLinks) noexcept
+void Domino::pureRmLink_(Event aValidEv, EvLinks& aMyLinks, EvLinks& aNeighborLinks) noexcept
 {
     // rm neighbor's link
     for (auto&& peerEv : findPeerEVs(aValidEv, aMyLinks))
@@ -138,7 +138,7 @@ void Domino::pureRmLink_(const Event& aValidEv, EvLinks& aMyLinks, EvLinks& aNei
 }
 
 // ***********************************************************************************************
-void Domino::pureSetPrev_(const Event& aValidEv, const SimuEvents& aSimuPrevEvents) noexcept
+void Domino::pureSetPrev_(Event aValidEv, const SimuEvents& aSimuPrevEvents) noexcept
 {
     HID("(Domino) before: nPrev[true]=" << prev_[true].size() << ", nNext[true]=" << next_[true].size()
         << ", nPrev[false]=" << prev_[false].size() << ", nNext[false]=" << next_[false].size());
@@ -153,7 +153,7 @@ void Domino::pureSetPrev_(const Event& aValidEv, const SimuEvents& aSimuPrevEven
 }
 
 // ***********************************************************************************************
-bool Domino::pureSetStateOK_(const Event& aValidEv, const bool aNewState) noexcept
+bool Domino::pureSetStateOK_(Event aValidEv, const bool aNewState) noexcept
 {
     if (states_[aValidEv] != aNewState)  // do need change
     {
@@ -167,7 +167,7 @@ bool Domino::pureSetStateOK_(const Event& aValidEv, const bool aNewState) noexce
 }
 
 // ***********************************************************************************************
-void Domino::rmEv_(const Event& aValidEv) noexcept
+void Domino::rmEv_(Event aValidEv) noexcept
 {
     // cp for later deduceStateFrom_(next)
     auto trueNextEVs  = findPeerEVs(aValidEv, next_[true]);
@@ -262,7 +262,7 @@ size_t Domino::setState(const SimuEvents& aSimuEvents)
 }
 
 // ***********************************************************************************************
-Domino::EvName Domino::whyFalse(const Event& aEv) const noexcept
+Domino::EvName Domino::whyFalse(Event aEv) const noexcept
 {
     // validate to safe public interface
     auto&& ev_en = ev_en_.find(aEv);

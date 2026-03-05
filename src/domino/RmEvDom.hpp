@@ -41,9 +41,9 @@ public:
     explicit RmEvDom(const LogName& aUniLogName = ULN_DEFAULT) noexcept : aDominoType(aUniLogName) {}
 
     bool rmEvOK(const Domino::EvName& aEN) noexcept;
-    bool isRemoved(const Domino::Event& aEv) const noexcept { return isRemovedEv_.count(aEv); }
+    bool isRemoved(Domino::Event aEv) const noexcept { return isRemovedEv_.count(aEv); }
 protected:
-    void rmEv_(const Domino::Event& aValidEv) noexcept override;
+    void rmEv_(Domino::Event aValidEv) noexcept override;
     Domino::Event recycleEv_() noexcept override;
 
 private:
@@ -72,7 +72,7 @@ Domino::Event RmEvDom<aDominoType>::recycleEv_() noexcept
 
 // ***********************************************************************************************
 template<typename aDominoType>
-void RmEvDom<aDominoType>::rmEv_(const Domino::Event& aValidEv) noexcept
+void RmEvDom<aDominoType>::rmEv_(Domino::Event aValidEv) noexcept
 {
     aDominoType::rmEv_(aValidEv);
     isRemovedEv_.insert(aValidEv);

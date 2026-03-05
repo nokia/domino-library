@@ -84,37 +84,37 @@ public:
     const EvNames evNames() const noexcept { return ev_en_; }
 
     bool   state(const EvName& aEvName) const noexcept { return state(getEventBy(aEvName)); }
-    bool   state(const Event& aEv) const noexcept { return aEv < states_.size() ? states_[aEv] : false; }
+    bool   state(Event aEv) const noexcept { return aEv < states_.size() ? states_[aEv] : false; }
     size_t setState(const SimuEvents&);  // ret real changed ev#
 
     Event  setPrev(const EvName&, const SimuEvents&) noexcept;  // be careful not create eg ttue-false loop
-    EvName whyFalse(const Event&) const noexcept;
+    EvName whyFalse(Event) const noexcept;
 
 protected:
-    const EvName& evName_(const Event& aValidEv) const noexcept { return ev_en_.at(aValidEv); }
-    virtual void  effect_(const Event& aEv) noexcept {}  // can't const since FreeDom will rm hdlr
+    const EvName& evName_(Event aValidEv) const noexcept { return ev_en_.at(aValidEv); }
+    virtual void  effect_(Event aEv) noexcept {}  // can't const since FreeDom will rm hdlr
 
     // - rm self dom's resource (RISK: aEv's leaf(s) may become orphan!!!)
     // - virtual for each dom (& trigger base to free its resource)
-    virtual void  rmEv_(const Event& aValidEv) noexcept;
+    virtual void  rmEv_(Event aValidEv) noexcept;
     virtual Event recycleEv_() noexcept { return D_EVENT_FAILED_RET; }
 
 private:
-    void deduceStateFrom_(const Event& aValidEv) noexcept;
-    bool deduceStateSelf_(const Event& aValidEv, bool aPrevType) const noexcept;
+    void deduceStateFrom_(Event aValidEv) noexcept;
+    bool deduceStateSelf_(Event aValidEv, bool aPrevType) const noexcept;
     void effect_() noexcept;
 
-    bool pureSetStateOK_(const Event& aValidEv, const bool aNewState) noexcept;
-    void pureSetPrev_(const Event& aValidEv, const SimuEvents&) noexcept;
-    void pureRmLink_(const Event& aValidEv, EvLinks& aMyLinks, EvLinks& aNeighborLinks) noexcept;
+    bool pureSetStateOK_(Event aValidEv, const bool aNewState) noexcept;
+    void pureSetPrev_(Event aValidEv, const SimuEvents&) noexcept;
+    void pureRmLink_(Event aValidEv, EvLinks& aMyLinks, EvLinks& aNeighborLinks) noexcept;
 
-    bool isNextFromTo_(const Event& aFromValidEv, const Event& aToValidEv) const noexcept;
+    bool isNextFromTo_(Event aFromValidEv, Event aToValidEv) const noexcept;
 
     struct WhyStep{ Event curEV_; bool whyFlag_; EvName resultEN_; };
     void whyTrue_ (WhyStep&) const noexcept;
     void whyFalse_(WhyStep&) const noexcept;
 
-    static const Events& findPeerEVs(const Event&, const EvLinks&) noexcept;
+    static const Events& findPeerEVs(Event, const EvLinks&) noexcept;
 
     // -------------------------------------------------------------------------------------------
     std::vector<bool>                 states_;               // bitmap & dyn expand, [event]=t/f
