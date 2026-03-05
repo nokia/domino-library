@@ -205,19 +205,19 @@ SafePtr<U> make_safe(ConstructArgs&&... aArgs) noexcept
 // - SafePtr can be key of map & unordered_map (like shared_ptr)
 // - convenient usage
 template<typename T, typename U>
-bool operator==(SafePtr<T> lhs, SafePtr<U> rhs) noexcept
+bool operator==(const SafePtr<T>& lhs, const SafePtr<U>& rhs) noexcept
 {
-    return lhs.get() == rhs.get();
+    return lhs.operator->() == rhs.operator->();
 }
 template<typename T, typename U>
-bool operator!=(SafePtr<T> lhs, SafePtr<U> rhs) noexcept
+bool operator!=(const SafePtr<T>& lhs, const SafePtr<U>& rhs) noexcept
 {
-    return !(lhs == rhs);
+    return lhs.operator->() != rhs.operator->();
 }
 template<typename T, typename U>
-bool operator<(SafePtr<T> lhs, SafePtr<U> rhs) noexcept
+bool operator<(const SafePtr<T>& lhs, const SafePtr<U>& rhs) noexcept
 {
-    return lhs.get() < rhs.get();
+    return lhs.operator->() < rhs.operator->();
 }
 
 // ***********************************************************************************************
@@ -256,9 +256,9 @@ private:
 // ***********************************************************************************************
 template<typename T>
 SafeWeak<T>::SafeWeak(const SafePtr<T>& aSafeFrom) noexcept
-    : pT_(aSafeFrom.get())
-    , realType_(aSafeFrom.realType())
-    , lastType_(aSafeFrom.lastType())
+    : pT_(aSafeFrom.pT_)
+    , realType_(aSafeFrom.realType_)
+    , lastType_(aSafeFrom.lastType_)
 {
 }
 
@@ -278,7 +278,7 @@ SafePtr<T> SafeWeak<T>::lock() const noexcept
 template<typename T>
 struct std::hash<rlib::SafePtr<T>>
 {
-    auto operator()(const rlib::SafePtr<T>& aSafePtr) const { return hash<shared_ptr<T>>()(aSafePtr.get()); }
+    auto operator()(const rlib::SafePtr<T>& aSafePtr) const { return hash<shared_ptr<T>>()(aSafePtr.operator->()); }
 };
 
 // ***********************************************************************************************
