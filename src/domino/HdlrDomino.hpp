@@ -42,7 +42,7 @@ public:
     explicit HdlrDomino(const LogName& aUniLogName = ULN_DEFAULT) noexcept : aDominoType(aUniLogName) {}
     bool setMsgSelfOK(const S_PTR<MsgSelf>& aMsgSelf) noexcept;  // replace default; safe: yes SafePtr, no shared_ptr
 
-    Domino::Event setHdlr(const Domino::EvName&, const MsgCB& aHdlr) noexcept;
+    Domino::Event setHdlr(const Domino::EvName&, MsgCB aHdlr) noexcept;
     bool rmOneHdlrOK(const Domino::EvName&) noexcept;  // rm by EvName
     void forceAllHdlr(const Domino::EvName& aEN) noexcept { effect_(this->getEventBy(aEN)); }
     virtual size_t nHdlr(const Domino::EvName& aEN) const noexcept { return ev_hdlr_S_.count(this->getEventBy(aEN)); }
@@ -52,7 +52,7 @@ public:
     // . pros: can FreeHdlrDomino::repeatedHdlr() for each hdlr
     // . cons: the state of aHostEN & aAliasEN may not sync
     // -------------------------------------------------------------------------------------------
-    Domino::Event multiHdlrByAliasEv(const Domino::EvName& aAliasEN, const MsgCB& aHdlr,
+    Domino::Event multiHdlrByAliasEv(const Domino::EvName& aAliasEN, MsgCB aHdlr,
         const Domino::EvName& aHostEN) noexcept;
 
     virtual EMsgPriority getPriority(const Domino::Event&) const noexcept { return EMsgPri_NORM; }
@@ -89,7 +89,7 @@ void HdlrDomino<aDominoType>::effect_(const Domino::Event& aEv) noexcept
 // ***********************************************************************************************
 template<class aDominoType>
 Domino::Event HdlrDomino<aDominoType>::multiHdlrByAliasEv(const Domino::EvName& aAliasEN,
-    const MsgCB& aHdlr, const Domino::EvName& aHostEN) noexcept
+    MsgCB aHdlr, const Domino::EvName& aHostEN) noexcept
 {
     if (this->getEventBy(aAliasEN) != Domino::D_EVENT_FAILED_RET)
     {
@@ -99,7 +99,7 @@ Domino::Event HdlrDomino<aDominoType>::multiHdlrByAliasEv(const Domino::EvName& 
     }
 
     // set hdlr
-    auto&& newEv = this->setHdlr(aAliasEN, aHdlr);
+    auto&& newEv = this->setHdlr(aAliasEN, std::move(aHdlr));
     if (newEv == Domino::D_EVENT_FAILED_RET)  // setHdlr failed
         return Domino::D_EVENT_FAILED_RET;
 
@@ -143,7 +143,7 @@ bool HdlrDomino<aDominoType>::rmOneHdlrOK_(const Domino::Event& aValidEv, const 
 
 // ***********************************************************************************************
 template<class aDominoType>
-Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, const MsgCB& aHdlr) noexcept
+Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, MsgCB aHdlr) noexcept
 {
     // validate
     if (! msgSelf_)
@@ -159,7 +159,7 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, co
     auto&& newEv = this->newEvent(aEvName);
 
     // set
-    auto newHdlr = MAKE_PTR<MsgCB>(aHdlr);
+    auto newHdlr = MAKE_PTR<MsgCB>(std::move(aHdlr));
     auto&& ev_hdlr = ev_hdlr_S_.emplace(newEv, newHdlr);
     if (! ev_hdlr.second)
     {
