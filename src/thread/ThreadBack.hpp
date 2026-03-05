@@ -13,8 +13,8 @@
 #include <atomic>
 #include <functional>
 #include <future>
-#include <list>
 #include <utility>
+#include <vector>
 
 #include "MT_PingMainTH.hpp"
 #include "SafePtr.hpp"
@@ -27,7 +27,7 @@ namespace rlib
 // ***********************************************************************************************
 using MT_TaskEntryFN  = std::function<SafePtr<void>()>;  // ret-nullptr means failure
 using TaskBackFN      = std::function<void(SafePtr<void>)>;  // MT_TaskEntryFN's ret as para
-using StoreThreadBack = std::list<std::pair<std::future<SafePtr<void>>, TaskBackFN> >;  // deque is worse when rm mid
+using StoreThreadBack = std::vector<std::pair<std::future<SafePtr<void>>, TaskBackFN> >;  // vector + swap-erase: O(1) rm, better cache
 
 // ***********************************************************************************************
 class ThreadBack

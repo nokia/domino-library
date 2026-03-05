@@ -17,17 +17,20 @@ size_t ThreadBack::hdlDoneFut(UniLog& oneLog) noexcept
     if (nDoneFut == 0) return 0;
     // HID("(ThreadBack) nHandled=" << nHandledFut << '/' << nDoneFut << '|' << nFut());
 
-    // bugFix: may mt_nDoneFut_+1 before future::ready, so must check "fut_backFN != fut_backFN_S_.end()"
-    for (auto&& fut_backFN = fut_backFN_S_.begin(); nHandledFut < nDoneFut && fut_backFN != fut_backFN_S_.end();)
+    // bugFix: may mt_nDoneFut_+1 before future::ready, so must check size
+    for (size_t i = 0; i < fut_backFN_S_.size() && nHandledFut < nDoneFut;)
     {
         // - async() failure will throw exception -> terminate since compiling forbid exception
         // - valid async()'s future never invalid
         // - valid packaged_task's get_future() never invalid
-        auto& fut = fut_backFN->first;
+        auto& fut = fut_backFN_S_[i].first;
         if (fut.wait_for(0s) == future_status::ready)
         {
-            auto task_pair = std::move(*fut_backFN);
-            fut_backFN = fut_backFN_S_.erase(fut_backFN);
+            auto task_pair = std::move(fut_backFN_S_[i]);
+            // swap-erase: move last element into this slot, then pop_back
+            if (i + 1 < fut_backFN_S_.size())
+                fut_backFN_S_[i] = std::move(fut_backFN_S_.back());
+            fut_backFN_S_.pop_back();
             ++nHandledFut;
 
             SafePtr ret;
@@ -38,7 +41,7 @@ size_t ThreadBack::hdlDoneFut(UniLog& oneLog) noexcept
             catch(...) { ERR("(ThreadBack) backFN() except"); }  // ERR() ok since in main thread
         }
         else
-            ++fut_backFN;
+            ++i;
     }  // 1 loop, simple & safe
 
     mt_nDoneFut_.fetch_sub(nHandledFut, memory_order_relaxed);  // memory_order_relaxed is faster but not so realtime
