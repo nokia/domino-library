@@ -41,6 +41,7 @@ private:
     // forbid ouside use base directly
     using aDominoType::getData;
     using aDominoType::replaceDataOK;
+    bool isWrCtrl_(Domino::Event aEv) const noexcept { return aEv < wrCtrl_.size() ? wrCtrl_[aEv] : false; }
     // -------------------------------------------------------------------------------------------
     std::vector<bool> wrCtrl_;
 
@@ -52,8 +53,9 @@ public:
 template<typename aDominoType>
 S_PTR<void> WbasicDatDom<aDominoType>::getData(const Domino::EvName& aEvName) const noexcept
 {
-    if (not isWrCtrl(aEvName))
-        return aDominoType::getData(aEvName);
+    const auto ev = this->getEventBy(aEvName);
+    if (not isWrCtrl_(ev))
+        return aDominoType::getData_(ev);
 
     WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!");
     return nullptr;
@@ -63,15 +65,15 @@ S_PTR<void> WbasicDatDom<aDominoType>::getData(const Domino::EvName& aEvName) co
 template<typename aDominoType>
 bool WbasicDatDom<aDominoType>::isWrCtrl(const Domino::EvName& aEvName) const noexcept
 {
-    const auto ev = this->getEventBy(aEvName);
-    return ev < wrCtrl_.size() ? wrCtrl_[ev] : false;
+    return isWrCtrl_(this->getEventBy(aEvName));
 }
 
 // ***********************************************************************************************
 template<typename aDominoType>
 bool WbasicDatDom<aDominoType>::replaceDataOK(const Domino::EvName& aEvName, S_PTR<void> aData) noexcept
 {
-    if (isWrCtrl(aEvName)) {
+    const auto ev = this->getEventBy(aEvName);
+    if (isWrCtrl_(ev)) {
         WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!")
         return false;
     }
@@ -92,8 +94,9 @@ void WbasicDatDom<aDominoType>::rmEv_(Domino::Event aValidEv) noexcept
 template<typename aDominoType>
 S_PTR<void> WbasicDatDom<aDominoType>::wbasic_getData(const Domino::EvName& aEvName) const noexcept
 {
-    if (isWrCtrl(aEvName))
-        return aDominoType::getData(aEvName);
+    const auto ev = this->getEventBy(aEvName);
+    if (isWrCtrl_(ev))
+        return aDominoType::getData_(ev);
 
     WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!");
     return nullptr;
@@ -103,7 +106,8 @@ S_PTR<void> WbasicDatDom<aDominoType>::wbasic_getData(const Domino::EvName& aEvN
 template<typename aDominoType>
 bool WbasicDatDom<aDominoType>::wbasic_replaceDataOK(const Domino::EvName& aEvName, S_PTR<void> aData) noexcept
 {
-    if (isWrCtrl(aEvName))
+    const auto ev = this->getEventBy(aEvName);
+    if (isWrCtrl_(ev))
         return aDominoType::replaceDataOK(aEvName, std::move(aData));
     else {
         WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!")
@@ -115,13 +119,13 @@ bool WbasicDatDom<aDominoType>::wbasic_replaceDataOK(const Domino::EvName& aEvNa
 template<typename aDominoType>
 bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName, const bool aNewState) noexcept
 {
-    if (aDominoType::getData(aEvName))
+    const auto ev = this->newEvent(aEvName);
+    if (aDominoType::getData_(ev))
     {
         WRN("(WbasicDatDom) !!! Failed to change wrCtrl when aleady own data(out-of-ctrl), EvName=" << aEvName);
         return false;
     }
 
-    const auto ev = this->newEvent(aEvName);
     if (ev >= wrCtrl_.size())
         wrCtrl_.resize(ev + 1);  // resize() can inc size()
     wrCtrl_[ev] = aNewState;

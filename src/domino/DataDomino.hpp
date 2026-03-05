@@ -46,6 +46,8 @@ public:
 
 protected:
     void rmEv_(Domino::Event aValidEv) noexcept override;
+    S_PTR<void> getData_(Domino::Event aEv) const noexcept { return ev_data_S_.get<void>(aEv); }
+    bool replaceDataOK_(Domino::Event aEv, S_PTR<void> aData) noexcept { return ev_data_S_.replaceOK(aEv, std::move(aData)); }
 
 private:
     // -------------------------------------------------------------------------------------------

@@ -123,17 +123,18 @@ Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvNa
 template<class aDominoType>
 size_t MultiHdlrDomino<aDominoType>::nHdlr(const Domino::EvName& aEN) const noexcept
 {
-    auto&& ev_hdlrs = ev_hdlrs_S_.find(this->getEventBy(aEN));
-    return (ev_hdlrs == ev_hdlrs_S_.end() ? 0 : ev_hdlrs->second.size()) + aDominoType::nHdlr(aEN);
+    const auto ev = this->getEventBy(aEN);
+    auto&& ev_hdlrs = ev_hdlrs_S_.find(ev);
+    return (ev_hdlrs == ev_hdlrs_S_.end() ? 0 : ev_hdlrs->second.size()) + aDominoType::nHdlr_(ev);
 }
 
 // ***********************************************************************************************
 template<class aDominoType>
 void MultiHdlrDomino<aDominoType>::rmAllHdlr(const Domino::EvName& aEN) noexcept
 {
-    aDominoType::rmOneHdlrOK(aEN);
-
-    ev_hdlrs_S_.erase(this->getEventBy(aEN));
+    const auto ev = this->getEventBy(aEN);
+    aDominoType::rmOneHdlrOK_(ev);
+    ev_hdlrs_S_.erase(ev);
 }
 
 // ***********************************************************************************************

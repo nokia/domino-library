@@ -63,6 +63,8 @@ protected:
     virtual bool rmOneHdlrOK_(Domino::Event aValidEv, const SharedMsgCB& aValidHdlr) noexcept;  // by aValidHdlr
 
     void rmEv_(Domino::Event aValidEv) noexcept override;
+    size_t nHdlr_(Domino::Event aEv) const noexcept { return ev_hdlr_S_.count(aEv); }
+    bool rmOneHdlrOK_(Domino::Event aEv) noexcept { return ev_hdlr_S_.erase(aEv); }
 
     // -------------------------------------------------------------------------------------------
 private:
