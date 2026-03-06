@@ -5,6 +5,8 @@
  */
 #include "ThreadBack.hpp"
 
+#include <cassert>
+
 using namespace std;
 
 namespace rlib
@@ -12,6 +14,7 @@ namespace rlib
 // ***********************************************************************************************
 size_t ThreadBack::hdlDoneFut(UniLog& oneLog) noexcept
 {
+    assert(mt_inMyMainTH());  // non-thread-safe, must call from main thread
     size_t nHandledFut = 0;
     const auto nDoneFut = mt_nDoneFut_.load(memory_order_relaxed);  // since mt_nDoneFut_+1 may before future::ready
     if (nDoneFut == 0) return 0;
@@ -51,6 +54,7 @@ size_t ThreadBack::hdlDoneFut(UniLog& oneLog) noexcept
 // ***********************************************************************************************
 bool ThreadBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog& oneLog)
 {
+    assert(mt_inMyMainTH());  // non-thread-safe, must call from main thread
     if (! aBackFN)
     {
         ERR("(ThreadBack) aBackFN=null doesn't make sense!!! Why not async() directly?");

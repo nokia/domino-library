@@ -31,6 +31,7 @@
 // ***********************************************************************************************
 #pragma once
 
+#include <cassert>
 #include <functional>
 #include <memory>
 #include <type_traits>
@@ -61,7 +62,7 @@ public:
     template<typename From> SafePtr(const SafePtr<From>&) noexcept;   // cp, always ok (or compile err)
     template<typename From> SafePtr(SafePtr<From>&&) noexcept;        // mv, always ok (or compile err)
     // no assignment, compiler will gen it & enough
-    template<typename To> std::shared_ptr<To> cast() const noexcept;  // ret ok/null; safe cast
+    template<typename To> [[nodiscard]] std::shared_ptr<To> cast() const noexcept;  // ret ok/null; safe cast
     template<typename To, typename From> friend SafePtr<To> safe_cast(const SafePtr<From>&) noexcept;  // ret ok/null
 
     // safe usage: convenient(compatible shared_ptr), equivalent & min
@@ -189,7 +190,7 @@ std::type_index SafePtr<T>::genLastType_() const noexcept
 
 // ***********************************************************************************************
 template<typename U, typename... ConstructArgs>
-SafePtr<U> make_safe(ConstructArgs&&... aArgs) noexcept
+[[nodiscard]] SafePtr<U> make_safe(ConstructArgs&&... aArgs) noexcept
 {
     SafePtr<U> safeU;
     try {  // bad_alloc, or except from U's constructor
@@ -226,7 +227,7 @@ bool operator<(const SafePtr<T>& lhs, const SafePtr<U>& rhs) noexcept
 // - unified-ret is predictable & simple
 // - std not allow overload dynamic_pointer_cast so safe_cast & DYN_PTR_CAST
 template<typename To, typename From>
-SafePtr<To> safe_cast(const SafePtr<From>& aSafeFrom) noexcept
+[[nodiscard]] SafePtr<To> safe_cast(const SafePtr<From>& aSafeFrom) noexcept
 {
     return SafePtr<To>(  // constructor is faster
         aSafeFrom.template cast<To>(),  // mv

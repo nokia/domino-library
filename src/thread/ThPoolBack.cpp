@@ -75,7 +75,8 @@ void ThPoolBack::clean_() noexcept
     qCv_.notify_all();
 
     for (auto&& th : thPool_)
-        th.join();  // safer: avoid terminate when destruct th
+        if (th.joinable())
+            th.join();  // safer: avoid terminate when destruct th
 }
 
 // ***********************************************************************************************
