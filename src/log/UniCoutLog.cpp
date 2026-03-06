@@ -21,7 +21,7 @@ ostream& UniCoutLog::oneLog() noexcept
 }
 
 // ***********************************************************************************************
-UniCoutLog UniCoutLog::defaultUniLog_;
-size_t     UniCoutLog::nLogLine_ = 0;
+UniCoutLog           UniCoutLog::defaultUniLog_;
+std::atomic<size_t>  UniCoutLog::nLogLine_ = 0;
 
 }  // namespaces

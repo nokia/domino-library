@@ -266,9 +266,9 @@ SafeWeak<T>::SafeWeak(const SafePtr<T>& aSafeFrom) noexcept
 template<typename T>
 SafePtr<T> SafeWeak<T>::lock() const noexcept
 {
-    return (pT_.expired())
-        ? nullptr
-        : SafePtr<T>(pT_.lock(), realType_, lastType_);  // constructor is faster
+    auto sp = pT_.lock();
+    if (!sp) return SafePtr<T>();
+    return SafePtr<T>(std::move(sp), realType_, lastType_);  // constructor is faster
 }
 }  // namespace
 

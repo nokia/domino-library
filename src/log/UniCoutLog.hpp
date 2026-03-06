@@ -19,6 +19,7 @@
 // ***********************************************************************************************
 #pragma once
 
+#include <atomic>
 #include <iostream>
 
 #include "UniBaseLog.hpp"
@@ -41,8 +42,8 @@ public:
 
     // -------------------------------------------------------------------------------------------
 public:
-    static UniCoutLog defaultUniLog_;
-    static size_t     nLogLine_;  // ut only, simpler here
+    static UniCoutLog           defaultUniLog_;
+    static std::atomic<size_t>  nLogLine_;  // ut only, simpler here
 
 #ifdef IN_GTEST
     // -------------------------------------------------------------------------------------------

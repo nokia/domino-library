@@ -57,7 +57,7 @@ S_PTR<void> WbasicDatDom<aDominoType>::getData(const Domino::EvName& aEvName) co
     if (not isWrCtrl_(ev))
         return aDominoType::getData_(ev);
 
-    WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!");
+    WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is write-protect so unavailable via this func!!!");
     return nullptr;
 }
 
@@ -74,7 +74,7 @@ bool WbasicDatDom<aDominoType>::replaceDataOK(const Domino::EvName& aEvName, S_P
 {
     const auto ev = this->getEventBy(aEvName);
     if (isWrCtrl_(ev)) {
-        WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!")
+        WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is write-protect so unavailable via this func!!!")
         return false;
     }
     else return aDominoType::replaceDataOK(aEvName, std::move(aData));

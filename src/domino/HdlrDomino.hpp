@@ -205,6 +205,11 @@ bool HdlrDomino<aDominoType>::setMsgSelfOK(const S_PTR<MsgSelf>& aMsgSelf) noexc
 template<class aDominoType>
 void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, Domino::Event aValidEv) noexcept
 {
+    if (! msgSelf_)
+    {
+        ERR("(HdlrDom) Failed!!! since MsgSelf is invalid in triggerHdlr_().");
+        return;
+    }
     HID("(HdlrDom) trigger a new msg.");
     msgSelf_->newMsgOK(
         [weakMsgCB = WeakMsgCB(aValidHdlr)]() mutable noexcept  // WeakMsgCB is to support rm hdlr

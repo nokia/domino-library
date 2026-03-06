@@ -39,6 +39,8 @@ void MT_Semaphore::timedwait(const size_t aSec, const size_t aRestNsec) noexcept
             mt_notified_.clear(std::memory_order_release);  // release: publish flag clear to other threads
             return;
         }
+        else if (errno != EINTR)  // EINVAL or other unexpected error
+            break;
 
         // impossible since MT_Semaphore's constructor
         // else if (errno == EINVAL)  // avoid dead loop
