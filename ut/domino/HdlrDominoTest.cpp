@@ -266,7 +266,7 @@ TYPED_TEST_P(NofreeHdlrDominoTest, hdlrOnRoad_thenRmDom_noCrash_noLeak)
     PARA_DOM->setState({{"event", true}});
     EXPECT_EQ(1U, MSG_SELF->nMsg(EMsgPri_NORM));  // 1 cb on road
 
-    ObjAnywhere::emplaceObjOK<TypeParam>(nullptr, *this);  // rm dom
+    EXPECT_TRUE(ObjAnywhere::emplaceObjOK<TypeParam>(nullptr, *this)) << "REQ: rm dom";
     EXPECT_CALL(*this, hdlr0()).Times(0);  // REQ: no cb
     this->pongMsgSelf_();
 }
@@ -298,7 +298,7 @@ TYPED_TEST_P(NofreeHdlrDominoTest, repeat_force_call)
     this->pongMsgSelf_();
 
     EXPECT_CALL(*this, hdlr0()).Times(0);  // REQ: no call
-    PARA_DOM->rmOneHdlrOK("e1");
+    EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("e1")) << "REQ: rm hdlr";
     PARA_DOM->forceAllHdlr("e1");
     this->pongMsgSelf_();
 }
@@ -319,7 +319,7 @@ TYPED_TEST_P(HdlrDominoTest, n_hdlr)
     PARA_DOM->setHdlr("e1", this->hdlr0_);
     EXPECT_EQ(1u, PARA_DOM->nHdlr("e1")) << "REQ: after added";
 
-    PARA_DOM->rmOneHdlrOK("e1");
+    EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("e1")) << "REQ: rm hdlr";
     EXPECT_EQ(0u, PARA_DOM->nHdlr("e1")) << "REQ: after del";
 }
 
@@ -347,7 +347,7 @@ TYPED_TEST_P(HdlrDominoTest, nonConstInterface_shall_createUnExistEvent_withStat
     this->uniqueEVs_.insert(Domino::D_EVENT_FAILED_RET);
     EXPECT_EQ(4u, this->uniqueEVs_.size());
 
-    PARA_DOM->rmOneHdlrOK("e4");  // shall NOT generate new event
+    EXPECT_FALSE(PARA_DOM->rmOneHdlrOK("e4")) << "REQ: rm nonexist hdlr";  // shall NOT generate new event
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e4"));
     EXPECT_EQ(4u, this->uniqueEVs_.size());
 

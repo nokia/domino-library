@@ -38,16 +38,16 @@ class ObjAnywhere
 public:
     static void init(UniLog& = UniLog::defaultUniLog_) noexcept;
     static void deinit() noexcept;  // rm name_obj_S_
-    static bool isInit() noexcept { return name_obj_S_ != nullptr; }
-    static size_t nObj() noexcept { return name_obj_S_ ? name_obj_S_->nData() : 0; }
+    [[nodiscard]] static bool isInit() noexcept { return name_obj_S_ != nullptr; }
+    [[nodiscard]] static size_t nObj() noexcept { return name_obj_S_ ? name_obj_S_->nData() : 0; }
 
     // @brief: store an obj
     // @param SafePtr<aObjType>: an obj to be stored
     // @param UniLog           : log
     // @param ObjName          : key of the obj; default is typeid(aObjType).name()
-    template<typename aObjType> static bool emplaceObjOK(S_PTR<aObjType>,
+    template<typename aObjType> [[nodiscard]] static bool emplaceObjOK(S_PTR<aObjType>,
         UniLog&, const ObjName&) noexcept;
-    template<typename aObjType> static bool emplaceObjOK(S_PTR<aObjType> aObj,
+    template<typename aObjType> [[nodiscard]] static bool emplaceObjOK(S_PTR<aObjType> aObj,
         UniLog& oneLog = UniLog::defaultUniLog_) noexcept
     {
         static const ObjName name(typeid(aObjType).name());
@@ -57,9 +57,9 @@ public:
     // @brief: get an obj
     // @param ObjName: key of the obj when stored; default is typeid(aObjType).name()
     // @ret: ok or nullptr
-    template<typename aObjType> static
+    template<typename aObjType> [[nodiscard]] static
     S_PTR<aObjType> getObj(const ObjName&) noexcept;
-    template<typename aObjType> static
+    template<typename aObjType> [[nodiscard]] static
     S_PTR<aObjType> getObj() noexcept
     {
         static const ObjName name(typeid(aObjType).name());

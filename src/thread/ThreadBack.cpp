@@ -3,9 +3,9 @@
  * Licensed under the BSD 3 Clause license
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#include "ThreadBack.hpp"
-
 #include <cassert>
+
+#include "ThreadBack.hpp"
 
 using namespace std;
 
@@ -14,9 +14,9 @@ namespace rlib
 // ***********************************************************************************************
 size_t ThreadBack::hdlDoneFut(UniLog& oneLog) noexcept
 {
-    assert(mt_inMyMainTH());  // non-thread-safe, must call from main thread
+    assert(mt_inMyMainTH() && "(ThreadBack) hdlDoneFut() must be called from the main thread");
     size_t nHandledFut = 0;
-    const auto nDoneFut = mt_nDoneFut_.load(memory_order_relaxed);  // since mt_nDoneFut_+1 may before future::ready
+    const auto nDoneFut = mt_nDoneFut_.load(memory_order_acquire);  // ensure visibility of producer's writes
     if (nDoneFut == 0) return 0;
     // HID("(ThreadBack) nHandled=" << nHandledFut << '/' << nDoneFut << '|' << nFut());
 
@@ -47,14 +47,14 @@ size_t ThreadBack::hdlDoneFut(UniLog& oneLog) noexcept
             ++i;
     }  // 1 loop, simple & safe
 
-    mt_nDoneFut_.fetch_sub(nHandledFut, memory_order_relaxed);  // memory_order_relaxed is faster but not so realtime
+    mt_nDoneFut_.fetch_sub(nHandledFut, memory_order_acq_rel);  // proper sync with producer threads
     return nHandledFut;
 }
 
 // ***********************************************************************************************
 bool ThreadBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog& oneLog)
 {
-    assert(mt_inMyMainTH());  // non-thread-safe, must call from main thread
+    assert(mt_inMyMainTH() && "(ThreadBack) newTaskOK() must be called from the main thread");
     if (! aBackFN)
     {
         ERR("(ThreadBack) aBackFN=null doesn't make sense!!! Why not async() directly?");

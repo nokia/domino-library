@@ -46,9 +46,9 @@ public:
     Domino::Event multiHdlrOnSameEv(const Domino::EvName&, const MsgCB& aHdlr, const HdlrName&) noexcept;
 
     using aDominoType::rmOneHdlrOK;  // rm HdlrDom's by EvName
-    bool rmOneHdlrOK(const Domino::EvName&, const HdlrName&) noexcept;  // rm MultiDom's by HdlrName
+    [[nodiscard]] bool rmOneHdlrOK(const Domino::EvName&, const HdlrName&) noexcept;  // rm MultiDom's by HdlrName
     void rmAllHdlr(const Domino::EvName&) noexcept;
-    size_t nHdlr(const Domino::EvName& aEN) const noexcept override;
+    [[nodiscard]] size_t nHdlr(const Domino::EvName& aEN) const noexcept override;
 
 protected:
     void effect_(Domino::Event aEv) noexcept override;  // key/min change other Dominos

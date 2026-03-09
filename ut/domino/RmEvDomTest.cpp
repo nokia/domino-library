@@ -88,10 +88,21 @@ TYPED_TEST_P(RmDomTest, bugFix_recycleShallNotGrowInternalStateSpace)
     EXPECT_EQ(reusedEv + 1, freshEv) << "REQ: repeated recycle shall not inflate internal event space";
 }
 
+TYPED_TEST_P(RmDomTest, doubleRemove_rejected)
+{
+    const auto e1 = PARA_DOM->newEvent("e1");
+    EXPECT_FALSE(PARA_DOM->isRemoved(e1));
+
+    EXPECT_TRUE(PARA_DOM->rmEvOK("e1"))    << "REQ: first remove shall succeed.";
+    EXPECT_TRUE(PARA_DOM->isRemoved(e1))    << "REQ: flag is set after remove.";
+    EXPECT_FALSE(PARA_DOM->rmEvOK("e1"))   << "REQ: double-remove shall be rejected.";
+}
+
 REGISTER_TYPED_TEST_SUITE_P(RmDomTest
     , GOLD_rm_dom_resrc
     , GOLD_reuse_ev
     , bugFix_recycleShallNotGrowInternalStateSpace
+    , doubleRemove_rejected
 );
 using AnyRmDom = Types<MinRmEvDom, MaxNofreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, RmDomTest, AnyRmDom);
@@ -111,7 +122,8 @@ TYPED_TEST_P(RmDataDomTest, GOLD_rm_DataDom_resrc)
     };
     bool isDestructed;
 
-    PARA_DOM->replaceDataOK("ev", MAKE_PTR<TestData>(isDestructed));
+    EXPECT_TRUE(PARA_DOM->replaceDataOK("ev", MAKE_PTR<TestData>(isDestructed)))
+        << "REQ: set data ok";
     EXPECT_FALSE(isDestructed);
     const auto ev = PARA_DOM->getEventBy("ev");
 
@@ -145,7 +157,8 @@ TYPED_TEST_P(RmWdatDomTest, GOLD_rm_WdatDom_resrc)
     bool isDestructed;
 
     EXPECT_TRUE(PARA_DOM->wrCtrlOk("ev", true)) << "REQ: test wctrl data.";
-    PARA_DOM->wbasic_replaceDataOK("ev", MAKE_PTR<TestData>(isDestructed));
+    EXPECT_TRUE(PARA_DOM->wbasic_replaceDataOK("ev", MAKE_PTR<TestData>(isDestructed)))
+        << "REQ: set wr-data ok";
     EXPECT_FALSE(isDestructed);
     const auto ev = PARA_DOM->getEventBy("ev");
 

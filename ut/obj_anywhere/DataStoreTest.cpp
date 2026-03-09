@@ -100,19 +100,19 @@ TEST_F(DataStoreTest, GOLD_replace)
 // ***********************************************************************************************
 TEST_F(DataStoreTest, GOLD_safe_lifecycle)
 {
-    dataStore_.emplaceOK("int", MAKE_PTR<int>(7));
+    EXPECT_TRUE(dataStore_.emplaceOK("int", MAKE_PTR<int>(7))) << "REQ: emplace OK";
     auto i = dataStore_.get<int>("int");
     *(i.get()) = 8;
     EXPECT_EQ(8, *(dataStore_.get<int>("int").get())) << "REQ: shared";
     EXPECT_EQ(2u, i.use_count()) << "REQ: 2 users";
 
-    dataStore_.emplaceOK("int", nullptr);
+    EXPECT_TRUE(dataStore_.emplaceOK("int", nullptr)) << "REQ: erase OK";
     EXPECT_EQ(8, *(i.get())) << "REQ: lifecycle mgmt - not del until no usr";
     EXPECT_EQ(1u, i.use_count()) << "REQ: 1 user";
 }
 TEST_F(DataStoreTest, GOLD_safe_cast)
 {
-    dataStore_.emplaceOK("int", MAKE_PTR<int>(7));
+    EXPECT_TRUE(dataStore_.emplaceOK("int", MAKE_PTR<int>(7))) << "REQ: emplace OK";
     EXPECT_EQ(7, *(dataStore_.get<int>("int").get())) << "REQ: get origin OK";
     EXPECT_EQ(nullptr, dataStore_.get<char>("int").get()) << "REQ: ret null for invalid type (shared_ptr failed here)";
 
@@ -121,7 +121,7 @@ TEST_F(DataStoreTest, GOLD_safe_cast)
     struct D2     : public Derive { int value() const override { return 2; } };
 
     S_PTR<Base> b = MAKE_PTR<Derive>();
-    dataStore_.emplaceOK("Base", b);
+    EXPECT_TRUE(dataStore_.emplaceOK("Base", b)) << "REQ: emplace OK";
     EXPECT_EQ(1      , dataStore_.get<Base  >("Base")->value()) << "REQ: get real type";
     EXPECT_EQ(1      , dataStore_.get<Derive>("Base")->value()) << "REQ: get real type";
     EXPECT_EQ(nullptr, dataStore_.get<D2    >("Base").get   ()) << "REQ: get invalid type (shared_ptr failed here)";
@@ -146,11 +146,12 @@ TEST_F(DataStoreTest, GOLD_safe_destruct)
 
     bool isBaseOver;
     bool isDeriveOver;
-    dataStore_.emplaceOK("Base", MAKE_PTR<TestDerive>(isBaseOver, isDeriveOver));
+    EXPECT_TRUE(dataStore_.emplaceOK("Base", MAKE_PTR<TestDerive>(isBaseOver, isDeriveOver)))
+        << "REQ: emplace OK";
     EXPECT_FALSE(isBaseOver);
     EXPECT_FALSE(isDeriveOver);
 
-    dataStore_.emplaceOK("Base", nullptr);
+    EXPECT_TRUE(dataStore_.emplaceOK("Base", nullptr)) << "REQ: erase OK";
     EXPECT_TRUE(isBaseOver);
     EXPECT_TRUE(isDeriveOver);
 }

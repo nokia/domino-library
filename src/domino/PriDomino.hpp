@@ -30,7 +30,7 @@ public:
     // Extend Tile record:
     // - priority: Tile's priority to call hdlr, optional
     // -------------------------------------------------------------------------------------------
-    EMsgPriority  getPriority(Domino::Event) const noexcept override;  // key/min change other Dominos
+    [[nodiscard]] EMsgPriority  getPriority(Domino::Event) const noexcept override;  // key/min change other Dominos
     Domino::Event setPriority(const Domino::EvName&, const EMsgPriority) noexcept;
 protected:
     void rmEv_(Domino::Event aValidEv) noexcept override;

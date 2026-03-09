@@ -28,17 +28,17 @@ class DataStore
 public:
     // @brief: get a data
     // @ret: ok or nullptr
-    template<typename aDataT> S_PTR<aDataT> get(const aDataKey& aKey) const noexcept;
+    template<typename aDataT> [[nodiscard]] S_PTR<aDataT> get(const aDataKey& aKey) const noexcept;
 
     // @brief: store a new data (ie not replace but add new or rm old by aData=nullptr)
     // @ret: store ok/nok
-    bool emplaceOK(const aDataKey& aKey, S_PTR<void> aData) noexcept;
+    [[nodiscard]] bool emplaceOK(const aDataKey& aKey, S_PTR<void> aData) noexcept;
 
     // @brief: store a data (add new, replace old, or rm old by aData=nullptr)
     // @ret: store ok/nok
-    bool replaceOK(const aDataKey& aKey, S_PTR<void> aData) noexcept;
+    [[nodiscard]] bool replaceOK(const aDataKey& aKey, S_PTR<void> aData) noexcept;
 
-    size_t nData() const noexcept { return key_data_S_.size(); }
+    [[nodiscard]] size_t nData() const noexcept { return key_data_S_.size(); }
     ~DataStore() noexcept { HID("(DataStore) discard nData=" << nData()); }  // debug
 
 private:

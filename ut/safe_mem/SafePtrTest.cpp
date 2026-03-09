@@ -480,13 +480,13 @@ TEST(SafePtrTest, get_isMemSafe_afterDelOrigin)
 TEST(SafePtrTest, getPtr_isMemSafe_afterDelOrigin)
 {
     SafePtr<string> safe = make_safe<string>("hello");
-    auto get = safe.operator->();  // get ptr
+    auto get = safe.get();  // get ptr
     EXPECT_EQ("hello", *get) << "REQ: get succ";
 
     safe = nullptr;
     EXPECT_EQ("hello", *get) << "REQ: what got is still OK";
 
-    get = safe.operator->();
+    get = safe.get();
     EXPECT_EQ(nullptr, get) << "REQ: get nullptr OK";
 }
 

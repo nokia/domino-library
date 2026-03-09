@@ -54,7 +54,11 @@ TEST_F(MtInQueueTest, GOLD_sparsePush_fifo)
     {
         for (int i = 0; i < nMsg; i++)
         {
-            mt_getQ().mt_pushOK(MAKE_PTR<int>(i));
+            if (!mt_getQ().mt_pushOK(MAKE_PTR<int>(i)))
+            {
+                ADD_FAILURE() << "REQ: push OK";
+                return;
+            }
             this_thread::sleep_for(1us);  // simulate real world (sparse msg)
         }
     });
@@ -85,7 +89,11 @@ TEST_F(MtInQueueTest, GOLD_surgePush_fifo)
     {
         for (int i = 0; i < nMsg; i++)
         {
-            mt_getQ().mt_pushOK(MAKE_PTR<int>(i));  // surge push
+            if (!mt_getQ().mt_pushOK(MAKE_PTR<int>(i)))  // surge push
+            {
+                ADD_FAILURE() << "REQ: push OK";
+                return;
+            }
         }
     });
 
@@ -108,8 +116,8 @@ TEST_F(MtInQueueTest, GOLD_surgePush_fifo)
 // ***********************************************************************************************
 TEST_F(MtInQueueTest, pushWakeup_popNoBlockAndWakeup)
 {
-    mt_getQ().mt_pushOK(MAKE_PTR<string>("1st"));
-    mt_getQ().mt_pushOK(MAKE_PTR<string>("2nd"));
+    EXPECT_TRUE(mt_getQ().mt_pushOK(MAKE_PTR<string>("1st"))) << "REQ: push OK";
+    EXPECT_TRUE(mt_getQ().mt_pushOK(MAKE_PTR<string>("2nd"))) << "REQ: push OK";
     mt_getQ().backdoor().lock();
     timedwait(600);  // REQ: not blocked 10min but waked by prev push
 
@@ -131,11 +139,11 @@ TEST_F(MtInQueueTest, push_takeover_toEnsureMtSafe)
 {
     auto ele = MAKE_PTR<int>(1);
     auto e2  = ele;
-    mt_getQ().mt_pushOK<int>(move(ele));
+    EXPECT_FALSE(mt_getQ().mt_pushOK<int>(move(ele))) << "REQ: push failed since can't takeover ele";
     EXPECT_EQ(0, mt_getQ().mt_size(true)) << "REQ: push failed since can't takeover ele";
 
     e2 = nullptr;
-    mt_getQ().mt_pushOK<int>(move(ele));
+    EXPECT_TRUE(mt_getQ().mt_pushOK<int>(move(ele))) << "REQ: push succ since takeover";
     EXPECT_EQ(1, mt_getQ().mt_size(true)) << "REQ: push succ since takeover";
     EXPECT_EQ(0, ele.use_count())      << "REQ: own nothing after push";
 }
@@ -150,7 +158,7 @@ TEST_F(MtInQueueTest, popEmpty)
 }
 TEST_F(MtInQueueTest, popMismatchType)
 {
-    mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(10));
+    EXPECT_TRUE(mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(10))) << "REQ: push OK";
     EXPECT_EQ(nullptr, mt_getQ().pop<void>().get()) << "REQ: pop failed since type mismatch";
     EXPECT_EQ(1u, mt_getQ().mt_size(true)) << "REQ: pop fail = no pop - natural";
 }
@@ -162,7 +170,7 @@ TEST_F(MtInQueueTest, sizeQ_block_nonBlock)
     ASSERT_EQ(0u, mt_getQ().mt_size(true )) << "REQ: blocked init";
     ASSERT_EQ(0u, mt_getQ().mt_size(false)) << "REQ: unblocked init";
 
-    mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(1));
+    EXPECT_TRUE(mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(1))) << "REQ: push OK";
     ASSERT_EQ(1u, mt_getQ().mt_size(true )) << "REQ: inc blocked size";
     ASSERT_EQ(1u, mt_getQ().mt_size(false)) << "REQ: inc unblocked size";
 
@@ -170,12 +178,12 @@ TEST_F(MtInQueueTest, sizeQ_block_nonBlock)
     ASSERT_EQ(0u, mt_getQ().mt_size(false)) << "REQ: sizeQ can be unblocked (blocked will hang)";
     mt_getQ().backdoor().unlock();
 
-    mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(2));
+    EXPECT_TRUE(mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(2))) << "REQ: push OK";
     EXPECT_EQ(1, *mt_getQ().pop<int>().get());
     ASSERT_EQ(1u, mt_getQ().mt_size(true )) << "REQ: dec blocked size";
     ASSERT_EQ(1u, mt_getQ().mt_size(false)) << "REQ: dec unblocked size";
 
-    mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(3));
+    EXPECT_TRUE(mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(3))) << "REQ: push OK";
     ASSERT_EQ(2u, mt_getQ().mt_size(true )) << "REQ: re-inc blocked size (now 1 in cache_, 1 in queue)";
     ASSERT_EQ(2u, mt_getQ().mt_size(false)) << "REQ: re-inc unblocked size";
 
@@ -195,7 +203,7 @@ struct TestObj
 TEST_F(MtInQueueTest, destruct_right_type)
 {
     bool isDestructed;
-    mt_getQ().mt_pushOK(MAKE_PTR<TestObj>(isDestructed));
+    EXPECT_TRUE(mt_getQ().mt_pushOK(MAKE_PTR<TestObj>(isDestructed))) << "REQ: push OK";
     ASSERT_FALSE(isDestructed);
 
     mt_getQ().mt_clearElePool();
@@ -203,17 +211,18 @@ TEST_F(MtInQueueTest, destruct_right_type)
 }
 TEST_F(MtInQueueTest, clear_queue_cache_hdlr)
 {
-    mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(1));
-    mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(2));
-    mt_getQ().pop();
-    mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(3));
+    EXPECT_TRUE(mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(1))) << "REQ: push OK";
+    EXPECT_TRUE(mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(2))) << "REQ: push OK";
+    auto popped = mt_getQ().pop();
+    EXPECT_NE(nullptr, popped.first.get()) << "REQ: pop from cache";
+    EXPECT_TRUE(mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(3))) << "REQ: push OK";
 
     mt_getQ().backdoor().lock();
     ASSERT_EQ(1u, mt_getQ().mt_size(false)) << "1 in cache_";
     mt_getQ().backdoor().unlock();
     EXPECT_EQ(2u, mt_getQ().mt_size(true)) << "1 in queue_";
 
-    mt_getQ().setHdlrOK<int>([](UniPtr){});
+    EXPECT_TRUE(mt_getQ().setHdlrOK<int>([](UniPtr){})) << "REQ: set hdlr";
     EXPECT_EQ(1u, mt_getQ().nHdlr()) << "1 hdlr";
 
     mt_getQ().mt_clearElePool();
@@ -223,7 +232,7 @@ TEST_F(MtInQueueTest, clear_queue_cache_hdlr)
 TEST_F(MtInQueueTest, cov_destructor)
 {
     MtInQueue mtQ;  // cov destructor with ele left
-    mtQ.mt_pushOK<int>(MAKE_PTR<int>(1));
+    EXPECT_TRUE(mtQ.mt_pushOK<int>(MAKE_PTR<int>(1))) << "REQ: push OK";
 
     MtInQueue mtQ2;  // cov destructor without ele left
 }
@@ -235,11 +244,12 @@ TEST_F(MtInQueueTest, GOLD_handle_bothCacheAndQueue_ifPossible_withoutBlocked)
 {
     // init
     size_t nCalled = 0;
-    mt_getQ().setHdlrOK<int>([&nCalled](UniPtr){ ++nCalled; });
-    mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(1));
-    mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(1));
-    mt_getQ().pop();  // still 1 ele in cache_
-    mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(1));  // and 1 ele in queue_
+    EXPECT_TRUE(mt_getQ().setHdlrOK<int>([&nCalled](UniPtr){ ++nCalled; })) << "REQ: set hdlr";
+    EXPECT_TRUE(mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(1))) << "REQ: push OK";
+    EXPECT_TRUE(mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(1))) << "REQ: push OK";
+    auto popped = mt_getQ().pop();  // still 1 ele in cache_
+    EXPECT_NE(nullptr, popped.first.get()) << "REQ: pop from cache";
+    EXPECT_TRUE(mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(1))) << "REQ: push OK";  // and 1 ele in queue_
     EXPECT_EQ(2u, mt_getQ().mt_size(true));
 
     mt_getQ().backdoor().lock();
@@ -271,11 +281,11 @@ TEST_F(MtInQueueTest, handle_via_base)
     struct Derive : public Base { int value() override { return 2; } };
     // mt_getQ().mt_pushOK<Derive>(MAKE_PTR<Base>());  // REQ: build err to push Base to Derive
 
-    mt_getQ().mt_pushOK<Base>(MAKE_PTR<Base>());
+    EXPECT_TRUE(mt_getQ().mt_pushOK<Base>(MAKE_PTR<Base>())) << "REQ: push OK";
     EXPECT_EQ(nullptr, mt_getQ().pop<Derive>().get()) << "REQ: pop derive type is invalid";
 
     auto d = MAKE_PTR<Derive>();
-    mt_getQ().mt_pushOK<Base>(move(d));
+    EXPECT_TRUE(mt_getQ().mt_pushOK<Base>(move(d))) << "REQ: push OK";
     EXPECT_EQ(2u, mt_getQ().mt_size(true)) << "REQ: can push Derive to Base";
 
     EXPECT_TRUE(mt_getQ().setHdlrOK<Base>([](UniPtr aEle)
@@ -290,7 +300,7 @@ TEST_F(MtInQueueTest, handle_via_base)
 }
 TEST_F(MtInQueueTest, noHdlrEle_discard)
 {
-    mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(1));
+    EXPECT_TRUE(mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(1))) << "REQ: push OK";
     EXPECT_EQ(1u, mt_getQ().mt_size(true));
 
     mt_getQ().handleAllEle();
@@ -299,13 +309,13 @@ TEST_F(MtInQueueTest, noHdlrEle_discard)
 TEST_F(MtInQueueTest, hdlr_except)
 {
     int step = 0;
-    mt_getQ().setHdlrOK<int>([&step](UniPtr)
+    EXPECT_TRUE(mt_getQ().setHdlrOK<int>([&step](UniPtr)
     {
         ++step;
         throw runtime_error("MtQ hdlr except");
-    });
-    mt_getQ().mt_pushOK<int>(MAKE_PTR<int>());
-    mt_getQ().mt_pushOK<int>(MAKE_PTR<int>());
+    })) << "REQ: set hdlr";
+    EXPECT_TRUE(mt_getQ().mt_pushOK<int>(MAKE_PTR<int>())) << "REQ: push OK";
+    EXPECT_TRUE(mt_getQ().mt_pushOK<int>(MAKE_PTR<int>())) << "REQ: push OK";
     EXPECT_EQ(2u, mt_getQ().handleAllEle()) << "REQ: handled 2 elements";
     EXPECT_EQ(2, step) << "REQ: hdlr called";
 }

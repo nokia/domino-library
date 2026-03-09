@@ -49,20 +49,20 @@ public:
 
     // - aEle may not mt-safe, so here mv rather than cp
     // - except eg bad_alloc: can't recover->terminate
-    template<class aEleType> bool mt_pushOK(S_PTR<aEleType>&& aEle) noexcept;
+    template<class aEleType> [[nodiscard]] bool mt_pushOK(S_PTR<aEleType>&& aEle) noexcept;
 
     // - shall be called in main thread ONLY!!!
     // - high performance
-    ELE_TID pop() noexcept;
-    template<class aEleType> S_PTR<aEleType> pop() noexcept;
+    [[nodiscard]] ELE_TID pop() noexcept;
+    template<class aEleType> [[nodiscard]] S_PTR<aEleType> pop() noexcept;
 
-    size_t mt_size(bool canBlock) noexcept;
+    [[nodiscard]] size_t mt_size(bool canBlock) noexcept;
     void   mt_clearElePool() noexcept;
 
     // shall be called in main thread ONLY!!!
-    template<class aEleType> bool setHdlrOK(EleHdlr) noexcept;  // except eg bad_alloc: can't recover->terminate
+    template<class aEleType> [[nodiscard]] bool setHdlrOK(EleHdlr) noexcept;  // except eg bad_alloc: can't recover->terminate
     size_t handleAllEle() noexcept;
-    auto nHdlr() const noexcept { return tid_hdlr_S_.size(); }
+    [[nodiscard]] auto nHdlr() const noexcept { return tid_hdlr_S_.size(); }
     void clearHdlrPool() noexcept { tid_hdlr_S_.clear(); }
 
 private:

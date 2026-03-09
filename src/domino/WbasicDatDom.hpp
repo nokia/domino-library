@@ -25,14 +25,14 @@ class WbasicDatDom : public aDominoType
 public:
     explicit WbasicDatDom(const LogName& aUniLogName = ULN_DEFAULT) noexcept : aDominoType(aUniLogName) {}
 
-    bool isWrCtrl(const Domino::EvName&) const noexcept;
-    bool wrCtrlOk(const Domino::EvName&, const bool aNewState = true) noexcept;
+    [[nodiscard]] bool isWrCtrl(const Domino::EvName&) const noexcept;
+    [[nodiscard]] bool wrCtrlOk(const Domino::EvName&, const bool aNewState = true) noexcept;
 
-    S_PTR<void> getData(const Domino::EvName&) const noexcept override;
-    S_PTR<void> wbasic_getData(const Domino::EvName&) const noexcept;
+    [[nodiscard]] S_PTR<void> getData(const Domino::EvName&) const noexcept override;
+    [[nodiscard]] S_PTR<void> wbasic_getData(const Domino::EvName&) const noexcept;
 
-    bool replaceDataOK(const Domino::EvName&, S_PTR<void> aData = nullptr) noexcept override;
-    bool wbasic_replaceDataOK(const Domino::EvName&, S_PTR<void> aData = nullptr) noexcept;
+    [[nodiscard]] bool replaceDataOK(const Domino::EvName&, S_PTR<void> aData = nullptr) noexcept override;
+    [[nodiscard]] bool wbasic_replaceDataOK(const Domino::EvName&, S_PTR<void> aData = nullptr) noexcept;
 
 protected:
     void rmEv_(Domino::Event aValidEv) noexcept override;
@@ -141,14 +141,14 @@ bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName, const bo
 // - this func cast type so more convenient than WbasicDatDom's
 // - SafePtr is safe, while shared_ptr maybe NOT
 template<typename aDataDominoType, typename aDataType>
-S_PTR<aDataType> wbasic_getData(aDataDominoType& aDom, const Domino::EvName& aEvName) noexcept
+[[nodiscard]] S_PTR<aDataType> wbasic_getData(aDataDominoType& aDom, const Domino::EvName& aEvName) noexcept
 {
     return STATIC_PTR_CAST<aDataType>(aDom.wbasic_getData(aEvName));  // mem safe: yes SafePtr, no shared_ptr
 }
 
 // ***********************************************************************************************
 template<typename aDataDominoType, typename aDataType>
-bool wbasic_setValueOK(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData) noexcept
+[[nodiscard]] bool wbasic_setValueOK(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData) noexcept
 {
     return aDom.wbasic_replaceDataOK(aEvName, MAKE_PTR<aDataType>(aData));
 }

@@ -39,16 +39,16 @@ public:
     // @param MT_TaskEntryFN: The task to be executed asynchronously.
     // @param TaskBackFN    : The callback to be invoked in the main thread upon task completion.
     // @param UniLog        : The logger to use for this operation.
-    virtual bool newTaskOK(MT_TaskEntryFN, TaskBackFN, UniLog& = UniLog::defaultUniLog_) = 0;
+    [[nodiscard]] virtual bool newTaskOK(MT_TaskEntryFN, TaskBackFN, UniLog& = UniLog::defaultUniLog_) = 0;
 
     // @brief: Processes completed threads and invokes their callbacks.
     // @param UniLog: The logger to use for this operation.
     // @return: The number of completed tasks processed.
-    size_t hdlDoneFut(UniLog& = UniLog::defaultUniLog_) noexcept;
+    [[nodiscard]] size_t hdlDoneFut(UniLog& = UniLog::defaultUniLog_) noexcept;
 
-    auto nFut() noexcept { return fut_backFN_S_.size(); }
+    [[nodiscard]] auto nFut() noexcept { return fut_backFN_S_.size(); }
 
-    static bool mt_inMyMainTH() noexcept
+    [[nodiscard]] static bool mt_inMyMainTH() noexcept
     {
         static const auto s_myMainTH = std::this_thread::get_id();
         return s_myMainTH == std::this_thread::get_id();

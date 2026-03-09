@@ -80,15 +80,15 @@ public:
     virtual ~Domino() noexcept = default;
 
     Event newEvent(const EvName&) noexcept;
-    Event getEventBy(const EvName&) const noexcept;
-    const EvNames evNames() const noexcept { return ev_en_; }
+    [[nodiscard]] Event getEventBy(const EvName&) const noexcept;
+    [[nodiscard]] const EvNames evNames() const noexcept { return ev_en_; }
 
-    bool   state(const EvName& aEvName) const noexcept { return state(getEventBy(aEvName)); }
-    bool   state(Event aEv) const noexcept { return aEv < states_.size() ? states_[aEv] : false; }
+    [[nodiscard]] bool   state(const EvName& aEvName) const noexcept { return state(getEventBy(aEvName)); }
+    [[nodiscard]] bool   state(Event aEv) const noexcept { return aEv < states_.size() ? states_[aEv] : false; }
     size_t setState(const SimuEvents&);  // ret real changed ev#
 
     Event  setPrev(const EvName&, const SimuEvents&) noexcept;  // be careful not create eg ttue-false loop
-    EvName whyFalse(Event) const noexcept;
+    [[nodiscard]] EvName whyFalse(Event) const noexcept;
 
 protected:
     const EvName& evName_(Event aValidEv) const noexcept { return ev_en_.at(aValidEv); }

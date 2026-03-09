@@ -221,7 +221,8 @@ TYPED_TEST_P(FreeHdlrDominoTest, BugFix_noCrash_whenRmDom)
     PARA_DOM->setHdlr("e1", [&](){ this->h7(); });
     PARA_DOM->setState({{"e1", true}});
     ASSERT_TRUE(MSG_SELF->nMsg());
-    ObjAnywhere::emplaceObjOK<TypeParam>(nullptr, *this);  // req: no mem leak when rm MsgSelf with h7 in msg queue
+    EXPECT_TRUE(ObjAnywhere::emplaceObjOK<TypeParam>(nullptr, *this))
+        << "REQ: no mem leak when rm MsgSelf with h7 in msg queue";
     this->pongMsgSelf_();
 }
 

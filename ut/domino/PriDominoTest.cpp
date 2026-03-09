@@ -65,7 +65,7 @@ TYPED_TEST_P(PriDominoTest, forbid_changePri)
     PARA_DOM->setPriority("e1", EMsgPri_NORM);
     EXPECT_NE(EMsgPri_NORM, PARA_DOM->getPriority(e1)) << "REQ: forbid change pri when hdlr available";
 
-    PARA_DOM->rmOneHdlrOK("e1");
+    EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("e1")) << "REQ: rm hdlr";
     PARA_DOM->setPriority("e1", EMsgPri_NORM);  // EMsgPri_NORM is also to inc cov
     EXPECT_EQ(EMsgPri_NORM, PARA_DOM->getPriority(e1)) << "REQ: allow change pri when no hdlr";
 }

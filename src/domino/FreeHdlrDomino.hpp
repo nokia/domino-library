@@ -32,7 +32,7 @@ public:
     explicit FreeHdlrDomino(const LogName& aUniLogName = ULN_DEFAULT) noexcept : aDominoType(aUniLogName) {}
 
     Domino::Event repeatedHdlr(const Domino::EvName&, const bool isRepeated = true) noexcept;  // set false = simple rm
-    bool isRepeatHdlr(Domino::Event) const noexcept;
+    [[nodiscard]] bool isRepeatHdlr(Domino::Event) const noexcept;
 
 protected:
     void triggerHdlr_(const SharedMsgCB& aValidHdlr, Domino::Event aValidEv) noexcept override;
@@ -97,13 +97,13 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, Do
         return;
     }
 
-    HID("(FreeHdlrDom) trigger a call-then-rm msg for en=" << this->evName_(aValidEv));
     if (! this->msgSelf_)
     {
         ERR("(FreeHdlrDom) Failed!!! since MsgSelf is invalid in triggerHdlr_().");
         return;
     }
-    this->msgSelf_->newMsgOK(
+    HID("(FreeHdlrDom) trigger a call-then-rm msg for en=" << this->evName_(aValidEv));
+    if (!this->msgSelf_->newMsgOK(
         [this, aValidEv, weakHdlr = WeakMsgCB(aValidHdlr)]() noexcept {
             auto hdlr = weakHdlr.lock();  // get & validate
             if (! hdlr)
@@ -113,7 +113,11 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, Do
             catch(...) { ERR("(FreeHdlrDom) except when exe callback!!! ev=" << aValidEv); }
         },
         this->getPriority(aValidEv)
-    );
+    ))
+    {
+        ERR("(FreeHdlrDom) Failed to newMsgOK for en=" << this->evName_(aValidEv));
+        return;
+    }
 }
 
 }  // namespace

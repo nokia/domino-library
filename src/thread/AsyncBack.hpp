@@ -57,7 +57,7 @@ class AsyncBack : public ThreadBack
 public:
     // destruct-future will block till thread done (ut verified) - so default ~AsyncBack() is safe
 
-    bool newTaskOK(MT_TaskEntryFN, TaskBackFN, UniLog& = UniLog::defaultUniLog_) noexcept override;
+    [[nodiscard]] bool newTaskOK(MT_TaskEntryFN, TaskBackFN, UniLog& = UniLog::defaultUniLog_) noexcept override;
 };
 
 }  // namespace

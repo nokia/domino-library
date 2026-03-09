@@ -36,13 +36,13 @@ public:
     // - if aEvName invalid, return null
     // - not template<aDataType> so can virtual for WrDatDom
     // . & let DataDomino has little idea of read-write ctrl, simpler
-    virtual S_PTR<void> getData(const Domino::EvName&) const noexcept;
+    [[nodiscard]] virtual S_PTR<void> getData(const Domino::EvName&) const noexcept;
 
     // -------------------------------------------------------------------------------------------
     // - replace old data by new=aData if old != new
     // - for aDataType w/o default constructor!!!
     // - ret true=succ, false=fail
-    virtual bool replaceDataOK(const Domino::EvName&, S_PTR<void> = nullptr) noexcept;
+    [[nodiscard]] virtual bool replaceDataOK(const Domino::EvName&, S_PTR<void> = nullptr) noexcept;
 
 protected:
     void rmEv_(Domino::Event aValidEv) noexcept override;
@@ -72,7 +72,8 @@ bool DataDomino<aDominoType>::replaceDataOK(const Domino::EvName& aEvName, S_PTR
 template<typename aDominoType>
 void DataDomino<aDominoType>::rmEv_(Domino::Event aValidEv) noexcept
 {
-    ev_data_S_.replaceOK(aValidEv, nullptr);
+    const auto replaced = ev_data_S_.replaceOK(aValidEv, nullptr);
+    (void)replaced;
     aDominoType::rmEv_(aValidEv);
 }
 
@@ -82,14 +83,14 @@ void DataDomino<aDominoType>::rmEv_(Domino::Event aValidEv) noexcept
 // - this getData() cast type so convenient
 // - SafePtr is safe, while shared_ptr maybe NOT
 template<typename aDataDominoType, typename aDataType>
-S_PTR<aDataType> getData(aDataDominoType& aDom, const Domino::EvName& aEvName) noexcept
+[[nodiscard]] S_PTR<aDataType> getData(aDataDominoType& aDom, const Domino::EvName& aEvName) noexcept
 {
     return STATIC_PTR_CAST<aDataType>(aDom.getData(aEvName));
 }
 
 // ***********************************************************************************************
 template<typename aDataDominoType, typename aDataType>
-bool setValueOK(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData) noexcept
+[[nodiscard]] bool setValueOK(aDataDominoType& aDom, const Domino::EvName& aEvName, const aDataType& aData) noexcept
 {
     return aDom.replaceDataOK(aEvName, MAKE_PTR<aDataType>(aData));
 }

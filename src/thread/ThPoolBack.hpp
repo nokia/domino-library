@@ -44,7 +44,7 @@ public:
     ThPoolBack(ThPoolBack&&) = delete;
     ThPoolBack& operator=(ThPoolBack&&) = delete;
 
-    bool newTaskOK(MT_TaskEntryFN, TaskBackFN, UniLog& = UniLog::defaultUniLog_) noexcept override;
+    [[nodiscard]] bool newTaskOK(MT_TaskEntryFN, TaskBackFN, UniLog& = UniLog::defaultUniLog_) noexcept override;
 
 private:
     void clean_() noexcept;

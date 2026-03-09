@@ -35,7 +35,7 @@ struct MsgSelfTest : public Test, public UniLog
     MsgCB d5MsgHdlr_ = [&]()
     {
         hdlrIDs_.push(5);
-        msgSelf_->newMsgOK(d2MsgHdlr_, EMsgPri_HIGH);
+        EXPECT_TRUE(msgSelf_->newMsgOK(d2MsgHdlr_, EMsgPri_HIGH)) << "REQ: new msg OK";
     };
     MOCK_METHOD(void, d6MsgHdlr, ());
 
@@ -60,8 +60,8 @@ TEST_F(MsgSelfTest, GOLD_sendMsg)
 }
 TEST_F(MsgSelfTest, dupSendMsg)
 {
-    msgSelf_->newMsgOK(d1MsgHdlr_);
-    msgSelf_->newMsgOK(d1MsgHdlr_);  // dup
+    EXPECT_TRUE(msgSelf_->newMsgOK(d1MsgHdlr_)) << "REQ: new msg OK";
+    EXPECT_TRUE(msgSelf_->newMsgOK(d1MsgHdlr_)) << "REQ: new msg OK";  // dup
     EXPECT_EQ(2u, msgSelf_->nMsg(EMsgPri_NORM));
     EXPECT_EQ(queue<int>(), hdlrIDs_);
 
@@ -71,13 +71,13 @@ TEST_F(MsgSelfTest, dupSendMsg)
 }
 TEST_F(MsgSelfTest, GOLD_loopback_handleAll_butOneByOneLowPri)
 {
-    msgSelf_->newMsgOK(d1MsgHdlr_);
-    msgSelf_->newMsgOK(d1MsgHdlr_);
-    msgSelf_->newMsgOK(d1MsgHdlr_, EMsgPri_HIGH);
-    msgSelf_->newMsgOK(d1MsgHdlr_, EMsgPri_HIGH);
-    msgSelf_->newMsgOK(d1MsgHdlr_, EMsgPri_LOW);
-    msgSelf_->newMsgOK(d1MsgHdlr_, EMsgPri_LOW);
-    msgSelf_->newMsgOK(d1MsgHdlr_, EMsgPri_LOW);
+    EXPECT_TRUE(msgSelf_->newMsgOK(d1MsgHdlr_)) << "REQ: new msg OK";
+    EXPECT_TRUE(msgSelf_->newMsgOK(d1MsgHdlr_)) << "REQ: new msg OK";
+    EXPECT_TRUE(msgSelf_->newMsgOK(d1MsgHdlr_, EMsgPri_HIGH)) << "REQ: new msg OK";
+    EXPECT_TRUE(msgSelf_->newMsgOK(d1MsgHdlr_, EMsgPri_HIGH)) << "REQ: new msg OK";
+    EXPECT_TRUE(msgSelf_->newMsgOK(d1MsgHdlr_, EMsgPri_LOW)) << "REQ: new msg OK";
+    EXPECT_TRUE(msgSelf_->newMsgOK(d1MsgHdlr_, EMsgPri_LOW)) << "REQ: new msg OK";
+    EXPECT_TRUE(msgSelf_->newMsgOK(d1MsgHdlr_, EMsgPri_LOW)) << "REQ: new msg OK";
     EXPECT_EQ(2u, msgSelf_->nMsg(EMsgPri_NORM));
     EXPECT_EQ(2u, msgSelf_->nMsg(EMsgPri_HIGH));
     EXPECT_EQ(3u, msgSelf_->nMsg(EMsgPri_LOW));
@@ -101,28 +101,28 @@ TEST_F(MsgSelfTest, GOLD_loopback_handleAll_butOneByOneLowPri)
 // ***********************************************************************************************
 TEST_F(MsgSelfTest, GOLD_highPriority_first)
 {
-    msgSelf_->newMsgOK(d1MsgHdlr_);
-    msgSelf_->newMsgOK(d2MsgHdlr_, EMsgPri_HIGH);
+    EXPECT_TRUE(msgSelf_->newMsgOK(d1MsgHdlr_)) << "REQ: new msg OK";
+    EXPECT_TRUE(msgSelf_->newMsgOK(d2MsgHdlr_, EMsgPri_HIGH)) << "REQ: new msg OK";
 
     msgSelf_->handleAllMsg();
     EXPECT_EQ(queue<int>({2, 1}), hdlrIDs_);
 }
 TEST_F(MsgSelfTest, GOLD_samePriority_fifo)
 {
-    msgSelf_->newMsgOK(d1MsgHdlr_);
-    msgSelf_->newMsgOK(d2MsgHdlr_, EMsgPri_HIGH);
-    msgSelf_->newMsgOK(d3MsgHdlr_);
-    msgSelf_->newMsgOK(d4MsgHdlr_, EMsgPri_HIGH);
+    EXPECT_TRUE(msgSelf_->newMsgOK(d1MsgHdlr_)) << "REQ: new msg OK";
+    EXPECT_TRUE(msgSelf_->newMsgOK(d2MsgHdlr_, EMsgPri_HIGH)) << "REQ: new msg OK";
+    EXPECT_TRUE(msgSelf_->newMsgOK(d3MsgHdlr_)) << "REQ: new msg OK";
+    EXPECT_TRUE(msgSelf_->newMsgOK(d4MsgHdlr_, EMsgPri_HIGH)) << "REQ: new msg OK";
 
     msgSelf_->handleAllMsg();
     EXPECT_EQ(queue<int>({2, 4, 1, 3}), hdlrIDs_);
 }
 TEST_F(MsgSelfTest, newHighPri_first)
 {
-    msgSelf_->newMsgOK(d1MsgHdlr_);
-    msgSelf_->newMsgOK(d5MsgHdlr_, EMsgPri_HIGH);
-    msgSelf_->newMsgOK(d3MsgHdlr_);
-    msgSelf_->newMsgOK(d4MsgHdlr_, EMsgPri_HIGH);
+    EXPECT_TRUE(msgSelf_->newMsgOK(d1MsgHdlr_)) << "REQ: new msg OK";
+    EXPECT_TRUE(msgSelf_->newMsgOK(d5MsgHdlr_, EMsgPri_HIGH)) << "REQ: new msg OK";
+    EXPECT_TRUE(msgSelf_->newMsgOK(d3MsgHdlr_)) << "REQ: new msg OK";
+    EXPECT_TRUE(msgSelf_->newMsgOK(d4MsgHdlr_, EMsgPri_HIGH)) << "REQ: new msg OK";
 
     msgSelf_->handleAllMsg();
     EXPECT_EQ(queue<int>({5, 4, 2, 1, 3}), hdlrIDs_);
@@ -133,7 +133,7 @@ TEST_F(MsgSelfTest, newHighPri_first)
 TEST_F(MsgSelfTest, destructMsgSelf_noCallback_noMemLeak_noCrash)  // mem leak is checked by valgrind upon UT
 {
     EXPECT_CALL(*this, d6MsgHdlr()).Times(0);  // REQ: no call
-    msgSelf_->newMsgOK([&](){ this->d6MsgHdlr(); });
+    EXPECT_TRUE(msgSelf_->newMsgOK([&](){ this->d6MsgHdlr(); })) << "REQ: new msg OK";
     EXPECT_EQ(1u, msgSelf_->nMsg(EMsgPri_NORM));
 
     msgSelf_.reset();  // rm msgSelf
@@ -145,7 +145,7 @@ TEST_F(MsgSelfTest, destructMsgSelf_noCallback_noMemLeak_noCrash)  // mem leak i
 TEST_F(MsgSelfTest, wait_notify)
 {
     auto start = high_resolution_clock::now();
-    msgSelf_->newMsgOK(d1MsgHdlr_);
+    EXPECT_TRUE(msgSelf_->newMsgOK(d1MsgHdlr_)) << "REQ: new msg OK";
     timedwait(0, 100);  // REQ: 1 msg will wakeup MT_Semaphore::timedwait()
     auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - start);
     EXPECT_LT(dur.count(), 100) << "REQ: newMsgOK() shall notify instead of timeout";

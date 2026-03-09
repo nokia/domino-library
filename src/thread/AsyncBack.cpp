@@ -31,7 +31,7 @@ bool AsyncBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog
                     catch(...) {}  // continue following
                     mt_aEntryFN = nullptr;  // early release captured function
 
-                    mt_nDoneFut.fetch_add(1, std::memory_order_relaxed);  // fastest +1
+                    mt_nDoneFut.fetch_add(1, std::memory_order_release);  // sync with consumer's acquire
                     mt_pingMainTH();
                     return ret;
                 }

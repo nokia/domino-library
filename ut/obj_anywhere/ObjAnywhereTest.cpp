@@ -129,7 +129,7 @@ TEST_F(ObjAnywhereTest, ignore_dup_init)
 {
     ObjAnywhere::init(*this);
     auto pChar = MAKE_PTR<char>('a');
-    ObjAnywhere::emplaceObjOK(pChar, *this);
+    EXPECT_TRUE(ObjAnywhere::emplaceObjOK(pChar, *this)) << "REQ: set OK";
     ObjAnywhere::init(*this);  // req: ignore dup init
     EXPECT_EQ(pChar.get(), ObjAnywhere::getObj<char>().get());
     ObjAnywhere::deinit();

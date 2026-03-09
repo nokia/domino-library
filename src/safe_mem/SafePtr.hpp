@@ -68,14 +68,14 @@ public:
     // safe usage: convenient(compatible shared_ptr), equivalent & min
     // . ret shared_ptr is safer than T* (but not safest since to call T's func easily)
     // . no operator*() since T& is unsafe
-    std::shared_ptr<T> get() const noexcept { return pT_; }
-    const std::shared_ptr<T>& operator->() const noexcept { return pT_; }  // convenient, zero-copy
+    [[nodiscard]] std::shared_ptr<T> get() const noexcept { return pT_; }
+    const std::shared_ptr<T>& operator->() const noexcept { assert(pT_); return pT_; }  // convenient, zero-copy
     explicit operator bool() const noexcept { return pT_ != nullptr; }
-    auto use_count() const noexcept { return pT_.use_count(); }
+    [[nodiscard]] auto use_count() const noexcept { return pT_.use_count(); }
 
     // most for debug
-    auto realType() const noexcept { return realType_; }  // ret cp is safer than ref
-    auto lastType() const noexcept { return lastType_; }
+    [[nodiscard]] auto realType() const noexcept { return realType_; }  // ret cp is safer than ref
+    [[nodiscard]] auto lastType() const noexcept { return lastType_; }
 
 private:
     template<typename To> std::type_index genLastType_() const noexcept;
@@ -208,17 +208,17 @@ template<typename U, typename... ConstructArgs>
 template<typename T, typename U>
 bool operator==(const SafePtr<T>& lhs, const SafePtr<U>& rhs) noexcept
 {
-    return lhs.operator->() == rhs.operator->();
+    return lhs.get() == rhs.get();
 }
 template<typename T, typename U>
 bool operator!=(const SafePtr<T>& lhs, const SafePtr<U>& rhs) noexcept
 {
-    return lhs.operator->() != rhs.operator->();
+    return lhs.get() != rhs.get();
 }
 template<typename T, typename U>
 bool operator<(const SafePtr<T>& lhs, const SafePtr<U>& rhs) noexcept
 {
-    return lhs.operator->() < rhs.operator->();
+    return lhs.get() < rhs.get();
 }
 
 // ***********************************************************************************************
@@ -244,8 +244,8 @@ class SafeWeak
 {
 public:
     SafeWeak(const SafePtr<T>& aSafeFrom) noexcept;
-    SafePtr<T> lock() const noexcept;
-    bool expired() const noexcept { return pT_.expired(); }
+    [[nodiscard]] SafePtr<T> lock() const noexcept;
+    [[nodiscard]] bool expired() const noexcept { return pT_.expired(); }
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -279,7 +279,7 @@ SafePtr<T> SafeWeak<T>::lock() const noexcept
 template<typename T>
 struct std::hash<rlib::SafePtr<T>>
 {
-    auto operator()(const rlib::SafePtr<T>& aSafePtr) const { return hash<shared_ptr<T>>()(aSafePtr.operator->()); }
+    auto operator()(const rlib::SafePtr<T>& aSafePtr) const { return hash<shared_ptr<T>>()(aSafePtr.get()); }
 };
 
 // ***********************************************************************************************

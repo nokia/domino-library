@@ -40,12 +40,12 @@ class HdlrDomino : public aDominoType
 {
 public:
     explicit HdlrDomino(const LogName& aUniLogName = ULN_DEFAULT) noexcept : aDominoType(aUniLogName) {}
-    bool setMsgSelfOK(const S_PTR<MsgSelf>& aMsgSelf) noexcept;  // replace default; safe: yes SafePtr, no shared_ptr
+    [[nodiscard]] bool setMsgSelfOK(const S_PTR<MsgSelf>& aMsgSelf) noexcept;  // replace default; safe: yes SafePtr, no shared_ptr
 
     Domino::Event setHdlr(const Domino::EvName&, MsgCB aHdlr) noexcept;
-    bool rmOneHdlrOK(const Domino::EvName&) noexcept;  // rm by EvName
+    [[nodiscard]] bool rmOneHdlrOK(const Domino::EvName&) noexcept;  // rm by EvName
     void forceAllHdlr(const Domino::EvName& aEN) noexcept { effect_(this->getEventBy(aEN)); }
-    virtual size_t nHdlr(const Domino::EvName& aEN) const noexcept { return ev_hdlr_S_.count(this->getEventBy(aEN)); }
+    [[nodiscard]] virtual size_t nHdlr(const Domino::EvName& aEN) const noexcept { return ev_hdlr_S_.count(this->getEventBy(aEN)); }
 
     // -------------------------------------------------------------------------------------------
     // - add a new ev=aAliasEN to store aHdlr (aAliasEN's true prev is aHostEN)
@@ -55,7 +55,7 @@ public:
     Domino::Event multiHdlrByAliasEv(const Domino::EvName& aAliasEN, MsgCB aHdlr,
         const Domino::EvName& aHostEN) noexcept;
 
-    virtual EMsgPriority getPriority(Domino::Event) const noexcept { return EMsgPri_NORM; }
+    [[nodiscard]] virtual EMsgPriority getPriority(Domino::Event) const noexcept { return EMsgPri_NORM; }
 
 protected:
     void effect_(Domino::Event aEv) noexcept override;
@@ -211,7 +211,7 @@ void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, Domino
         return;
     }
     HID("(HdlrDom) trigger a new msg.");
-    msgSelf_->newMsgOK(
+    if (!msgSelf_->newMsgOK(
         [weakMsgCB = WeakMsgCB(aValidHdlr)]() mutable noexcept  // WeakMsgCB is to support rm hdlr
         {
             if (auto cb = weakMsgCB.lock()) {
@@ -220,7 +220,11 @@ void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, Domino
             }
         },
         getPriority(aValidEv)
-    );
+    ))
+    {
+        ERR("(HdlrDom) Failed to newMsgOK for en=" << this->evName_(aValidEv));
+        return;
+    }
 }
 
 }  // namespace

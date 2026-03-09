@@ -110,7 +110,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_entryFnResult_toBackFn_withoutTimedWait)
 TEST_F(THREAD_BACK_TEST, canHandle_someThreadDone_whileOtherRunning)
 {
     atomic<bool> canEnd(false);
-    threadBack_.newTaskOK(
+    EXPECT_TRUE(threadBack_.newTaskOK(
         // MT_TaskEntryFN
         [&canEnd]()
         {
@@ -120,9 +120,9 @@ TEST_F(THREAD_BACK_TEST, canHandle_someThreadDone_whileOtherRunning)
         },
         // TaskBackFN
         [](SafePtr<void>) {}
-    );
+    )) << "REQ: newTaskOK";
 
-    threadBack_.newTaskOK(
+    EXPECT_TRUE(threadBack_.newTaskOK(
         // MT_TaskEntryFN
         []()
         {
@@ -130,7 +130,7 @@ TEST_F(THREAD_BACK_TEST, canHandle_someThreadDone_whileOtherRunning)
         },
         // TaskBackFN
         [](SafePtr<void>) {}
-    );
+    )) << "REQ: newTaskOK";
 
     while (threadBack_.hdlDoneFut() == 0)
     {
@@ -151,10 +151,10 @@ TEST_F(THREAD_BACK_TEST, canHandle_someThreadDone_whileOtherRunning)
 TEST_F(THREAD_BACK_TEST, GOLD_entryFn_notify_insteadof_timeout)
 {
     auto start = high_resolution_clock::now();
-    threadBack_.newTaskOK(
+    EXPECT_TRUE(threadBack_.newTaskOK(
         [] { return make_safe<bool>(true); },  // entryFn
         [](SafePtr<void>) {}  // backFn
-    );
+    )) << "REQ: newTaskOK";
     timedwait(0, 500'000'000);  // long timer to ensure thread done beforehand
     auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - start);
     EXPECT_LT(dur.count(), 500) << "REQ: entryFn end shall notify g_semToMainTH instead of timeout";
@@ -203,7 +203,7 @@ TEST_F(THREAD_BACK_TEST, invalid_msgSelf_entryFN_backFN)
     ));
 
     ObjAnywhere::init();
-    ObjAnywhere::emplaceObjOK(msgSelf_);  // valid MSG_SELF
+    EXPECT_TRUE(ObjAnywhere::emplaceObjOK(msgSelf_)) << "REQ: valid MSG_SELF";
     EXPECT_FALSE(threadBack_.newTaskOK(
         [] { return make_safe<bool>(true); },  // entryFn
         viaMsgSelf(nullptr)  // invalid since backFn==nullptr
@@ -219,7 +219,7 @@ TEST_F(THREAD_BACK_TEST, invalid_msgSelf_entryFN_backFN)
 TEST_F(THREAD_BACK_TEST, bugFix_nDoneFut_before_futureReady)
 {
     atomic<bool> canEnd(false);
-    threadBack_.newTaskOK(
+    EXPECT_TRUE(threadBack_.newTaskOK(
         // MT_TaskEntryFN
         [&canEnd]()
         {
@@ -229,7 +229,7 @@ TEST_F(THREAD_BACK_TEST, bugFix_nDoneFut_before_futureReady)
         },
         // TaskBackFN
         [](SafePtr<void>) {}
-    );
+    )) << "REQ: newTaskOK";
 
     threadBack_.mt_nDoneFut()++;  // force +1 before future ready, threadBack_ shall not crash
 
@@ -247,36 +247,36 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
 
     // setup msg handler table for mt_getQ()
     EXPECT_EQ(0u, mt_getQ().nHdlr())  << "REQ: init no hdlr";
-    mt_getQ().setHdlrOK<string>([this, &cb_info](UniPtr aMsg)
+    EXPECT_TRUE(mt_getQ().setHdlrOK<string>([this, &cb_info](UniPtr aMsg)
     {
-        msgSelf_->newMsgOK(  // REQ: via MsgSelf
+        EXPECT_TRUE(msgSelf_->newMsgOK(  // REQ: via MsgSelf
             [aMsg, &cb_info]
             {
                 EXPECT_EQ("a", *(STATIC_PTR_CAST<string>(aMsg).get()));
                 cb_info.emplace("REQ: a's Q hdlr via MsgSelf");
             }
-        );
-    });
+        )) << "REQ: enqueue msg";
+    })) << "REQ: set hdlr";
     EXPECT_EQ(1u, mt_getQ().nHdlr())  << "REQ: count hdlr";
-    mt_getQ().setHdlrOK<int>([this, &cb_info](UniPtr aMsg)
+    EXPECT_TRUE(mt_getQ().setHdlrOK<int>([this, &cb_info](UniPtr aMsg)
     {
-        msgSelf_->newMsgOK(
+        EXPECT_TRUE(msgSelf_->newMsgOK(
             [aMsg, &cb_info]
             {
                 EXPECT_EQ(2, *(STATIC_PTR_CAST<int>(aMsg).get()));
                 cb_info.emplace("REQ: 2's Q hdlr via MsgSelf");
             }
-        );
-    });
+        )) << "REQ: enqueue msg";
+    })) << "REQ: set hdlr";
     EXPECT_EQ(2u, mt_getQ().nHdlr())  << "REQ: count hdlr";
 
     // push
     ObjAnywhere::init();
-    ObjAnywhere::emplaceObjOK(msgSelf_);  // valid MSG_SELF
-    threadBack_.newTaskOK(
+    EXPECT_TRUE(ObjAnywhere::emplaceObjOK(msgSelf_)) << "REQ: valid MSG_SELF";
+    EXPECT_TRUE(threadBack_.newTaskOK(
         // entryFn
         [] {
-            mt_getQ().mt_pushOK(MAKE_PTR<string>("a"));
+            EXPECT_TRUE(mt_getQ().mt_pushOK(MAKE_PTR<string>("a"))) << "REQ: push OK";
             return make_safe<bool>(true);
         },
         // backFn
@@ -287,11 +287,11 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
                 cb_info.emplace("REQ: a's backFn via MsgSelf");
             }
         )
-    );
-    threadBack_.newTaskOK(
+    )) << "REQ: newTaskOK";
+    EXPECT_TRUE(threadBack_.newTaskOK(
         // entryFn
         [] {
-            mt_getQ().mt_pushOK(MAKE_PTR<int>(2));
+            EXPECT_TRUE(mt_getQ().mt_pushOK(MAKE_PTR<int>(2))) << "REQ: push OK";
             return make_safe<bool>(true);
         },
         // backFn
@@ -302,7 +302,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
                 cb_info.emplace("REQ: 2's backFn via MsgSelf");
             }
         )
-    );
+    )) << "REQ: newTaskOK";
 
     // simulate main()
     const set<string> expect = {"REQ: a's Q hdlr via MsgSelf", "REQ: a's backFn via MsgSelf",
@@ -311,7 +311,8 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     {
         // handle all done Thread
         INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << threadBack_.nFut());
-        threadBack_.hdlDoneFut();
+        auto handled = threadBack_.hdlDoneFut();
+        (void)handled;
 
         // handle all existing in mt_getQ()
         INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << threadBack_.nFut());
