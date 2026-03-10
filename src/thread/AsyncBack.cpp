@@ -19,23 +19,10 @@ bool AsyncBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog
 
         // create new thread
         // - impossible thread alive but AsyncBack destructed, since ~AsyncBack() will wait all fut over
+        // - &mt_nDoneFut is better than "this" that can access other non-MT-safe member
         fut_backFN_S_.emplace_back(
-            async(
-                launch::async,
-                // - must cp mt_aEntryFN than ref, otherwise dead loop
-                // - &mt_nDoneFut is better than "this" that can access other non-MT-safe member
-                [mt_aEntryFN = std::move(mt_aEntryFN), &mt_nDoneFut = mt_nDoneFut_]() mutable noexcept  // thread main
-                {
-                    SafePtr ret;
-                    try { ret = mt_aEntryFN(); }
-                    catch(...) {}  // continue following
-                    mt_aEntryFN = nullptr;  // early release captured function
-
-                    mt_nDoneFut.fetch_add(1, std::memory_order_release);  // sync with consumer's acquire
-                    mt_pingMainTH();
-                    return ret;
-                }
-            ),
+            async(launch::async, &AsyncBack::mt_thMain_,
+                std::move(mt_aEntryFN), std::ref(mt_nDoneFut_)),
             std::move(aBackFN)
         );
         return true;
@@ -43,6 +30,19 @@ bool AsyncBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog
         ERR("(AsyncBack) exception to create new thread!!!");
         return false;
     }
+}  // newTaskOK
+
+// ***********************************************************************************************
+SafePtr<void> AsyncBack::mt_thMain_(MT_TaskEntryFN mt_aEntryFN, std::atomic<size_t>& mt_nDoneFut) noexcept
+{
+    SafePtr ret;
+    try { ret = mt_aEntryFN(); }
+    catch(...) {}  // continue following
+    mt_aEntryFN = nullptr;  // early release captured function
+
+    mt_nDoneFut.fetch_add(1, std::memory_order_release);  // sync with consumer's acquire
+    mt_pingMainTH();
+    return ret;
 }
 
 }  // namespace

@@ -56,8 +56,10 @@ public:
 
 protected:
     // -------------------------------------------------------------------------------------------
-    StoreThreadBack      fut_backFN_S_;     // must save future till thread end
+    // mt_nDoneFut_ must be declared BEFORE fut_backFN_S_ so it is destroyed AFTER futures
+    // (async thread may call mt_nDoneFut_.fetch_add() while future destructor blocks)
     std::atomic<size_t>  mt_nDoneFut_ = 0;  // improve main thread to search done thread(s)
+    StoreThreadBack      fut_backFN_S_;     // must save future till thread end
 
     // -------------------------------------------------------------------------------------------
 #ifdef IN_GTEST

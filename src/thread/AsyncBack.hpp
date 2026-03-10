@@ -58,6 +58,9 @@ public:
     // destruct-future will block till thread done (ut verified) - so default ~AsyncBack() is safe
 
     [[nodiscard]] bool newTaskOK(MT_TaskEntryFN, TaskBackFN, UniLog& = UniLog::defaultUniLog_) noexcept override;
+
+private:
+    static SafePtr<void> mt_thMain_(MT_TaskEntryFN, std::atomic<size_t>&) noexcept;  // runs in new thread
 };
 
 }  // namespace
