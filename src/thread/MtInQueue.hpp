@@ -56,7 +56,7 @@ public:
     [[nodiscard]] ELE_TID pop() noexcept;
     template<class aEleType> [[nodiscard]] S_PTR<aEleType> pop() noexcept;
 
-    [[nodiscard]] size_t mt_size(bool canBlock) noexcept;
+    [[nodiscard]] size_t mt_size(bool canBlock) const noexcept;
     void   mt_clearElePool() noexcept;
 
     // shall be called in main thread ONLY!!!
@@ -72,7 +72,7 @@ private:
     // -------------------------------------------------------------------------------------------
     std::deque<ELE_TID> mt_queue_;  // most suitable container
     std::deque<ELE_TID> cache_;  // main-thread use ONLY (so no mutex protect)
-    std::mutex mutex_;
+    mutable std::mutex mutex_;
 
     std::unordered_map<std::type_index, EleHdlr> tid_hdlr_S_;
 

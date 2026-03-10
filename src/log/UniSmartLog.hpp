@@ -42,7 +42,7 @@ public:
 
     SmartLog& oneLog() const noexcept;  // for logging; ret ref is not mem-safe when use the ref after del
     SmartLog& operator()() const noexcept { return oneLog(); }  // not mem-safe as oneLog()
-    void needLog() noexcept { smartLog_->needLog(); }  // flag to dump
+    void needLog() const noexcept { smartLog_->needLog(); }  // flag to dump
     const LogName& uniLogName() const noexcept { return uniLogName_; }
 
     static size_t nLog() noexcept { return name_log_S_.size(); }

@@ -93,7 +93,7 @@ void MtInQueue::mt_clearElePool() noexcept
 }
 
 // ***********************************************************************************************
-size_t MtInQueue::mt_size(bool canBlock) noexcept
+size_t MtInQueue::mt_size(bool canBlock) const noexcept
 {
     if (canBlock)
     {
