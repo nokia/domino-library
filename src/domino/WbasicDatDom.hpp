@@ -122,7 +122,7 @@ bool WbasicDatDom<aDominoType>::wrCtrlOk(const Domino::EvName& aEvName, const bo
     const auto ev = this->newEvent(aEvName);
     if (aDominoType::getData_(ev))
     {
-        WRN("(WbasicDatDom) !!! Failed to change wrCtrl when aleady own data(out-of-ctrl), EvName=" << aEvName);
+        WRN("(WbasicDatDom) !!! Failed to change wrCtrl when already own data(out-of-ctrl), EvName=" << aEvName);
         return false;
     }
 

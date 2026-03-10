@@ -91,7 +91,7 @@ inline void cout_ascii(const std::string& aStr) noexcept
                 preC = c;
             }
         }
-        std::cout << std::dec << std::endl;
+        std::cout << buf << std::dec << std::endl;
     }
     catch(...) {}
 }

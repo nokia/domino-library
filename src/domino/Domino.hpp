@@ -17,7 +17,7 @@
 //   . each event-hdlr is called only when event state F->T
 //   . 1-go domino is like SW upgrade - 1-go then discard, next will use new domino
 //     . n-go domino is like IM - repeat working till reboot
-//     . after 024-03-19 domino supports n-go
+//     . after 2024-03-19 domino supports n-go
 //   . setState() only works on tiles without prev_ (chain head) - safe & simple
 //   . tiles form DAG (directed acyclic graph), cycle links forbidden
 //

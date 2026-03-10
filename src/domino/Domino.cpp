@@ -247,7 +247,7 @@ size_t Domino::setState(const SimuEvents& aSimuEvents)
         }
     }
 
-    // decude next(s)
+    // deduce next(s)
     for (auto&& curEV : simuEVs) {
         for (bool branch : {true, false}) {
             for (auto&& nextEV : findPeerEVs(curEV, next_[branch])) {

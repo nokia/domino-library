@@ -65,7 +65,7 @@ Domino::Event FreeHdlrDomino<aDominoType>::repeatedHdlr(const Domino::EvName& aE
     // validate
     if (this->nHdlr(aEvName) > 0)
     {
-        ERR("(PriDom) FAILED since exist hdlr(s) in en=" << aEvName << ", avoid complex/mislead result");
+        ERR("(FreeHdlrDom) FAILED since exist hdlr(s) in en=" << aEvName << ", avoid complex/mislead result");
         return Domino::D_EVENT_FAILED_RET;
     }
 
