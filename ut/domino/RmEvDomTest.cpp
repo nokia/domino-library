@@ -312,7 +312,7 @@ TYPED_TEST_P(RmMhdlrDomTest, GOLD_rm_MhdlrDom_resrc)
 REGISTER_TYPED_TEST_SUITE_P(RmMhdlrDomTest
     , GOLD_rm_MhdlrDom_resrc
 );
-using AnyRmMhdlrDom = Types<MaxNofreeDom>;
+using AnyRmMhdlrDom = Types<MaxNofreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, RmMhdlrDomTest, AnyRmMhdlrDom);
 
 }  // namespace
