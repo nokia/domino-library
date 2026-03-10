@@ -66,6 +66,14 @@ TEST_F(ObjAnywhereTest, deinitThenSet_getNull)
     EXPECT_FALSE(ObjAnywhere::emplaceObjOK(MAKE_PTR<int>(1234), *this)) << "REQ: no init so set fail";
     EXPECT_EQ(nullptr, ObjAnywhere::getObj<int>().get()) << "REQ: get null";
 }
+TEST_F(ObjAnywhereTest, emptyName_getNull)
+{
+    ObjAnywhere::init(*this);
+    EXPECT_TRUE(ObjAnywhere::emplaceObjOK(MAKE_PTR<int>(42), *this, "validName"));
+    EXPECT_EQ(nullptr, ObjAnywhere::getObj<int>("").get()) << "REQ: empty name -> null";
+    EXPECT_EQ(42, *(ObjAnywhere::getObj<int>("validName").get())) << "REQ: valid name still works";
+    ObjAnywhere::deinit();
+}
 
 #define CORRECT_DESTRUCT
 // ***********************************************************************************************

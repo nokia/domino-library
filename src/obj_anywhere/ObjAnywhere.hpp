@@ -75,6 +75,11 @@ private:
 template<typename aObjType>
 S_PTR<aObjType> ObjAnywhere::getObj(const ObjName& aObjName) noexcept
 {
+    if (aObjName.empty())
+    {
+        WRN("(ObjAnywhere) empty ObjName");
+        return nullptr;
+    }
     return isInit()
         ? name_obj_S_->get<aObjType>(aObjName)
         : nullptr;
