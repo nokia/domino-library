@@ -47,6 +47,7 @@ public:
     [[nodiscard]] bool newTaskOK(MT_TaskEntryFN, TaskBackFN, UniLog& = UniLog::defaultUniLog_) noexcept override;
 
 private:
+    void mt_threadMain_() noexcept;  // runs in each pool thread
     void clean_() noexcept;
     // -------------------------------------------------------------------------------------------
     std::vector<std::thread>  thPool_;

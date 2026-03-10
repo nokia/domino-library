@@ -24,40 +24,41 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
         // create threads
         thPool_.reserve(aMaxThread);  // not construct any thread
         for (size_t i = 0; i < aMaxThread; ++i)
-        {
-            thPool_.emplace_back([this]() noexcept
-            {   // thread main()
-                for (;;)
-                {
-                    packaged_task<SafePtr<void>()> task;
-                    {
-                        // - lock to prevent new task/notif until my mt_qCv_ sleep/wait-notif (ensure not loss notif)
-                        // - lock to prevent other thread steal task
-                        unique_lock<mutex> lock(this->mt_mutex_);
-                        this->mt_qCv_.wait(lock,
-                            [this]() noexcept { return this->mt_stopAllTH_ || !this->mt_taskQ_.empty(); });
-
-                        if (this->mt_stopAllTH_)
-                            return;
-                        // mt_qCv_.wait(): lock then check predicate, so no need check mt_taskQ_.empty() here
-
-                        task = move(this->mt_taskQ_.front());
-                        this->mt_taskQ_.pop_front();
-                    }
-
-                    // - thread can continue when task() throw
-                    // - other excepts (eg bad_alloc) are rare & hard-recover
-                    task();  // packaged_task saves exception in its future
-
-                    // no lock so can only use MT_safe part in "this"
-                    this->mt_nDoneFut_.fetch_add(1, std::memory_order_release);
-                    mt_pingMainTH();  // always ping, or may wait long under low load
-                }
-            });  // thread main()
-        }  // for-loop to create threads
+            thPool_.emplace_back([this]() noexcept { mt_threadMain_(); });
     } catch(...) {  // ut can't cover this branch; rare but safer
         clean_();
         throw;  // break constructor
+    }
+}
+
+// ***********************************************************************************************
+void ThPoolBack::mt_threadMain_() noexcept
+{
+    for (;;)
+    {
+        packaged_task<SafePtr<void>()> task;
+        {
+            // - lock to prevent new task/notif until my mt_qCv_ sleep/wait-notif (ensure not loss notif)
+            // - lock to prevent other thread steal task
+            unique_lock<mutex> lock(mt_mutex_);
+            mt_qCv_.wait(lock,
+                [this]() noexcept { return mt_stopAllTH_ || !mt_taskQ_.empty(); });
+
+            if (mt_stopAllTH_)
+                return;
+            // mt_qCv_.wait(): lock then check predicate, so no need check mt_taskQ_.empty() here
+
+            task = move(mt_taskQ_.front());
+            mt_taskQ_.pop_front();
+        }
+
+        // - thread can continue when task() throw
+        // - other excepts (eg bad_alloc) are rare & hard-recover
+        task();  // packaged_task saves exception in its future
+
+        // no lock so can only use MT_safe part in "this"
+        mt_nDoneFut_.fetch_add(1, std::memory_order_release);
+        mt_pingMainTH();  // always ping, or may wait long under low load
     }
 }
 
