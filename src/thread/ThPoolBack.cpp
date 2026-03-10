@@ -24,7 +24,7 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
         // create threads
         thPool_.reserve(aMaxThread);  // not construct any thread
         for (size_t i = 0; i < aMaxThread; ++i)
-            thPool_.emplace_back([this]() noexcept { mt_threadMain_(); });
+            thPool_.emplace_back(&ThPoolBack::mt_threadMain_, this);
     } catch(...) {  // ut can't cover this branch; rare but safer
         clean_();
         throw;  // break constructor
