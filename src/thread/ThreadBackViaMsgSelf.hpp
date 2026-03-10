@@ -21,6 +21,15 @@
 namespace rlib
 {
 // ***********************************************************************************************
+// ***********************************************************************************************
+// - deferred by MsgSelf: aBackFN runs in main thread via MsgSelf queue, not directly
+inline void cb_backFN(const TaskBackFN& aBackFN, const S_PTR<MsgSelf>& aMsgSelf,
+    EMsgPriority aPri, SafePtr<void> aRet) noexcept
+{
+    if (!aMsgSelf->newMsgOK(bind(aBackFN, std::move(aRet)), aPri))
+        ERR("(viaMsgSelf) Failed to newMsgOK for aPri=" << aPri);
+}
+
 // wrap TaskBackFN to MsgSelf
 [[nodiscard]] inline
 TaskBackFN viaMsgSelf(const TaskBackFN& aBackFN, EMsgPriority aPri = EMsgPri_NORM) noexcept
@@ -28,13 +37,9 @@ TaskBackFN viaMsgSelf(const TaskBackFN& aBackFN, EMsgPriority aPri = EMsgPri_NOR
     auto&& msgSelf = MSG_SELF;
     return ! aBackFN || msgSelf.get() == nullptr
         ? TaskBackFN()  // empty fn
-        : [aBackFN, msgSelf, aPri](SafePtr<void> aRet) noexcept  // must cp aBackFN since lambda run later in diff lifecycle
+        : [aBackFN, msgSelf, aPri](SafePtr<void> aRet) noexcept
         {
-            if (!msgSelf->newMsgOK(bind(aBackFN, aRet), aPri))
-            {
-                ERR("(viaMsgSelf) Failed to newMsgOK for aPri=" << aPri);
-                return;
-            }
+            cb_backFN(aBackFN, msgSelf, aPri, std::move(aRet));
         };
 }
 
