@@ -133,6 +133,7 @@ TEST_F(MtInQueueTest, pushWakeup_popNoBlockAndWakeup)
 TEST_F(MtInQueueTest, push_null_NOK)
 {
     EXPECT_FALSE(mt_getQ().mt_pushOK<void>(nullptr)) << "REQ: push NOK";
+    EXPECT_FALSE(mt_getQ().mt_pushOK<int>(S_PTR<int>())) << "REQ: push null int NOK";
     EXPECT_EQ(0, mt_getQ().mt_size(true)) << "REQ: can't push nullptr since pop empty will ret nullptr";
 }
 TEST_F(MtInQueueTest, push_takeover_toEnsureMtSafe)

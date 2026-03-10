@@ -63,10 +63,12 @@ TEST(SafePtrTest, safeCreate_null)
 {
     const SafePtr v = nullptr;  // common
     EXPECT_EQ(nullptr, v.get()) << "REQ: explicit create null to compatible with shared_ptr";
+    EXPECT_FALSE(bool(v)) << "REQ: null SafePtr is false";
     EXPECT_EQ(type_index(typeid(shared_ptr<void>)), type_index(typeid(v.get()))) << "REQ: default template is void";
 
     const SafePtr<int> i = nullptr;
     EXPECT_EQ(nullptr, i.get()) << "req: create default is empty";
+    EXPECT_FALSE(bool(i)) << "REQ: null SafePtr<int> is false";
     EXPECT_EQ(type_index(typeid(shared_ptr<int>)), type_index(typeid(i.get()))) << "REQ: specify template";
 }
 
