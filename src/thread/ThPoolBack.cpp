@@ -31,18 +31,18 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
                 {
                     packaged_task<SafePtr<void>()> task;
                     {
-                        // - lock to prevent new task/notif until my qCv_ sleep/wait-notif (ensure not loss notif)
+                        // - lock to prevent new task/notif until my mt_qCv_ sleep/wait-notif (ensure not loss notif)
                         // - lock to prevent other thread steal task
-                        unique_lock<mutex> lock(this->qMutex_);
-                        this->qCv_.wait(lock,
-                            [this]() noexcept { return this->mt_stopAllTH_ || !this->taskQ_.empty(); });
+                        unique_lock<mutex> lock(this->mt_mutex_);
+                        this->mt_qCv_.wait(lock,
+                            [this]() noexcept { return this->mt_stopAllTH_ || !this->mt_taskQ_.empty(); });
 
                         if (this->mt_stopAllTH_)
                             return;
-                        // qCv_.wait(): lock then check predicate, so no need check taskQ_.empty() here
+                        // mt_qCv_.wait(): lock then check predicate, so no need check mt_taskQ_.empty() here
 
-                        task = move(this->taskQ_.front());
-                        this->taskQ_.pop_front();
+                        task = move(this->mt_taskQ_.front());
+                        this->mt_taskQ_.pop_front();
                     }
 
                     // - thread can continue when task() throw
@@ -65,14 +65,14 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
 ThPoolBack::~ThPoolBack() noexcept
 {
     clean_();
-    HID("!!! discard nTask=" << taskQ_.size());
+    HID("!!! discard nTask=" << mt_taskQ_.size());
 }
 
 // ***********************************************************************************************
 void ThPoolBack::clean_() noexcept
 {
     mt_stopAllTH_ = true;
-    qCv_.notify_all();
+    mt_qCv_.notify_all();
 
     for (auto&& th : thPool_)
         if (th.joinable())
@@ -89,10 +89,10 @@ bool ThPoolBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLo
     packaged_task<SafePtr<void>()> task(std::move(mt_aEntryFN));  // packaged_task can get_future()="task result"
     fut_backFN_S_.emplace_back(task.get_future(), std::move(aBackFN));  // save future<> & aBackFN()
     {
-        lock_guard<mutex> lock(qMutex_);
-        taskQ_.emplace_back(move(task));
+        lock_guard<mutex> lock(mt_mutex_);
+        mt_taskQ_.emplace_back(move(task));
     }
-    qCv_.notify_one();  // notify thread pool to run a new task
+    mt_qCv_.notify_one();  // notify thread pool to run a new task
 
     return true;
 }

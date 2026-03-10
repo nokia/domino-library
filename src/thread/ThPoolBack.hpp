@@ -51,9 +51,9 @@ private:
     // -------------------------------------------------------------------------------------------
     std::vector<std::thread>  thPool_;
 
-    std::deque<std::packaged_task<SafePtr<void>()>>  taskQ_;
-    std::mutex  qMutex_;
-    std::condition_variable  qCv_;
+    std::deque<std::packaged_task<SafePtr<void>()>>  mt_taskQ_;
+    std::mutex  mt_mutex_;
+    std::condition_variable  mt_qCv_;
 
     std::atomic<bool>  mt_stopAllTH_ = false;
 };

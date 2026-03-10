@@ -72,14 +72,14 @@ private:
     // -------------------------------------------------------------------------------------------
     std::deque<ELE_TID> mt_queue_;  // most suitable container
     std::deque<ELE_TID> cache_;  // main-thread use ONLY (so no mutex protect)
-    mutable std::mutex mutex_;
+    mutable std::mutex mt_mutex_;
 
     std::unordered_map<std::type_index, EleHdlr> tid_hdlr_S_;
 
     // -------------------------------------------------------------------------------------------
 #ifdef IN_GTEST
 public:
-    std::mutex& backdoor() { return mutex_; }
+    std::mutex& backdoor() { return mt_mutex_; }
 #endif
 };
 
@@ -102,7 +102,7 @@ bool MtInQueue::mt_pushOK(S_PTR<aEleType>&& aEle) noexcept
 
     // push
     {
-        std::lock_guard<std::mutex> guard(mutex_);
+        std::lock_guard<std::mutex> guard(mt_mutex_);
         // HID("(MtQ) nRef=" << aEle.use_count() << ", ptr=" << aEle.get());  // HID supports MT
         mt_queue_.emplace_back(std::move(aEle), typeid(aEleType));  // except eg bad_alloc: can't recover->terminate
     }
