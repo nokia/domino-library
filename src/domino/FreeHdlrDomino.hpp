@@ -40,6 +40,7 @@ protected:
     void rmEv_(Domino::Event aValidEv) noexcept override;
 
     // -------------------------------------------------------------------------------------------
+    void cb_hdlr_(Domino::Event, const WeakMsgCB&) noexcept;  // deferred by MsgSelf
 private:
     // - bitmap & dyn expand, [event]=t/f
     // - don't know if repeated hdlrs are much less than non-repeated, so bitmap is simpler than set<Event>
@@ -102,15 +103,10 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, Do
         ERR("(FreeHdlrDom) Failed!!! since MsgSelf is invalid in triggerHdlr_().");
         return;
     }
-    HID("(FreeHdlrDom) trigger a call-then-rm msg for en=" << this->evName_(aValidEv));
+    HID("(FreeHdlrDom) trigger a rm-then-call msg for en=" << this->evName_(aValidEv));
     if (!this->msgSelf_->newMsgOK(
         [this, aValidEv, weakHdlr = WeakMsgCB(aValidHdlr)]() noexcept {
-            auto hdlr = weakHdlr.lock();  // get & validate
-            if (! hdlr)
-                return;  // otherwise crash
-            this->rmOneHdlrOK_(aValidEv, hdlr);  // safer to rm first to avoid hdlr does sth strange
-            try { (*(hdlr.get()))(); }  // call; setHdlr() forbid cb==null
-            catch(...) { ERR("(FreeHdlrDom) except when exe callback!!! ev=" << aValidEv); }
+            cb_hdlr_(aValidEv, weakHdlr);
         },
         this->getPriority(aValidEv)
     ))
@@ -118,6 +114,19 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, Do
         ERR("(FreeHdlrDom) Failed to newMsgOK for en=" << this->evName_(aValidEv));
         return;
     }
+}
+
+// ***********************************************************************************************
+// - deferred by MsgSelf; rm before call to avoid hdlr does sth strange
+template<class aDominoType>
+void FreeHdlrDomino<aDominoType>::cb_hdlr_(Domino::Event aValidEv, const WeakMsgCB& aWeakHdlr) noexcept
+{
+    auto hdlr = aWeakHdlr.lock();  // get & validate
+    if (! hdlr)
+        return;  // otherwise crash
+    this->rmOneHdlrOK_(aValidEv, hdlr);  // safer to rm first to avoid hdlr does sth strange
+    try { (*(hdlr.get()))(); }  // call; setHdlr() forbid cb==null
+    catch(...) { ERR("(FreeHdlrDom) except when exe callback!!! ev=" << aValidEv); }
 }
 
 }  // namespace
