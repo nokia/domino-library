@@ -18,14 +18,15 @@ static const Domino::Events defaultEVs;  // internal use only
 void Domino::deduceStateFrom_(Event aValidEv) noexcept
 {
     stack<Event> evStack;
-    for (auto curEV = aValidEv; ; curEV = evStack.top(), evStack.pop()) {
+    for (auto curEV = aValidEv; ; curEV = evStack.top(), evStack.pop())
+    {
         HID("(Domino) en=" << evName_(curEV));
 
-        // recalc self state
+        // recalc state from predecessors
         auto newState = deduceStateSelf_(curEV, true) && deduceStateSelf_(curEV, false);
-        if (pureSetStateOK_(curEV, newState))  // state real changed
+        if (pureSetStateOK_(curEV, newState))  // state changed
         {
-            // deduce next
+            // propagate to successors
             for (bool branch : {true, false}) {  // search next_[true] & next_[false]
                 for (auto&& nextEV : findPeerEVs(curEV, next_[branch])) {
                     evStack.push(nextEV);  // dup-deduce is safer (like real domino)
@@ -33,9 +34,8 @@ void Domino::deduceStateFrom_(Event aValidEv) noexcept
             }
         }
 
-        if (evStack.empty()) {  // no more to deduce
+        if (evStack.empty())
             return;
-        }
     }
 }
 
