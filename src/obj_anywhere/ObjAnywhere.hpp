@@ -89,6 +89,11 @@ S_PTR<aObjType> ObjAnywhere::getObj(const ObjName& aObjName) noexcept
 template<typename aObjType>
 bool ObjAnywhere::emplaceObjOK(S_PTR<aObjType> aObj, UniLog& oneLog, const ObjName& aObjName) noexcept
 {
+    if (aObjName.empty())
+    {
+        WRN("(ObjAnywhere) empty ObjName for emplace");
+        return false;
+    }
     if (isInit())
         return name_obj_S_->emplaceOK(aObjName, std::move(aObj));
 
