@@ -66,7 +66,6 @@ void ThPoolBack::mt_threadMain_() noexcept
 ThPoolBack::~ThPoolBack() noexcept
 {
     clean_();
-    HID("!!! discard nTask=" << mt_taskQ_.size());
 }
 
 // ***********************************************************************************************
@@ -78,6 +77,11 @@ void ThPoolBack::clean_() noexcept
     for (auto&& th : thPool_)
         if (th.joinable())
             th.join();  // safer: avoid terminate when destruct th
+
+    // handle completed-but-unprocessed tasks before destruction
+    (void)hdlDoneFut();
+    if (!fut_backFN_S_.empty())
+        HID("(ThPoolBack) discarding " << fut_backFN_S_.size() << " pending tasks (backFN not called)");
 }
 
 // ***********************************************************************************************

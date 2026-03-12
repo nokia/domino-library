@@ -39,7 +39,7 @@ public:
     // @param MT_TaskEntryFN: The task to be executed asynchronously.
     // @param TaskBackFN    : The callback to be invoked in the main thread upon task completion.
     // @param UniLog        : The logger to use for this operation.
-    [[nodiscard]] virtual bool newTaskOK(MT_TaskEntryFN, TaskBackFN, UniLog& = UniLog::defaultUniLog_) = 0;
+    [[nodiscard]] virtual bool newTaskOK(MT_TaskEntryFN, TaskBackFN, UniLog& = UniLog::defaultUniLog_) noexcept = 0;
 
     // @brief: Processes completed threads and invokes their callbacks.
     // @param UniLog: The logger to use for this operation.

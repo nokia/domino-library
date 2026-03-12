@@ -52,7 +52,7 @@ size_t ThreadBack::hdlDoneFut(UniLog& oneLog) noexcept
 }
 
 // ***********************************************************************************************
-bool ThreadBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog& oneLog)
+bool ThreadBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog& oneLog) noexcept
 {
     assert(mt_inMyMainTH() && "(ThreadBack) newTaskOK() must be called from the main thread");
     if (! aBackFN)
