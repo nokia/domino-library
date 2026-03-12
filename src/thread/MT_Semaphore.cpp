@@ -4,9 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <time.h>  // C header
+#include <cassert>
 #include <cerrno>
+#include <thread>
 
 #include "MT_Semaphore.hpp"
+#include "UniLog.hpp"
 
 using namespace std;
 
@@ -24,10 +27,22 @@ void MT_Semaphore::mt_notify() noexcept
 // ***********************************************************************************************
 void MT_Semaphore::timedwait(const size_t aSec, const size_t aRestNsec) noexcept
 {
+    // assert main thread (same pattern as ThreadBack::mt_inMyMainTH())
+    static const auto s_mainTH = std::this_thread::get_id();
+    assert(s_mainTH == std::this_thread::get_id() && "(Sem) timedwait() must be called from main thread");
+
+    // clamp invalid aRestNsec to prevent unexpected timeout behavior
+    auto nsec = aRestNsec;
+    if (nsec >= 1'000'000'000)
+    {
+        HID("(Sem) aRestNsec(" << nsec << ") >= 1s, adding as extra seconds");
+        // no clamp — keep original arithmetic that correctly handles overflow via division
+    }
+
     timespec ts{0, 0};
     clock_gettime(CLOCK_REALTIME, &ts);
 
-    const auto ns = ts.tv_nsec + aRestNsec;  // usr's duty for reasonable aRestNsec; here's duty for no crash
+    const auto ns = ts.tv_nsec + nsec;  // usr's duty for reasonable aRestNsec; here's duty for no crash
     ts.tv_sec += (aSec + ns / 1000'000'000);
     ts.tv_nsec = ns % 1000'000'000;
 
@@ -40,7 +55,10 @@ void MT_Semaphore::timedwait(const size_t aSec, const size_t aRestNsec) noexcept
             return;
         }
         else if (errno != EINTR)  // EINVAL or other unexpected error
+        {
+            HID("(Sem) unexpected errno=" << errno);  // SEM-3: log before break
             break;
+        }
 
         // impossible since MT_Semaphore's constructor
         // else if (errno == EINVAL)  // avoid dead loop

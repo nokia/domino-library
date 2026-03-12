@@ -25,7 +25,7 @@
 //   . Exception safe: construction exception → nullptr
 //
 // CONSTRAINTS:
-//   - Single-threaded usage (e.g., after MtInQueue.mt_push(), don't touch SafePtr)
+//   - Single-thread-use as shared_ptr (e.g., after MtInQueue.mt_push(), don't touch SafePtr)
 //   - T must be internally safe (eg no constructor exceptions expected)
 //   - Circular reference: user's responsibility (like shared_ptr)
 // ***********************************************************************************************
