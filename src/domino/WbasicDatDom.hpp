@@ -23,7 +23,7 @@ template<typename aDominoType>
 class WbasicDatDom : public aDominoType
 {
 public:
-    explicit WbasicDatDom(const LogName& aUniLogName = ULN_DEFAULT) noexcept : aDominoType(aUniLogName) {}
+    explicit WbasicDatDom(const LogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
 
     [[nodiscard]] bool isWrCtrl(const Domino::EvName&) const noexcept;
     [[nodiscard]] bool wrCtrlOk(const Domino::EvName&, const bool aNewState = true) noexcept;

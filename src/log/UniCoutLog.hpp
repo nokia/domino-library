@@ -74,4 +74,5 @@ using UniLog = UniCoutLog;
 // 2022-12-02  CSZ       - simple & natural
 // 2024-02-21  CSZ       2)mem-safe
 // 2025-04-07  CSZ       3)tolerate exception
+// 2026-03-13  CSZ       4)log to file than cout
 // ***********************************************************************************************

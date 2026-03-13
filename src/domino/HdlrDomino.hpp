@@ -25,6 +25,7 @@
 #pragma once
 
 #include <functional>
+#include <stdexcept>
 #include <unordered_map>
 
 #include "MsgSelf.hpp"
@@ -39,7 +40,7 @@ template<class aDominoType>
 class HdlrDomino : public aDominoType
 {
 public:
-    explicit HdlrDomino(const LogName& aUniLogName = ULN_DEFAULT) noexcept : aDominoType(aUniLogName) {}
+    explicit HdlrDomino(const LogName& aUniLogName = ULN_DEFAULT);
     [[nodiscard]] bool setMsgSelfOK(const S_PTR<MsgSelf>& aMsgSelf) noexcept;  // replace default; safe: yes SafePtr, no shared_ptr
 
     Domino::Event setHdlr(const Domino::EvName&, MsgCB aHdlr) noexcept;
@@ -76,6 +77,14 @@ protected:
 public:
     using aDominoType::oneLog;
 };
+
+// ***********************************************************************************************
+template<class aDominoType>
+HdlrDomino<aDominoType>::HdlrDomino(const LogName& aUniLogName) : aDominoType(aUniLogName)
+{
+    if (!msgSelf_)
+        throw std::runtime_error("(HdlrDom) MsgSelf is required but null/absent");
+}
 
 // ***********************************************************************************************
 template<class aDominoType>
@@ -150,11 +159,6 @@ template<class aDominoType>
 Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, MsgCB aHdlr) noexcept
 {
     // validate
-    if (! msgSelf_)
-    {
-        ERR("(HdlrDom) Failed!!! since MsgSelf is invalid.");
-        return Domino::D_EVENT_FAILED_RET;
-    }
     if (! aHdlr)
     {
         WRN("(HdlrDom) Failed!!! not accept aHdlr=nullptr.");
@@ -207,11 +211,6 @@ bool HdlrDomino<aDominoType>::setMsgSelfOK(const S_PTR<MsgSelf>& aMsgSelf) noexc
 template<class aDominoType>
 void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, Domino::Event aValidEv) noexcept
 {
-    if (! msgSelf_)
-    {
-        ERR("(HdlrDom) Failed!!! since MsgSelf is invalid in triggerHdlr_().");
-        return;
-    }
     HID("(HdlrDom) trigger a new msg.");
     if (!msgSelf_->newMsgOK(
         [this, weakMsgCB = WeakMsgCB(aValidHdlr)]() noexcept {

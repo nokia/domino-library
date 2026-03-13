@@ -38,7 +38,7 @@ template<typename aDominoType>
 class RmEvDom : public aDominoType
 {
 public:
-    explicit RmEvDom(const LogName& aUniLogName = ULN_DEFAULT) noexcept : aDominoType(aUniLogName) {}
+    explicit RmEvDom(const LogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
 
     [[nodiscard]] bool rmEvOK(const Domino::EvName& aEN) noexcept;
     [[nodiscard]] bool isRemoved(Domino::Event aEv) const noexcept { return isRemovedEv_.count(aEv); }
@@ -85,12 +85,7 @@ bool RmEvDom<aDominoType>::rmEvOK(const Domino::EvName& aEN) noexcept
     const auto validEv = this->getEventBy(aEN);
     if (validEv == Domino::D_EVENT_FAILED_RET)  // invalid; most beginning check, avoid useless exe
         return false;
-
-    if (isRemoved(validEv))  // double-remove guard
-    {
-        WRN("(RmEvDom) Failed!!! EvName=" << aEN << " is already removed.");
-        return false;
-    }
+    // isRemoved(validEv) is always false here
 
     rmEv_(validEv);
     return true;

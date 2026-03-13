@@ -376,12 +376,12 @@ TYPED_TEST_P(HdlrDominoTest, replace_msgSelf)  // checked by CI valgrind
 }
 TYPED_TEST_P(HdlrDominoTest, bugFix_invalidMsgSelf)  // checked by CI valgrind
 {
-    ObjAnywhere::deinit();  // free MsgSelf
-    auto dom = MAKE_PTR<TypeParam>();  // now dom's MsgSelf = null/invalid
-    dom->setHdlr("en", this->hdlr0_);
-    dom->forceAllHdlr("en");  // bug fix: shall not crash
+    auto dom = PARA_DOM;
 
-    EXPECT_FALSE(dom->setMsgSelfOK(nullptr)) << "inc cov";
+    ObjAnywhere::deinit();  // free MsgSelf
+    EXPECT_THROW(TypeParam(), std::runtime_error) << "REQ: ctor shall throw when MsgSelf absent";
+
+    EXPECT_FALSE(dom->setMsgSelfOK(nullptr)) << "REQ: msgSelf=null is not allowed";
 }
 
 // ***********************************************************************************************

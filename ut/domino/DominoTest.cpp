@@ -168,11 +168,11 @@ TYPED_TEST_P(DominoTest, whyFalse_diagnoseTrueFalseConflict)
     //    \         /
     //     <- (F) <-
     auto e10 = PARA_DOM->setPrev("e10", {{"e11", true }});
-    PARA_DOM->setPrev("e10", {{"e11", false}});
-    EXPECT_EQ("e11==false", PARA_DOM->whyFalse(e10)) << "REQ: simply found the root cause";
-    PARA_DOM->setState({{"e11", true}});
-    EXPECT_EQ("e11==true",  PARA_DOM->whyFalse(e10)) << "REQ: simply found the root cause";
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("e10", {{"e11", false}}))
+        << "REQ: reject direct T/F conflict on same source";
+    EXPECT_EQ("e11==false", PARA_DOM->whyFalse(e10)) << "REQ: only true-prev exists";
 
+    // indirect T/F conflicts (different sources per call) are still allowed:
     // e21 <- (F) <- e20
     // (T)\         /(T)
     //     <- e22 <-
@@ -202,16 +202,10 @@ TYPED_TEST_P(DominoTest, whyFalse_diagnoseTrueFalseConflict)
     PARA_DOM->setPrev("e43", {{"e44", false}});
     EXPECT_EQ("e44==false", PARA_DOM->whyFalse(e40)) << "inc cov: e40=T via e41, then =F via e42";
 
-    // - this kind of loop can be very long & complex (much more than above examples)
+    // - indirect T/F conflict can be very long & complex (much more than above examples)
     //   . when occur, the end-event can't be satisfied forever
-    // - not find a simple way (reasonable cost-benefit) to prevent it
-    //   . whyFalse() is simple to detect it (but not prevent so not perfect)
-    //   . TODO: need partial forbid simple t/f-loop? avoid complex/risk impl
-    // - so is setPrev() safe?
-    //   . mostly & normally yes
-    //     . next-loop can be prevented simply
-    //     . true-false-loop can NOT (see above ut)
-    //   . as if LTD company (benefit-cost shall be reasonable)
+    // - direct T/F conflict (same source as both T & F prev for same target) is now prevented
+    //   . whyFalse() can detect indirect conflicts (but can't prevent)
     // - how to define loop-safe:
     //   . runtime forbid (rather than offline/afterward check which is not safe)
     //   . so shall fail setPrev() to prevent loop

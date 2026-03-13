@@ -203,9 +203,15 @@ Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrev
     auto fromEv = newEvent(aEvName);  // complex by getEventBy(), not worth
     for (auto&& prevEn_state : aSimuPrevEvents)
     {
-        if (isNextFromTo_(fromEv, newEvent(prevEn_state.first)))
+        auto&& prevEv = newEvent(prevEn_state.first);
+        if (isNextFromTo_(fromEv, prevEv))
         {
             WRN("(Domino) !!!Failed since loop between " << aEvName << " & " << prevEn_state.first);
+            return D_EVENT_FAILED_RET;
+        }
+        if (findPeerEVs(fromEv, prev_[!prevEn_state.second]).count(prevEv))
+        {
+            WRN("(Domino) !!!Failed since T/F conflict on prev=" << prevEn_state.first << " for " << aEvName);
             return D_EVENT_FAILED_RET;
         }
     }

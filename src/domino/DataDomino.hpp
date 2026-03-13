@@ -29,7 +29,7 @@ class DataDomino : public aDominoType
     // -------------------------------------------------------------------------------------------
 
 public:
-    explicit DataDomino(const LogName& aUniLogName = ULN_DEFAULT) noexcept : aDominoType(aUniLogName) {}
+    explicit DataDomino(const LogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
 
     // -------------------------------------------------------------------------------------------
     // - for read/write data

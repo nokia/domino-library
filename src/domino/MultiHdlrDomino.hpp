@@ -36,7 +36,7 @@ public:
     using HdlrName  = std::string;
     using HName_Hdlr_S = std::unordered_map<HdlrName, SharedMsgCB>;
 
-    explicit MultiHdlrDomino(const LogName& aUniLogName = ULN_DEFAULT) noexcept : aDominoType(aUniLogName) {}
+    explicit MultiHdlrDomino(const LogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
 
     // -------------------------------------------------------------------------------------------
     // - add multi-hdlr on 1 event
