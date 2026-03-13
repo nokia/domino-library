@@ -15,13 +15,35 @@ ostream& UniCoutLog::oneLog() noexcept
 {
     try {
         ++nLogLine_;  // ut only; no impact product's MT safe & mem safe
-        cout << "c[" << mt_timestamp() << ' ' << ULN_DEFAULT << '/';
+        *out_ << "c[" << mt_timestamp() << ' ' << ULN_DEFAULT << '/';
     } catch(...) {}
-    return cout;
+    return *out_;
+}
+
+// ***********************************************************************************************
+bool UniCoutLog::setLogFileOK(const string& aFileName) noexcept
+{
+    try {
+        ofstream newFile(aFileName, ios::app);
+        if (! newFile)
+        {
+            cout << "ERR: can't open log file " << aFileName << endl;
+            return false;
+        }
+
+        file_ = std::move(newFile);
+        out_ = &file_;
+        return true;
+    } catch (...) {
+        cout << "ERR: exception when open log file " << aFileName << endl;
+        return false;
+    }
 }
 
 // ***********************************************************************************************
 UniCoutLog           UniCoutLog::defaultUniLog_;
 std::atomic<size_t>  UniCoutLog::nLogLine_ = 0;
+std::ostream*        UniCoutLog::out_ = &std::cout;
+std::ofstream        UniCoutLog::file_;
 
 }  // namespaces

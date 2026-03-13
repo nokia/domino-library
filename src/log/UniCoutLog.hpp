@@ -5,14 +5,14 @@
  */
 // ***********************************************************************************************
 // - ISSUE/why:
-//   . encapsulate cout for eg:
+//   . encapsulate cout/file for eg:
 //     . UT
 //     . simplest log for debug
 //     . gtest case destructor can't catch EXPECT_CALL() failure, so SmartLog doesn't work
 //     . other unknown issue(s) that SmartLog can't fix
 //
 // - CORE:
-//   . cout
+//   . out_
 //
 // - MT safe : yes
 // - class safe: yes
@@ -20,6 +20,7 @@
 #pragma once
 
 #include <atomic>
+#include <fstream>
 #include <iostream>
 
 #include "UniBaseLog.hpp"
@@ -40,17 +41,21 @@ public:
     static LogName uniLogName() noexcept { return ULN_DEFAULT; }
     static size_t nLog() noexcept { return 1; }
 
+    [[nodiscard]] static bool setLogFileOK(const std::string& aFileName) noexcept;
+
     // -------------------------------------------------------------------------------------------
 public:
     static UniCoutLog           defaultUniLog_;
     static std::atomic<size_t>  nLogLine_;  // ut only, simpler here
+    static std::ostream*        out_;
+    static std::ofstream        file_;
 
 #ifdef IN_GTEST
     // -------------------------------------------------------------------------------------------
     // MT safe : no (since nLogLine_ is not atomic & no worth for ut only)
     // mem safe: yes
 public:
-    static void dumpAll_forUt() { nLogLine_ = 0; }  // for ut case clean at the end
+    static void dumpAll_forUt() { nLogLine_ = 0; out_ = &std::cout; file_.close(); }  // for ut case clean at the end
     static size_t logLen(const LogName& = ULN_DEFAULT) { return nLogLine_; }
 #endif
 };

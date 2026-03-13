@@ -60,7 +60,7 @@ struct UNI_LOG_TEST : public Test
 
     static void funcUsr(UNI_LOG& oneLog = UNI_LOG::defaultUniLog_)
     {
-        INF("hello");                          // req: can log, same API
+        INF("hello");  // req: can log, same API
     }
 
     // -------------------------------------------------------------------------------------------
@@ -72,7 +72,7 @@ struct UNI_LOG_TEST : public Test
 
     static void funcUseDefaultLog()
     {
-        INF("hello");                          // req: can log, same API
+        INF("hello");  // req: can log, same API
     }
 };
 
