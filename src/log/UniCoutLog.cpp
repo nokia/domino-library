@@ -24,18 +24,27 @@ ostream& UniCoutLog::oneLog() noexcept
 bool UniCoutLog::setLogFileOK(const string& aFileName) noexcept
 {
     try {
+        if (aFileName.empty())
+        {
+            cout << "INF(UniCoutLog): switch to cout" << endl;
+            out_ = &std::cout;
+            return true;
+        }
+
         ofstream newFile(aFileName, ios::app);
         if (! newFile)
         {
-            cout << "ERR: can't open log file " << aFileName << endl;
+            cout << "ERR(UniCoutLog): can't open log file " << aFileName << endl;
             return false;
         }
 
+        cout << "INF(UniCoutLog): switch to log file " << aFileName << endl;
         file_ = std::move(newFile);
         out_ = &file_;
         return true;
-    } catch (...) {
-        cout << "ERR: exception when open log file " << aFileName << endl;
+    } catch (...)
+    {
+        cout << "ERR(UniCoutLog): exception when open log file " << aFileName << endl;
         return false;
     }
 }

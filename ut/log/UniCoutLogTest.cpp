@@ -41,4 +41,29 @@ TEST_F(UniCoutLogTest, setFileOK_writeAndRestore)
 
     std::remove(fname.c_str());
 }
+
+TEST_F(UniCoutLogTest, setLogFileOK_emptyName_switchToCout)
+{
+    // first switch to file
+    const std::string fname = "ut_log_empty_test.log";
+    std::remove(fname.c_str());
+    ASSERT_TRUE(UniCoutLog::setLogFileOK(fname));
+
+    // empty name → switch back to cout
+    ASSERT_TRUE(UniCoutLog::setLogFileOK("")) << "REQ: empty name = switch to cout";
+    INF("back to cout");
+    ASSERT_GT(UniCoutLog::logLen(), 0u) << "REQ: can log after switch to cout";
+
+    std::remove(fname.c_str());
+}
+
+TEST_F(UniCoutLogTest, setLogFileOK_badPath_fail)
+{
+    ASSERT_FALSE(UniCoutLog::setLogFileOK("/nonexistent_dir_12345/impossible.log"))
+        << "REQ: bad path returns false";
+
+    // should still log to cout (unchanged)
+    INF("still cout");
+    ASSERT_GT(UniCoutLog::logLen(), 0u) << "REQ: can still log after failed setLogFileOK";
+}
 }  // namespace rlib
