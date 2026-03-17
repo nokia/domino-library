@@ -18,9 +18,6 @@ jobs:
     - name: install valgrind
       run: sudo apt-get update && sudo apt-get install valgrind
 
-    - name: install gmock & gtest  # 1)always gtest latest 2)--depth 1 is to min download
-      run: cd .. && git clone https://github.com/google/googletest.git --depth 1
-
     - uses: actions/checkout@v4
 
     - name: make ut

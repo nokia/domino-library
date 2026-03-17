@@ -1,24 +1,17 @@
-cmake_minimum_required(VERSION  3.12)
+cmake_minimum_required(VERSION  3.14)
 
 # ------------------------------------------------------------------------------------------------
 project(ut_exe  CXX)  # as early as possible, eg must before CMAKE_CXX_FLAGS
 
+set(CMAKE_CXX_EXTENSIONS  OFF)
+
 if(ci  STREQUAL  "cov")
     message("!!! coverage & valgrind(only need -g -fno-omit-frame-pointer)")
-    set(CMAKE_CXX_STANDARD  20)  # if gtest fix bug, try c++20/23 to see cov rate inc or not
-
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  --coverage")          # gcov req (=-fprofile-arcs -ftest-coverage & -lgcov)
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fPIC")               # gcov req
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -O0")                 # gcov req
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fprofile-abs-path")  # gcc 8
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -g")                  # valgrind req
-
-    add_compile_definitions(SMART_LOG)
-    add_compile_definitions(WITH_HID_LOG)  # more info to debug ci
-
+    add_compile_options(--coverage -fPIC -O0 -fprofile-abs-path -g)  # gcov + valgrind req
+    add_link_options(--coverage)                                     # gcov req
+    add_compile_definitions(SMART_LOG WITH_HID_LOG)  # more info to debug ci
 
 elseif(ci  STREQUAL  "asan")
-    set(CMAKE_CXX_STANDARD  17)  # low c++ version for wide usage; 17 since "if constexpr()"
     message("!!! asan+lsan+ubsan for: use-after-free, double-free, out-of-bound, leak, undef behavior")
     add_compile_options(-g -fno-omit-frame-pointer)
     add_compile_options(-fstack-protector-strong)  # stack overflow protection
@@ -28,7 +21,6 @@ elseif(ci  STREQUAL  "asan")
     add_link_options   (-fsanitize=address,undefined)
 
 elseif(ci  STREQUAL  "tsan")  # asan/lsan/msan cover by valgrind(memcheck)
-    set(CMAKE_CXX_STANDARD  17)
     message("!!! SANITIZE for: thread")
     add_compile_options(-g -fno-omit-frame-pointer)
     add_compile_options(-fstack-protector-strong)  # stack overflow protection
@@ -39,21 +31,31 @@ elseif(ci  STREQUAL  "tsan")  # asan/lsan/msan cover by valgrind(memcheck)
 
 else()
     message("!!! UT only - no cov, no SANITIZE check etc")
-    set(CMAKE_CXX_STANDARD  17)
     add_compile_options(-O1)  # fastest build+ut (1-cpp-change=5s, vs 45s of -g)
 endif()
 
-set(CMAKE_CXX_STANDARD_REQUIRED  TRUE)
-set(CMAKE_CXX_EXTENSIONS  OFF)
-#set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}  -fno-exceptions")  # inc branch coverage
+#add_compile_options(-fno-exceptions)  # inc branch coverage
 
 add_executable(ut_exe)
 
-set(gtest_dir ${CMAKE_CURRENT_SOURCE_DIR}/../googletest)
-add_subdirectory(${gtest_dir}  # build gtest
-    ${CMAKE_BINARY_DIR}/googletest)  # must specify where to build since gtest out domino root
+# googletest via FetchContent (always latest, shallow clone to min download)
+include(FetchContent)
+FetchContent_Declare(googletest
+    GIT_REPOSITORY  https://github.com/google/googletest.git
+    GIT_TAG         main
+    GIT_SHALLOW     TRUE
+)
+FetchContent_MakeAvailable(googletest)
+
 add_subdirectory(src)
 add_subdirectory(ut)
+
+# C++ standard on targets
+if(ci  STREQUAL  "cov")
+    target_compile_features(lib_domino  PUBLIC  cxx_std_20)  # try c++20/23 to see cov rate inc or not
+else()
+    target_compile_features(lib_domino  PUBLIC  cxx_std_17)  # 17 since "if constexpr()"
+endif()
 
 target_link_libraries(ut_exe  PRIVATE
     lib_domino
@@ -61,7 +63,7 @@ target_link_libraries(ut_exe  PRIVATE
     gtest_main
 )
 
-# make run-ut_exe
+# make run
 add_custom_target(run
     COMMAND  ./ut_exe --gtest_brief=0
     DEPENDS  ut_exe
