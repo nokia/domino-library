@@ -213,8 +213,11 @@ void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, Domino
 {
     HID("(HdlrDom) trigger a new msg.");
     if (!msgSelf_->newMsgOK(
-        [this, weakMsgCB = WeakMsgCB(aValidHdlr)]() noexcept {
-            cb_hdlr_(weakMsgCB);
+        [weakMsgCB = WeakMsgCB(aValidHdlr)]() noexcept {
+            if (auto cb = weakMsgCB.lock()) {
+                try { (*(cb.get()))(); }  // setHdlr() forbid cb==null
+                catch(...) {}
+            }
         },
         getPriority(aValidEv)
     ))

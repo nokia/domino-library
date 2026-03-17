@@ -13,21 +13,25 @@ if(ci  STREQUAL  "cov")
 
 elseif(ci  STREQUAL  "asan")
     message("!!! asan+lsan+ubsan for: use-after-free, double-free, out-of-bound, leak, undef behavior")
+    add_compile_definitions(_FORTIFY_SOURCE=2)     # buffer overflow checks
     add_compile_options(-g -fno-omit-frame-pointer)
     add_compile_options(-fstack-protector-strong)  # stack overflow protection
     add_compile_options(-O2)  # required for FORTIFY_SOURCE
-    add_compile_definitions(_FORTIFY_SOURCE=2)     # buffer overflow checks
     add_compile_options(-fsanitize=address,undefined)
-    add_link_options   (-fsanitize=address,undefined)
+
+    add_link_options(-fsanitize=address,undefined)
+    add_link_options(-fstack-protector-strong)     # ensure stack protector runtime is linked
 
 elseif(ci  STREQUAL  "tsan")  # asan/lsan/msan cover by valgrind(memcheck)
     message("!!! SANITIZE for: thread")
+    add_compile_definitions(_FORTIFY_SOURCE=2)     # buffer overflow checks
     add_compile_options(-g -fno-omit-frame-pointer)
     add_compile_options(-fstack-protector-strong)  # stack overflow protection
     add_compile_options(-O2)  # required for FORTIFY_SOURCE
-    add_compile_definitions(_FORTIFY_SOURCE=2)     # buffer overflow checks
     add_compile_options(-fsanitize=thread)
-    add_link_options   (-fsanitize=thread)
+
+    add_link_options(-fsanitize=thread)
+    add_link_options(-fstack-protector-strong)     # ensure stack protector runtime is linked
 
 else()
     message("!!! UT only - no cov, no SANITIZE check etc")
