@@ -63,8 +63,6 @@ protected:
     virtual void triggerHdlr_(const SharedMsgCB& aValidHdlr, Domino::Event aValidEv) noexcept;
     virtual bool rmOneHdlrOK_(Domino::Event aValidEv, const SharedMsgCB& aValidHdlr) noexcept;  // by aValidHdlr
 
-    void cb_hdlr_(WeakMsgCB) noexcept;  // deferred by MsgSelf
-
     void rmEv_(Domino::Event aValidEv) noexcept override;
     size_t nHdlr_(Domino::Event aEv) const noexcept { return ev_hdlr_S_.count(aEv); }
     bool rmOneHdlrOK_(Domino::Event aEv) noexcept { return ev_hdlr_S_.erase(aEv); }
@@ -224,17 +222,6 @@ void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, Domino
     {
         ERR("(HdlrDom) Failed to newMsgOK for en=" << this->evName_(aValidEv));
         return;
-    }
-}
-
-// ***********************************************************************************************
-// - deferred by MsgSelf; WeakMsgCB supports rm hdlr before callback fires
-template<class aDominoType>
-void HdlrDomino<aDominoType>::cb_hdlr_(WeakMsgCB aWeakCB) noexcept
-{
-    if (auto cb = aWeakCB.lock()) {
-        try { (*(cb.get()))(); }  // setHdlr() forbid cb==null
-        catch(...) {}
     }
 }
 

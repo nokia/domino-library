@@ -213,6 +213,42 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, BugFix_noGapBetween_hdlr_and_autoRm)
     EXPECT_EQ(multiset<int>({1, 2}), this->hdlrIDs_) << "REQ: autoRm in time so 2 new hdlrs added succ";
 }
 
+#define EXCEPT
+// ***********************************************************************************************
+TYPED_TEST_P(FreeHdlrDominoTest, except_freeHdlr)
+{
+    int step = 0;
+    PARA_DOM->setHdlr("e1", [&step](){
+        step = 1;
+        throw std::runtime_error("hdlr except");
+    });
+    PARA_DOM->setState({{"e1", true}});
+    this->pongMsgSelf_();
+    EXPECT_EQ(1, step) << "REQ: FreeHdlrDom shall tolerate except hdlr";
+
+    PARA_DOM->setState({{"e1", false}});
+    PARA_DOM->setState({{"e1", true}});
+    this->pongMsgSelf_();
+    EXPECT_EQ(1, step) << "REQ: auto-rm still works after except";
+}
+TYPED_TEST_P(FreeHdlrDominoTest, except_repeatedHdlr)
+{
+    int step = 0;
+    PARA_DOM->repeatedHdlr("e1");
+    PARA_DOM->setHdlr("e1", [&step](){
+        step++;
+        throw std::runtime_error("hdlr except");
+    });
+    PARA_DOM->setState({{"e1", true}});
+    this->pongMsgSelf_();
+    EXPECT_EQ(1, step) << "REQ: repeated hdlr shall tolerate except";
+
+    PARA_DOM->setState({{"e1", false}});
+    PARA_DOM->setState({{"e1", true}});
+    this->pongMsgSelf_();
+    EXPECT_EQ(2, step) << "REQ: repeated hdlr still works after except";
+}
+
 #define MEM_LEAK
 // ***********************************************************************************************
 TYPED_TEST_P(FreeHdlrDominoTest, BugFix_noCrash_whenRmDom)
@@ -250,6 +286,8 @@ REGISTER_TYPED_TEST_SUITE_P(FreeHdlrDominoTest
     , GOLD_afterCallback_autoRmHdlr
     , afterCallback_autoRmHdlr_aliasMultiHdlr
     , multiCallbackOnRoad_noCrash_noMultiCall
+    , except_freeHdlr
+    , except_repeatedHdlr
     , BugFix_noCrash_whenRmDom
 
     , nonConstInterface_shall_createUnExistEvent_withStateFalse
