@@ -206,17 +206,19 @@ bool HdlrDomino<aDominoType>::setMsgSelfOK(const S_PTR<MsgSelf>& aMsgSelf) noexc
 }
 
 // ***********************************************************************************************
+inline void cb_hdlr(WeakMsgCB aWeakCB) noexcept
+{
+    if (auto cb = aWeakCB.lock()) {
+        try { (*(cb.get()))(); }  // setHdlr() forbid cb==null
+        catch(...) {}
+    }
+}
 template<class aDominoType>
 void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, Domino::Event aValidEv) noexcept
 {
     HID("(HdlrDom) trigger a new msg.");
     if (!msgSelf_->newMsgOK(
-        [weakMsgCB = WeakMsgCB(aValidHdlr)]() noexcept {
-            if (auto cb = weakMsgCB.lock()) {
-                try { (*(cb.get()))(); }  // setHdlr() forbid cb==null
-                catch(...) {}
-            }
-        },
+        [weakMsgCB = WeakMsgCB(aValidHdlr)]() noexcept { cb_hdlr(weakMsgCB); },
         getPriority(aValidEv)
     ))
     {

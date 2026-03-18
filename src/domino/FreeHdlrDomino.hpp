@@ -39,6 +39,7 @@ protected:
 
     void rmEv_(Domino::Event aValidEv) noexcept override;
 
+    static void cb_hdlr_(FreeHdlrDomino*, Domino::Event, const WeakMsgCB&) noexcept;
 private:
     // - bitmap & dyn expand, [event]=t/f
     // - don't know if repeated hdlrs are much less than non-repeated, so bitmap is simpler than set<Event>
@@ -99,18 +100,26 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, Do
     HID("(FreeHdlrDom) trigger a rm-then-call msg for en=" << this->evName_(aValidEv));
     if (!this->msgSelf_->newMsgOK(
         [self = this, aValidEv, weakHdlr = WeakMsgCB(aValidHdlr)]() noexcept {
-            auto hdlr = weakHdlr.lock();  // hdlr ok -> HdlrDom.map ok -> self/this ok
-            if (!hdlr)
-                return;
-            self->rmOneHdlrOK_(aValidEv, hdlr);
-            try { (*(hdlr.get()))(); }
-            catch(...) {}
+            cb_hdlr_(self, aValidEv, weakHdlr);
         },
         this->getPriority(aValidEv)
     ))
     {
         ERR("(FreeHdlrDom) Failed to newMsgOK for en=" << this->evName_(aValidEv));
     }
+}
+// - static, & aSelf than "this": avoid deref invalid "this" at very beginning of cb_hdlr_()
+// - member fn: FreeHdlrDomino* is a template
+template<class aDominoType>
+void FreeHdlrDomino<aDominoType>::cb_hdlr_(FreeHdlrDomino* aSelf, Domino::Event aValidEv, const WeakMsgCB& aWeakHdlr) noexcept
+{
+    auto hdlr = aWeakHdlr.lock();
+    if (! hdlr)
+        return;
+    // hdlr ok -> aFreeDom.map ok -> aFreeDom ok
+    aSelf->rmOneHdlrOK_(aValidEv, hdlr);
+    try { (*(hdlr.get()))(); }
+    catch(...) {}
 }
 
 }  // namespace
