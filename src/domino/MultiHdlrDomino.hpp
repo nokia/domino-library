@@ -43,7 +43,7 @@ public:
     // . cons: can NOT FreeHdlrDomino::repeatedHdlr() for each hdlr
     // . pros: 1 state, always sync
     // -------------------------------------------------------------------------------------------
-    Domino::Event multiHdlrOnSameEv(const Domino::EvName&, const MsgCB& aHdlr, const HdlrName&) noexcept;
+    Domino::Event multiHdlrOnSameEv(const Domino::EvName&, MsgCB aHdlr, const HdlrName&) noexcept;
 
     using aDominoType::rmOneHdlrOK;  // rm HdlrDom's by EvName
     [[nodiscard]] bool rmOneHdlrOK(const Domino::EvName&, const HdlrName&) noexcept;  // rm MultiDom's by HdlrName
@@ -87,7 +87,7 @@ void MultiHdlrDomino<aDominoType>::effect_(Domino::Event aEv) noexcept
 // ***********************************************************************************************
 template<class aDominoType>
 Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvName& aEvName,
-    const MsgCB& aHdlr, const HdlrName& aHdlrName) noexcept
+    MsgCB aHdlr, const HdlrName& aHdlrName) noexcept
 {
     // validate
     if (aHdlr == nullptr)
@@ -97,7 +97,7 @@ Domino::Event MultiHdlrDomino<aDominoType>::multiHdlrOnSameEv(const Domino::EvNa
     }
 
     // set hdlr
-    auto&& newHdlr = MAKE_PTR<MsgCB>(aHdlr);
+    auto&& newHdlr = MAKE_PTR<MsgCB>(std::move(aHdlr));
     auto&& ev = this->newEvent(aEvName);
 
     auto [ev_hdlrs, _] = ev_hdlrs_S_.try_emplace(ev);
