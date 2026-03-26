@@ -29,11 +29,6 @@ jobs:
 
     - uses: actions/checkout@v4
 
-    - uses: actions/cache@v4  # cache to speedup ci
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-gcovr
-
     - name: make ut
       run: cmake -Dci=cov -DCMAKE_CXX_COMPILER="g++" . && make -j
 
@@ -55,7 +50,7 @@ jobs:
           ./*gcov
           ./ut/CMakeFiles/UtLib.dir/domino/*PriDom*
 
-    - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238  # v4
+    - uses: codecov/codecov-action@v4
       if: always()
       with:
         file: ut/gcovr/cov.xml   # optional
