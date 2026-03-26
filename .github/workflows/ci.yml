@@ -9,10 +9,19 @@ on:
     branches: [ main ]
   schedule:
     - cron: '51-54 2 * * 4'  # 10:51-54am(BJ) every Thu
+  workflow_dispatch:
+
+permissions:
+  contents: read  # min permission
+
+concurrency:  # 1 PR multi-push, cance old
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
     - name: install valgrind
@@ -20,17 +29,22 @@ jobs:
 
     - uses: actions/checkout@v4
 
+    - uses: actions/cache@v4  # cache to speedup ci
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-gcovr
+
     - name: make ut
-      run: cmake -Dci=cov -DCMAKE_CXX_COMPILER="g++" . && make -j
+      run: cmake -B build -Dci=cov -DCMAKE_CXX_COMPILER="g++" && cmake --build build -j
 
     - name: ut
-      run: SLICE=always-malloc G_DEBUG=gc-friendly valgrind -v --tool=memcheck --leak-check=full --num-callers=40 --log-file=ut/gcovr/cov.valgrind.log --error-exitcode=6 ./ut_exe --gtest_brief=1
+      run: SLICE=always-malloc G_DEBUG=gc-friendly valgrind -v --tool=memcheck --leak-check=full --num-callers=40 --log-file=ut/gcovr/cov.valgrind.log --error-exitcode=6 ./build/ut_exe --gtest_brief=1
 
     - name: install gcovr
       run: pip install gcovr
 
     - name: ut coverage (ret=2 is fail-under-line, =4 is fail-under-branch)
-      run: gcovr -k --config=ut/gcovr/gcovr.cfg && ls -lR .
+      run: gcovr -k --config=ut/gcovr/gcovr.cfg --search-path build && ls -lR .
 
     - uses: actions/upload-artifact@v4
       if: always()
@@ -38,10 +52,10 @@ jobs:
         name: coverage-report
         path: |
           ./ut/gcovr/cov.*
-          ./*gcov
-          ./ut/CMakeFiles/UtLib.dir/domino/*PriDom*
+          ./build/**/*.gcov
+          ./build/ut/CMakeFiles/UtLib.dir/domino/*PriDom*
 
-    - uses: codecov/codecov-action@v4
+    - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238  # v4
       if: always()
       with:
         file: ut/gcovr/cov.xml   # optional
