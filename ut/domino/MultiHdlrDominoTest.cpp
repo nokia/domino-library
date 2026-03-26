@@ -10,6 +10,9 @@
 
 #include "UtInitObjAnywhere.hpp"
 
+using std::set;
+using std::string;
+
 namespace rlib
 {
 // ***********************************************************************************************

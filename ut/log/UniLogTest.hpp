@@ -6,7 +6,6 @@
 // ***********************************************************************************************
 #include <gtest/gtest.h>
 
-using namespace std;
 using namespace testing;
 
 namespace rlib
@@ -30,7 +29,7 @@ struct UNI_LOG_TEST : public Test
 
     // -------------------------------------------------------------------------------------------
     size_t nLog_;
-    const LogName logName_ = string(UnitTest::GetInstance()->current_test_info()->test_suite_name())
+    const LogName logName_ = std::string(UnitTest::GetInstance()->current_test_info()->test_suite_name())
         + '.' + UnitTest::GetInstance()->current_test_info()->name();
 
     // -------------------------------------------------------------------------------------------
@@ -45,7 +44,7 @@ struct UNI_LOG_TEST : public Test
         {
             INF("hello copy=" << this << " from=" << &rhs << ", nLog=" << nLog());
         }
-        ClassUsr(ClassUsr&& rhs) : UNI_LOG(move(rhs))
+        ClassUsr(ClassUsr&& rhs) : UNI_LOG(std::move(rhs))
         {
             INF("hello move=" << this << " from=" << &rhs << ", nLog=" << nLog());
             mvCalled_ = true;
@@ -106,7 +105,7 @@ TEST_F(UNI_LOG_TEST, GOLD_OneCellWith_classes_and_funcs)
 // ***********************************************************************************************
 TEST_F(UNI_LOG_TEST, withinOneCell_decouple_objects)
 {
-    auto classUsr = make_shared<ClassUsr>((logName_));
+    auto classUsr = std::make_shared<ClassUsr>((logName_));
     const auto len_1 = UNI_LOG::logLen(logName_);
     ASSERT_GT(len_1, 0) << "REQ: can log";
 
@@ -122,7 +121,7 @@ TEST_F(UNI_LOG_TEST, withinOneCell_decouple_objects)
 }
 TEST_F(UNI_LOG_TEST, withinOneCell_decouple_copies)
 {
-    auto classUsr = make_shared<ClassUsr>((logName_));
+    auto classUsr = std::make_shared<ClassUsr>((logName_));
     const auto len_1 = UNI_LOG::logLen(logName_);
     ASSERT_GT(len_1, 0) << "REQ: can log";
 
@@ -134,7 +133,7 @@ TEST_F(UNI_LOG_TEST, withinOneCell_decouple_copies)
     const auto len_3 = UNI_LOG::logLen(logName_);
     ASSERT_GT(len_3, len_2) << "REQ: ClassUsr-destructed shall not crash/impact copy's logging";
 
-    auto mv = move(copy);
+    auto mv = std::move(copy);
     ASSERT_TRUE(mv.mvCalled_);
     const auto len_4 = UNI_LOG::logLen(logName_);
     ASSERT_GT(len_4, len_3) << "REQ: log support mv construct";
@@ -149,11 +148,11 @@ TEST_F(UNI_LOG_TEST, withinOneCell_decouple_copies)
 }
 TEST_F(UNI_LOG_TEST, withinOneCell_decouple_callbackFuncs)
 {
-    auto classUsr = make_shared<ClassUsr>((logName_));
+    auto classUsr = std::make_shared<ClassUsr>((logName_));
     const auto len_1 = UNI_LOG::logLen(logName_);
     ASSERT_GT(len_1, 0) << "REQ: can log";
 
-    function<void()> cb = [oneLog = *classUsr]() mutable { INF("hello world, I'm a callback func"); };
+    std::function<void()> cb = [oneLog = *classUsr]() mutable { INF("hello world, I'm a callback func"); };
     const auto len_2 = UNI_LOG::logLen(logName_);
     ASSERT_GT(len_2, len_1) << "REQ: log still there (more log since no move-construct of ClassUsr)";
 

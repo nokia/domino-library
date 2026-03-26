@@ -19,8 +19,6 @@
 #include "ThreadBackViaMsgSelf.hpp"
 #include "UniLog.hpp"
 
-using namespace std;
-using namespace std::chrono;
 using namespace testing;
 
 namespace rlib
@@ -109,13 +107,13 @@ TEST_F(THREAD_BACK_TEST, GOLD_entryFnResult_toBackFn_withoutTimedWait)
 }
 TEST_F(THREAD_BACK_TEST, canHandle_someThreadDone_whileOtherRunning)
 {
-    atomic<bool> canEnd(false);
+    std::atomic<bool> canEnd(false);
     EXPECT_TRUE(threadBack_.newTaskOK(
         // MT_TaskEntryFN
         [&canEnd]()
         {
             while (not canEnd)
-                this_thread::yield();  // not end until instruction
+                std::this_thread::yield();  // not end until instruction
             return make_safe<bool>(true);
         },
         // TaskBackFN
@@ -150,13 +148,13 @@ TEST_F(THREAD_BACK_TEST, canHandle_someThreadDone_whileOtherRunning)
 // ***********************************************************************************************
 TEST_F(THREAD_BACK_TEST, GOLD_entryFn_notify_insteadof_timeout)
 {
-    auto start = high_resolution_clock::now();
+    auto start = std::chrono::high_resolution_clock::now();
     EXPECT_TRUE(threadBack_.newTaskOK(
         [] { return make_safe<bool>(true); },  // entryFn
         [](SafePtr<void>) {}  // backFn
     )) << "REQ: newTaskOK";
     timedwait(0, 500'000'000);  // long timer to ensure thread done beforehand
-    auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - start);
+    auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start);
     EXPECT_LT(dur.count(), 500) << "REQ: entryFn end shall notify g_semToMainTH instead of timeout";
 
     while (threadBack_.hdlDoneFut() == 0)  // clear all threads
@@ -167,12 +165,12 @@ TEST_F(THREAD_BACK_TEST, GOLD_entryFn_notify_insteadof_timeout)
 // ***********************************************************************************************
 TEST_F(THREAD_BACK_TEST, GOLD_except_entryFN_backFN)
 {
-    atomic<int> step{0};
+    std::atomic<int> step{0};
     EXPECT_TRUE(threadBack_.newTaskOK(
         [&step]  // entryFN()
         {
             ++step;
-            throw runtime_error("entryFN() exception");
+            throw std::runtime_error("entryFN() exception");
             return make_safe<bool>(true);
         },
         [&step](SafePtr<void> aRet)  // backFN()
@@ -180,7 +178,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_except_entryFN_backFN)
             EXPECT_EQ(1, step.load()) << "REQ: entryFN() executed";
             EXPECT_EQ(nullptr, aRet.get()) << "REQ: entryFN() except -> aRet=null";
             ++step;
-            throw runtime_error("backFN() exception");
+            throw std::runtime_error("backFN() exception");
         }
     ));
     while (threadBack_.hdlDoneFut() < 1) {  // REQ: counter++ after entryFN() except
@@ -218,13 +216,13 @@ TEST_F(THREAD_BACK_TEST, invalid_msgSelf_entryFN_backFN)
 }
 TEST_F(THREAD_BACK_TEST, bugFix_nDoneFut_before_futureReady)
 {
-    atomic<bool> canEnd(false);
+    std::atomic<bool> canEnd(false);
     EXPECT_TRUE(threadBack_.newTaskOK(
         // MT_TaskEntryFN
         [&canEnd]()
         {
             while (not canEnd)
-                this_thread::yield();  // not end until instruction
+                std::this_thread::yield();  // not end until instruction
             return make_safe<bool>(true);
         },
         // TaskBackFN
@@ -243,16 +241,16 @@ TEST_F(THREAD_BACK_TEST, bugFix_nDoneFut_before_futureReady)
 // ***********************************************************************************************
 TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simulate real world
 {
-    set<string> cb_info;
+    std::set<std::string> cb_info;
 
     // setup msg handler table for mt_getQ()
     EXPECT_EQ(0u, mt_getQ().nHdlr())  << "REQ: init no hdlr";
-    EXPECT_TRUE(mt_getQ().setHdlrOK<string>([this, &cb_info](UniPtr aMsg)
+    EXPECT_TRUE(mt_getQ().setHdlrOK<std::string>([this, &cb_info](UniPtr aMsg)
     {
         EXPECT_TRUE(msgSelf_->newMsgOK(  // REQ: via MsgSelf
             [aMsg, &cb_info]
             {
-                EXPECT_EQ("a", *(STATIC_PTR_CAST<string>(aMsg).get()));
+                EXPECT_EQ("a", *(STATIC_PTR_CAST<std::string>(aMsg).get()));
                 cb_info.emplace("REQ: a's Q hdlr via MsgSelf");
             }
         )) << "REQ: enqueue msg";
@@ -276,7 +274,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     EXPECT_TRUE(threadBack_.newTaskOK(
         // entryFn
         [] {
-            EXPECT_TRUE(mt_getQ().mt_pushOK(MAKE_PTR<string>("a"))) << "REQ: push OK";
+            EXPECT_TRUE(mt_getQ().mt_pushOK(MAKE_PTR<std::string>("a"))) << "REQ: push OK";
             return make_safe<bool>(true);
         },
         // backFn
@@ -305,7 +303,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     )) << "REQ: newTaskOK";
 
     // simulate main()
-    const set<string> expect = {"REQ: a's Q hdlr via MsgSelf", "REQ: a's backFn via MsgSelf",
+    const std::set<std::string> expect = {"REQ: a's Q hdlr via MsgSelf", "REQ: a's backFn via MsgSelf",
         "REQ: 2's Q hdlr via MsgSelf", "REQ: 2's backFn via MsgSelf"};
     for (;;)
     {
@@ -333,11 +331,11 @@ TEST_F(THREAD_BACK_TEST, timeout)
 {
     timedwait(0, size_t(-1));  // REQ: invalid ns>=1000ms, no die (& clear previous mt_notify if existed)
 
-    auto now = high_resolution_clock::now();
+    auto now = std::chrono::high_resolution_clock::now();
     INF("start");
     timedwait();
     INF("end");
-    auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - now);
+    auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
     EXPECT_GE(dur.count(), 100) << "REQ: default timeout=100ms";
 
     timedwait(0, 0);  // REQ: immediate timeout to inc cov

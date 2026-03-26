@@ -9,6 +9,8 @@
 
 #include "UtInitObjAnywhere.hpp"
 
+using std::set;
+
 namespace rlib
 {
 // ***********************************************************************************************
@@ -76,7 +78,7 @@ TYPED_TEST_P(HdlrDominoTest, except_hdlr)
     int step = 0;
     PARA_DOM->setHdlr("event", [&step](){
         step = 1;
-        throw runtime_error("hdlr except");
+        throw std::runtime_error("hdlr except");
         step = 2;
     });
     PARA_DOM->setState({{"event", true}});

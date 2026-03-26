@@ -10,6 +10,8 @@
 #include "UniPtr.hpp"
 #include "UtInitObjAnywhere.hpp"
 
+using std::string;
+
 namespace rlib
 {
 // ***********************************************************************************************

@@ -30,7 +30,6 @@
 #define NO_FREE_DOM (ObjAnywhere::getObj<MaxNofreeDom>().get())
 #define PARA_DOM    (ObjAnywhere::getObj<TypeParam>   ().get())
 
-using namespace std;
 using namespace testing;
 
 namespace rlib

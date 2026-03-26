@@ -4,6 +4,10 @@
 #undef   THREAD_BACK_TYPE
 #undef   THREAD_BACK_TEST
 
+using std::chrono::duration_cast;
+using std::chrono::high_resolution_clock;
+using std::chrono::microseconds;
+
 namespace rlib
 {
 // ***********************************************************************************************
@@ -29,14 +33,14 @@ TEST_F(ThPoolBackTest, performance)
         EXPECT_TRUE(thPoolBack.newTaskOK(
             []  // entryFn
             {
-                this_thread::yield();  // hung like real time-cost task
+                std::this_thread::yield();  // hung like real time-cost task
                 return make_safe<bool>(true);
             },
             [](SafePtr<void>) {}  // backFn
         ));
     for (size_t nHandled = 0; nHandled < maxThread; nHandled += thPoolBack.hdlDoneFut())
         timedwait();
-    auto dur = duration_cast<chrono::microseconds>(high_resolution_clock::now() - start);
+    auto dur = duration_cast<microseconds>(high_resolution_clock::now() - start);
     HID("ThPoolBack cost=" << dur.count() << "us");
     // - belinb03 :  8~ 20 faster than AsyncBack
     // - github ci: 40~100 slower than AsyncBack
@@ -47,14 +51,14 @@ TEST_F(ThPoolBackTest, performance)
         EXPECT_TRUE(asyncBack.newTaskOK(
             []  // entryFn
             {
-                this_thread::yield();  // hung like real time-cost task
+                std::this_thread::yield();  // hung like real time-cost task
                 return make_safe<bool>(true);
             },
             [](SafePtr<void>) {}  // backFn
         ));
     for (size_t nHandled = 0; nHandled < maxThread; nHandled += asyncBack.hdlDoneFut())
         timedwait();
-    dur = duration_cast<chrono::microseconds>(high_resolution_clock::now() - start);
+    dur = duration_cast<microseconds>(high_resolution_clock::now() - start);
     HID("AsyncBack cost=" << dur.count() << "us");
 }
 

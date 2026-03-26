@@ -10,6 +10,9 @@
 
 #include "UtInitObjAnywhere.hpp"
 
+using std::queue;
+using std::set;
+
 namespace rlib
 {
 // ***********************************************************************************************

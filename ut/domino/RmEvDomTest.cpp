@@ -9,6 +9,9 @@
 
 #include "UtInitObjAnywhere.hpp"
 
+using std::multiset;
+using std::set;
+
 namespace rlib
 {
 // ***********************************************************************************************
