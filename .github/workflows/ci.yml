@@ -35,16 +35,16 @@ jobs:
         key: ${{ runner.os }}-pip-gcovr
 
     - name: make ut
-      run: cmake -B build -Dci=cov -DCMAKE_CXX_COMPILER="g++" && cmake --build build -j
+      run: cmake -Dci=cov -DCMAKE_CXX_COMPILER="g++" . && make -j
 
     - name: ut
-      run: SLICE=always-malloc G_DEBUG=gc-friendly valgrind -v --tool=memcheck --leak-check=full --num-callers=40 --log-file=ut/gcovr/cov.valgrind.log --error-exitcode=6 ./build/ut_exe --gtest_brief=1
+      run: SLICE=always-malloc G_DEBUG=gc-friendly valgrind -v --tool=memcheck --leak-check=full --num-callers=40 --log-file=ut/gcovr/cov.valgrind.log --error-exitcode=6 ./ut_exe --gtest_brief=1
 
     - name: install gcovr
       run: pip install gcovr
 
     - name: ut coverage (ret=2 is fail-under-line, =4 is fail-under-branch)
-      run: gcovr -k --config=ut/gcovr/gcovr.cfg --search-path build && ls -lR .
+      run: gcovr -k --config=ut/gcovr/gcovr.cfg && ls -lR .
 
     - uses: actions/upload-artifact@v4
       if: always()
@@ -52,8 +52,8 @@ jobs:
         name: coverage-report
         path: |
           ./ut/gcovr/cov.*
-          ./build/**/*.gcov
-          ./build/ut/CMakeFiles/UtLib.dir/domino/*PriDom*
+          ./*gcov
+          ./ut/CMakeFiles/UtLib.dir/domino/*PriDom*
 
     - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238  # v4
       if: always()
