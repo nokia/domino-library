@@ -61,7 +61,7 @@ public:
     using EvName     = std::string;
     using SimuEvents = std::map<EvName, bool>;  // not unordered-map since most traversal
     using EvNames    = std::unordered_map<Event, EvName>;  // map is less mem than vector<EvName>
-    using EvLinks    = std::map<Event, Events>;
+    using EvLinks    = std::unordered_map<Event, Events>;
 
     enum : Event
     {
@@ -119,8 +119,8 @@ private:
     // -------------------------------------------------------------------------------------------
     std::vector<bool>                 states_;               // bitmap & dyn expand, [event]=t/f
 
-    EvLinks                           prev_[N_EVENT_STATE];  // not unordered-map since most traversal
-    EvLinks                           next_[N_EVENT_STATE];  // not unordered-map since most traversal
+    EvLinks                           prev_[N_EVENT_STATE];  // unordered for O(1) lookup
+    EvLinks                           next_[N_EVENT_STATE];  // unordered for O(1) lookup
     std::unordered_map<EvName, Event> en_ev_;                // [evName]=event
     EvNames                           ev_en_;                // [event]=evName for easy debug
     std::unordered_set<Event>         effectEVs_;
