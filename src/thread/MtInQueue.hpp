@@ -63,7 +63,7 @@ public:
     template<class aEleType> [[nodiscard]] bool setHdlrOK(EleHdlr) noexcept;  // except eg bad_alloc: can't recover->terminate
     size_t handleAllEle() noexcept;
     [[nodiscard]] auto nHdlr() const noexcept { return tid_hdlr_S_.size(); }
-    void clearHdlrPool() noexcept { tid_hdlr_S_.clear(); }
+    void clearHdlrPool() noexcept { decltype(tid_hdlr_S_)().swap(tid_hdlr_S_); }
 
 private:
     std::deque<ELE_TID>::iterator begin_() noexcept;

@@ -88,7 +88,7 @@ void MtInQueue::mt_clearElePool() noexcept
 
     mt_queue_.clear();
     cache_.clear();
-    tid_hdlr_S_.clear();
+    decltype(tid_hdlr_S_)().swap(tid_hdlr_S_);
 }
 
 // ***********************************************************************************************

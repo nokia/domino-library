@@ -54,7 +54,7 @@ void Domino::effect_() noexcept
     for (auto&& ev : effectEVs_)
         if (states_[ev] == true)  // avoid multi-change; skip bounds check since effectEVs_ are validated
             effect_(ev);
-    effectEVs_.clear();
+    decltype(effectEVs_)().swap(effectEVs_);  // may safer & faster than clear()
 }
 
 // ***********************************************************************************************
