@@ -49,12 +49,12 @@ public:
     [[nodiscard]] virtual size_t nHdlr(const Domino::EvName& aEN) const noexcept { return ev_hdlr_S_.count(this->getEventBy(aEN)); }
 
     // -------------------------------------------------------------------------------------------
-    // - add a new ev=aAliasEN to store aHdlr (aAliasEN's true prev is aHostEN)
-    // . pros: can FreeHdlrDomino::repeatedHdlr() for each hdlr
-    // . cons: the state of aHostEN & aAliasEN may not sync
+    // - alternative to MultiHdlrDomino::multiHdlrOnSameEv():
+    //   . each hdlr owns its own event, so can independently repeatedHdlr()/rmOneHdlrOK()/etc
+    //   . cons: the state of aTriggerEN & aNewEN may not always sync
     // -------------------------------------------------------------------------------------------
-    Domino::Event multiHdlrByAliasEv(const Domino::EvName& aAliasEN, MsgCB aHdlr,
-        const Domino::EvName& aHostEN) noexcept;
+    Domino::Event setLinkedHdlr(const Domino::EvName& aNewEN, MsgCB aHdlr,
+        const Domino::EvName& aTriggerEN) noexcept;
 
     [[nodiscard]] virtual EMsgPriority getPriority(Domino::Event) const noexcept { return EMsgPri_NORM; }
 
@@ -88,6 +88,8 @@ HdlrDomino<aDominoType>::HdlrDomino(const LogName& aUniLogName) : aDominoType(aU
 template<class aDominoType>
 void HdlrDomino<aDominoType>::effect_(Domino::Event aEv) noexcept
 {
+    aDominoType::effect_(aEv);
+
     // validate
     auto&& ev_hdlr = ev_hdlr_S_.find(aEv);
     if (ev_hdlr == ev_hdlr_S_.end())
@@ -99,23 +101,23 @@ void HdlrDomino<aDominoType>::effect_(Domino::Event aEv) noexcept
 
 // ***********************************************************************************************
 template<class aDominoType>
-Domino::Event HdlrDomino<aDominoType>::multiHdlrByAliasEv(const Domino::EvName& aAliasEN,
-    MsgCB aHdlr, const Domino::EvName& aHostEN) noexcept
+Domino::Event HdlrDomino<aDominoType>::setLinkedHdlr(const Domino::EvName& aNewEN,
+    MsgCB aHdlr, const Domino::EvName& aTriggerEN) noexcept
 {
-    if (this->getEventBy(aAliasEN) != Domino::D_EVENT_FAILED_RET)
+    if (this->getEventBy(aNewEN) != Domino::D_EVENT_FAILED_RET)
     {
-        ERR("(HdlrDom) fail since already exist en=" << aAliasEN << " to avoid complex scenario"
+        ERR("(HdlrDom) fail since already exist en=" << aNewEN << " to avoid complex scenario"
             " eg setHdlr() ok but setPrev() failed, or setHdlr() cb but setPrev() unsatisfied");
         return Domino::D_EVENT_FAILED_RET;
     }
 
     // set hdlr
-    auto&& newEv = this->setHdlr(aAliasEN, std::move(aHdlr));
+    auto&& newEv = this->setHdlr(aNewEN, std::move(aHdlr));
     if (newEv == Domino::D_EVENT_FAILED_RET)  // setHdlr failed
         return Domino::D_EVENT_FAILED_RET;
 
     // auto set prev
-    return this->setPrev(aAliasEN, {{aHostEN, true}});
+    return this->setPrev(aNewEN, {{aTriggerEN, true}});
 }
 
 // ***********************************************************************************************

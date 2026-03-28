@@ -93,7 +93,7 @@ TYPED_TEST_P(FreeHdlrDominoTest, GOLD_afterCallback_autoRmHdlr)
 }
 TYPED_TEST_P(FreeHdlrDominoTest, afterCallback_autoRmHdlr_aliasMultiHdlr)
 {
-    auto aliasE1 = PARA_DOM->multiHdlrByAliasEv("alias e1", this->h3_, "e1");
+    auto aliasE1 = PARA_DOM->setLinkedHdlr("alias e1", this->h3_, "e1");
     EXPECT_FALSE(PARA_DOM->isRepeatHdlr(aliasE1));
 
     PARA_DOM->setState({{"e1", true}});
@@ -109,7 +109,7 @@ TYPED_TEST_P(FreeMultiHdlrDominoTest, afterCallback_autoRmHdlr_multiHdlr)
 {
     auto e1 = PARA_DOM->setHdlr("e1", this->h1_);
     PARA_DOM->multiHdlrOnSameEv("e1", this->h2_, "h2_");
-    auto aliasE1 = PARA_DOM->multiHdlrByAliasEv("alias e1", this->h3_, "e1");
+    auto aliasE1 = PARA_DOM->setLinkedHdlr("alias e1", this->h3_, "e1");
     EXPECT_FALSE(PARA_DOM->isRepeatHdlr(e1));
     EXPECT_FALSE(PARA_DOM->isRepeatHdlr(aliasE1));
 

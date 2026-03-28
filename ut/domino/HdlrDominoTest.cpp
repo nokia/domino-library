@@ -110,8 +110,8 @@ TYPED_TEST_P(HdlrDominoTest, immediate_chain_call)
 TYPED_TEST_P(NofreeHdlrDominoTest, GOLD_trigger_chain_many_calls)
 {
     PARA_DOM->setHdlr("e0", this->hdlr0_);
-    PARA_DOM->multiHdlrByAliasEv("e1", this->hdlr1_, "e0");
-    PARA_DOM->multiHdlrByAliasEv("e2", this->hdlr2_, "e1");
+    PARA_DOM->setLinkedHdlr("e1", this->hdlr1_, "e0");
+    PARA_DOM->setLinkedHdlr("e2", this->hdlr2_, "e1");
 
     EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1());
@@ -155,8 +155,8 @@ TYPED_TEST_P(HdlrDominoTest, multiHdlr_onOneEvent_nok)
 TYPED_TEST_P(HdlrDominoTest, GOLD_multiHdlr_onDiffEvent_ok)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);
-    PARA_DOM->multiHdlrByAliasEv("alias event", this->hdlr1_, "event");  // req: accept on alias ev
-    PARA_DOM->multiHdlrByAliasEv("alias-2", this->hdlr2_, "event");      // req: accept on diff alias
+    PARA_DOM->setLinkedHdlr("alias event", this->hdlr1_, "event");  // req: accept on alias ev
+    PARA_DOM->setLinkedHdlr("alias-2", this->hdlr2_, "event");      // req: accept on diff alias
 
     EXPECT_CALL(*this, hdlr0());
     EXPECT_CALL(*this, hdlr1());
@@ -167,11 +167,11 @@ TYPED_TEST_P(HdlrDominoTest, GOLD_multiHdlr_onDiffEvent_ok)
 TYPED_TEST_P(HdlrDominoTest, multiHdlr_onOneAliasEvent_nok)
 {
     PARA_DOM->setHdlr("event", this->hdlr0_);
-    PARA_DOM->multiHdlrByAliasEv("alias event", this->hdlr1_, "event");
-    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->multiHdlrByAliasEv("alias event", this->hdlr2_, "event"))
+    PARA_DOM->setLinkedHdlr("alias event", this->hdlr1_, "event");
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setLinkedHdlr("alias event", this->hdlr2_, "event"))
         << "REQ: refuse overwrite hdlr";
     PARA_DOM->newEvent("create alias");
-    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->multiHdlrByAliasEv("create alias", this->hdlr2_, "event"))
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setLinkedHdlr("create alias", this->hdlr2_, "event"))
         << "REQ: refuse existing ev as alias to avoid handling complex scenario";
 
     EXPECT_CALL(*this, hdlr0());
@@ -185,7 +185,7 @@ TYPED_TEST_P(HdlrDominoTest, BugFix_invalidHdlr_noCrash)
     PARA_DOM->setHdlr("e1", nullptr);
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("e1")) << "REQ: not create new Ev";
 
-    PARA_DOM->multiHdlrByAliasEv("alias e1", nullptr, "e1");
+    PARA_DOM->setLinkedHdlr("alias e1", nullptr, "e1");
     EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("alias e1")) << "REQ: not create new Ev";
 
     PARA_DOM->setState({{"e1", true}});  // req: no crash
@@ -195,7 +195,7 @@ TYPED_TEST_P(HdlrDominoTest, BugFix_invalidHdlr_noCrash)
     this->pongMsgSelf_();
 
     EXPECT_CALL(*this, hdlr1());  // REQ: can add hdlr upon null
-    PARA_DOM->multiHdlrByAliasEv("alias e1", this->hdlr1_, "e1");
+    PARA_DOM->setLinkedHdlr("alias e1", this->hdlr1_, "e1");
     this->pongMsgSelf_();
 }
 
@@ -229,8 +229,8 @@ TYPED_TEST_P(HdlrDominoTest, rmHdlr_fail)
 // ***********************************************************************************************
 TYPED_TEST_P(HdlrDominoTest, rmHdlrOnRoad_noCallback)
 {
-    PARA_DOM->multiHdlrByAliasEv("e0", this->hdlr0_, "e");
-    PARA_DOM->multiHdlrByAliasEv("e1", this->hdlr1_, "e");
+    PARA_DOM->setLinkedHdlr("e0", this->hdlr0_, "e");
+    PARA_DOM->setLinkedHdlr("e1", this->hdlr1_, "e");
     PARA_DOM->setState({{"e", true}});  // cb on road
     EXPECT_TRUE(MSG_SELF->nMsg());
     EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("e0")) << "REQ: rm hdlr on-road";
@@ -337,8 +337,8 @@ TYPED_TEST_P(HdlrDominoTest, nonConstInterface_shall_createUnExistEvent_withStat
     EXPECT_EQ(1u, this->uniqueEVs_.size());
     EXPECT_FALSE(PARA_DOM->state("e1"));
 
-    PARA_DOM->multiHdlrByAliasEv("e2", this->hdlr2_, "e3");
-    PARA_DOM->multiHdlrByAliasEv("e2", this->hdlr2_, "e3");
+    PARA_DOM->setLinkedHdlr("e2", this->hdlr2_, "e3");
+    PARA_DOM->setLinkedHdlr("e2", this->hdlr2_, "e3");
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e2"));
     EXPECT_EQ(2u, this->uniqueEVs_.size());
     this->uniqueEVs_.insert(PARA_DOM->getEventBy("e3"));

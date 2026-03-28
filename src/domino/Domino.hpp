@@ -95,7 +95,7 @@ protected:
     virtual void  effect_(Event aEv) noexcept {}  // can't const since FreeDom will rm hdlr
 
     // - rm self dom's resource (RISK: aEv's leaf(s) may become orphan!!!)
-    // - virtual for each dom (& trigger base to free its resource)
+    // - virtual for each dom: MUST call aDominoType::rmEv_() to chain base cleanup
     virtual void  rmEv_(Event aValidEv) noexcept;
     virtual Event recycleEv_() noexcept { return D_EVENT_FAILED_RET; }
 
