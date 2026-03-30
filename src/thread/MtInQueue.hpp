@@ -79,7 +79,7 @@ private:
     // -------------------------------------------------------------------------------------------
 #ifdef IN_GTEST
 public:
-    std::mutex& backdoor() { return mt_mutex_; }
+    [[nodiscard]] std::unique_lock<std::mutex> lockBackdoor() { return std::unique_lock<std::mutex>(mt_mutex_); }
 #endif
 };
 

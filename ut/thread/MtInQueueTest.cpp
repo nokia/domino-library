@@ -118,17 +118,19 @@ TEST_F(MtInQueueTest, pushWakeup_popNoBlockAndWakeup)
 {
     EXPECT_TRUE(mt_getQ().mt_pushOK(MAKE_PTR<string>("1st"))) << "REQ: push OK";
     EXPECT_TRUE(mt_getQ().mt_pushOK(MAKE_PTR<string>("2nd"))) << "REQ: push OK";
-    mt_getQ().backdoor().lock();
-    timedwait(600);  // REQ: not blocked 10min but waked by prev push
+    {
+        auto guard = mt_getQ().lockBackdoor();
+        timedwait(600);  // REQ: not blocked 10min but waked by prev push
 
-    ASSERT_EQ(nullptr, mt_getQ().pop<void>().get());
-    timedwait(600);  // REQ: not blocked but waked by pop() that can't access queue_
-    mt_getQ().backdoor().unlock();
+        ASSERT_EQ(nullptr, mt_getQ().pop<void>().get());
+        timedwait(600);  // REQ: not blocked but waked by pop() that can't access queue_
+    }
     ASSERT_EQ("1st", *(mt_getQ().pop<string>().get())) << "REQ: timedwait() not blocked but waked by failed pop()";
 
-    mt_getQ().backdoor().lock();
-    ASSERT_EQ("2nd", *(mt_getQ().pop<string>().get())) << "REQ: no-blocked pop from cache";
-    mt_getQ().backdoor().unlock();
+    {
+        auto guard = mt_getQ().lockBackdoor();
+        ASSERT_EQ("2nd", *(mt_getQ().pop<string>().get())) << "REQ: no-blocked pop from cache";
+    }
 }
 TEST_F(MtInQueueTest, push_null_NOK)
 {
@@ -175,9 +177,10 @@ TEST_F(MtInQueueTest, sizeQ_block_nonBlock)
     ASSERT_EQ(1u, mt_getQ().mt_size(true )) << "REQ: inc blocked size";
     ASSERT_EQ(1u, mt_getQ().mt_size(false)) << "REQ: inc unblocked size";
 
-    mt_getQ().backdoor().lock();
-    ASSERT_EQ(0u, mt_getQ().mt_size(false)) << "REQ: sizeQ can be unblocked (blocked will hang)";
-    mt_getQ().backdoor().unlock();
+    {
+        auto guard = mt_getQ().lockBackdoor();
+        ASSERT_EQ(0u, mt_getQ().mt_size(false)) << "REQ: sizeQ can be unblocked (blocked will hang)";
+    }
 
     EXPECT_TRUE(mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(2))) << "REQ: push OK";
     EXPECT_EQ(1, *mt_getQ().pop<int>().get());
@@ -188,9 +191,10 @@ TEST_F(MtInQueueTest, sizeQ_block_nonBlock)
     ASSERT_EQ(2u, mt_getQ().mt_size(true )) << "REQ: re-inc blocked size (now 1 in cache_, 1 in queue)";
     ASSERT_EQ(2u, mt_getQ().mt_size(false)) << "REQ: re-inc unblocked size";
 
-    mt_getQ().backdoor().lock();
-    ASSERT_EQ(1u, mt_getQ().mt_size(false)) << "REQ: sizeQ can be unblocked (get cache_ only)";
-    mt_getQ().backdoor().unlock();
+    {
+        auto guard = mt_getQ().lockBackdoor();
+        ASSERT_EQ(1u, mt_getQ().mt_size(false)) << "REQ: sizeQ can be unblocked (get cache_ only)";
+    }
 }
 
 #define DESTRUCT
@@ -218,9 +222,10 @@ TEST_F(MtInQueueTest, clear_queue_cache_hdlr)
     EXPECT_NE(nullptr, popped.first.get()) << "REQ: pop from cache";
     EXPECT_TRUE(mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(3))) << "REQ: push OK";
 
-    mt_getQ().backdoor().lock();
-    ASSERT_EQ(1u, mt_getQ().mt_size(false)) << "1 in cache_";
-    mt_getQ().backdoor().unlock();
+    {
+        auto guard = mt_getQ().lockBackdoor();
+        ASSERT_EQ(1u, mt_getQ().mt_size(false)) << "1 in cache_";
+    }
     EXPECT_EQ(2u, mt_getQ().mt_size(true)) << "1 in queue_";
 
     EXPECT_TRUE(mt_getQ().setHdlrOK<int>([](UniPtr){})) << "REQ: set hdlr";
@@ -253,11 +258,11 @@ TEST_F(MtInQueueTest, GOLD_handle_bothCacheAndQueue_ifPossible_withoutBlocked)
     EXPECT_TRUE(mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(1))) << "REQ: push OK";  // and 1 ele in queue_
     EXPECT_EQ(2u, mt_getQ().mt_size(true));
 
-    mt_getQ().backdoor().lock();
-    EXPECT_EQ(1u, mt_getQ().handleAllEle()) << "REQ: handle cache_, avoid blocked on queue_";
-    EXPECT_EQ(1u, nCalled);
-
-    mt_getQ().backdoor().unlock();
+    {
+        auto guard = mt_getQ().lockBackdoor();
+        EXPECT_EQ(1u, mt_getQ().handleAllEle()) << "REQ: handle cache_, avoid blocked on queue_";
+        EXPECT_EQ(1u, nCalled);
+    }
     mt_getQ().handleAllEle();
     EXPECT_EQ(0u, mt_getQ().mt_size(true)) << "REQ: shall handle queue_ since unlocked";
     EXPECT_EQ(2u, nCalled);

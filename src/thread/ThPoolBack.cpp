@@ -71,7 +71,7 @@ ThPoolBack::~ThPoolBack() noexcept
 // ***********************************************************************************************
 void ThPoolBack::clean_() noexcept
 {
-    mt_stopAllTH_ = true;
+    mt_stopAllTH_.store(true, std::memory_order_release);
     mt_qCv_.notify_all();
 
     for (auto&& th : thPool_)
