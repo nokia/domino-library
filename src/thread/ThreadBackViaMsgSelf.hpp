@@ -26,8 +26,12 @@ namespace rlib
 inline void cb_backFN(const TaskBackFN& aBackFN, const S_PTR<MsgSelf>& aMsgSelf,
     EMsgPriority aPri, SafePtr<void> aRet) noexcept
 {
-    if (!aMsgSelf->newMsgOK(bind(aBackFN, std::move(aRet)), aPri))
+    if (!aMsgSelf->newMsgOK(
+        [aBackFN,
+        ret = std::move(aRet)]() mutable noexcept { aBackFN(std::move(ret)); }, aPri)
+    ) {
         ERR("(viaMsgSelf) Failed to newMsgOK for aPri=" << aPri);
+    }
 }
 
 // wrap TaskBackFN to MsgSelf
