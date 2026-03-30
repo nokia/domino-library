@@ -126,11 +126,13 @@ void Domino::pureRmLink_(Event aValidEv, EvLinks& aMyLinks, EvLinks& aNeighborLi
     // rm neighbor's link
     for (auto&& peerEv : findPeerEVs(aValidEv, aMyLinks))
     {
-        auto&& neighborLinks = aNeighborLinks[peerEv];
-        if (neighborLinks.size() <= 1)
-            aNeighborLinks.erase(peerEv);  // erase entire
+        auto it = aNeighborLinks.find(peerEv);
+        if (it == aNeighborLinks.end())
+            continue;
+        if (it->second.size() <= 1)
+            aNeighborLinks.erase(it);  // erase entire
         else
-            neighborLinks.erase(aValidEv);  // erase 1
+            it->second.erase(aValidEv);  // erase 1
     }
 
     // rm my link
@@ -158,7 +160,7 @@ bool Domino::pureSetStateOK_(Event aValidEv, const bool aNewState) noexcept
     if (states_[aValidEv] != aNewState)  // do need change
     {
         states_[aValidEv] = aNewState;
-        HID("(Domino) Succeed, EvName=" << ev_en_[aValidEv] << " newState=" << aNewState);
+        HID("(Domino) Succeed, EvName=" << evName_(aValidEv) << " newState=" << aNewState);
         if (aNewState == true)
             effectEVs_.insert(aValidEv);
         return true;
@@ -182,7 +184,7 @@ void Domino::rmEv_(Event aValidEv) noexcept
 
     // rm self resrc
     pureSetStateOK_(aValidEv, false);  // must before clean ev_en_
-    en_ev_.erase(ev_en_[aValidEv]);
+    en_ev_.erase(evName_(aValidEv));
     auto ret = ev_en_.erase(aValidEv);
     HID("[Domino] ev=" << aValidEv << ", ret=" << ret);
 
