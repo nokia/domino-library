@@ -146,7 +146,7 @@ TEST_F(MsgSelfTest, wait_notify)
 {
     auto start = high_resolution_clock::now();
     EXPECT_TRUE(msgSelf_->newMsgOK(d1MsgHdlr_)) << "REQ: new msg OK";
-    timedwait(0, 100);  // REQ: 1 msg will wakeup MT_Semaphore::timedwait()
+    timedwait(0, 100);  // REQ: 1 msg will wakeup MT_Notifier::timedwait()
     auto dur = duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - start);
     EXPECT_LT(dur.count(), 100) << "REQ: newMsgOK() shall notify instead of timeout";
 

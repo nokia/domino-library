@@ -10,7 +10,7 @@
 #include <thread>
 #include <unistd.h>
 
-#include "MT_Semaphore.hpp"
+#include "MT_Notifier.hpp"
 #include "UniLog.hpp"
 #include "UniPtr.hpp"
 
@@ -245,7 +245,7 @@ TEST_F(MtInQueueTest, cov_destructor)
 
 #define HDLR
 // ***********************************************************************************************
-// normal covered by MT_SemaphoreTest
+// normal covered by MT_NotifierTest
 TEST_F(MtInQueueTest, GOLD_handle_bothCacheAndQueue_ifPossible_withoutBlocked)
 {
     // init

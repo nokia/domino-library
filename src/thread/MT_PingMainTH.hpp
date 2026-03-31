@@ -7,28 +7,27 @@
 // - Why/VALUE:
 //   . help eg MsgSelf, ThreadBack, MtInQueue to wakeup main thread by mt_pingMainTH()
 //     . simpler than para to constructing above class(es)
-//   . can base on MT_Semaphore
+//   . can base on MT_Notifier
 //     . this file is an example, users can define their own MT_PingMainTH.hpp - eg condition_variable
 // - MT safe: yes
 // - mem safe: yes
 // ***********************************************************************************************
 #pragma once
 
-#include "MT_Semaphore.hpp"
+#include "MT_Notifier.hpp"
 
 namespace rlib
 {
 // ***********************************************************************************************
 // - can't use ObjAnywhere that is not MT safe
-// - REQ: usr shall not use g_semToMainTH, otherwise impl change may impact his/her code
-extern MT_Semaphore g_semToMainTH;
+// - REQ: usr shall not use g_notifMainTH, otherwise impl change may impact his/her code
+extern MT_Notifier g_notifMainTH;
 
 // ***********************************************************************************************
 // - REQ: can provide diff impl w/o usr code change
-// - sem is better since can wakeup later wait(), while condition_variable can NOT
 inline void mt_pingMainTH()
 {
-    g_semToMainTH.mt_notify();
+    g_notifMainTH.mt_notify();
 }
 
 // ***********************************************************************************************
@@ -37,7 +36,7 @@ inline void mt_pingMainTH()
 // - REQ: timer guarantee no wait forever
 inline void timedwait(const size_t aSec = 0, const size_t aRestNsec = 100'000'000)
 {
-    g_semToMainTH.timedwait(aSec, aRestNsec);
+    g_notifMainTH.timedwait(aSec, aRestNsec);
 }
 
 }  // namespace

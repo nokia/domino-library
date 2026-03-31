@@ -7,5 +7,5 @@
 
 namespace rlib
 {
-alignas(64) MT_Semaphore g_semToMainTH;
+alignas(64) MT_Notifier g_notifMainTH;
 }  // namespace

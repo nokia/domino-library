@@ -155,7 +155,7 @@ TEST_F(THREAD_BACK_TEST, GOLD_entryFn_notify_insteadof_timeout)
     )) << "REQ: newTaskOK";
     timedwait(0, 500'000'000);  // long timer to ensure thread done beforehand
     auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start);
-    EXPECT_LT(dur.count(), 500) << "REQ: entryFn end shall notify g_semToMainTH instead of timeout";
+    EXPECT_LT(dur.count(), 500) << "REQ: entryFn end shall notify g_notifMainTH instead of timeout";
 
     while (threadBack_.hdlDoneFut() == 0)  // clear all threads
         timedwait();
@@ -237,7 +237,7 @@ TEST_F(THREAD_BACK_TEST, bugFix_nDoneFut_before_futureReady)
         timedwait();
 }
 
-#define SEM_TEST
+#define NOTIFIER_TEST
 // ***********************************************************************************************
 TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simulate real world
 {
