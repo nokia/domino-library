@@ -1,2 +1,0 @@
-# build & run UT inside docker by "docker exec -it new_doc /bin/bash" if need
-ut_cmd: cd /mnt/fchn289/DomLib/build && cmake .. && make -j run  # may cost several minutes
