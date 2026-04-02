@@ -200,4 +200,16 @@ TEST_F(UNI_LOG_TEST, GOLD_const_usr)
     ASSERT_GT(len_1, 0) << "REQ: can log";
 }
 
+// ***********************************************************************************************
+TEST_F(UNI_LOG_TEST, mt_exceptInfo_stdException)
+{
+    try { throw std::runtime_error("test_err_msg"); }
+    catch(...) { EXPECT_STREQ("test_err_msg", mt_exceptInfo()); }
+}
+TEST_F(UNI_LOG_TEST, mt_exceptInfo_nonStdException)
+{
+    try { throw 42; }
+    catch(...) { EXPECT_STREQ("unknown", mt_exceptInfo()); }
+}
+
 }  // namespace
