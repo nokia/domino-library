@@ -49,6 +49,24 @@ public:
 };
 
 // ***********************************************************************************************
+// - static, & aSelfDom than "this": avoid deref invalid "this" at very beginning of cb_hdlr_()
+// - member fn: FreeHdlrDomino* is a template
+template<class aDominoType>
+void FreeHdlrDomino<aDominoType>::cb_hdlr_(FreeHdlrDomino* aSelfDom, Domino::Event aValidEv, const WeakMsgCB& aWeakHdlr) noexcept
+{
+    auto hdlr = aWeakHdlr.lock();
+    if (! hdlr)
+        return;
+    // hdlr ok -> aFreeDom.map ok -> aFreeDom ok
+    aSelfDom->rmOneHdlrOK_(aValidEv, hdlr);
+    try { (*(hdlr.get()))(); }
+    catch(...) {
+        auto& oneLog = *aSelfDom;
+        ERR("(FreeHdlrDom) hdlr() except=" << mt_exceptInfo() << ", en=" << aSelfDom->evName_(aValidEv));
+    }
+}
+
+// ***********************************************************************************************
 template<class aDominoType>
 bool FreeHdlrDomino<aDominoType>::isRepeatHdlr(Domino::Event aEv) const noexcept
 {
@@ -107,19 +125,6 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, Do
     {
         ERR("(FreeHdlrDom) Failed to newMsgOK for en=" << this->evName_(aValidEv));
     }
-}
-// - static, & aSelf than "this": avoid deref invalid "this" at very beginning of cb_hdlr_()
-// - member fn: FreeHdlrDomino* is a template
-template<class aDominoType>
-void FreeHdlrDomino<aDominoType>::cb_hdlr_(FreeHdlrDomino* aSelf, Domino::Event aValidEv, const WeakMsgCB& aWeakHdlr) noexcept
-{
-    auto hdlr = aWeakHdlr.lock();
-    if (! hdlr)
-        return;
-    // hdlr ok -> aFreeDom.map ok -> aFreeDom ok
-    aSelf->rmOneHdlrOK_(aValidEv, hdlr);
-    try { (*(hdlr.get()))(); }
-    catch(...) {}
 }
 
 }  // namespace

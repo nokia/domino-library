@@ -12,6 +12,7 @@
 #include <chrono>
 #include <cstdio>
 #include <ctime>
+#include <exception>
 #include <string>
 #include <thread>
 
@@ -45,25 +46,6 @@ using LogName = std::string;
 namespace rlib
 {
 // ***********************************************************************************************
-// - MT safe : yes
-// - mem safe: yes
-inline const char* mt_timestamp() noexcept
-{
-    static thread_local char buf[] = "ddd/HH:MM:SS.123456";  // ddd is days/year; thread_local is MT safe
-
-    auto now_tp = std::chrono::system_clock::now();
-    auto now_tt = std::chrono::system_clock::to_time_t(now_tp);
-    struct tm now_tm;
-    strftime(buf, sizeof(buf), "%j/%T.", localtime_r(&now_tt, &now_tm));  // cpplint asks localtime_r (MT safe)
-    snprintf(buf + sizeof(buf) - 7, 7, "%06u",  // snprintf is safer than sprintf
-        unsigned(std::chrono::duration_cast<std::chrono::microseconds>(now_tp.time_since_epoch()).count()
-        % 1'000'000));
-    return buf;
-}
-
-const char ULN_DEFAULT[] = "DEFAULT";
-
-// ***********************************************************************************************
 // - MT safe : yes (aStr is const ref)
 // - mem safe: yes
 inline void cout_ascii(const std::string& aStr) noexcept
@@ -95,6 +77,36 @@ inline void cout_ascii(const std::string& aStr) noexcept
     }
     catch(...) {}
 }
+
+// ***********************************************************************************************
+// - must call inside catch block
+// - MT safe : yes
+// - mem safe: yes (ret valid until outer catch exits)
+inline const char* mt_exceptInfo() noexcept
+{
+    try { throw; }
+    catch(const std::exception& e) { return e.what(); }
+    catch(...) { return "unknown"; }
+}
+
+// ***********************************************************************************************
+// - MT safe : yes
+// - mem safe: yes
+inline const char* mt_timestamp() noexcept
+{
+    static thread_local char buf[] = "ddd/HH:MM:SS.123456";  // ddd is days/year; thread_local is MT safe
+
+    auto now_tp = std::chrono::system_clock::now();
+    auto now_tt = std::chrono::system_clock::to_time_t(now_tp);
+    struct tm now_tm;
+    strftime(buf, sizeof(buf), "%j/%T.", localtime_r(&now_tt, &now_tm));  // cpplint asks localtime_r (MT safe)
+    snprintf(buf + sizeof(buf) - 7, 7, "%06u",  // snprintf is safer than sprintf
+        unsigned(std::chrono::duration_cast<std::chrono::microseconds>(now_tp.time_since_epoch()).count()
+        % 1'000'000));
+    return buf;
+}
+
+const char ULN_DEFAULT[] = "DEFAULT";
 }  // namespace
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description

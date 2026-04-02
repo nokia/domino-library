@@ -44,7 +44,7 @@ bool UniCoutLog::setLogFileOK(const string& aFileName) noexcept
         return true;
     } catch (...)
     {
-        cout << "ERR(UniCoutLog): exception when open log file " << aFileName << endl;
+        cout << "ERR(UniCoutLog): except=" << mt_exceptInfo() << " when open log file=" << aFileName << endl;
         return false;
     }
 }

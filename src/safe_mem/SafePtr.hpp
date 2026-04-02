@@ -197,7 +197,7 @@ template<typename U, typename... ConstructArgs>
         safeU.pT_ = std::make_shared<U>(std::forward<ConstructArgs>(aArgs)...);  // std::make_shared, not boost's
         // HID("new ptr=" << (void*)(safeU.pT_.get()));  // too many print; void* print addr rather than content(dangeous)
     } catch(...) {
-        HID("failed since construct exception!!!");
+        HID("(make_safe) except=" << mt_exceptInfo());  // only HID is MT safe
     }
     return safeU;
 }

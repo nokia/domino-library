@@ -27,7 +27,7 @@ bool AsyncBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog
         );
         return true;
     } catch(...) {  // - ut can't cover this branch
-        ERR("(AsyncBack) exception to create new thread!!!");
+        ERR("(AsyncBack) except=" << mt_exceptInfo() << " to create new thread!!!");
         return false;
     }
 }  // newTaskOK
@@ -37,7 +37,7 @@ SafePtr<void> AsyncBack::mt_thMain_(MT_TaskEntryFN mt_aEntryFN, std::atomic<size
 {
     SafePtr ret;
     try { ret = mt_aEntryFN(); }
-    catch(...) {}  // continue following
+    catch(...) { HID("(AsyncBack) entryFN() except=" << mt_exceptInfo()); }  // continue following
     mt_aEntryFN = nullptr;  // early release captured function
 
     mt_nDoneFut.fetch_add(1, std::memory_order_release);  // sync with consumer's acquire

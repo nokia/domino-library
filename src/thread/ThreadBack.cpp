@@ -38,10 +38,10 @@ size_t ThreadBack::hdlDoneFut(UniLog& oneLog) noexcept
 
             SafePtr ret;
             try { ret = task_pair.first.get(); }
-            catch(...) { ERR("(ThreadBack) entryFN() except"); }  // ERR() ok since in main thread
+            catch(...) { ERR("(ThreadBack) entryFN() except=" << mt_exceptInfo()); }
 
             try { task_pair.second(move(ret)); }  // callback
-            catch(...) { ERR("(ThreadBack) backFN() except"); }  // ERR() ok since in main thread
+            catch(...) { ERR("(ThreadBack) backFN() except=" << mt_exceptInfo()); }
         }
         else
             ++i;

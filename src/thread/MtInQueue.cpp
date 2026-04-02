@@ -58,7 +58,9 @@ size_t MtInQueue::handleCacheEle_() noexcept
         }
 
         try { id_hdlr->second(std::move(ele_tid.first)); }
-        catch(...) { HID("(MtQ) hdlr except for " << ele_tid.second.name()); }  // continue next ele
+        catch(...) {
+            ERR("(MtQ) hdlr() except=" << mt_exceptInfo() << ", tid=" << ele_tid.second.name());
+        }  // continue next ele
     }  // while
     return nEle;
 }

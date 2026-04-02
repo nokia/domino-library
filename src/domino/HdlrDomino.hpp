@@ -67,6 +67,8 @@ protected:
     size_t nHdlr_(Domino::Event aEv) const noexcept { return ev_hdlr_S_.count(aEv); }
     bool rmOneHdlrOK_(Domino::Event aEv) noexcept { return ev_hdlr_S_.erase(aEv); }
 
+    static void cb_hdlr_(HdlrDomino*, Domino::Event, const WeakMsgCB&) noexcept;
+
     // -------------------------------------------------------------------------------------------
 private:
     std::unordered_map<Domino::Event, SharedMsgCB> ev_hdlr_S_;
@@ -82,6 +84,21 @@ HdlrDomino<aDominoType>::HdlrDomino(const LogName& aUniLogName) : aDominoType(aU
 {
     if (!msgSelf_)
         throw std::runtime_error("(HdlrDom) MsgSelf is required but null/absent");
+}
+
+// ***********************************************************************************************
+// - static fn
+// - member fn: for catch(...) to ERR()
+template<class aDominoType>
+void HdlrDomino<aDominoType>::cb_hdlr_(HdlrDomino* aSelfDom, Domino::Event aValidEv, const WeakMsgCB& aWeakCB) noexcept
+{
+    if (auto cb = aWeakCB.lock()) {  // hdlr ok -> Dom.map ok -> Dom ok
+        try { (*(cb.get()))(); }  // setHdlr() forbid cb==null
+        catch(...) {
+            auto& oneLog = *aSelfDom;
+            ERR("(HdlrDom) hdlr() except=" << mt_exceptInfo() << ", en=" << aSelfDom->evName_(aValidEv));
+        }
+    }
 }
 
 // ***********************************************************************************************
@@ -208,19 +225,14 @@ bool HdlrDomino<aDominoType>::setMsgSelfOK(const S_PTR<MsgSelf>& aMsgSelf) noexc
 }
 
 // ***********************************************************************************************
-inline void cb_hdlr(WeakMsgCB aWeakCB) noexcept
-{
-    if (auto cb = aWeakCB.lock()) {
-        try { (*(cb.get()))(); }  // setHdlr() forbid cb==null
-        catch(...) {}
-    }
-}
 template<class aDominoType>
 void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, Domino::Event aValidEv) noexcept
 {
     HID("(HdlrDom) trigger a new msg.");
     if (!msgSelf_->newMsgOK(
-        [weakMsgCB = WeakMsgCB(aValidHdlr)]() noexcept { cb_hdlr(weakMsgCB); },
+        [aSelfDom = this, aValidEv, weakMsgCB = WeakMsgCB(aValidHdlr)]() noexcept {
+            cb_hdlr_(aSelfDom, aValidEv, weakMsgCB);
+        },
         getPriority(aValidEv)
     ))
     {

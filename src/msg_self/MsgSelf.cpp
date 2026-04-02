@@ -23,7 +23,7 @@ bool MsgSelf::handleOneMsg_() noexcept
         --nMsg_;
 
         try { msg(); } // run 1st MsgCB; newMsgOK() prevent nullptr into msgQueues_
-        catch(...) { ERR("(MsgSelf) except->failed!!!"); }
+        catch(...) { ERR("(MsgSelf) msg() except=" << mt_exceptInfo()); }
 
         if (not nMsg())
             return false;    // no more to continue

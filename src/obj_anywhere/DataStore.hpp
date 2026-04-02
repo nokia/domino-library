@@ -67,7 +67,7 @@ bool DataStore<aDataKey>::emplaceOK(const aDataKey& aKey, S_PTR<void> aData) noe
             }
         }
     } catch(...) {
-        ERR("(DataStore) except->failed!!! key=" << typeid(aDataKey).name());
+        ERR("(DataStore) except=" << mt_exceptInfo() << ", key=" << typeid(aDataKey).name());
         return false;
     }
 }
@@ -86,7 +86,7 @@ S_PTR<aDataT> DataStore<aDataKey>::get(const aDataKey& aKey) const noexcept
         }
         return STATIC_PTR_CAST<aDataT>(key_data->second);  // mem safe: yes SafePtr, no shared_ptr
     } catch(...) {
-        ERR("(DataStore) except->failed!!! key=" << typeid(aDataKey).name());
+        ERR("(DataStore) except=" << mt_exceptInfo() << ", key=" << typeid(aDataKey).name());
         return nullptr;
     }
 }
@@ -102,7 +102,7 @@ bool DataStore<aDataKey>::replaceOK(const aDataKey& aKey, S_PTR<void> aData) noe
         key_data_S_.insert_or_assign(aKey, std::move(aData));
         return true;
     } catch(...) {
-        ERR("(DataStore) except->failed!!! key=" << typeid(aDataKey).name());
+        ERR("(DataStore) except=" << mt_exceptInfo() << ", key=" << typeid(aDataKey).name());
         return false;
     }
 }
