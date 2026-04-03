@@ -7,6 +7,32 @@
 // - Why this class:
 //   . support both async() & thread pool
 //   . common here, special in AsyncBack or ThPoolBack
+//
+// - Scenario (ThPoolBack + AsyncBack cover 92%):
+//   | Scenario          | Prob | Best         | Also OK      |
+//   |-------------------|------|--------------|--------------|
+//   | General server    | 35%  | ThPoolBack** | bounded-Q    |
+//   | IO-bound          | 25%  | ThPoolBack** | AsyncBack*   |
+//   | Low-freq backend  | 20%  | AsyncBack*   | ThPoolBack** |
+//   | CPU-bound         | 10%  | work-steal   | ThPoolBack** |
+//   | Low-latency       |  5%  | NUMA-affin   | lock-free    |
+//   | Ultra-throughput  |  3%  | lock-free    | work-steal   |
+//   | Embedded          |  2%  | ThPoolBack** | bounded-Q    |
+//   |-------------------|------|--------------|--------------|
+//
+// - Score:
+//   | Sum | Method           | Correct | ImpCost | ClkImm | Ctrl | Fair | Thrupt | Latency | Resource |
+//   |     | (weight)         | 25%     | 20%     | 15%    | 10%  | 10%  | 8%     | 7%      | 5%       |
+//   |-----|------------------|---------|---------|--------|------|------|--------|---------|----------|
+//   | 89  | sema(glibc2.30+) | 92      | 90      | 90     | 84   | 100  | 85     | 82      | 80       |
+//   | 87  | ThPoolBack**(cv) | 90      | 84      | 88     | 86   | 100  | 80     | 76      | 74       |
+//   | 82  | sema(<2.30)      | 92      | 90      | 40     | 84   | 100  | 85     | 82      | 80       |
+//   | 80  | bounded-Q        | 86      | 74      | 85     | 88   | 76   | 72     | 70      | 82       |
+//   | 75  | dynamic-pool     | 78      | 68      | 84     | 80   | 68   | 75     | 71      | 66       |
+//   | 75  | priority-queue   | 79      | 64      | 84     | 92   | 62   | 70     | 72      | 70       |
+//   | 74  | work-steal       | 74      | 60      | 84     | 62   | 100  | 80     | 66      | 72       |
+//   | 74  | AsyncBack*       | 76      | 72      | 86     | 70   | 80   | 60     | 68      | 58       |
+//   | 63  | lock-free        | 62      | 38      | 90     | 42   | 54   | 83     | 82      | 88       |
 // ***********************************************************************************************
 #pragma once
 
