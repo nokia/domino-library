@@ -55,6 +55,7 @@ namespace rlib
 class AsyncBack : public ThreadBack
 {
 public:
+    explicit AsyncBack(size_t aMaxThread = 16) noexcept(false) { reserveBackFNs(aMaxThread); }
     // destruct-future will block till thread done (ut verified) - so default ~AsyncBack() is safe
 
     [[nodiscard]] bool newTaskOK(MT_TaskEntryFN, TaskBackFN, UniLog& = UniLog::defaultUniLog_) noexcept override;

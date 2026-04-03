@@ -36,7 +36,7 @@ public:
     // @brief Constructs a thread pool with exactly the specified number of threads.
     // @param aMaxThread: Exact number of threads to create (minimum 1).
     // @except if any thread cannot be created/joinable
-    explicit ThPoolBack(size_t aMaxThread = 10) noexcept(false);
+    explicit ThPoolBack(size_t aMaxThread = 16) noexcept(false);
     ~ThPoolBack() noexcept;
 
     ThPoolBack(const ThPoolBack&) = delete;
