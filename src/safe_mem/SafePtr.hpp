@@ -218,7 +218,7 @@ bool operator!=(const SafePtr<T>& lhs, const SafePtr<U>& rhs) noexcept
 template<typename T, typename U>
 bool operator<(const SafePtr<T>& lhs, const SafePtr<U>& rhs) noexcept
 {
-    return lhs.get() < rhs.get();
+    return std::less<>()(lhs.get(), rhs.get());  // less() is safer to cmp any ptr than <()
 }
 
 // ***********************************************************************************************
@@ -279,7 +279,10 @@ SafePtr<T> SafeWeak<T>::lock() const noexcept
 template<typename T>
 struct std::hash<rlib::SafePtr<T>>
 {
-    auto operator()(const rlib::SafePtr<T>& aSafePtr) const { return hash<shared_ptr<T>>()(aSafePtr.get()); }
+    size_t operator()(const rlib::SafePtr<T>& aSafePtr) const noexcept
+    {
+        return std::hash<std::shared_ptr<T>>{}(aSafePtr.get());
+    }
 };
 
 // ***********************************************************************************************
