@@ -82,10 +82,11 @@ public:
 
     [[nodiscard]] bool   newMsgOK(MsgCB, const EMsgPriority = EMsgPri_NORM) noexcept;
     [[nodiscard]] size_t nMsg() const noexcept { return nMsg_; }
-    [[nodiscard]] size_t nMsg(const EMsgPriority aPri) const noexcept { return aPri < EMsgPri_MAX ?  msgQueues_[aPri].size() : 0; }
+    [[nodiscard]] size_t nMsg(const EMsgPriority aPri) const noexcept { return isValidPri(aPri) ? msgQueues_[aPri].size() : 0; }
     void   handleAllMsg() noexcept { while (handleOneMsg_()); }  // handleOneMsg_() may create new high priority msg(s)
 
     [[nodiscard]] static constexpr bool isLowPri(const EMsgPriority aPri) noexcept { return aPri < EMsgPri_NORM; }
+    [[nodiscard]] static constexpr bool isValidPri(const EMsgPriority aPri) noexcept { return aPri < EMsgPri_MAX; }
 
 private:
     bool handleOneMsg_() noexcept;

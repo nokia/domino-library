@@ -20,13 +20,20 @@ ThPoolBack::ThPoolBack(size_t aMaxThread)
             WRN("!!! Force to create 1 thread for min workable. Safe since > usr req.");
             aMaxThread = 1;
         }
+        else if (aMaxThread > 10'000)
+        {
+            WRN("!!! Max=10,000 threads though req=" << aMaxThread << " (simply avoid too big)");
+            aMaxThread = 10'000;
+        }
 
         // create threads
         thPool_.reserve(aMaxThread);  // not construct any thread
+        reserveBackFNs(aMaxThread);   // perf: init to avoid expand in most case; can AUTO-grow when needed
         for (size_t i = 0; i < aMaxThread; ++i)
             thPool_.emplace_back(&ThPoolBack::mt_threadMain_, this);
     } catch(...) {  // ut can't cover this branch; rare but safer
         clean_();
+        ERR("(ThPoolBack) Except=" << mt_exceptInfo() << " when creating nThread=" << aMaxThread);
         throw;  // break constructor
     }
 }

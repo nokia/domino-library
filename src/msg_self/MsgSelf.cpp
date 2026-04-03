@@ -46,7 +46,7 @@ bool MsgSelf::newMsgOK(MsgCB aMsgCB, const EMsgPriority aMsgPri) noexcept
         WRN("(MsgSelf) failed!!! aMsgCB=nullptr doesn't make sense.");
         return false;
     }
-    if (aMsgPri >= EMsgPri_MAX)
+    if (!isValidPri(aMsgPri))
     {
         WRN("(MsgSelf) failed!!! outbound aMsgPri=" << aMsgPri);
         return false;
