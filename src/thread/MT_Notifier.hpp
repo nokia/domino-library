@@ -59,11 +59,11 @@ public:
 // 2023-10-26  CSZ       - timer based on sem_timedwait()
 // 2024-07-04  CSZ       - sem_getvalue() is not MT safe, replaced
 // 2026-03-31  CSZ       2)immune to system clock changes (pthread_cond + CLOCK_MONOTONIC)
-// 2026-04-03  CSZ       3)back semaphore (clock-immune on glibc2.30+, else not)
+// 2026-04-03  CSZ       3)back semaphore (clock-immune on glibc2.30+, else not support)
 // ***********************************************************************************************
 // Q&A:
 // - why semaphore instead of pthread_cond?
-//   . clock-immune on most glibc, tolerate clock issue (rare) on old glibc (rare)
+//   . clock-immune on most glibc, not support old glibc
 //   . semaphore is faster than CV
 //   . simpler API
 //   . no spurious wakeup, no need for predicate
