@@ -181,17 +181,18 @@ Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrev
     // validate
     auto fromEv = newEvent(aEvName);  // complex by getEventBy(), not worth
 
-    // - compute all nextable events from fromEv once
-    // - bitmap is safer than unordered_set when huge nexts
+    // - compute all nextable events from fromEv once for all aSimuPrevEvents
+    // - vector<bool>/bit is safer than unordered_set when huge nexts
     vector<bool> nextable(states_.size(), false);  // reserve & init
     {
         stack<Event> evStack;
+        nextable[fromEv] = true;
         for (auto curEv = fromEv; ; curEv = evStack.top(), evStack.pop())
         {
-            nextable[curEv] = true;
             for (bool branch : {true, false}) {
                 for (auto&& nextEV : findPeerEVs(curEv, next_[branch])) {
                     if (!nextable[nextEV]) {
+                        nextable[nextEV] = true;  // mark-on-push, avoid dup push & infinite loop
                         evStack.push(nextEV);
                     }
                 }
@@ -200,7 +201,6 @@ Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrev
                 break;
         }
     }
-
     // validate
     for (auto&& prevEn_state : aSimuPrevEvents)
     {
