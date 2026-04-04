@@ -213,6 +213,28 @@ TYPED_TEST_P(DominoTest, whyFalse_diagnoseTrueFalseConflict)
     //   . runtime forbid (rather than offline/afterward check which is not safe)
     //   . so shall fail setPrev() to prevent loop
 }
+TYPED_TEST_P(DominoTest, GOLD_diamond_broadcast)
+{
+    //   e1  e2
+    //  / \ /
+    // e3 e4
+    //  \ /
+    //   e5
+    PARA_DOM->setPrev("e3", {{"e1", true}});
+    PARA_DOM->setPrev("e4", {{"e1", true}, {"e2", true}});
+    PARA_DOM->setPrev("e5", {{"e3", true}, {"e4", true}});
+
+    PARA_DOM->setState({{"e1", true}, {"e2", true}});
+    EXPECT_TRUE(PARA_DOM->state("e5")) << "REQ: e5=T (may re-deduce via e2)";
+
+    PARA_DOM->setState({{"e2", false}});
+    EXPECT_FALSE(PARA_DOM->state("e4"));
+    EXPECT_FALSE(PARA_DOM->state("e5"));
+
+    PARA_DOM->setState({{"e2", true}});
+    EXPECT_TRUE(PARA_DOM->state("e4"));
+    EXPECT_TRUE(PARA_DOM->state("e5"));
+}
 
 #define WHY_FALSE
 // ***********************************************************************************************
@@ -366,6 +388,7 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , invalid_deeperLoop
     , invalid_mixLoop
     , whyFalse_diagnoseTrueFalseConflict
+    , GOLD_diamond_broadcast
 
     , GOLD_multi_retOne
     , trueEvent_retEmpty

@@ -67,29 +67,6 @@ const Domino::Events& Domino::findPeerEVs(Event aEv, const EvLinks& aLinks) noex
 }
 
 // ***********************************************************************************************
-bool Domino::isNextFromTo_(Event aFromValidEv, Event aToValidEv) const noexcept
-{
-    Events evVisited{aFromValidEv};  // rare to search huge events
-    stack<Event> evStack;  // recursive func may stack overflow
-
-    for (auto curEv = aFromValidEv; curEv != aToValidEv; curEv = evStack.top(), evStack.pop())
-    {
-        for (bool branch : {true, false})  // search next_[true] & next_[false]
-        {
-            for (auto&& nextEV : findPeerEVs(curEv, next_[branch]))
-            {
-                if (evVisited.insert(nextEV).second) {  // no dup ev (since Dom not changed)
-                    evStack.push(nextEV);
-                }
-            }
-        }
-        if (evStack.empty())
-            return false;
-    }
-    return true;
-}
-
-// ***********************************************************************************************
 Domino::Event Domino::getEventBy(const EvName& aEvName) const noexcept
 {
     auto&& en_ev = en_ev_.find(aEvName);
@@ -203,10 +180,32 @@ Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrev
 {
     // validate
     auto fromEv = newEvent(aEvName);  // complex by getEventBy(), not worth
+
+    // - compute all nextable events from fromEv once
+    // - bitmap is safer than unordered_set when huge nexts
+    vector<bool> nextable(states_.size(), false);  // reserve & init
+    {
+        stack<Event> evStack;
+        for (auto curEv = fromEv; ; curEv = evStack.top(), evStack.pop())
+        {
+            nextable[curEv] = true;
+            for (bool branch : {true, false}) {
+                for (auto&& nextEV : findPeerEVs(curEv, next_[branch])) {
+                    if (!nextable[nextEV]) {
+                        evStack.push(nextEV);
+                    }
+                }
+            }
+            if (evStack.empty())
+                break;
+        }
+    }
+
+    // validate
     for (auto&& prevEn_state : aSimuPrevEvents)
     {
         auto&& prevEv = newEvent(prevEn_state.first);
-        if (isNextFromTo_(fromEv, prevEv))
+        if (prevEv < nextable.size() && nextable[prevEv])
         {
             WRN("(Domino) !!!Failed since loop between " << aEvName << " & " << prevEn_state.first);
             return D_EVENT_FAILED_RET;

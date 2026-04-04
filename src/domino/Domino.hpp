@@ -108,8 +108,6 @@ private:
     void pureSetPrev_(Event aValidEv, const SimuEvents&) noexcept;
     void pureRmLink_(Event aValidEv, EvLinks& aMyLinks, EvLinks& aNeighborLinks) noexcept;
 
-    bool isNextFromTo_(Event aFromValidEv, Event aToValidEv) const noexcept;
-
     struct WhyStep{ Event curEV_; bool whyFlag_; EvName resultEN_; };
     void whyTrue_ (WhyStep&) const noexcept;
     void whyFalse_(WhyStep&) const noexcept;
