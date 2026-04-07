@@ -27,6 +27,9 @@
 //   . EvName index
 //   . template extension (PriDomino, etc)
 //   . n-go domino
+//   . max ops-speed/mem-per-ev, across all ops & all doms, eg:
+//     . vector<Event> is better perf than unordered_set: O(1) indexed, cache-friendly, no hash on hot path
+//     . & less mem (since more linked ev): vector = 96B/ev fixed, unordered_set = 128B/ev-linked or 32B/unlinked
 //
 // - core: states_
 //
@@ -43,7 +46,6 @@
 #include <stack>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include "UniLog.hpp"
@@ -57,11 +59,11 @@ class Domino : public UniLog
 {
 public:
     using Event      = size_t;  // smaller size can save mem; larger size can support more events
-    using Events     = std::unordered_set<Event>;  // better performance than set in most cases
+    using EVs        = std::vector<Event>;  // better perf & less mem than unordered_set
     using EvName     = std::string;
     using SimuEvents = std::map<EvName, bool>;  // not unordered-map since most traversal
-    using EvNames    = std::unordered_map<Event, EvName>;  // map is less mem than vector<EvName>
-    using EvLinks    = std::unordered_map<Event, Events>;
+    using EvNames    = std::vector<EvName>;  // [event]=evName; better perf & less mem than unordered_set
+    using EvLinks    = std::vector<EVs>;  // [event]=peers; better perf & less mem than unordered_set
 
     enum : Event
     {
@@ -91,7 +93,7 @@ public:
     [[nodiscard]] EvName whyFalse(Event) const noexcept;
 
 protected:
-    const EvName& evName_(Event aValidEv) const noexcept { return ev_en_.at(aValidEv); }
+    const EvName& evName_(Event aValidEv) const noexcept { return ev_en_[aValidEv]; }
     virtual void  effect_(Event aEv) noexcept {}  // can't const since FreeDom will rm hdlr
 
     // - rm self dom's resource (RISK: aEv's leaf(s) may become orphan!!!)
@@ -112,16 +114,17 @@ private:
     void whyTrue_ (WhyStep&) const noexcept;
     void whyFalse_(WhyStep&) const noexcept;
 
-    static const Events& findPeerEVs(Event, const EvLinks&) noexcept;
+    static const EVs& findPeerEVs(Event, const EvLinks&) noexcept;
 
     // -------------------------------------------------------------------------------------------
-    std::vector<bool>                 states_;               // bitmap & dyn expand, [event]=t/f
+    std::vector<bool> states_;  // bitmap & dyn expand, [event]=t/f
 
-    EvLinks                           prev_[N_EVENT_STATE];  // unordered for O(1) lookup
-    EvLinks                           next_[N_EVENT_STATE];  // unordered for O(1) lookup
+    EvLinks  prev_[N_EVENT_STATE];  // [event]=peers
+    EvLinks  next_[N_EVENT_STATE];  // [event]=peers
+
     std::unordered_map<EvName, Event> en_ev_;                // [evName]=event
-    EvNames                           ev_en_;                // [event]=evName for easy debug
-    std::unordered_set<Event>         effectEVs_;
+    EvNames                           ev_en_;                // [event]=evName
+    EVs                               effectEVs_;
 };
 
 }  // namespace
@@ -171,6 +174,7 @@ private:
 //                       - enhance safe of whyFalse() while keep safe of newEvent()
 // 2024-03-19  CSZ       9)1-go domino -> n-go domino
 // 2025-03-31  CSZ       10)tolerate exception; rm recursion
+// 2026-04-06  CSZ       11)max perf + min mem/ev
 // ***********************************************************************************************
 // - where:
 //   . start using domino for time-cost events

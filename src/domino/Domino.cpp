@@ -12,7 +12,7 @@ using namespace std;
 
 namespace rlib
 {
-static const Domino::Events defaultEVs;  // internal use only
+static const Domino::EVs defaultEvPeers;  // internal use only
 
 // ***********************************************************************************************
 void Domino::deduceStateFrom_(Event aValidEv) noexcept
@@ -58,12 +58,9 @@ void Domino::effect_() noexcept
 }
 
 // ***********************************************************************************************
-const Domino::Events& Domino::findPeerEVs(Event aEv, const EvLinks& aLinks) noexcept
+const Domino::EVs& Domino::findPeerEVs(Event aEv, const EvLinks& aLinks) noexcept
 {
-    auto&& ev_peerEVs = aLinks.find(aEv);
-    return ev_peerEVs == aLinks.end()
-        ? defaultEVs
-        : ev_peerEVs->second;
+    return aEv < aLinks.size() ? aLinks[aEv] : defaultEvPeers;
 }
 
 // ***********************************************************************************************
@@ -90,9 +87,13 @@ Domino::Event Domino::newEvent(const EvName& aEvName) noexcept
 
     HID("(Domino) init new EvName=" << aEvName << ", event=" << newEv);
     en_ev_[aEvName] = newEv;
-    ev_en_[newEv] = aEvName;
-    if (newEv >= states_.size())
+    if (newEv >= states_.size()) {
         states_.push_back(false);  // create new slot
+        ev_en_.emplace_back();
+        for (auto& link : prev_) link.emplace_back();
+        for (auto& link : next_) link.emplace_back();
+    }
+    ev_en_[newEv] = aEvName;
 
     return newEv;
 }
@@ -103,17 +104,23 @@ void Domino::pureRmLink_(Event aValidEv, EvLinks& aMyLinks, EvLinks& aNeighborLi
     // rm neighbor's link
     for (auto&& peerEv : findPeerEVs(aValidEv, aMyLinks))
     {
-        auto it = aNeighborLinks.find(peerEv);
-        if (it == aNeighborLinks.end())
+        if (peerEv >= aNeighborLinks.size())  // not found
             continue;
-        if (it->second.size() <= 1)
-            aNeighborLinks.erase(it);  // erase entire
-        else
-            it->second.erase(aValidEv);  // erase 1
+        auto&& peers = aNeighborLinks[peerEv];
+        if (peers.size() <= 1)
+            peers.clear();  // erase entire
+        else {
+            auto&& pos = find(peers.begin(), peers.end(), aValidEv);
+            if (pos != peers.end()) {  // swap-erase
+                *pos = peers.back();
+                peers.pop_back();
+            }
+        }
     }
 
     // rm my link
-    aMyLinks.erase(aValidEv);
+    if (aValidEv < aMyLinks.size())
+        aMyLinks[aValidEv].clear();
 }
 
 // ***********************************************************************************************
@@ -124,8 +131,12 @@ void Domino::pureSetPrev_(Event aValidEv, const SimuEvents& aSimuPrevEvents) noe
     for (auto&& prevEn_state : aSimuPrevEvents)
     {
         auto&& prevEv = newEvent(prevEn_state.first);
-        prev_[prevEn_state.second][aValidEv].insert(prevEv);
-        next_[prevEn_state.second][prevEv].insert(aValidEv);
+        auto&& prevPeers = prev_[prevEn_state.second][aValidEv];
+        if (find(prevPeers.begin(), prevPeers.end(), prevEv) == prevPeers.end())
+            prevPeers.push_back(prevEv);
+        auto&& nextPeers = next_[prevEn_state.second][prevEv];
+        if (find(nextPeers.begin(), nextPeers.end(), aValidEv) == nextPeers.end())
+            nextPeers.push_back(aValidEv);
     }
     HID("(Domino) after: nPrev[true]=" << prev_[true].size() << ", nNext[true]=" << next_[true].size()
         << ", nPrev[false]=" << prev_[false].size() << ", nNext[false]=" << next_[false].size());
@@ -139,7 +150,7 @@ bool Domino::pureSetStateOK_(Event aValidEv, const bool aNewState) noexcept
         states_[aValidEv] = aNewState;
         HID("(Domino) Succeed, EvName=" << evName_(aValidEv) << " newState=" << aNewState);
         if (aNewState == true)
-            effectEVs_.insert(aValidEv);
+            effectEVs_.push_back(aValidEv);
         return true;
     }
     return false;
@@ -162,8 +173,8 @@ void Domino::rmEv_(Event aValidEv) noexcept
     // rm self resrc
     pureSetStateOK_(aValidEv, false);  // must before clean ev_en_
     en_ev_.erase(evName_(aValidEv));
-    auto ret = ev_en_.erase(aValidEv);
-    HID("[Domino] ev=" << aValidEv << ", ret=" << ret);
+    ev_en_[aValidEv].clear();
+    HID("[Domino] ev=" << aValidEv);
 
     // deduce impacted; safer to dup-deduce same ev
     for (auto&& nextEV : trueNextEVs)
@@ -192,7 +203,7 @@ Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrev
             for (bool branch : {true, false}) {
                 for (auto&& nextEV : findPeerEVs(curEv, next_[branch])) {
                     if (!nextable[nextEV]) {
-                        nextable[nextEV] = true;  // mark-on-push, avoid dup push & infinite loop
+                        nextable[nextEV] = true;  // mark-on-push(than mark-on-pop), avoid dup push & infinite loop
                         evStack.push(nextEV);
                     }
                 }
@@ -210,7 +221,8 @@ Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrev
             WRN("(Domino) !!!Failed since loop between " << aEvName << " & " << prevEn_state.first);
             return D_EVENT_FAILED_RET;
         }
-        if (findPeerEVs(fromEv, prev_[!prevEn_state.second]).count(prevEv))
+        auto&& conflictPeers = findPeerEVs(fromEv, prev_[!prevEn_state.second]);
+        if (find(conflictPeers.begin(), conflictPeers.end(), prevEv) != conflictPeers.end())
         {
             WRN("(Domino) !!!Failed since T/F conflict on prev=" << prevEn_state.first << " for " << aEvName);
             return D_EVENT_FAILED_RET;
@@ -237,7 +249,7 @@ size_t Domino::setState(const SimuEvents& aSimuEvents)
         const auto ev = getEventBy(en_state.first);  // not create new ev if validation fail
         if (ev == D_EVENT_FAILED_RET)
             continue;  // new ev, need to create in next step
-        if (prev_[true].find(ev) != prev_[true].end() || prev_[false].find(ev) != prev_[false].end())
+        if ((ev < prev_[true].size() && !prev_[true][ev].empty()) || (ev < prev_[false].size() && !prev_[false][ev].empty()))
         {
             ERR("(Domino) refuse since en=" << en_state.first << " has prev (avoid break its prev logic)");
             return 0;
@@ -245,12 +257,12 @@ size_t Domino::setState(const SimuEvents& aSimuEvents)
     }
 
     // set ALL state(s) before deduce
-    Events simuEVs;
+    EVs simuEVs;
     for (auto&& en_state : aSimuEvents)
     {
         const auto ev = newEvent(en_state.first);
         if (pureSetStateOK_(ev, en_state.second)) {  // real changed
-            simuEVs.insert(ev);  // insert unique
+            simuEVs.push_back(ev);  // no dup: map keys unique + pureSetStateOK_
         }
     }
 
@@ -272,18 +284,17 @@ size_t Domino::setState(const SimuEvents& aSimuEvents)
 Domino::EvName Domino::whyFalse(Event aEv) const noexcept
 {
     // validate to safe public interface
-    auto&& ev_en = ev_en_.find(aEv);
-    if (ev_en == ev_en_.end())
+    if (aEv >= ev_en_.size() || ev_en_[aEv].empty())
     {
         WRN("(Domino) invalid event=" << aEv);
         return EvName(DOM_RESERVED_EVNAME) + " whyFalse() found nothing";
     }
     if (state(aEv) == true)
     {
-        WRN("(Domino) en=" << ev_en->second << ", state=true");
+        WRN("(Domino) en=" << ev_en_[aEv] << ", state=true");
         return EvName(DOM_RESERVED_EVNAME) + " whyFalse() found nothing";
     }
-    HID("(Domino) en=" << ev_en->second);
+    HID("(Domino) en=" << ev_en_[aEv]);
 
     // loop search
     WhyStep step{aEv, false, EvName()};
@@ -294,7 +305,7 @@ Domino::EvName Domino::whyFalse(Event aEv) const noexcept
 }
 void Domino::whyFalse_(WhyStep& aStep) const noexcept
 {
-    Events::const_iterator it;
+    EVs::const_iterator it;
     // search true prev
     for (auto curEV = aStep.curEV_;; curEV = *it) {
         auto&& prevEVs = findPeerEVs(curEV, prev_[true]);

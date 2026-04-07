@@ -46,7 +46,6 @@ using MaxNofreeDom = RmEvDom<PriDomino<MultiHdlrDomino<HdlrDomino<MinWbasicDatDo
 using MinRmEvDom =                                                                         RmEvDom<Domino>;
 using MaxDom = WbasicDatDom<MultiHdlrDomino<DataDomino<FreeHdlrDomino<PriDomino<HdlrDomino<MinRmEvDom>>>>>>;
 
-
 // ***********************************************************************************************
 struct UtInitObjAnywhere : public UniLog, public Test
 {
@@ -92,5 +91,19 @@ struct UtInitObjAnywhere : public UniLog, public Test
     // -------------------------------------------------------------------------------------------
     MsgCB pongMsgSelf_;
 };
+
+// ***********************************************************************************************
+// measure actual mem/event via RSS (Linux /proc/self/statm)
+static size_t rssBytes()
+{
+    size_t rss = 0;
+    FILE* f = fopen("/proc/self/statm", "r");
+    if (f) {
+        unsigned long dummy, pages;
+        if (fscanf(f, "%lu %lu", &dummy, &pages) == 2) rss = pages * 4096;
+        fclose(f);
+    }
+    return rss;
+}
 
 }  // namespace

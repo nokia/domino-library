@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
+#include <chrono>
 #include <memory>  // for shared_ptr
 #include <set>
 
@@ -292,14 +293,14 @@ TYPED_TEST_P(DominoTest, search_partial_evName)
     size_t nFound = 0;
     for (auto&& evName : evNames)
     {
-        if (evName.second.find("/A") != string::npos) ++nFound;
+        if (evName.find("/A") != string::npos) ++nFound;
     }
     EXPECT_EQ(2u, nFound) << "REQ: found";
 
     nFound = 0;
     for (auto&& evName : evNames)
     {
-        if (evName.second.find("/X") != string::npos) ++nFound;
+        if (evName.find("/X") != string::npos) ++nFound;
     }
     EXPECT_EQ(0u, nFound) << "REQ: not found";
 }
@@ -311,14 +312,16 @@ TYPED_TEST_P(DominoTest, search_all_evNames)
     PARA_DOM->newEvent("e3");
 
     auto&& evNames = PARA_DOM->evNames();
-    EXPECT_EQ(3u, evNames.size()) << "REQ: evNames should contain all 3 created events";
+    size_t nNames = 0;
+    for (auto&& en : evNames) if (!en.empty()) ++nNames;
+    EXPECT_EQ(3u, nNames) << "REQ: evNames should contain all 3 created events";
 
     // Verify each created event is in the returned container
     bool found_e1 = false, found_e2 = false, found_e3 = false;
-    for (auto&& evPair : evNames) {
-        if (evPair.second == "e1") found_e1 = true;
-        if (evPair.second == "e2") found_e2 = true;
-        if (evPair.second == "e3") found_e3 = true;
+    for (auto&& evName : evNames) {
+        if (evName == "e1") found_e1 = true;
+        if (evName == "e2") found_e2 = true;
+        if (evName == "e3") found_e3 = true;
     }
     EXPECT_TRUE(found_e1) << "REQ: e1 must be in evNames()";
     EXPECT_TRUE(found_e2) << "REQ: e2 must be in evNames()";
@@ -406,4 +409,42 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
 using AnyDom = Types<Domino, MinDatDom, MinWbasicDatDom, MinHdlrDom, MinMhdlrDom, MinPriDom,
     MinFreeDom, MinRmEvDom, MaxNofreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, DominoTest, AnyDom);
+
+#define PERF_MEM
+// ***********************************************************************************************
+TEST(DominoMemTest, GOLD_perf_mem)
+{
+#ifndef DOMLIB_BENCHMARK
+    GTEST_SKIP() << "env-sensitive benchmark, run only without -Dci";
+#endif
+    constexpr size_t N = 100'000;
+    using Clock = std::chrono::steady_clock;
+
+    Domino dom;
+    auto rss0 = rssBytes();
+    auto t0 = Clock::now();
+
+    // all typical ops: newEvent + setPrev + setState(true) + setState(false)
+    dom.newEvent("e0");
+    for (size_t i = 1; i < N; ++i)
+        dom.setPrev("e" + std::to_string(i), {{"e" + std::to_string(i - 1), true}});
+    dom.setState({{"e0", true}});
+    EXPECT_TRUE(dom.state("e" + std::to_string(N - 1)));
+    dom.setState({{"e0", false}});
+    EXPECT_FALSE(dom.state("e" + std::to_string(N - 1)));
+
+    auto t1 = Clock::now();
+    auto rss1 = rssBytes();
+    auto msDur = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
+    auto totalBytes = (rss1 > rss0) ? (rss1 - rss0) : size_t(0);
+    auto bytesPerEv = totalBytes / N;
+
+    // REQ: cost-perf regression guard (fixed docker env, no margin needed)
+    //   mem: all-vector layout actual ~288B/ev standalone, ~298B in full suite (heap frag)
+    //   time: all ops <200ms for 100K events (actual ~150ms with -O1)
+    EXPECT_LE(bytesPerEv, 300u) << "mem/event=" << bytesPerEv
+        << "B, total=" << (totalBytes >> 20) << "MB for " << N << " events";
+    EXPECT_LE(msDur, 200) << "time=" << msDur << "msDur for " << N << " events (all ops)";
+}
+
 }  // namespace
