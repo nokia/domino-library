@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <algorithm>
+#include <cctype>
 #include <string>
 
 #include "Domino.hpp"
@@ -58,6 +59,16 @@ void Domino::effect_() noexcept
 }
 
 // ***********************************************************************************************
+Domino::EvNames Domino::evNames() const noexcept
+{
+    EvNames names;
+    names.reserve(en_ev_.size());
+    for (auto&& [name, ev] : en_ev_)
+        if (!isRemoved(ev)) names.push_back(name);
+    return names;
+}
+
+// ***********************************************************************************************
 const Domino::EVs& Domino::findPeerEVs(Event aEv, const EvLinks& aLinks) noexcept
 {
     return aEv < aLinks.size() ? aLinks[aEv] : defaultEvPeers;
@@ -75,6 +86,9 @@ Domino::Event Domino::getEventBy(const EvName& aEvName) const noexcept
 // ***********************************************************************************************
 Domino::Event Domino::newEvent(const EvName& aEvName) noexcept
 {
+    if (isspace(static_cast<unsigned char>(aEvName.front())) || isspace(static_cast<unsigned char>(aEvName.back())))
+        WRN("(Domino) EvName has leading/trailing whitespace: '" << aEvName << "'");
+
     // exist?
     auto&& newEv = getEventBy(aEvName);
     if (newEv != D_EVENT_FAILED_RET)
@@ -89,7 +103,7 @@ Domino::Event Domino::newEvent(const EvName& aEvName) noexcept
     en_ev_[aEvName] = newEv;
     if (newEv >= states_.size()) {
         states_.push_back(false);  // create new slot
-        ev_en_.emplace_back();
+        ev_en_.emplace_back();  // allocate space
         for (auto& link : prev_) link.emplace_back();
         for (auto& link : next_) link.emplace_back();
     }
@@ -189,12 +203,10 @@ void Domino::rmEv_(Event aValidEv) noexcept
 // ***********************************************************************************************
 Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrevEvents) noexcept
 {
-    // validate
-    auto fromEv = newEvent(aEvName);  // complex by getEventBy(), not worth
-
+    const auto fromEv = newEvent(aEvName);  // complex by getEventBy(), not worth
     // - compute all nextable events from fromEv once for all aSimuPrevEvents
     // - vector<bool>/bit is safer than unordered_set when huge nexts
-    vector<bool> nextable(states_.size(), false);  // reserve & init
+    vector<bool> nextable(states_.size() + aSimuPrevEvents.size(), false);  // reserve & init; tmp container
     {
         stack<Event> evStack;
         nextable[fromEv] = true;
@@ -212,19 +224,19 @@ Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrev
                 break;
         }
     }
-    // validate
+    // validate loop & conflict
     for (auto&& prevEn_state : aSimuPrevEvents)
     {
         auto&& prevEv = newEvent(prevEn_state.first);
-        if (prevEv < nextable.size() && nextable[prevEv])
+        if (prevEv >= nextable.size() || nextable[prevEv])
         {
-            WRN("(Domino) !!!Failed since loop between " << aEvName << " & " << prevEn_state.first);
+            ERR("(Domino) !!!Failed since invalid EN=" << aEvName << ", or loop to=" << prevEn_state.first);
             return D_EVENT_FAILED_RET;
         }
         auto&& conflictPeers = findPeerEVs(fromEv, prev_[!prevEn_state.second]);
         if (find(conflictPeers.begin(), conflictPeers.end(), prevEv) != conflictPeers.end())
         {
-            WRN("(Domino) !!!Failed since T/F conflict on prev=" << prevEn_state.first << " for " << aEvName);
+            ERR("(Domino) !!!Failed since T/F conflict on prev=" << prevEn_state.first << " for " << aEvName);
             return D_EVENT_FAILED_RET;
         }
     }
@@ -284,7 +296,7 @@ size_t Domino::setState(const SimuEvents& aSimuEvents)
 Domino::EvName Domino::whyFalse(Event aEv) const noexcept
 {
     // validate to safe public interface
-    if (aEv >= ev_en_.size() || ev_en_[aEv].empty())
+    if (isRemoved(aEv))
     {
         WRN("(Domino) invalid event=" << aEv);
         return EvName(DOM_RESERVED_EVNAME) + " whyFalse() found nothing";

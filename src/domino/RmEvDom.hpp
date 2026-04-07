@@ -41,7 +41,7 @@ public:
     explicit RmEvDom(const LogName& aUniLogName = ULN_DEFAULT) : aDominoType(aUniLogName) {}
 
     [[nodiscard]] bool rmEvOK(const Domino::EvName& aEN) noexcept;
-    [[nodiscard]] bool isRemoved(Domino::Event aEv) const noexcept { return isRemovedEv_.count(aEv); }
+    [[nodiscard]] bool isRemoved(Domino::Event aEv) const noexcept override { return aDominoType::isRemoved(aEv) || isRemovedEv_.count(aEv); }
 protected:
     void rmEv_(Domino::Event aValidEv) noexcept override;
     Domino::Event recycleEv_() noexcept override;

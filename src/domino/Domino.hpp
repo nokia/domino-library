@@ -81,12 +81,12 @@ public:
     explicit Domino(const LogName& aUniLogName = ULN_DEFAULT) noexcept : UniLog(aUniLogName) {}
     virtual ~Domino() noexcept = default;
 
-    Event newEvent(const EvName&) noexcept;
+    Event newEvent(const EvName&) noexcept;  // empty EvName is valid - much simple to ensure succ
     [[nodiscard]] Event getEventBy(const EvName&) const noexcept;
-    [[nodiscard]] const EvNames evNames() const noexcept { return ev_en_; }
+    [[nodiscard]] EvNames evNames() const noexcept;
 
-    [[nodiscard]] bool   state(const EvName& aEvName) const noexcept { return state(getEventBy(aEvName)); }
-    [[nodiscard]] bool   state(Event aEv) const noexcept { return aEv < states_.size() ? states_[aEv] : false; }
+    [[nodiscard]] bool state(const EvName& aEvName) const noexcept { return state(getEventBy(aEvName)); }
+    [[nodiscard]] bool state(Event aEv) const noexcept { return aEv < states_.size() ? states_[aEv] : false; }
     size_t setState(const SimuEvents&);  // ret real changed ev#
 
     Event  setPrev(const EvName&, const SimuEvents&) noexcept;  // be careful not create eg ttue-false loop
@@ -100,6 +100,7 @@ protected:
     // - virtual for each dom: MUST call aDominoType::rmEv_() to chain base cleanup
     virtual void  rmEv_(Event aValidEv) noexcept;
     virtual Event recycleEv_() noexcept { return D_EVENT_FAILED_RET; }
+    virtual bool  isRemoved(Event aEv) const noexcept { return aEv >= states_.size(); }
 
 private:
     void deduceStateFrom_(Event aValidEv) noexcept;
