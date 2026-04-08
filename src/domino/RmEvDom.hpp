@@ -48,7 +48,7 @@ protected:
 
 private:
     // -------------------------------------------------------------------------------------------
-    // - REQ: min mem (so set<Event> is better than vector<bool> when almost empty
+    // - REQ: min mem (so better than vector<bool> when almost empty even with many events)
     // - REQ: fast (eg isRemoved(), insert, del)
     // - req: better FIFO
     std::unordered_set<Domino::Event> isRemovedEv_;

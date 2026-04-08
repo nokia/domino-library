@@ -26,7 +26,7 @@
 
 #include <functional>
 #include <stdexcept>
-#include <unordered_map>
+#include <vector>
 
 #include "MsgSelf.hpp"
 #include "ObjAnywhere.hpp"
@@ -46,7 +46,7 @@ public:
     Domino::Event setHdlr(const Domino::EvName&, MsgCB aHdlr) noexcept;
     [[nodiscard]] bool rmOneHdlrOK(const Domino::EvName&) noexcept;  // rm by EvName
     void forceAllHdlr(const Domino::EvName& aEN) noexcept { effect_(this->getEventBy(aEN)); }
-    [[nodiscard]] virtual size_t nHdlr(const Domino::EvName& aEN) const noexcept { return ev_hdlr_S_.count(this->getEventBy(aEN)); }
+    [[nodiscard]] virtual size_t nHdlr(const Domino::EvName& aEN) const noexcept { return nHdlr_(this->getEventBy(aEN)); }
 
     // -------------------------------------------------------------------------------------------
     // - alternative to MultiHdlrDomino::multiHdlrOnSameEv():
@@ -64,14 +64,17 @@ protected:
     virtual bool rmOneHdlrOK_(Domino::Event aValidEv, const SharedMsgCB& aValidHdlr) noexcept;  // by aValidHdlr
 
     void rmEv_(Domino::Event aValidEv) noexcept override;
-    size_t nHdlr_(Domino::Event aEv) const noexcept { return ev_hdlr_S_.count(aEv); }
-    bool rmOneHdlrOK_(Domino::Event aEv) noexcept { return ev_hdlr_S_.erase(aEv); }
+    size_t nHdlr_(Domino::Event aEv) const noexcept { return (aEv < ev_hdlr_S_.size() && ev_hdlr_S_[aEv]) ? 1 : 0; }
+    bool rmOneHdlrOK_(Domino::Event aEv) noexcept;
 
     static void cb_hdlr_(HdlrDomino*, Domino::Event, const WeakMsgCB&) noexcept;
 
     // -------------------------------------------------------------------------------------------
 private:
-    std::unordered_map<Domino::Event, SharedMsgCB> ev_hdlr_S_;
+    // vector is faster & less mem than unordered_map when eg:
+    // - nEv is not big
+    // - nEv/nHdlr >> 10
+    std::vector<SharedMsgCB> ev_hdlr_S_;  // [event]=hdlr; null=no hdlr
 protected:
     S_PTR<MsgSelf> msgSelf_ = ObjAnywhere::getObj<MsgSelf>();
 public:
@@ -108,12 +111,11 @@ void HdlrDomino<aDominoType>::effect_(Domino::Event aEv) noexcept
     aDominoType::effect_(aEv);
 
     // validate
-    auto&& ev_hdlr = ev_hdlr_S_.find(aEv);
-    if (ev_hdlr == ev_hdlr_S_.end())
+    if (nHdlr_(aEv) == 0)
         return;
 
     HID("(HdlrDom) Succeed to trigger 1 hdlr of EvName=" << this->evName_(aEv));
-    triggerHdlr_(ev_hdlr->second, aEv);
+    triggerHdlr_(ev_hdlr_S_[aEv], aEv);
 }
 
 // ***********************************************************************************************
@@ -138,10 +140,22 @@ Domino::Event HdlrDomino<aDominoType>::setLinkedHdlr(const Domino::EvName& aNewE
 }
 
 // ***********************************************************************************************
+template<class aDominoType>
+bool HdlrDomino<aDominoType>::rmOneHdlrOK_(Domino::Event aEv) noexcept
+{
+    if (nHdlr_(aEv) > 0) {
+        ev_hdlr_S_[aEv] = nullptr;
+        return true;
+    }
+    return false;
+}
+
+// ***********************************************************************************************
 template<typename aDominoType>
 void HdlrDomino<aDominoType>::rmEv_(Domino::Event aValidEv) noexcept
 {
-    ev_hdlr_S_.erase(aValidEv);
+    if (nHdlr_(aValidEv) > 0)
+        ev_hdlr_S_[aValidEv] = nullptr;
     aDominoType::rmEv_(aValidEv);
 }
 
@@ -150,24 +164,23 @@ template<class aDominoType>
 bool HdlrDomino<aDominoType>::rmOneHdlrOK(const Domino::EvName& aEvName) noexcept
 {
     HID("(HdlrDom) EvName=" << aEvName);
-    return ev_hdlr_S_.erase(this->getEventBy(aEvName));
+    return rmOneHdlrOK_(this->getEventBy(aEvName));
 }
 
 // ***********************************************************************************************
 template<class aDominoType>
 bool HdlrDomino<aDominoType>::rmOneHdlrOK_(Domino::Event aValidEv, const SharedMsgCB& aValidHdlr) noexcept
 {
-    auto&& ev_hdlr = ev_hdlr_S_.find(aValidEv);
-    if (ev_hdlr == ev_hdlr_S_.end())
+    if (nHdlr_(aValidEv) == 0)
         return false;
 
     // req: must match
-    if (ev_hdlr->second != aValidHdlr)
+    if (ev_hdlr_S_[aValidEv] != aValidHdlr)
         return false;
 
     HID("(HdlrDom) Will remove hdlr of EvName=" << this->evName_(aValidEv)
-        << ", nHdlrRef=" << ev_hdlr->second.use_count());
-    ev_hdlr_S_.erase(ev_hdlr);
+        << ", nHdlrRef=" << ev_hdlr_S_[aValidEv].use_count());
+    ev_hdlr_S_[aValidEv] = nullptr;
     return true;
 }
 
@@ -182,15 +195,17 @@ Domino::Event HdlrDomino<aDominoType>::setHdlr(const Domino::EvName& aEvName, Ms
         return Domino::D_EVENT_FAILED_RET;
     }
     auto&& newEv = this->newEvent(aEvName);
-
-    // set
-    auto newHdlr = MAKE_PTR<MsgCB>(std::move(aHdlr));
-    auto&& ev_hdlr = ev_hdlr_S_.emplace(newEv, newHdlr);
-    if (! ev_hdlr.second)
+    if (nHdlr_(newEv) > 0)
     {
         ERR("(HdlrDom) Failed!!! Can't overwrite hdlr for " << aEvName << ". Rm old or Use MultiHdlrDomino instead.");
         return Domino::D_EVENT_FAILED_RET;
     }
+
+    // set
+    auto newHdlr = MAKE_PTR<MsgCB>(std::move(aHdlr));
+    if (newEv >= ev_hdlr_S_.size())
+        ev_hdlr_S_.resize(newEv + 1);
+    ev_hdlr_S_[newEv] = newHdlr;
     HID("(HdlrDom) Succeed for EvName=" << aEvName);
 
     // call

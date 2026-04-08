@@ -37,7 +37,7 @@ protected:
 
 private:
     // -------------------------------------------------------------------------------------------
-    std::unordered_map<Domino::Event, EMsgPriority> ev_pri_S_;  // [event]=priority
+    std::unordered_map<Domino::Event, EMsgPriority> ev_pri_S_;  // [event]=priority; most default so better than vector
 public:
     using aDominoType::oneLog;
 };
@@ -47,10 +47,9 @@ template<class aDominoType>
 EMsgPriority PriDomino<aDominoType>::getPriority(Domino::Event aEv) const noexcept
 {
     auto&& ev_pri = ev_pri_S_.find(aEv);
-    if (ev_pri == ev_pri_S_.end())
-        return aDominoType::getPriority(aEv);  // default
-    else
-        return ev_pri->second;
+    return ev_pri != ev_pri_S_.end()
+        ? ev_pri->second
+        : aDominoType::getPriority(aEv);  // default
 }
 
 // ***********************************************************************************************
