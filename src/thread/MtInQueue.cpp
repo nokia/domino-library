@@ -50,7 +50,10 @@ size_t MtInQueue::handleCacheEle_() noexcept
         auto ele_tid = move(cache_.front());  // avoid cp
         cache_.pop_front();
 
-        auto&& id_hdlr = tid_hdlr_S_.find(ele_tid.second);
+        auto&& id_hdlr = find_if(
+            tid_hdlr_S_.begin(), tid_hdlr_S_.end(),
+            [&](auto& p) { return p.first == ele_tid.second; }
+        );
         if (id_hdlr == tid_hdlr_S_.end())
         {
             WRN("(MtQ) discard 1 ele(=" << ele_tid.second.name() << ") since no handler.");

@@ -27,8 +27,8 @@
 #include <functional>
 #include <mutex>
 #include <typeindex>
-#include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "MT_PingMainTH.hpp"
 #include "UniLog.hpp"
@@ -74,7 +74,11 @@ private:
     std::deque<ELE_TID> cache_;  // main-thread use ONLY (so no mutex protect)
     mutable std::mutex mt_mutex_;
 
-    std::unordered_map<std::type_index, EleHdlr> tid_hdlr_S_;
+    // REQ: max perf/mem
+    // - full dense: all type_index need 1 hdlr, so vector is better than unordered_map
+    //   . perf: cache-friendly, O(1) indexed, no hash on hot path
+    //   . mem: ~40B/hdlr (unordered_map is ~72B)
+    std::vector<std::pair<std::type_index, EleHdlr>> tid_hdlr_S_;
 
     // -------------------------------------------------------------------------------------------
 #ifdef IN_GTEST
@@ -141,10 +145,14 @@ bool MtInQueue::setHdlrOK(EleHdlr aHdlr) noexcept
         return false;
     }
 
-    auto [_, ok] = tid_hdlr_S_.try_emplace(std::type_index(typeid(aEleType)), std::move(aHdlr));
-    if (!ok)
-        ERR("(MtQ) failed!!! overwrite hdlr may unsafe existing data");
-    return ok;
+    for (auto& [tid, hdlr] : tid_hdlr_S_)
+        if (tid == std::type_index(typeid(aEleType)))
+        {
+            ERR("(MtQ) failed!!! overwrite hdlr may unsafe existing data");
+            return false;
+        }
+    tid_hdlr_S_.emplace_back(std::type_index(typeid(aEleType)), std::move(aHdlr));
+    return true;
 }
 
 
