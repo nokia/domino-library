@@ -99,7 +99,7 @@ bool ThPoolBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLo
             return false;
 
         packaged_task<SafePtr<void>()> task(std::move(mt_aEntryFN));  // packaged_task can get_future()="task result"
-        fut_backFN_S_.emplace_back(task.get_future(), std::move(aBackFN));  // save future<> & aBackFN()
+        fut_backFN_S_.push_back(Fut_BackFN{task.get_future(), std::move(aBackFN)});  // save future & backFN
         {
             lock_guard<mutex> lock(mt_mutex_);
             mt_taskQ_.emplace_back(move(task));

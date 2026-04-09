@@ -35,10 +35,10 @@ bool AsyncBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog
         // create new thread
         // - impossible thread alive but AsyncBack destructed, since ~AsyncBack() will wait all fut over
         // - &mt_nDoneFut is better than "this" that can access other non-MT-safe member
-        fut_backFN_S_.emplace_back(
+        fut_backFN_S_.push_back(Fut_BackFN{
             async(launch::async, &AsyncBack::mt_thMain_, std::move(mt_aEntryFN), std::ref(mt_nDoneFut_)),
             std::move(aBackFN)
-        );
+        });
         return true;
     } catch(...) {  // - ut can't cover this branch
         ERR("(AsyncBack) except=" << mt_exceptInfo() << " to create new thread!!!");

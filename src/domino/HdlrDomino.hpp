@@ -246,7 +246,7 @@ void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, Domino
     HID("(HdlrDom) trigger a new msg.");
     if (!msgSelf_->newMsgOK(
         [aSelfDom = this, aValidEv, weakMsgCB = WeakMsgCB(aValidHdlr)]() noexcept {
-            cb_hdlr_(aSelfDom, aValidEv, weakMsgCB);
+            cb_hdlr_(aSelfDom, aValidEv, weakMsgCB);  // not exe here
         },
         getPriority(aValidEv)
     ))

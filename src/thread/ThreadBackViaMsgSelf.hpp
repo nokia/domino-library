@@ -43,7 +43,7 @@ TaskBackFN viaMsgSelf(const TaskBackFN& aBackFN, EMsgPriority aPri = EMsgPri_NOR
         ? TaskBackFN()  // empty fn
         : [aBackFN, msgSelf, aPri](SafePtr<void> aRet) noexcept
         {
-            cb_backFN(aBackFN, msgSelf, aPri, std::move(aRet));
+            cb_backFN(aBackFN, msgSelf, aPri, std::move(aRet));  // not exe here
         };
 }
 

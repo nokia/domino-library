@@ -106,7 +106,7 @@ inline const char* mt_timestamp() noexcept
     return buf;
 }
 
-const char ULN_DEFAULT[] = "DEFAULT";
+constexpr char ULN_DEFAULT[] = "DEFAULT";
 }  // namespace
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description

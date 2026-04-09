@@ -118,7 +118,7 @@ void FreeHdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, Do
     HID("(FreeHdlrDom) trigger a rm-then-call msg for en=" << this->evName_(aValidEv));
     if (!this->msgSelf_->newMsgOK(
         [self = this, aValidEv, weakHdlr = WeakMsgCB(aValidHdlr)]() noexcept {
-            cb_hdlr_(self, aValidEv, weakHdlr);
+            cb_hdlr_(self, aValidEv, weakHdlr);  // not exe here
         },
         this->getPriority(aValidEv)
     ))

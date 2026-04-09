@@ -52,7 +52,7 @@ size_t MtInQueue::handleCacheEle_() noexcept
 
         auto&& id_hdlr = find_if(
             tid_hdlr_S_.begin(), tid_hdlr_S_.end(),
-            [&](auto& p) { return p.first == ele_tid.second; }
+            [&](auto& tid_hdlr) { return tid_hdlr.first == ele_tid.second; }
         );
         if (id_hdlr == tid_hdlr_S_.end())
         {

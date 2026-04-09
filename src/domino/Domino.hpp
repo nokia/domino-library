@@ -27,6 +27,8 @@
 //   . EvName index
 //   . template extension (PriDomino, etc)
 //   . n-go domino
+// - VALUE for the whole lib
+//   . max usr-benefit/(usage-cost + impl-cost)
 //   . max ops-speed/mem-per-ev, across all ops & all doms, eg:
 //     . vector<Event> is better perf than unordered_set: O(1) indexed, cache-friendly, no hash on hot path
 //     . & less mem (since more linked ev): vector = 96B/ev fixed, unordered_set = 128B/ev-linked or 32B/unlinked
@@ -52,7 +54,7 @@
 
 namespace rlib
 {
-const char DOM_RESERVED_EVNAME[] = "[Dom Reserved EvName]";
+constexpr char DOM_RESERVED_EVNAME[] = "[Dom Reserved EvName]";
 
 // ***********************************************************************************************
 class Domino : public UniLog
@@ -61,7 +63,7 @@ public:
     using Event      = size_t;  // smaller size can save mem; larger size can support more events
     using EVs        = std::vector<Event>;  // better perf & less mem than unordered_set
     using EvName     = std::string;
-    using SimuEvents = std::map<EvName, bool>;  // not unordered-map since most traversal
+    using SimuEvents = std::map<EvName, bool>;  // not unordered-map: small ele#, most traversal
     using EvNames    = std::vector<EvName>;  // [event]=evName; better perf & less mem than unordered_set
     using EvLinks    = std::vector<EVs>;  // [event]=peers; better perf & less mem than unordered_set
 
@@ -123,8 +125,8 @@ private:
     EvLinks  prev_[N_EVENT_STATE];  // [event]=peers
     EvLinks  next_[N_EVENT_STATE];  // [event]=peers
 
-    std::unordered_map<EvName, Event> en_ev_;                // [evName]=event
-    EvNames                           ev_en_;                // [event]=evName
+    std::unordered_map<EvName, Event> en_ev_;  // [evName]=event; event# may huge
+    EvNames                           ev_en_;  // [event]=evName
     EVs                               effectEVs_;
 };
 

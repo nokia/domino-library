@@ -26,10 +26,10 @@ size_t ThreadBack::hdlDoneFut(UniLog& oneLog) noexcept
         // - async() failure will throw exception -> terminate since compiling forbid exception
         // - valid async()'s future never invalid
         // - valid packaged_task's get_future() never invalid
-        auto& fut = fut_backFN_S_[i].first;
+        auto& fut = fut_backFN_S_[i].future;
         if (fut.wait_for(0s) == future_status::ready)
         {
-            auto task_pair = std::move(fut_backFN_S_[i]);
+            auto task = std::move(fut_backFN_S_[i]);
             // swap-erase: move last element into this slot, then pop_back
             if (i + 1 < fut_backFN_S_.size())
                 fut_backFN_S_[i] = std::move(fut_backFN_S_.back());
@@ -37,10 +37,10 @@ size_t ThreadBack::hdlDoneFut(UniLog& oneLog) noexcept
             ++nHandledFut;
 
             SafePtr ret;
-            try { ret = task_pair.first.get(); }
+            try { ret = task.future.get(); }
             catch(...) { ERR("(ThreadBack) entryFN() except=" << mt_exceptInfo()); }
 
-            try { task_pair.second(move(ret)); }  // callback
+            try { task.backFN(move(ret)); }  // callback
             catch(...) { ERR("(ThreadBack) backFN() except=" << mt_exceptInfo()); }
         }
         else
