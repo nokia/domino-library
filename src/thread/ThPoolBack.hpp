@@ -33,10 +33,10 @@ namespace rlib
 class ThPoolBack : public ThreadBack
 {
 public:
-    // @brief Constructs a thread pool with exactly the specified number of threads.
-    // @param aMaxThread: Exact number of threads to create (minimum 1).
+    // @param aMaxThread: thread pool size; 0 -> MAX_THREAD (with warning)
+    // @param aMaxTaskQ: task queue capacity for limitNewTaskOK; 0 -> MAX_TASKQ (with warning)
     // @except if any thread cannot be created/joinable
-    explicit ThPoolBack(size_t aMaxThread = 16) noexcept(false);
+    explicit ThPoolBack(size_t aMaxThread = MAX_THREAD, size_t aMaxTaskQ = MAX_TASKQ) noexcept(false);
     ~ThPoolBack() noexcept;
 
     ThPoolBack(const ThPoolBack&) = delete;
@@ -45,6 +45,8 @@ public:
     ThPoolBack& operator=(ThPoolBack&&) = delete;
 
     [[nodiscard]] bool newTaskOK(MT_TaskEntryFN, TaskBackFN, UniLog& = UniLog::defaultUniLog_) noexcept override;
+    // @brief: like newTaskOK but reject if nFut() >= capacity (for users who want to limit max task#)
+    [[nodiscard]] bool limitNewTaskOK(MT_TaskEntryFN, TaskBackFN, UniLog& = UniLog::defaultUniLog_) noexcept;
 
 private:
     void mt_threadMain_() noexcept;  // runs in each pool thread
@@ -57,6 +59,10 @@ private:
     std::condition_variable  mt_qCv_;
 
     std::atomic<bool>  mt_stopAllTH_ = false;
+
+    // -------------------------------------------------------------------------------------------
+    static constexpr size_t  MAX_THREAD = 100;      // rational default; stack costs 100*8M=800M
+    static constexpr size_t  MAX_TASKQ  = 10'000;   // rational default for limitNewTaskOK
 };
 
 }  // namespace
@@ -65,4 +71,5 @@ private:
 // ..........  .........   .......................................................................
 // 2024-07-09  CSZ       1)create
 // 2025-03-21  CSZ       2)enable exception: tolerate except is safer; can't recover except->terminate
+// 2026-04-09  CSZ       - can limit max tasks
 // ***********************************************************************************************

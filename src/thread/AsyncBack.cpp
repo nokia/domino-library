@@ -10,10 +10,25 @@ using namespace std;
 namespace rlib
 {
 // ***********************************************************************************************
+AsyncBack::AsyncBack(size_t aMaxAsync)
+{
+    try {
+        if (aMaxAsync == 0)
+        {
+            WRN("!!! aMaxAsync=0 is meaningless, force to " << MAX_ASYNC);
+            aMaxAsync = MAX_ASYNC;
+        }
+        fut_backFN_S_.reserve(aMaxAsync);  // not construct any async; better perf for most cases
+    } catch(...) {  // ut can't cover this branch; rare but safer
+        ERR("(AsyncBack) Except=" << mt_exceptInfo() << " when reserving aMaxAsync=" << aMaxAsync);
+        throw;
+    }
+}
+
+// ***********************************************************************************************
 bool AsyncBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog& oneLog) noexcept
 {
     try {
-        // validate
         if (! ThreadBack::newTaskOK(mt_aEntryFN, aBackFN, oneLog))
             return false;
 
@@ -21,8 +36,7 @@ bool AsyncBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog
         // - impossible thread alive but AsyncBack destructed, since ~AsyncBack() will wait all fut over
         // - &mt_nDoneFut is better than "this" that can access other non-MT-safe member
         fut_backFN_S_.emplace_back(
-            async(launch::async, &AsyncBack::mt_thMain_,
-                std::move(mt_aEntryFN), std::ref(mt_nDoneFut_)),
+            async(launch::async, &AsyncBack::mt_thMain_, std::move(mt_aEntryFN), std::ref(mt_nDoneFut_)),
             std::move(aBackFN)
         );
         return true;
@@ -31,6 +45,17 @@ bool AsyncBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog
         return false;
     }
 }  // newTaskOK
+
+// ***********************************************************************************************
+bool AsyncBack::limitNewTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog& oneLog) noexcept
+{
+    if (nFut() >= fut_backFN_S_.capacity())
+    {
+        WRN("(AsyncBack) max threads reached (max=" << fut_backFN_S_.capacity() << "), reject new task");
+        return false;
+    }
+    return newTaskOK(std::move(mt_aEntryFN), std::move(aBackFN), oneLog);
+}
 
 // ***********************************************************************************************
 SafePtr<void> AsyncBack::mt_thMain_(MT_TaskEntryFN mt_aEntryFN, std::atomic<size_t>& mt_nDoneFut) noexcept

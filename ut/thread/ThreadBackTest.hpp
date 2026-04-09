@@ -341,4 +341,27 @@ TEST_F(THREAD_BACK_TEST, timeout)
     timedwait(0, 0);  // REQ: immediate timeout to inc cov
 }
 
+#define CONSTRUCTOR_PARAM
+// ***********************************************************************************************
+TEST_F(THREAD_BACK_TEST, maxThread_0_forced_to_default)
+{
+    THREAD_BACK_TYPE inst(0);  // 0 forced to default
+    EXPECT_TRUE(inst.newTaskOK(
+        [] { return make_safe<bool>(true); },
+        [](SafePtr<void>) {}
+    )) << "REQ: can work with defaulted param";
+    while (inst.hdlDoneFut() == 0)
+        timedwait();
+}
+TEST_F(THREAD_BACK_TEST, maxThread_exceed_default)
+{
+    THREAD_BACK_TYPE inst(101);  // user can exceed default
+    EXPECT_TRUE(inst.newTaskOK(
+        [] { return make_safe<bool>(true); },
+        [](SafePtr<void>) {}
+    ));
+    while (inst.hdlDoneFut() == 0)
+        timedwait();
+}
+
 }  // namespace

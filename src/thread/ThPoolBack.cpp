@@ -11,24 +11,24 @@ using namespace std;
 namespace rlib
 {
 // ***********************************************************************************************
-ThPoolBack::ThPoolBack(size_t aMaxThread)
+ThPoolBack::ThPoolBack(size_t aMaxThread, size_t aMaxTaskQ)
 {
     try {
         // validate
         if (aMaxThread == 0)
         {
-            WRN("!!! Force to create 1 thread for min workable. Safe since > usr req.");
-            aMaxThread = 1;
+            WRN("!!! aMaxThread=0 is meaningless, force to " << MAX_THREAD);
+            aMaxThread = MAX_THREAD;
         }
-        else if (aMaxThread > 10'000)
+        if (aMaxTaskQ == 0)
         {
-            WRN("!!! Max=10,000 threads though req=" << aMaxThread << " (simply avoid too big)");
-            aMaxThread = 10'000;
+            WRN("!!! aMaxTaskQ=0 is meaningless, force to " << MAX_TASKQ);
+            aMaxTaskQ = MAX_TASKQ;
         }
 
         // create threads
         thPool_.reserve(aMaxThread);  // not construct any thread
-        reserveBackFNs(aMaxThread);   // perf: init to avoid expand in most case; can AUTO-grow when needed
+        fut_backFN_S_.reserve(aMaxTaskQ);  // safe for limitNewTaskOK; better perf for most cases
         for (size_t i = 0; i < aMaxThread; ++i)
             thPool_.emplace_back(&ThPoolBack::mt_threadMain_, this);
     } catch(...) {  // ut can't cover this branch; rare but safer
@@ -94,19 +94,34 @@ void ThPoolBack::clean_() noexcept
 // ***********************************************************************************************
 bool ThPoolBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog& oneLog) noexcept
 {
-    // validate
-    if (! ThreadBack::newTaskOK(mt_aEntryFN, aBackFN, oneLog))
+    try {
+        if (! ThreadBack::newTaskOK(mt_aEntryFN, aBackFN, oneLog))
+            return false;
+
+        packaged_task<SafePtr<void>()> task(std::move(mt_aEntryFN));  // packaged_task can get_future()="task result"
+        fut_backFN_S_.emplace_back(task.get_future(), std::move(aBackFN));  // save future<> & aBackFN()
+        {
+            lock_guard<mutex> lock(mt_mutex_);
+            mt_taskQ_.emplace_back(move(task));
+        }
+        mt_qCv_.notify_one();  // notify thread pool to run a new task
+
+        return true;
+    } catch(...) {  // ut can't cover this branch; rare but safer
+        ERR("(ThPoolBack) except=" << mt_exceptInfo() << " in newTaskOK");
         return false;
-
-    packaged_task<SafePtr<void>()> task(std::move(mt_aEntryFN));  // packaged_task can get_future()="task result"
-    fut_backFN_S_.emplace_back(task.get_future(), std::move(aBackFN));  // save future<> & aBackFN()
-    {
-        lock_guard<mutex> lock(mt_mutex_);
-        mt_taskQ_.emplace_back(move(task));
     }
-    mt_qCv_.notify_one();  // notify thread pool to run a new task
+}
 
-    return true;
+// ***********************************************************************************************
+bool ThPoolBack::limitNewTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog& oneLog) noexcept
+{
+    if (nFut() >= fut_backFN_S_.capacity())
+    {
+        WRN("(ThPoolBack) task queue full (max=" << fut_backFN_S_.capacity() << "), reject new task");
+        return false;
+    }
+    return newTaskOK(std::move(mt_aEntryFN), std::move(aBackFN), oneLog);
 }
 
 }  // namespace

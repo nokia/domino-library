@@ -20,6 +20,7 @@
 //
 // - class safe: true (when use SafePtr instead of shared_ptr)
 //   . MtInQueue is for normal/most scenario, may NOK for high throughput, etc
+//   . not limit queue size as std lib, usr responds for safety
 // ***********************************************************************************************
 #pragma once
 
@@ -105,10 +106,13 @@ bool MtInQueue::mt_pushOK(S_PTR<aEleType>&& aEle) noexcept
     }
 
     // push
-    {
+    try {
         std::lock_guard<std::mutex> guard(mt_mutex_);
         // HID("(MtQ) nRef=" << aEle.use_count() << ", ptr=" << aEle.get());  // HID supports MT
-        mt_queue_.emplace_back(std::move(aEle), typeid(aEleType));  // except eg bad_alloc: can't recover->terminate
+        mt_queue_.emplace_back(std::move(aEle), typeid(aEleType));
+    } catch(...) {  // ut can't cover this branch; rare but safer
+        HID("!!! MtQ except in mt_pushOK");  // HID supports MT (ERR/WRN don't)
+        return false;
     }
 
     // unlock then notify main thread
@@ -151,7 +155,12 @@ bool MtInQueue::setHdlrOK(EleHdlr aHdlr) noexcept
             ERR("(MtQ) failed!!! overwrite hdlr may unsafe existing data");
             return false;
         }
-    tid_hdlr_S_.emplace_back(std::type_index(typeid(aEleType)), std::move(aHdlr));
+    try {
+        tid_hdlr_S_.emplace_back(std::type_index(typeid(aEleType)), std::move(aHdlr));
+    } catch(...) {  // ut can't cover this branch; rare but safer
+        ERR("(MtQ) except=" << mt_exceptInfo() << " in setHdlrOK");
+        return false;
+    }
     return true;
 }
 
@@ -179,4 +188,5 @@ MtInQueue& mt_getQ() noexcept;
 // 2024-03-10  CSZ       - enhance safe of setHdlrOK()
 // 2024-10-05  CSZ       - integrate with domino (giveup since multi-same-type)
 // 2025-03-24  CSZ       4)enable exception: tolerate except is safer; can't recover except->terminate
+// 2026-04-08  CSZ       - safe to limit max queue
 // ***********************************************************************************************

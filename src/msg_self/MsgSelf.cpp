@@ -53,7 +53,12 @@ bool MsgSelf::newMsgOK(MsgCB aMsgCB, const EMsgPriority aMsgPri) noexcept
     }
 
     // store
-    msgQueues_[aMsgPri].emplace_back(std::move(aMsgCB));  // except eg bad_alloc: can't recover->terminate
+    try {
+        msgQueues_[aMsgPri].emplace_back(std::move(aMsgCB));
+    } catch(...) {  // ut can't cover this branch; rare but safer
+        ERR("(MsgSelf) except=" << mt_exceptInfo() << " in newMsgOK");
+        return false;
+    }
     ++nMsg_;
     HID("(MsgSelf) nMsg=" << nMsg_);
 

@@ -37,6 +37,7 @@
 //
 // - Use-safe: yes with condition:
 //   . not support TOO many threads (used-up thread resource; impossible in most/normal cases)
+//     . not limit usr to create more async than MAX_ASYNC, but usr cover the safety (like std lib)
 //   . lower performance than eg thread pool (but simpler impl than thread pool)
 //   . destructor will FOREVER wait all thread finished
 //   . no duty to any unsafe behavior of MT_TaskEntryFN & TaskBackFN
@@ -55,13 +56,17 @@ namespace rlib
 class AsyncBack : public ThreadBack
 {
 public:
-    explicit AsyncBack(size_t aMaxThread = 16) noexcept(false) { reserveBackFNs(aMaxThread); }
+    // @param aMaxAsync: max threads; 0 -> MAX_ASYNC (warning)
+    explicit AsyncBack(size_t aMaxAsync = MAX_ASYNC) noexcept(false);
     // destruct-future will block till thread done (ut verified) - so default ~AsyncBack() is safe
 
     [[nodiscard]] bool newTaskOK(MT_TaskEntryFN, TaskBackFN, UniLog& = UniLog::defaultUniLog_) noexcept override;
+    // @brief: like newTaskOK but reject if nFut() >= capacity (for users who want to limit max async#)
+    [[nodiscard]] bool limitNewTaskOK(MT_TaskEntryFN, TaskBackFN, UniLog& = UniLog::defaultUniLog_) noexcept;
 
 private:
     static SafePtr<void> mt_thMain_(MT_TaskEntryFN, std::atomic<size_t>&) noexcept;  // runs in new thread
+    static constexpr size_t  MAX_ASYNC = 100;  // rational default; stack costs 100*8M=800M
 };
 
 }  // namespace
@@ -78,6 +83,7 @@ private:
 // 2023-10-25  CSZ       - with semaphore's wait-notify
 // 2024-07-10  CSZ       - mv common to base=ThreadBack
 // 2025-03-21  CSZ       3)enable exception: tolerate except is safer; can't recover except->terminate
+// 2026-04-09  CSZ       - can limit max async
 // ***********************************************************************************************
 // - Q&A:
 //   . MT_/mt_ prefix

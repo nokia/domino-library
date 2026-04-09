@@ -11,18 +11,6 @@ using std::chrono::microseconds;
 namespace rlib
 {
 // ***********************************************************************************************
-TEST_F(ThPoolBackTest, invalid_maxThread)
-{
-    ThPoolBack myPool(0);  // invalid maxThread=0
-    EXPECT_TRUE(threadBack_.newTaskOK(
-        [] { return make_safe<bool>(true); },  // entryFn
-        [](SafePtr<void>) {}  // backFn
-    )) << "REQ: can create new task";
-    while (threadBack_.hdlDoneFut() == 0)
-        timedwait();  // REQ: wait new task done
-}
-
-// ***********************************************************************************************
 TEST_F(ThPoolBackTest, performance)
 {
     const size_t maxThread = 100;  // github ci can afford 100 (1000+ slower than belinb03)
@@ -45,7 +33,7 @@ TEST_F(ThPoolBackTest, performance)
     // - belinb03 :  8~ 20 faster than AsyncBack
     // - github ci: 40~100 slower than AsyncBack
 
-    AsyncBack asyncBack;
+    AsyncBack asyncBack(maxThread);
     start = high_resolution_clock::now();
     for (size_t i = 0; i < maxThread; i++)
         EXPECT_TRUE(asyncBack.newTaskOK(
@@ -60,6 +48,75 @@ TEST_F(ThPoolBackTest, performance)
         timedwait();
     dur = duration_cast<microseconds>(high_resolution_clock::now() - start);
     HID("AsyncBack cost=" << dur.count() << "us");
+}
+
+// ***********************************************************************************************
+TEST_F(ThPoolBackTest, GOLD_limitNewTaskOK_rejectWhenFull_then_acceptWhenFreed)
+{
+    std::atomic<bool> canEnd(false);
+    ThPoolBack myPool(1, 3);  // 1 thread, capacity=3
+
+    // 1st task: block the only thread
+    EXPECT_TRUE(myPool.limitNewTaskOK(
+        [&canEnd] {
+            while (not canEnd) std::this_thread::yield();
+            return make_safe<bool>(true);
+        },
+        [](SafePtr<void>) {}
+    )) << "REQ: 1st task OK (running)";
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    // 2nd & 3rd tasks queue up
+    EXPECT_TRUE(myPool.limitNewTaskOK(
+        [] { return make_safe<bool>(true); },
+        [](SafePtr<void>) {}
+    )) << "REQ: 2nd task OK";
+
+    EXPECT_TRUE(myPool.limitNewTaskOK(
+        [] { return make_safe<bool>(true); },
+        [](SafePtr<void>) {}
+    )) << "REQ: 3rd task OK";
+
+    // 4th task: rejected (full)
+    EXPECT_FALSE(myPool.limitNewTaskOK(
+        [] { return make_safe<bool>(true); },
+        [](SafePtr<void>) {}
+    )) << "REQ: rejected when full";
+
+    // release and accept
+    canEnd = true;
+    while (myPool.hdlDoneFut() == 0)
+        timedwait();
+
+    EXPECT_TRUE(myPool.limitNewTaskOK(
+        [] { return make_safe<bool>(true); },
+        [](SafePtr<void>) {}
+    )) << "REQ: accept after slot freed";
+
+    while (myPool.nFut() > 0)
+    {
+        (void)myPool.hdlDoneFut();
+        timedwait();
+    }
+}
+
+// ***********************************************************************************************
+TEST_F(ThPoolBackTest, maxTaskQ_0_forced_to_default)
+{
+    ThPoolBack myPool(2, 0);  // 0 forced to MAX_TASKQ=10000
+    for (int i = 0; i < 100; ++i)
+    {
+        EXPECT_TRUE(myPool.limitNewTaskOK(
+            [] { return make_safe<bool>(true); },
+            [](SafePtr<void>) {}
+        )) << "REQ: 0 forced to default";
+    }
+    while (myPool.nFut() > 0)
+    {
+        (void)myPool.hdlDoneFut();
+        timedwait();
+    }
 }
 
 }  // namespace

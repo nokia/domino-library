@@ -36,6 +36,7 @@
 //     . SafePtr is just to test SafeWeak in real world
 //   . not support callback after ~MsgSelf() since all msg discarded when ~MsgSelf()
 //     . UtInitObjAnywhere gives example how to provide a common callback for main()
+//   . not limit queue size as std lib, usr responds for safety
 // ***********************************************************************************************
 #pragma once
 
