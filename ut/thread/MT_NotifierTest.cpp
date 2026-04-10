@@ -124,30 +124,46 @@ TEST_F(MT_NotifierTest, timedwait_immune_to_clock_forward_jump)
 }
 
 // ***********************************************************************************************
-// Race: sem_clockwait returns → worker notify (flag still set, no sem_post!) → clear → timedwait blocks
-TEST_F(MT_NotifierTest, noLostNotify_underHighFreqNotify)
+TEST_F(MT_NotifierTest, GOLD_noLostNotify)
 {
     notif_.reset();
     atomic<bool> stop{false};
 
     thread worker([&]{
         while (!stop.load(memory_order_relaxed))
-            notif_.mt_notify();  // surge notify
+            notif_.mt_notify();  // extremely surge notif
     });
 
     int nLost = 0;
     for (int i = 0; i < 100; ++i)
     {
         auto t0 = chrono::steady_clock::now();
-        notif_.timedwait(0, 50'000'000);  // 50ms timeout
+        notif_.timedwait(0, 50'000'000);  // wait, or 50ms timeout
         auto ms = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - t0).count();
-        if (ms >= 45)  // should wake immediately, not timeout
+        if (ms >= 45)  // should wake immediately
             ++nLost;
     }
 
     stop = true;
     worker.join();
     EXPECT_EQ(0, nLost) << "REQ: no notify lost under surge notify";
+}
+
+TEST_F(MT_NotifierTest, GOLD_noImmediateNextWakeup)
+{
+    notif_.mt_notify();  // job1
+    notif_.mt_notify();  // job2
+    notif_.mt_notify();  // job3
+
+    auto t0 = chrono::steady_clock::now();
+    notif_.timedwait(0, 50'000'000);
+    auto ms = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - t0).count();
+    EXPECT_LT(ms, 10) << "REQ: 1st timedwait should wake immediately & handle all jobs";
+
+    t0 = chrono::steady_clock::now();
+    notif_.timedwait(0, 50'000'000);  // immediate 2nd timedwait
+    ms = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - t0).count();
+    EXPECT_GE(ms, 45) << "REQ: immediate 2nd wakeup doesn't make sense";
 }
 
 }  // namespace
