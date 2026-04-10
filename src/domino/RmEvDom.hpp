@@ -50,7 +50,7 @@ private:
     // -------------------------------------------------------------------------------------------
     // - REQ: min mem (so better than vector<bool> when almost empty even with many events)
     // - REQ: fast (eg isRemoved(), insert, del)
-    // - req: better FIFO
+    // - req: better FIFO (but current unordered_set is not; acceptable)
     std::unordered_set<Domino::Event> isRemovedEv_;
 
 public:

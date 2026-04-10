@@ -86,7 +86,9 @@ Domino::Event Domino::getEventBy(const EvName& aEvName) const noexcept
 // ***********************************************************************************************
 Domino::Event Domino::newEvent(const EvName& aEvName) noexcept
 {
-    if (isspace(static_cast<unsigned char>(aEvName.front())) || isspace(static_cast<unsigned char>(aEvName.back())))
+    if (!aEvName.empty() &&  // otherwise isspace() may UB
+        (isspace(static_cast<unsigned char>(aEvName.front())) || isspace(static_cast<unsigned char>(aEvName.back())))
+    )
         WRN("(Domino) EvName has leading/trailing whitespace: '" << aEvName << "'");
 
     // exist?

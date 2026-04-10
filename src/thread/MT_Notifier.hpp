@@ -36,7 +36,6 @@ public:
 
 private:
     sem_t mt_sem_;
-    std::atomic_flag mt_notified_ = ATOMIC_FLAG_INIT;  // prevent sem overflow; multi-notify = one post
 
     // -------------------------------------------------------------------------------------------
 #ifdef IN_GTEST
@@ -45,7 +44,6 @@ public:
     {
         sem_destroy(&mt_sem_);
         sem_init(&mt_sem_, 0, 0);
-        mt_notified_.clear();
     }
 #endif
 };

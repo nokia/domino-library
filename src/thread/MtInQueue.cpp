@@ -87,7 +87,7 @@ size_t MtInQueue::handleAllEle() noexcept
 }
 
 // ***********************************************************************************************
-void MtInQueue::mt_clearElePool() noexcept
+void MtInQueue::mt_clearAll() noexcept
 {
     lock_guard<mutex> guard(mt_mutex_);  // ensure consistency of whole fn
 

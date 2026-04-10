@@ -123,4 +123,31 @@ TEST_F(MT_NotifierTest, timedwait_immune_to_clock_forward_jump)
     clock_settime(CLOCK_REALTIME, &ts);
 }
 
+// ***********************************************************************************************
+// Race: sem_clockwait returns → worker notify (flag still set, no sem_post!) → clear → timedwait blocks
+TEST_F(MT_NotifierTest, noLostNotify_underHighFreqNotify)
+{
+    notif_.reset();
+    atomic<bool> stop{false};
+
+    thread worker([&]{
+        while (!stop.load(memory_order_relaxed))
+            notif_.mt_notify();  // surge notify
+    });
+
+    int nLost = 0;
+    for (int i = 0; i < 100; ++i)
+    {
+        auto t0 = chrono::steady_clock::now();
+        notif_.timedwait(0, 50'000'000);  // 50ms timeout
+        auto ms = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - t0).count();
+        if (ms >= 45)  // should wake immediately, not timeout
+            ++nLost;
+    }
+
+    stop = true;
+    worker.join();
+    EXPECT_EQ(0, nLost) << "REQ: no notify lost under surge notify";
+}
+
 }  // namespace

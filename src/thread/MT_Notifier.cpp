@@ -15,9 +15,7 @@ namespace rlib
 // ***********************************************************************************************
 void MT_Notifier::mt_notify() noexcept
 {
-    // mt_notified_ prevents sem overflow & avoids repeatedly waking main thread
-    if (!mt_notified_.test_and_set())  // only post once between timedwait calls
-        sem_post(&mt_sem_);
+    sem_post(&mt_sem_);  // EOVERFLOW harmless: sem stays MAX, wait still works
 }
 
 // ***********************************************************************************************
@@ -36,9 +34,9 @@ void MT_Notifier::timedwait(const size_t aSec, const size_t aRestNsec) noexcept
     for (;;)
     {
         const auto ret = sem_clockwait(&mt_sem_, CLOCK_MONOTONIC, &ts);  // clock-immune
-        if (errno == ETIMEDOUT || ret == 0)  // timeout or notified
+        if (errno == ETIMEDOUT || ret == 0)  // timeout or notified(include EOVERFLOW on sem_post side)
         {
-            mt_notified_.clear();  // allow next notify to post
+            while (sem_trywait(&mt_sem_) == 0);  // reset sem counter to avoid immediate wakeup next time
             return;
         }
         // continue for EINTR

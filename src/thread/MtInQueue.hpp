@@ -58,7 +58,7 @@ public:
     template<class aEleType> [[nodiscard]] S_PTR<aEleType> pop() noexcept;
 
     [[nodiscard]] size_t mt_size(bool canBlock) const noexcept;
-    void   mt_clearElePool() noexcept;
+    void   mt_clearAll() noexcept;  // clear elements + handlers
 
     // shall be called in main thread ONLY!!!
     template<class aEleType> [[nodiscard]] bool setHdlrOK(EleHdlr) noexcept;  // except eg bad_alloc: can't recover->terminate

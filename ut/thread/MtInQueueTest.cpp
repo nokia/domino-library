@@ -32,8 +32,7 @@ struct MtInQueueTest : public Test, public UniLog
     {}
     ~MtInQueueTest()
     {
-        mt_getQ().mt_clearElePool();  // not impact other testcase
-        mt_getQ().clearHdlrPool();    // not impact other testcase
+        mt_getQ().mt_clearAll();  // not impact other testcase
         GTEST_LOG_FAIL
     }
 };
@@ -211,7 +210,7 @@ TEST_F(MtInQueueTest, destruct_right_type)
     EXPECT_TRUE(mt_getQ().mt_pushOK(MAKE_PTR<TestObj>(isDestructed))) << "REQ: push OK";
     ASSERT_FALSE(isDestructed);
 
-    mt_getQ().mt_clearElePool();
+    mt_getQ().mt_clearAll();
     ASSERT_TRUE(isDestructed) << "REQ: destruct correctly";
 }
 TEST_F(MtInQueueTest, clear_queue_cache_hdlr)
@@ -231,7 +230,7 @@ TEST_F(MtInQueueTest, clear_queue_cache_hdlr)
     EXPECT_TRUE(mt_getQ().setHdlrOK<int>([](UniPtr){})) << "REQ: set hdlr";
     EXPECT_EQ(1u, mt_getQ().nHdlr()) << "1 hdlr";
 
-    mt_getQ().mt_clearElePool();
+    mt_getQ().mt_clearAll();
     EXPECT_EQ(0u, mt_getQ().mt_size(true)) << "REQ: clear all ele";
     EXPECT_EQ(0u, mt_getQ().nHdlr()) << "REQ: clear all hdlr";
 }
