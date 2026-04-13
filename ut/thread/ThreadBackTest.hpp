@@ -36,6 +36,7 @@ struct THREAD_BACK_TEST : public Test, public UniLog
         EXPECT_EQ(0, threadBack_.nFut()) << "REQ: handle all";
         mt_getQ().clearHdlrPool();
         ObjAnywhere::deinit();
+        g_notifMainTH.reset();  // reset global: avoid impact other testcases
         GTEST_LOG_FAIL
     }
 

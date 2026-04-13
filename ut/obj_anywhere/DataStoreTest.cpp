@@ -123,8 +123,8 @@ TEST_F(DataStoreTest, GOLD_safe_cast)
     S_PTR<Base> b = MAKE_PTR<Derive>();
     EXPECT_TRUE(dataStore_.emplaceOK("Base", b)) << "REQ: emplace OK";
     EXPECT_EQ(1      , dataStore_.get<Base  >("Base")->value()) << "REQ: get real type";
-    EXPECT_EQ(1      , dataStore_.get<Derive>("Base")->value()) << "REQ: get real type";
-    EXPECT_EQ(nullptr, dataStore_.get<D2    >("Base").get   ()) << "REQ: get invalid type (shared_ptr failed here)";
+    EXPECT_EQ(nullptr, dataStore_.get<Derive>("Base").get   ()) << "not support: simply Base-in Base-out";
+    EXPECT_EQ(nullptr, dataStore_.get<D2    >("Base").get   ()) << "REQ: get invalid type";
 }
 TEST_F(DataStoreTest, GOLD_safe_destruct)
 {

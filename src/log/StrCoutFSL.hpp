@@ -35,6 +35,7 @@ class StringStreamBuf : public std::streambuf
 public:
     const std::string& str() const noexcept { return buf_; }
     size_t size() const noexcept { return buf_.size(); }
+    void clear() noexcept { buf_.clear(); }
 
 protected:
     int_type overflow(int_type ch) override
@@ -65,14 +66,14 @@ struct StrCoutFSL_BufHolder
 // ***********************************************************************************************
 class StrCoutFSL  // FSL = Formatted Smart Log
     : public BaseSL
-    , private StrCoutFSL_BufHolder   // must be before std::ostream to init sbuf_ first
-    , public std::ostream            // lightweight: no bidirectional stringbuf overhead
+    , private StrCoutFSL_BufHolder  // must be before std::ostream to init sbuf_ first
+    , public std::ostream  // lightweight: no bidirectional stringbuf overhead
 {
 public :
     StrCoutFSL() : std::ostream(&sbuf_) {}
     ~StrCoutFSL() noexcept;
 
-    void forceSave() const noexcept;
+    void forceSave() noexcept;
     size_t size() const noexcept { return sbuf_.size(); }
 };
 
@@ -88,9 +89,12 @@ StrCoutFSL::~StrCoutFSL() noexcept
 
 // ***********************************************************************************************
 inline
-void StrCoutFSL::forceSave() const noexcept
+void StrCoutFSL::forceSave() noexcept
 {
-    std::cout << sbuf_.str() << '\n';  // direct string access; newline w/o flush faster than endl
+    if (sbuf_.size() > 0) {
+        std::cout << sbuf_.str() << '\n';
+        sbuf_.clear();
+    }
 }
 
 }  // namespace

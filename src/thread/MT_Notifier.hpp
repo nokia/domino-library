@@ -58,6 +58,7 @@ public:
 // 2024-07-04  CSZ       - sem_getvalue() is not MT safe, replaced
 // 2026-03-31  CSZ       2)immune to system clock changes (pthread_cond + CLOCK_MONOTONIC)
 // 2026-04-03  CSZ       3)back semaphore (clock-immune on glibc2.30+, else not support)
+// 2026-04-11  CSZ       - fix notify loss
 // ***********************************************************************************************
 // Q&A:
 // - why semaphore instead of pthread_cond?

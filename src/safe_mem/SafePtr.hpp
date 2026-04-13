@@ -11,7 +11,7 @@
 //   . Only allow safe creation via eg make_safe<T>() or nullptr
 //   . Forbid unsafe eg via raw pointer/shared_ptr construction
 // - Cast (safe_cast<T>()):
-//   . Only allow safe cast eg among self, base & void
+//   . Only allow safe cast: eg among self, base & void, especially multi-inherit cast
 //   . Unsafe cast: return nullptr, or compile-time error (better)
 // - Copy/Move/Assign:
 //   . Only allow safe operations eg between same type, to base/void/const
@@ -42,9 +42,14 @@
 namespace rlib
 {
 template<typename T> class SafeWeak;
+
+// EBO: type_index only exists for SafePtr<void>, zero overhead for SafePtr<T≠void>
+template<bool> struct void_type_index {};
+template<>     struct void_type_index<true> { std::type_index lastType_ = typeid(void); };  // type before cast to void
+
 // ***********************************************************************************************
 template<typename T = void>
-class SafePtr
+class SafePtr : private void_type_index<std::is_void_v<T>>
 {
 public:
     // - safe-only creation, eg can't construct by raw ptr/shared_ptr that maybe unsafe
@@ -74,17 +79,14 @@ public:
     [[nodiscard]] auto use_count() const noexcept { return pT_.use_count(); }
 
     // most for debug
-    [[nodiscard]] auto realType() const noexcept { return realType_; }  // ret cp is safer than ref
-    [[nodiscard]] auto lastType() const noexcept { return lastType_; }
+    [[nodiscard]] auto lastType() const noexcept;
 
 private:
-    template<typename To> std::type_index genLastType_() const noexcept;
-    constexpr SafePtr(std::shared_ptr<T>&&, const std::type_index&, const std::type_index&) noexcept;
+    constexpr SafePtr(std::shared_ptr<T>&&, const std::type_index&) noexcept;
 
     // -------------------------------------------------------------------------------------------
     std::shared_ptr<T> pT_;  // core
-    std::type_index realType_ = typeid(T);  // origin type
-    std::type_index lastType_ = typeid(T);  // maybe last valid type than realType_ & void
+    // (void_type_index::lastType_) only exists for T=void, via EBO (0B for T≠void)
 
     // -------------------------------------------------------------------------------------------
 public:
@@ -101,9 +103,10 @@ template<typename T>
 template<typename From>
 SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom) noexcept  // cp
     : pT_(aSafeFrom.pT_)  // faster than get()
-    , realType_(pT_ ? aSafeFrom.realType_ : typeid(T))  // init list is faster
-    , lastType_(pT_ ? aSafeFrom.template genLastType_<T>() : typeid(T))  // init list is faster
-{}
+{
+    if constexpr(std::is_void_v<T>)
+        if (pT_) this->lastType_ = aSafeFrom.lastType();
+}
 
 // ***********************************************************************************************
 // - safe mv (self/base/void), otherwise compile-err (by shared_ptr's mv which is safe)
@@ -111,24 +114,22 @@ template<typename T>
 template<typename From>
 SafePtr<T>::SafePtr(SafePtr<From>&& aSafeFrom) noexcept  // mv - MtQ need
     : pT_(std::move(aSafeFrom.pT_))  // mv is faster than cp
-    , realType_(pT_ ? aSafeFrom.realType_ : typeid(T))
-    , lastType_(pT_ ? aSafeFrom.template genLastType_<T>() : typeid(T))
 {
-    // reset aSafeFrom:
-    // - impossible mv fail (compile err)
-    // - no need reset aSafeFrom.pT_, done by mv
-    aSafeFrom.realType_ = typeid(From);
-    aSafeFrom.lastType_ = typeid(From);
+    if constexpr(std::is_void_v<T>)
+        if (pT_) this->lastType_ = aSafeFrom.lastType();
 }
 
 // ***********************************************************************************************
 // - for safe_cast; constructor is faster; private is safe
 template<typename T>
-constexpr SafePtr<T>::SafePtr(std::shared_ptr<T>&& aPtr, const std::type_index& aReal, const std::type_index& aLast) noexcept
+constexpr SafePtr<T>::SafePtr(std::shared_ptr<T>&& aPtr, const std::type_index& aLast) noexcept
     : pT_(std::move(aPtr))  // mv
-    , realType_(pT_ ? aReal : typeid(T))
-    , lastType_(pT_ ? aLast : typeid(T))
-{}
+{
+    if constexpr(std::is_void_v<T>) {
+        this->lastType_ = pT_ ? aLast : typeid(void);
+    }
+    else (void)aLast;  // suppress unused warning for T≠void
+}
 
 // ***********************************************************************************************
 template<typename T>
@@ -157,15 +158,10 @@ std::shared_ptr<To> SafePtr<T>::cast() const noexcept
         return pT_;  // unreachable, but satisfies return type
     }
 
-    else if (realType_ == typeid(To))
+    else if (this->lastType_ == typeid(To))
     {
-        // HID("(SafePtr) cast void->origin");
-        return std::static_pointer_cast<To>(pT_);
-    }
-    else if (lastType_  == typeid(To))
-    {
-        // HID("(SafePtr) cast void to last-type-except-void");
-        return std::static_pointer_cast<To>(pT_);
+        // HID("(SafePtr) cast void->lastType (MI safe round-trip)");
+        return std::static_pointer_cast<To>(pT_);  // void stored lastType's address, static_cast restores it
     }
     HID("(SafePtr) can't cast from=void/" << typeid(T).name() << " to=" << typeid(To).name());
     return nullptr;  // non-constexpr branch: dynamic_pointer_cast<To>(pT_) may fail compile
@@ -173,17 +169,10 @@ std::shared_ptr<To> SafePtr<T>::cast() const noexcept
 
 // ***********************************************************************************************
 template<typename T>
-template<typename To>
-std::type_index SafePtr<T>::genLastType_() const noexcept
+auto SafePtr<T>::lastType() const noexcept
 {
-    if constexpr(!std::is_same_v<To, void>) {
-        if (realType_ != typeid(To)) {
-        HID("most diff type=" << typeid(To).name());
-        return typeid(To);  // eg Derive->Base = Base
-        }
-    }
-    HID("T->void, or To->T->To, T.lastType_ is the most diff type");
-    return lastType_;  // eg Derive->Base->void = Base, Derive->Base->Derive = Base
+    if constexpr(std::is_void_v<T>) return this->lastType_;
+    else return std::type_index(typeid(T));
 }
 
 
@@ -229,18 +218,17 @@ bool operator<(const SafePtr<T>& lhs, const SafePtr<U>& rhs) noexcept
 template<typename To, typename From>
 [[nodiscard]] SafePtr<To> safe_cast(const SafePtr<From>& aSafeFrom) noexcept
 {
-    return SafePtr<To>(  // constructor is faster
-        aSafeFrom.template cast<To>(),  // mv
-        aSafeFrom.realType_,
-        aSafeFrom.template genLastType_<To>()
-    );
+    if constexpr(std::is_void_v<To>)
+        return SafePtr<To>(aSafeFrom.template cast<To>(), aSafeFrom.lastType());
+    else
+        return SafePtr<To>(aSafeFrom.template cast<To>(), std::type_index(typeid(To)));
 }
 
 
 
 // ***********************************************************************************************
 template<typename T = void>
-class SafeWeak
+class SafeWeak : private void_type_index<std::is_void_v<T>>
 {
 public:
     SafeWeak(const SafePtr<T>& aSafeFrom) noexcept;
@@ -250,17 +238,16 @@ public:
 private:
     // -------------------------------------------------------------------------------------------
     std::weak_ptr<T> pT_;  // core
-    std::type_index realType_;
-    std::type_index lastType_;
+    // (void_type_index::lastType_) only exists for T=void, via EBO (0B for T≠void)
 };
 
 // ***********************************************************************************************
 template<typename T>
 SafeWeak<T>::SafeWeak(const SafePtr<T>& aSafeFrom) noexcept
     : pT_(aSafeFrom.pT_)
-    , realType_(aSafeFrom.realType_)
-    , lastType_(aSafeFrom.lastType_)
 {
+    if constexpr(std::is_void_v<T>)
+        this->lastType_ = aSafeFrom.lastType();
 }
 
 // ***********************************************************************************************
@@ -269,7 +256,10 @@ SafePtr<T> SafeWeak<T>::lock() const noexcept
 {
     auto sp = pT_.lock();
     if (!sp) return SafePtr<T>();
-    return SafePtr<T>(std::move(sp), realType_, lastType_);  // constructor is faster
+    if constexpr(std::is_void_v<T>)
+        return SafePtr<T>(std::move(sp), this->lastType_);
+    else
+        return SafePtr<T>(std::move(sp), std::type_index(typeid(T)));
 }
 }  // namespace
 
@@ -296,6 +286,7 @@ struct std::hash<rlib::SafePtr<T>>
 // 2024-10-16  CSZ       - dynamic_pointer_cast to safe_cast since std not allowed
 // 2025-02-13  CSZ       4)SafeWeak
 // 2025-03-24  CSZ       5)tolerate exception
+// 2026-04-11  CSZ       6)fix D->B->void->B; only lastType_ for SafePtr&WeakPtr<void> via EBO
 // ***********************************************************************************************
 // - Q&A
 //   * noexcept & constexpr (for whole lib)
