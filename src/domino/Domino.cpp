@@ -230,7 +230,7 @@ Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrev
     for (auto&& prevEn_state : aSimuPrevEvents)
     {
         auto&& prevEv = newEvent(prevEn_state.first);
-        if (prevEv >= nextable.size() || nextable[prevEv])
+        if (nextable[prevEv])  // + aSimuPrevEvents.size() so impossible out-bounds
         {
             ERR("(Domino) !!!Failed since invalid EN=" << aEvName << ", or loop to=" << prevEn_state.first);
             return D_EVENT_FAILED_RET;

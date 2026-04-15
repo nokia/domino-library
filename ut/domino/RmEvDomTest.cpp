@@ -101,11 +101,37 @@ TYPED_TEST_P(RmDomTest, doubleRemove_rejected)
     EXPECT_FALSE(PARA_DOM->rmEvOK("e1"))   << "REQ: double-remove shall be rejected.";
 }
 
+TYPED_TEST_P(RmDomTest, rmMiddle_thenRebuildLink_noFalseLoop)
+{
+    // REQ: rmEv completely clears all links — setPrev after rm shall not see ghost links
+    // real scenario: version-ctrl domino rm old-version's middle event, then rewire
+    //   A→B→C, rmEv(B), then setPrev("C", {{"A", T}}) → A→C (no loop)
+    PARA_DOM->setPrev("B", {{"A", true}});
+    PARA_DOM->setPrev("C", {{"B", true}});
+    PARA_DOM->setState({{"A", true}});
+    EXPECT_TRUE(PARA_DOM->state("C"));
+
+    EXPECT_TRUE(PARA_DOM->rmEvOK("B"));
+    // C's prev removed → vacuous AND = true (no constraints left)
+    EXPECT_TRUE(PARA_DOM->state("C")) << "REQ: C has no prev after rm B → deduced T";
+
+    // rewire: C directly depends on A (should not hit false loop detection from ghost B links)
+    EXPECT_NE(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("C", {{"A", true}}))
+        << "REQ: no false loop detected after rmEv";
+
+    PARA_DOM->setState({{"A", false}});
+    EXPECT_FALSE(PARA_DOM->state("C")) << "REQ: rewired chain reverse works";
+
+    PARA_DOM->setState({{"A", true}});
+    EXPECT_TRUE(PARA_DOM->state("C")) << "REQ: rewired chain forward works";
+}
+
 REGISTER_TYPED_TEST_SUITE_P(RmDomTest
     , GOLD_rm_dom_resrc
     , GOLD_reuse_ev
     , bugFix_recycleShallNotGrowInternalStateSpace
     , doubleRemove_rejected
+    , rmMiddle_thenRebuildLink_noFalseLoop
 );
 using AnyRmDom = Types<MinRmEvDom, MaxNofreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, RmDomTest, AnyRmDom);

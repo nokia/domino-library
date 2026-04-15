@@ -101,6 +101,11 @@ TYPED_TEST_P(DominoTest, setState_onlyAtChainHead)
     EXPECT_FALSE(PARA_DOM->state("e1"));
     EXPECT_TRUE (PARA_DOM->state("e2"));
     EXPECT_TRUE (PARA_DOM->state("e3")) << "REQ: fail set end";
+
+    // REQ: atomic reject — batch mixing valid head + invalid non-head rejects ALL
+    PARA_DOM->newEvent("h1");
+    EXPECT_EQ(0u, PARA_DOM->setState({{"h1", true}, {"e2", true}})) << "REQ: 1 non-head -> reject ALL";
+    EXPECT_FALSE(PARA_DOM->state("h1")) << "REQ: valid head also not set";
 }
 TYPED_TEST_P(DominoTest, bugFix_shallDeduceAll)
 {
@@ -119,6 +124,25 @@ TYPED_TEST_P(DominoTest, GOLD_simuSetState)
     EXPECT_EQ(2u, PARA_DOM->setState({{"e1", true}, {"e3", true}}));
     EXPECT_TRUE(PARA_DOM->state("e2"));
     EXPECT_TRUE(PARA_DOM->state("e4"));
+}
+TYPED_TEST_P(DominoTest, GOLD_nGo_repeatBroadcastCycle)
+{
+    // REQ: n-go domino — same chain can cycle T→F→T repeatedly (like IM repeat working till reboot)
+    // e1->e2->e3
+    PARA_DOM->setPrev("e2", {{"e1", true}});
+    PARA_DOM->setPrev("e3", {{"e2", true}});
+
+    // cycle 1
+    PARA_DOM->setState({{"e1", true}});
+    EXPECT_TRUE(PARA_DOM->state("e3")) << "REQ: cycle1 broadcast T";
+    PARA_DOM->setState({{"e1", false}});
+    EXPECT_FALSE(PARA_DOM->state("e3")) << "REQ: cycle1 broadcast F";
+
+    // cycle 2 — exact same chain re-triggers
+    PARA_DOM->setState({{"e1", true}});
+    EXPECT_TRUE(PARA_DOM->state("e3")) << "REQ: cycle2 broadcast T (n-go)";
+    PARA_DOM->setState({{"e1", false}});
+    EXPECT_FALSE(PARA_DOM->state("e3")) << "REQ: cycle2 broadcast F (n-go)";
 }
 
 #define PREV
@@ -235,6 +259,95 @@ TYPED_TEST_P(DominoTest, GOLD_diamond_broadcast)
     PARA_DOM->setState({{"e2", true}});
     EXPECT_TRUE(PARA_DOM->state("e4"));
     EXPECT_TRUE(PARA_DOM->state("e5"));
+}
+TYPED_TEST_P(DominoTest, setPrev_lateConnect_deducesImmediately)
+{
+    // REQ(auto shape): connect dependency AFTER predecessor already satisfied → immediate deduction
+    // real scenario: agent1 done first, then monitor registers dependency later
+    PARA_DOM->setState({{"agent1_done", true}});
+    PARA_DOM->setPrev("monitor_ok", {{"agent1_done", true}});
+    EXPECT_TRUE(PARA_DOM->state("monitor_ok")) << "REQ: late connect, prev already T → target T immediately";
+
+    // REQ: the reverse — setPrev overrides a manually-set state when prev not satisfied
+    // real scenario: manually set flag=T, then later bind it to dependency chain
+    PARA_DOM->setState({{"flag", true}});
+    EXPECT_TRUE(PARA_DOM->state("flag"));
+    PARA_DOM->setPrev("flag", {{"gate", true}});  // gate=F → flag deduced to F, overriding manual T
+    EXPECT_FALSE(PARA_DOM->state("flag")) << "REQ: setPrev overrides manual state via deduction";
+
+    // REQ: after setPrev, flag is non-head → setState must be rejected
+    EXPECT_EQ(0u, PARA_DOM->setState({{"flag", true}})) << "REQ: head→non-head, setState rejected";
+}
+TYPED_TEST_P(DominoTest, buildOrder_bottomUp_sameResult)
+{
+    // REQ(auto shape): different teams build the same graph in different order → same behavior
+    // real scenario: team C registers "I depend on B" before team B registers "I depend on A"
+    // build bottom-up: e3←e2 first, then e2←e1
+    PARA_DOM->setPrev("e3", {{"e2", true}});
+    PARA_DOM->setPrev("e2", {{"e1", true}});
+
+    PARA_DOM->setState({{"e1", true}});
+    EXPECT_TRUE(PARA_DOM->state("e2"));
+    EXPECT_TRUE(PARA_DOM->state("e3")) << "REQ: bottom-up build same result as top-down";
+
+    PARA_DOM->setState({{"e1", false}});
+    EXPECT_FALSE(PARA_DOM->state("e3")) << "REQ: bottom-up build reverse also works";
+}
+TYPED_TEST_P(DominoTest, asymmetricConverge_singleHead)
+{
+    // REQ: single head fans out to paths of different depth, then reconverge
+    // real scenario: "start" triggers fast-check(1 hop) and slow-download-install(2 hops),
+    //   merge_point needs both done
+    //       start
+    //      /     \                       (both true-link)
+    //   fast    slow
+    //     |       |                      (both true-link)
+    //     |     install
+    //      \     /                       (both true-link)
+    //       merge
+    PARA_DOM->setPrev("fast",    {{"start", true}});
+    PARA_DOM->setPrev("slow",    {{"start", true}});
+    PARA_DOM->setPrev("install", {{"slow",  true}});
+    PARA_DOM->setPrev("merge",   {{"fast",  true}, {"install", true}});
+
+    PARA_DOM->setState({{"start", true}});
+    EXPECT_TRUE(PARA_DOM->state("merge")) << "REQ: asymmetric paths both done => merge T";
+
+    PARA_DOM->setState({{"start", false}});
+    EXPECT_FALSE(PARA_DOM->state("merge")) << "REQ: asymmetric paths both reverted => merge F";
+}
+TYPED_TEST_P(DominoTest, dupSetPrev_isIdempotent)
+{
+    // REQ: repeated setPrev with same args must not create dup links (no wrong multi-trigger)
+    PARA_DOM->setPrev("e2", {{"e1", true}});
+    PARA_DOM->setPrev("e2", {{"e1", true}});  // dup call
+
+    PARA_DOM->setState({{"e1", true}});
+    EXPECT_TRUE(PARA_DOM->state("e2"));
+
+    PARA_DOM->setState({{"e1", false}});
+    EXPECT_FALSE(PARA_DOM->state("e2")) << "REQ: no dup link means clean F propagation";
+}
+TYPED_TEST_P(DominoTest, setPrev_failedNoLink)
+{
+    // REQ: when setPrev fails (loop/conflict), no link is created — even for preceding valid prevs
+    // real scenario: user accidentally includes a loop in batch setPrev, expects clean rollback
+    //
+    // pre-existing chain: step1 -> step2
+    PARA_DOM->setPrev("step2", {{"step1", true}});
+    PARA_DOM->setState({{"step1", true}});
+    EXPECT_TRUE(PARA_DOM->state("step2"));
+
+    // attempt: setPrev("step1", {{"step3", T}, {"step2", T}}) — step2 is next of step1 → loop!
+    // step3(valid) comes before step2(invalid) in map iteration — tests atomic rejection
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->setPrev("step1", {{"step2", true}, {"step3", true}}));
+
+    // REQ: step3 should NOT be linked as prev of step1 despite being valid itself
+    // verify: step1 is still a chain head (no prev), setState still works on it
+    EXPECT_EQ(1u, PARA_DOM->setState({{"step1", false}})) << "REQ: step1 still a head (no prev created)";
+    EXPECT_FALSE(PARA_DOM->state("step2"));
+    EXPECT_EQ(1u, PARA_DOM->setState({{"step1", true}}));
+    EXPECT_TRUE(PARA_DOM->state("step2")) << "REQ: original chain intact";
 }
 
 #define WHY_FALSE
@@ -382,6 +495,7 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , setState_onlyAtChainHead
     , bugFix_shallDeduceAll
     , GOLD_simuSetState
+    , GOLD_nGo_repeatBroadcastCycle
 
     , GOLD_multi_allPrevSatisfied_thenPropagate
     , invalid_loopSelf
@@ -390,6 +504,11 @@ REGISTER_TYPED_TEST_SUITE_P(DominoTest
     , invalid_mixLoop
     , whyFalse_diagnoseTrueFalseConflict
     , GOLD_diamond_broadcast
+    , setPrev_lateConnect_deducesImmediately
+    , buildOrder_bottomUp_sameResult
+    , asymmetricConverge_singleHead
+    , dupSetPrev_isIdempotent
+    , setPrev_failedNoLink
 
     , GOLD_multi_retOne
     , trueEvent_retEmpty
