@@ -20,6 +20,7 @@
 //   . safe get() returns shared_ptr<T> (not raw T*, safer lifecycle management)
 //   . Correct destructor call via shared_ptr (even through void*/base*)
 // - Additional Features:
+//   * max (safe + convenient) / (mem + perf + impl)
 //   . SafeWeak: weak reference support (lock()/expired())
 //   . Container support: usable as map/unordered_map key
 //   . Exception safe: construction exception → nullptr
@@ -55,25 +56,43 @@ public:
     // - safe-only creation, eg can't construct by raw ptr/shared_ptr that maybe unsafe
     // - can't create by SafePtr(ConstructArgs...) that confuse cp constructor, make_safe() instead
     // - T(ConstructArgs) SHALL mem-safe
-    constexpr SafePtr(std::nullptr_t = nullptr) noexcept {}
-    template<typename U, typename... ConstructArgs> friend SafePtr<U> make_safe(ConstructArgs&&...) noexcept;
-
+    constexpr
+        SafePtr(std::nullptr_t = nullptr) noexcept {}
+    template<typename U, typename... ConstructArgs> friend
+        SafePtr<U> make_safe(ConstructArgs&&...) noexcept;
     // clarity: forbid unsafe create from raw ptr / shared_ptr
-    template<typename U> SafePtr(U*) = delete;
-    template<typename U> SafePtr(const std::shared_ptr<U>&) = delete;
+    template<typename U>
+        SafePtr(U*) = delete;
+    template<typename U>
+        SafePtr(const std::shared_ptr<U>&) = delete;
 
-    template<typename From> friend class SafePtr;  // let cp/mv access private
-    // safe-only cast (vs shared_ptr, eg static_pointer_cast<any> is not safe)
-    template<typename From> SafePtr(const SafePtr<From>&) noexcept;   // cp, always ok (or compile err)
-    template<typename From> SafePtr(SafePtr<From>&&) noexcept;        // mv, always ok (or compile err)
-    // no assignment, compiler will gen it & enough
-    template<typename To> [[nodiscard]] std::shared_ptr<To> cast() const noexcept;  // ret ok/null; safe cast
-    template<typename To, typename From> friend SafePtr<To> safe_cast(const SafePtr<From>&) noexcept;  // ret ok/null
+    template<typename From> friend
+        class SafePtr;  // let cp/mv access private
+    // safe-only cp/mv diff-type (vs shared_ptr, eg static_pointer_cast<any> is not safe)
+    // - SFINAE: 1)testable 2)more clear compile-err 3)overload resulution: trim & predicatable
+    template<typename From, std::enable_if_t<std::is_convertible_v<From*, T*>, int> = 0>
+        SafePtr(const SafePtr<From>&) noexcept;  // cp, ok (or compile err)
+    template<typename From, std::enable_if_t<std::is_convertible_v<From*, T*>, int> = 0>
+        SafePtr(SafePtr<From>&&) noexcept;  // mv, ok (or compile err)
+
+    // same-type mv/mv=: forbid compiler-gen - not safe
+    SafePtr(SafePtr&& aSrc) noexcept;
+    SafePtr& operator=(SafePtr&& aSrc) noexcept;
+    // same-type cp/cp=: self mv suppress compiler-gen so explicit
+    SafePtr(const SafePtr&) = default;
+    SafePtr& operator=(const SafePtr&) = default;
+
+    // safe cast
+    template<typename To> [[nodiscard]]
+        std::shared_ptr<To> cast() const noexcept;  // ret ok/null; safe cast
+    template<typename To, typename From> friend
+        SafePtr<To> safe_cast(const SafePtr<From>&) noexcept;  // ret ok/null
 
     // safe usage: convenient(compatible shared_ptr), equivalent & min
     // . ret shared_ptr is safer than T* (but not safest since to call T's func easily)
     // . no operator*() since T& is unsafe
-    [[nodiscard]] std::shared_ptr<T> get() const noexcept { return pT_; }
+    [[nodiscard]]
+        std::shared_ptr<T> get() const noexcept { return pT_; }
     const std::shared_ptr<T>& operator->() const noexcept { assert(pT_); return pT_; }  // convenient, zero-copy
     explicit operator bool() const noexcept { return pT_ != nullptr; }
     [[nodiscard]] auto use_count() const noexcept { return pT_.use_count(); }
@@ -95,12 +114,12 @@ public:
 };
 
 // ***********************************************************************************************
-// - safe cp (self/base/void/const), otherwise compile-err(safer than nullptr, like cp shared_ptr)
+// - safe cp diff-type, otherwise compile-err(safer than nullptr, like cp shared_ptr)
 //   . no choice but assume shared_ptr cp is safe
 //   . cp/implicit-converter is useful & convenient
 // - void->T: compile-err, can safe_cast() if need
 template<typename T>
-template<typename From>
+template<typename From, std::enable_if_t<std::is_convertible_v<From*, T*>, int>>
 SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom) noexcept  // cp
     : pT_(aSafeFrom.pT_)  // faster than get()
 {
@@ -109,14 +128,37 @@ SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom) noexcept  // cp
 }
 
 // ***********************************************************************************************
-// - safe mv (self/base/void), otherwise compile-err (by shared_ptr's mv which is safe)
+// - safe mv diff-type, otherwise compile-err (by shared_ptr's mv which is safe)
 template<typename T>
-template<typename From>
+template<typename From, std::enable_if_t<std::is_convertible_v<From*, T*>, int>>
 SafePtr<T>::SafePtr(SafePtr<From>&& aSafeFrom) noexcept  // mv - MtQ need
     : pT_(std::move(aSafeFrom.pT_))  // mv is faster than cp
 {
     if constexpr(std::is_void_v<T>)
         if (pT_) this->lastType_ = aSafeFrom.lastType();
+    // same-type void→void mv is handled by explicit SafePtr(SafePtr&&) which resets src.lastType_
+}
+
+// ***********************************************************************************************
+// - same-type mv: compiler-gen doesn't reset void's lastType_ (type_index mv==cp)
+template<typename T>
+SafePtr<T>::SafePtr(SafePtr&& aSrc) noexcept
+    : pT_(std::move(aSrc.pT_))
+{
+    if constexpr(std::is_void_v<T>) {
+        this->lastType_ = aSrc.lastType_;
+        aSrc.lastType_ = typeid(void);
+    }
+}
+template<typename T>
+SafePtr<T>& SafePtr<T>::operator=(SafePtr&& aSrc) noexcept
+{
+    pT_ = std::move(aSrc.pT_);
+    if constexpr(std::is_void_v<T>) {
+        this->lastType_ = aSrc.lastType_;
+        aSrc.lastType_ = typeid(void);
+    }
+    return *this;
 }
 
 // ***********************************************************************************************
@@ -193,7 +235,9 @@ template<typename U, typename... ConstructArgs>
 
 // ***********************************************************************************************
 // - SafePtr can be key of map & unordered_map (like shared_ptr)
-// - convenient usage
+// - ptr-only: == means "same object" (identity), not "same cast path" (view)
+//   . same ptr → same shared object (shared_ptr guarantee); lastType_ is a view attribute
+//   . user checks lastType() explicitly when cast-path distinction is needed
 template<typename T, typename U>
 bool operator==(const SafePtr<T>& lhs, const SafePtr<U>& rhs) noexcept
 {
