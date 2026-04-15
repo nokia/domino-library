@@ -70,10 +70,9 @@ public:
         class SafePtr;  // let cp/mv access private
     // safe-only cp/mv diff-type (vs shared_ptr, eg static_pointer_cast<any> is not safe)
     // - SFINAE: 1)testable 2)more clear compile-err 3)overload resulution: trim & predicatable
+    // - by-value: lvalue→cp param then mv pT_; rvalue→mv param then mv pT_ (extra mv negligible)
     template<typename From, std::enable_if_t<std::is_convertible_v<From*, T*>, int> = 0>
-        SafePtr(const SafePtr<From>&) noexcept;  // cp, ok (or compile err)
-    template<typename From, std::enable_if_t<std::is_convertible_v<From*, T*>, int> = 0>
-        SafePtr(SafePtr<From>&&) noexcept;  // mv, ok (or compile err)
+        SafePtr(SafePtr<From>) noexcept;  // cp & mv, ok (or compile err)
 
     // same-type mv/mv=: forbid compiler-gen - not safe
     SafePtr(SafePtr&& aSrc) noexcept;
@@ -114,29 +113,17 @@ public:
 };
 
 // ***********************************************************************************************
-// - safe cp diff-type, otherwise compile-err(safer than nullptr, like cp shared_ptr)
-//   . no choice but assume shared_ptr cp is safe
-//   . cp/implicit-converter is useful & convenient
+// - safe cp/mv diff-type, otherwise compile-err (safer than nullptr, like cp/mv shared_ptr)
+//   . by-value param: lvalue→cp then mv pT_; rvalue→mv then mv pT_ (extra mv negligible)
+//   . same-type cp/mv use non-template overloads (higher priority), no conflict
 // - void->T: compile-err, can safe_cast() if need
 template<typename T>
 template<typename From, std::enable_if_t<std::is_convertible_v<From*, T*>, int>>
-SafePtr<T>::SafePtr(const SafePtr<From>& aSafeFrom) noexcept  // cp
-    : pT_(aSafeFrom.pT_)  // faster than get()
+SafePtr<T>::SafePtr(SafePtr<From> aSafeFrom) noexcept  // cp & mv
+    : pT_(std::move(aSafeFrom.pT_))
 {
     if constexpr(std::is_void_v<T>)
         if (pT_) this->lastType_ = aSafeFrom.lastType();
-}
-
-// ***********************************************************************************************
-// - safe mv diff-type, otherwise compile-err (by shared_ptr's mv which is safe)
-template<typename T>
-template<typename From, std::enable_if_t<std::is_convertible_v<From*, T*>, int>>
-SafePtr<T>::SafePtr(SafePtr<From>&& aSafeFrom) noexcept  // mv - MtQ need
-    : pT_(std::move(aSafeFrom.pT_))  // mv is faster than cp
-{
-    if constexpr(std::is_void_v<T>)
-        if (pT_) this->lastType_ = aSafeFrom.lastType();
-    // same-type void→void mv is handled by explicit SafePtr(SafePtr&&) which resets src.lastType_
 }
 
 // ***********************************************************************************************
@@ -164,13 +151,11 @@ SafePtr<T>& SafePtr<T>::operator=(SafePtr&& aSrc) noexcept
 // ***********************************************************************************************
 // - for safe_cast; constructor is faster; private is safe
 template<typename T>
-constexpr SafePtr<T>::SafePtr(std::shared_ptr<T>&& aPtr, const std::type_index& aLast) noexcept
+constexpr SafePtr<T>::SafePtr(std::shared_ptr<T>&& aPtr, [[maybe_unused]] const std::type_index& aLast) noexcept
     : pT_(std::move(aPtr))  // mv
 {
-    if constexpr(std::is_void_v<T>) {
+    if constexpr(std::is_void_v<T>)
         this->lastType_ = pT_ ? aLast : typeid(void);
-    }
-    else (void)aLast;  // suppress unused warning for T≠void
 }
 
 // ***********************************************************************************************
@@ -178,24 +163,18 @@ template<typename T>
 template<typename To>
 std::shared_ptr<To> SafePtr<T>::cast() const noexcept
 {
-    if constexpr(std::is_base_of_v<To, T>)  // safer than is_convertible()
+    if constexpr(std::is_convertible_v<T*, To*>)
     {
-        // HID("(SafePtr) cast to base/self");  // ERR() not MT safe
-        return pT_;  // private/protected inherit will compile err
+        // HID("(SafePtr) cast to base/self/void/const");  // ERR() not MT safe
+        return pT_;  // private/protected inherit: is_convertible_v=false, won't reach here
     }
     else if constexpr(std::is_base_of_v<T, To>)  // else if for constexpr
     {
-        // HID("(SafePtr) cast to derived");
+        // HID("(SafePtr) downcast: ok or nullptr; non-polymorphic: compile-err");
         return std::dynamic_pointer_cast<To>(pT_);
-    }
-    else if constexpr(std::is_void_v<To>)
-    {
-        // HID("(SafePtr) cast to void (for container to store diff types)");
-        return pT_;
     }
     else if constexpr(!std::is_void_v<T>)
     {
-        // compile-err (safer than ret nullptr)
         static_assert(std::is_same_v<T, To>, "(SafePtr) unsafe cast not allowed: unrelated nonVoid-to-nonVoid.");
         return pT_;  // unreachable, but satisfies return type
     }
@@ -262,10 +241,7 @@ bool operator<(const SafePtr<T>& lhs, const SafePtr<U>& rhs) noexcept
 template<typename To, typename From>
 [[nodiscard]] SafePtr<To> safe_cast(const SafePtr<From>& aSafeFrom) noexcept
 {
-    if constexpr(std::is_void_v<To>)
-        return SafePtr<To>(aSafeFrom.template cast<To>(), aSafeFrom.lastType());
-    else
-        return SafePtr<To>(aSafeFrom.template cast<To>(), std::type_index(typeid(To)));
+    return SafePtr<To>(aSafeFrom.template cast<To>(), aSafeFrom.lastType());
 }
 
 
@@ -298,12 +274,10 @@ SafeWeak<T>::SafeWeak(const SafePtr<T>& aSafeFrom) noexcept
 template<typename T>
 SafePtr<T> SafeWeak<T>::lock() const noexcept
 {
-    auto sp = pT_.lock();
-    if (!sp) return SafePtr<T>();
     if constexpr(std::is_void_v<T>)
-        return SafePtr<T>(std::move(sp), this->lastType_);
+        return SafePtr<T>(pT_.lock(), this->lastType_);
     else
-        return SafePtr<T>(std::move(sp), std::type_index(typeid(T)));
+        return SafePtr<T>(pT_.lock(), std::type_index(typeid(T)));
 }
 }  // namespace
 

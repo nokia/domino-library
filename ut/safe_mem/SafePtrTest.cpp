@@ -894,6 +894,57 @@ TEST(SafePtrTest, GOLD_MI_D_B1_void_B2_typeConfusion)
     }
 }
 
+TEST(SafePtrTest, safe_virtual_MI_diamond)
+{
+    struct VBase { virtual ~VBase() = default; int v = 0; };
+    struct Left  : virtual VBase { int left = 1; };
+    struct Right : virtual VBase { int right = 2; };
+    struct Diamond : Left, Right { Diamond() { v = 10; left = 11; right = 12; } };
+
+    auto d = make_safe<Diamond>();
+    EXPECT_VALID(d);
+
+    // Diamond→Left→void→Left round-trip
+    SafePtr<void> vLeft = SafePtr<Left>(d);
+    EXPECT_VALID(vLeft);
+    EXPECT_EQ(type_index(typeid(Left)), vLeft.lastType());
+    auto backLeft = safe_cast<Left>(vLeft);
+    EXPECT_VALID(backLeft);
+    ASSERT_NE(nullptr, backLeft.get()) << "REQ: Diamond→Left→void→Left ok";
+    EXPECT_EQ(11, backLeft->left);
+
+    // Left→Diamond via dynamic_cast (virtual inheritance)
+    auto backD1 = safe_cast<Diamond>(backLeft);
+    EXPECT_VALID(backD1);
+    ASSERT_NE(nullptr, backD1.get()) << "REQ: Diamond→Left→void→Left→Diamond ok";
+    EXPECT_EQ(10, backD1->v);
+
+    // Diamond→VBase→void→VBase round-trip (virtual base)
+    SafePtr<void> vBase = SafePtr<VBase>(d);
+    EXPECT_VALID(vBase);
+    EXPECT_EQ(type_index(typeid(VBase)), vBase.lastType());
+    auto backBase = safe_cast<VBase>(vBase);
+    EXPECT_VALID(backBase);
+    ASSERT_NE(nullptr, backBase.get()) << "REQ: Diamond→VBase→void→VBase ok";
+    EXPECT_EQ(10, backBase->v);
+
+    // VBase→Diamond via dynamic_cast (cross virtual inheritance)
+    auto backD2 = safe_cast<Diamond>(backBase);
+    EXPECT_VALID(backD2);
+    ASSERT_NE(nullptr, backD2.get()) << "REQ: Diamond→VBase→void→VBase→Diamond ok";
+    EXPECT_EQ(12, backD2->right);
+
+    // cross-path blocked: Diamond→Left→void→Right
+    auto wrongRight = safe_cast<Right>(vLeft);
+    EXPECT_VALID(wrongRight);
+    EXPECT_EQ(nullptr, wrongRight.get()) << "REQ: Diamond→Left→void→Right blocked";
+
+    // cross-path blocked: Diamond→Left→void→VBase
+    auto wrongBase = safe_cast<VBase>(vLeft);
+    EXPECT_VALID(wrongBase);
+    EXPECT_EQ(nullptr, wrongBase.get()) << "REQ: Diamond→Left→void→VBase blocked";
+}
+
 TEST(SafePtrTest, weakFromMovedFrom_safe)
 {
     SafePtr<void> v(make_safe<int>(42));
