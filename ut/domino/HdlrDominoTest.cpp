@@ -139,6 +139,39 @@ TYPED_TEST_P(HdlrDominoTest, wrongOrderPrev_wrongCallback)
     PARA_DOM->setPrev("event with wrong prev setting", {{"prev1", true}});
     this->pongMsgSelf_();
 }
+TYPED_TEST_P(HdlrDominoTest, GOLD_safeUpgrade_allPrevBeforeState)
+{
+    // REQ: eNB-upgrade-like safe pattern — build entire dependency graph first, then trigger
+    //   download_ok ──(T)──┐
+    //   version_ok ──(T)──├── install_ready ──(T)── install_done
+    //   no_abort   ──(F)──┘
+    //   (3 independent heads → 1 gate → 1 action)
+    PARA_DOM->setHdlr("install_ready", this->hdlr0_);
+    PARA_DOM->setPrev("install_ready", {{"download_ok", true}, {"version_ok", true}, {"no_abort", false}});
+    PARA_DOM->setPrev("install_done", {{"install_ready", true}});
+
+    // REQ: no premature trigger — none of the prerequisites are met yet
+    EXPECT_CALL(*this, hdlr0()).Times(0);
+    this->pongMsgSelf_();
+
+    // partial satisfaction — still no trigger
+    PARA_DOM->setState({{"download_ok", true}});
+    EXPECT_CALL(*this, hdlr0()).Times(0);
+    this->pongMsgSelf_();
+
+    // all satisfied → trigger
+    PARA_DOM->setState({{"version_ok", true}});
+    EXPECT_CALL(*this, hdlr0());
+    this->pongMsgSelf_();
+    EXPECT_TRUE(PARA_DOM->state("install_done")) << "REQ: downstream propagated";
+
+    // diagnose: intentionally break by abort → should propagate F
+    PARA_DOM->setState({{"no_abort", true}});  // abort happened!
+    EXPECT_FALSE(PARA_DOM->state("install_ready"));
+    EXPECT_FALSE(PARA_DOM->state("install_done")) << "REQ: abort propagated to end";
+    EXPECT_EQ("no_abort==true", PARA_DOM->whyFalse(PARA_DOM->getEventBy("install_ready")))
+        << "REQ: whyFalse diagnoses the root cause";
+}
 
 #define MULTI_HDLR  // multi hdlr by alias event
 // ***********************************************************************************************
@@ -304,6 +337,32 @@ TYPED_TEST_P(NofreeHdlrDominoTest, repeat_force_call)
     PARA_DOM->forceAllHdlr("e1");
     this->pongMsgSelf_();
 }
+TYPED_TEST_P(NofreeHdlrDominoTest, replaceHdlr_newOneCalled)
+{
+    // REQ: eNB upgrade v1→v2: replace install handler, verify new one fires
+    PARA_DOM->setHdlr("install", this->hdlr0_);
+    EXPECT_TRUE(PARA_DOM->rmOneHdlrOK("install"));
+    PARA_DOM->setHdlr("install", this->hdlr1_);  // different hdlr
+
+    EXPECT_CALL(*this, hdlr0()).Times(0);  // REQ: old hdlr NOT called
+    EXPECT_CALL(*this, hdlr1());            // REQ: new hdlr called
+    PARA_DOM->setState({{"install", true}});
+    this->pongMsgSelf_();
+}
+TYPED_TEST_P(NofreeHdlrDominoTest, lateRegister_immediateThenReTrigger)
+{
+    // REQ: monitor late-starts when condition already T → immediate call, then n-go retrigger
+    PARA_DOM->setState({{"ready", true}});
+    EXPECT_CALL(*this, hdlr0());
+    PARA_DOM->setHdlr("ready", this->hdlr0_);  // immediate trigger
+    this->pongMsgSelf_();
+
+    // n-go cycle: F→T should retrigger the same hdlr
+    PARA_DOM->setState({{"ready", false}});
+    EXPECT_CALL(*this, hdlr0());
+    PARA_DOM->setState({{"ready", true}});  // retrigger
+    this->pongMsgSelf_();
+}
 TYPED_TEST_P(HdlrDominoTest, force_call_invalidEv)
 {
     PARA_DOM->forceAllHdlr("invalid ev");
@@ -395,6 +454,7 @@ REGISTER_TYPED_TEST_SUITE_P(HdlrDominoTest
     , GOLD_trigger_chain_call
     , immediate_chain_call
     , wrongOrderPrev_wrongCallback
+    , GOLD_safeUpgrade_allPrevBeforeState
 
     , multiHdlr_onOneEvent_nok
     , GOLD_multiHdlr_onDiffEvent_ok
@@ -427,6 +487,8 @@ REGISTER_TYPED_TEST_SUITE_P(NofreeHdlrDominoTest
     , hdlrOnRoad_thenRmDom_noCrash_noLeak
 
     , repeat_force_call
+    , replaceHdlr_newOneCalled
+    , lateRegister_immediateThenReTrigger
 );
 using AnyNofreeHdlrDom = Types<MinHdlrDom, MinMhdlrDom, MinPriDom, MaxNofreeDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, NofreeHdlrDominoTest, AnyNofreeHdlrDom);

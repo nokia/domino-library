@@ -22,6 +22,7 @@
 //   . tiles form DAG (directed acyclic graph), cycle links forbidden
 //
 // - VALUE:
+//   * flexible to change DAG=config (no code change)
 //   * auto broadcast, auto callback, auto shape [MUST-HAVE!]
 //   . share state & hdlr
 //   . EvName index

@@ -126,12 +126,42 @@ TYPED_TEST_P(RmDomTest, rmMiddle_thenRebuildLink_noFalseLoop)
     EXPECT_TRUE(PARA_DOM->state("C")) << "REQ: rewired chain forward works";
 }
 
+TYPED_TEST_P(RmDomTest, GOLD_nGo_fullLifecycle_createUseRmRepeat)
+{
+    // REQ: eNB-upgrade-like lifecycle — build chain, run it, tear down, repeat with new events
+    // verifies: no ghost state/links survive across cycles, recycled IDs work clean
+    for (int cycle = 0; cycle < 3; ++cycle)
+    {
+        auto tag = "v" + std::to_string(cycle);
+        auto head   = tag + "_start";
+        auto middle = tag + "_check";
+        auto tail   = tag + "_done";
+
+        PARA_DOM->setPrev(middle, {{head, true}});
+        PARA_DOM->setPrev(tail,   {{middle, true}});
+
+        EXPECT_FALSE(PARA_DOM->state(tail));
+        PARA_DOM->setState({{head, true}});
+        EXPECT_TRUE(PARA_DOM->state(tail)) << "REQ: cycle " << cycle << " chain works";
+
+        // tear down entire chain
+        EXPECT_TRUE(PARA_DOM->rmEvOK(tail));
+        EXPECT_TRUE(PARA_DOM->rmEvOK(middle));
+        EXPECT_TRUE(PARA_DOM->rmEvOK(head));
+    }
+    // verify: 3 cycles × 3 events = 9 created, all recycled, no internal growth
+    // next fresh event should reuse a recycled ID (< 9), not allocate new (>= 9)
+    auto probe = PARA_DOM->newEvent("probe");
+    EXPECT_LT(probe, 9u) << "REQ: IDs recycled across cycles, no unbounded growth";
+}
+
 REGISTER_TYPED_TEST_SUITE_P(RmDomTest
     , GOLD_rm_dom_resrc
     , GOLD_reuse_ev
     , bugFix_recycleShallNotGrowInternalStateSpace
     , doubleRemove_rejected
     , rmMiddle_thenRebuildLink_noFalseLoop
+    , GOLD_nGo_fullLifecycle_createUseRmRepeat
 );
 using AnyRmDom = Types<MinRmEvDom, MaxNofreeDom, MaxDom>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PARA, RmDomTest, AnyRmDom);
