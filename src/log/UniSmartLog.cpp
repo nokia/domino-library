@@ -6,6 +6,8 @@
 // ***********************************************************************************************
 #include "UniSmartLog.hpp"
 
+#include <cstdarg>
+
 using namespace std;
 
 namespace rlib
@@ -31,8 +33,20 @@ UniSmartLog::UniSmartLog(const LogName& aUniLogName) noexcept : uniLogName_(aUni
 // ***********************************************************************************************
 SmartLog& UniSmartLog::oneLog() const noexcept
 {
-    *smartLog_ << "s[" << mt_timestamp() << ' ' << uniLogName_ << '/';
+    try { *smartLog_ << "s[" << mt_timestamp() << ' ' << uniLogName_ << '/'; } catch(...) {}
     return *smartLog_;
+}
+
+// ***********************************************************************************************
+// - TRC fast-path impl (smart-log backend): mt_formatTRC (shared) + ostream::write
+// - MT-unsafe ok: UniSmartLog is single-threaded by design (see UniSmartLog.hpp note)
+void UniSmartLog::trcPrintf(const char* fmt, ...) noexcept
+{
+    va_list ap;
+    va_start(ap, fmt);
+    auto [buf, n] = mt_formatTRC(fmt, ap);
+    va_end(ap);
+    try { defaultUniLog_.trcOut().write(buf, n); } catch (...) {}
 }
 
 // ***********************************************************************************************

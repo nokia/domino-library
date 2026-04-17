@@ -36,26 +36,39 @@ public:
 
     static std::ostream& oneLog() noexcept;
     std::ostream& operator()() const noexcept { return oneLog(); }
-    static void needLog() noexcept {}
+    static void trcPrintf(const char* fmt, ...) noexcept __attribute__((format(printf, 1, 2)));
 
+    static void needLog() noexcept {}
     static LogName uniLogName() noexcept { return ULN_DEFAULT; }
     static size_t nLog() noexcept { return 1; }
 
     [[nodiscard]] static bool setLogFileOK(const std::string& aFileName) noexcept;
 
+private:
+    static void resetTrcFp_(std::FILE* aNewFp = stdout) noexcept {
+        auto* old = trcFp_.exchange(aNewFp);
+        if (old != stdout && old != nullptr) std::fclose(old);
+    }
+
     // -------------------------------------------------------------------------------------------
 public:
-    static UniCoutLog           defaultUniLog_;
-    static std::atomic<size_t>  nLogLine_;  // ut only, simpler here
-    static std::ostream*        out_;
-    static std::ofstream        file_;
+    static UniCoutLog              defaultUniLog_;
+    static std::atomic<size_t>     nLogLine_;  // ut only, simpler here
+    static std::ostream*           out_;
+    static std::ofstream           file_;
+    static std::atomic<std::FILE*> trcFp_;  // TRC()
 
 #ifdef IN_GTEST
     // -------------------------------------------------------------------------------------------
     // MT safe : no (since nLogLine_ is not atomic & no worth for ut only)
     // mem safe: yes
 public:
-    static void dumpAll_forUt() { nLogLine_ = 0; out_ = &std::cout; file_.close(); }  // for ut case clean at the end
+    static void dumpAll_forUt() {  // for ut case clean at the end
+        nLogLine_ = 0;
+        out_ = &std::cout;
+        file_.close();
+        resetTrcFp_();
+    }
     static size_t logLen(const LogName& = ULN_DEFAULT) { return nLogLine_; }
 #endif
 };
@@ -67,6 +80,13 @@ static std::ostream& oneLog() { return UniCoutLog::oneLog(); }
 using UniLog = UniCoutLog;
 
 }  // namespace
+
+// ***********************************************************************************************
+// - override TRC fallback
+// - branch-predict: traceOn_ rarely flips -> well-predicted, ~0 overhead when enabled
+#undef TRC
+#define TRC(...) do { if (rlib::traceOn_) rlib::UniCoutLog::trcPrintf(__VA_ARGS__); } while(0)
+
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................

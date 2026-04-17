@@ -29,7 +29,8 @@ TEST_F(UniCoutLogTest, setFileOK_writeAndRestore)
     INF("hello file");
     ASSERT_GT(UniCoutLog::logLen(), 0u);
 
-    // verify file has content
+    // verify file has content (INF doesn't flush by design -> flush explicitly before read)
+    UniCoutLog::file_.flush();
     {
         std::ifstream fin(fname);
         ASSERT_TRUE(fin.good());

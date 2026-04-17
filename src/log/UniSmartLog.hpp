@@ -42,9 +42,12 @@ public:
 
     SmartLog& oneLog() const noexcept;  // for logging; ret ref is not mem-safe when use the ref after del
     SmartLog& operator()() const noexcept { return oneLog(); }  // not mem-safe as oneLog()
+    // trcOut() = raw SmartLog stream w/o prefix; for TRC hot-path only
+    SmartLog& trcOut() const noexcept { return *smartLog_; }
+    static void trcPrintf(const char* fmt, ...) noexcept __attribute__((format(printf, 1, 2)));
+
     void needLog() const noexcept { smartLog_->needLog(); }  // flag to dump
     const LogName& uniLogName() const noexcept { return uniLogName_; }
-
     static size_t nLog() noexcept { return name_log_S_.size(); }
 
 private:
@@ -85,6 +88,14 @@ static SmartLog& oneLog() noexcept { return UniSmartLog::defaultUniLog_.oneLog()
 using UniLog = UniSmartLog;
 
 }  // namespace
+
+// ***********************************************************************************************
+// - override TRC fallback: bind to UniSmartLog::trcPrintf
+//   . TRC is static -> always writes to defaultUniLog_ (DEFAULT), not per-instance LogName
+//   . INF/WRN/ERR use oneLog() -> writes to instance's LogName
+#undef TRC
+#define TRC(...) do { if (rlib::traceOn_) rlib::UniSmartLog::trcPrintf(__VA_ARGS__); } while(0)
+
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
 // ..........  .........   .......................................................................

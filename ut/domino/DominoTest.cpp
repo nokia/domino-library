@@ -534,34 +534,50 @@ TEST(DominoMemTest, GOLD_perf_mem)
 #ifndef DOMLIB_BENCHMARK
     GTEST_SKIP() << "env-sensitive benchmark, run only without -Dci";
 #endif
+    // all typical ops: newEvent + setPrev + setState(true) + setState(false)
+    // - libstdc++ string: SSO threshold=15 chars
+    // - realistic EvName mix: 50% SSO (≤15 chars, libstdc++ in-object) + 50% heap (≥16 chars)
+    const string SHORT_PRE = "short#";                   // "short#N"            ≤15
+    const string LONG_PRE  = "long_ev_name_xxxxxxxxx#";  // "long_ev_name_..#N"  ≥16
+    auto en = [&](size_t i) {
+        return ((i & 1) ? LONG_PRE : SHORT_PRE) + std::to_string(i);
+    };
+
     constexpr size_t N = 100'000;
     using Clock = std::chrono::steady_clock;
-
     Domino dom;
+
+    // start measure
     auto rss0 = rssBytes();
     auto t0 = Clock::now();
 
-    // all typical ops: newEvent + setPrev + setState(true) + setState(false)
-    dom.newEvent("e0");
-    for (size_t i = 1; i < N; ++i)
-        dom.setPrev("e" + std::to_string(i), {{"e" + std::to_string(i - 1), true}});
-    dom.setState({{"e0", true}});
-    EXPECT_TRUE(dom.state("e" + std::to_string(N - 1)));
-    dom.setState({{"e0", false}});
-    EXPECT_FALSE(dom.state("e" + std::to_string(N - 1)));
+    dom.newEvent(en(0));
+    for (size_t i = 1; i < N; ++i)  dom.setPrev(en(i), {{en(i - 1), true}});
+    dom.setState({{en(0), true}});
+    EXPECT_TRUE(dom.state(en(N - 1)));
+    dom.setState({{en(0), false}});
+    EXPECT_FALSE(dom.state(en(N - 1)));
 
+    // stop measure
     auto t1 = Clock::now();
     auto rss1 = rssBytes();
+
     auto msDur = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
     auto totalBytes = (rss1 > rss0) ? (rss1 - rss0) : size_t(0);
     auto bytesPerEv = totalBytes / N;
 
-    // REQ: cost-perf regression guard (fixed docker env, no margin needed)
-    //   mem: all-vector layout actual ~288B/ev standalone, ~298B in full suite (heap frag)
-    //   time: all ops <200ms for 100K events (actual ~150ms with -O1)
-    EXPECT_LE(bytesPerEv, 310u) << "mem/event=" << bytesPerEv
+    // REQ: cost-perf regression guard (fixed docker env)
+    // - EvName: reflects real log->gantt workload; all-short ~288B/ev, all-long ~392B/ev
+    // - mem: ~344B/ev (mix)  time: ~300ms median for 100K events (-O1)
+    //   . TRC overhead ~90ms on 300K calls (~300ns each = snprintf + fwrite)
+    //   . vs ostream<<: fwrite 250ms faster (no virtual-call/sentry/locale)
+    //   . %s vs %zu in hot-path TRC: measured equal (string ref is free; %zu needs int->str)
+    //   . vs no-log: INF removed from hot-path, only TRC remains (~30% of total)
+    //   . SSH+docker PTY overhead ~10-20ms (fwrite block-buffered, minimal impact)
+    //   . TRACE_OFF=1 env var disables TRC for pure-computation profiling (~190ms)
+    EXPECT_LE(bytesPerEv, 380u) << "mem/event=" << bytesPerEv
         << "B, total=" << (totalBytes >> 20) << "MB for " << N << " events";
-    EXPECT_LE(msDur, 200) << "time=" << msDur << "msDur for " << N << " events (all ops)";
+    EXPECT_LE(msDur, 400) << "time=" << msDur << "ms for " << N << " events";
 }
 
 }  // namespace

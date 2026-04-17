@@ -148,8 +148,11 @@ void Domino::pureSetPrev_(Event aValidEv, const SimuEvents& aSimuPrevEvents) noe
     {
         auto&& prevEv = newEvent(prevEn_state.first);
         auto&& prevPeers = prev_[prevEn_state.second][aValidEv];
-        if (find(prevPeers.begin(), prevPeers.end(), prevEv) == prevPeers.end())
+        if (find(prevPeers.begin(), prevPeers.end(), prevEv) == prevPeers.end()) {
             prevPeers.push_back(prevEv);
+            TRC("(Domino) %s %s %s", prevEn_state.first.c_str(),
+                prevEn_state.second ? "-T->" : "-F->", evName_(aValidEv).c_str());
+        }
         auto&& nextPeers = next_[prevEn_state.second][prevEv];
         if (find(nextPeers.begin(), nextPeers.end(), aValidEv) == nextPeers.end())
             nextPeers.push_back(aValidEv);
@@ -164,7 +167,7 @@ bool Domino::pureSetStateOK_(Event aValidEv, const bool aNewState) noexcept
     if (states_[aValidEv] != aNewState)  // do need change
     {
         states_[aValidEv] = aNewState;
-        HID("(Domino) Succeed, EvName=" << evName_(aValidEv) << " newState=" << aNewState);
+        TRC("(Domino) %s=%c", evName_(aValidEv).c_str(), aNewState ? 'T' : 'F');
         if (aNewState == true)
             effectEVs_.push_back(aValidEv);
         return true;
