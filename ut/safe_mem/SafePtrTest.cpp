@@ -17,7 +17,6 @@ namespace rlib
 {
 // ***********************************************************************************************
 // isValid(): centralized invariant check for SafePtr
-// - invariant: null SafePtr<void> must have lastType=void (never stale)
 // - invariant: non-null SafePtr<T≠void> must have lastType=typeid(T)
 // - invariant: use_count consistency with bool(ptr)
 template<typename T>
@@ -35,8 +34,9 @@ testing::AssertionResult isValid(const SafePtr<T>& p)
     if constexpr(std::is_void_v<T>) {
         EXPECT_EQ(sizeof(SafePtr<T>), sizeof(std::shared_ptr<T>) + sizeof(std::type_index))
             << "REQ: EBO +8B for void only";
-        if (!p && p.lastType() != type_index(typeid(void)))
-            return testing::AssertionFailure() << "REQ: SafePtr<void>.lastType_ shall be void if nullptr";
+        if ((p.lastType() == type_index(typeid(void))) != !p)
+            return testing::AssertionFailure() << "REQ: SafePtr<void>.lastType=void only when p=null";
+            // impossible legally create SafePtr<void> != null
     } else {
         EXPECT_EQ(sizeof(SafePtr<T>), sizeof(std::shared_ptr<T>)) << "REQ: EBO zero overhead for non-void";
         if (p.lastType() != type_index(typeid(T)))
@@ -808,12 +808,13 @@ TEST(SafePtrTest, GOLD_voidMv_lastType_consistent)
 }
 TEST(SafePtrTest, selfAssign_void_safe)
 {
-    // self-move-assign
+    // self-move-assign: must keep both data AND lastType (else void→T cast loses data)
     SafePtr<void> v(make_safe<int>(42));
     EXPECT_VALID(v);
     auto* pv = &v;
     *pv = std::move(v);
-    EXPECT_VALID(v);
+    EXPECT_VALID(v);  // catches lastType wiped to void via tightened invariant
+    EXPECT_EQ(42, *safe_cast<int>(v).get()) << "REQ: data reachable after self-mv=";
 
     // self-copy-assign
     v = SafePtr<void>(make_safe<int>(42));  // reset to valid

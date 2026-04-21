@@ -28,7 +28,8 @@
 // CONSTRAINTS:
 //   - Single-thread-use as shared_ptr (e.g., after MtInQueue.mt_push(), don't touch SafePtr)
 //   - T must be internally safe (eg no constructor exceptions expected)
-//   * Circular reference: user's responsibility (like shared_ptr)
+//   * Circular reference: user's duty (like shared_ptr)
+//   . eg force-cast SafePtr<T> to SafePtr<U>: user's duty
 // ***********************************************************************************************
 #pragma once
 
@@ -92,7 +93,7 @@ public:
     // . no operator*() since T& is unsafe
     [[nodiscard]]
         std::shared_ptr<T> get() const noexcept { return pT_; }
-    const std::shared_ptr<T>& operator->() const noexcept { assert(pT_); return pT_; }  // convenient, zero-copy
+    std::shared_ptr<T> operator->() const noexcept { assert(pT_); return pT_; }  // convenient; unsafe to ret ref
     explicit operator bool() const noexcept { return pT_ != nullptr; }
     [[nodiscard]] auto use_count() const noexcept { return pT_.use_count(); }
 
@@ -140,6 +141,7 @@ SafePtr<T>::SafePtr(SafePtr&& aSrc) noexcept
 template<typename T>
 SafePtr<T>& SafePtr<T>::operator=(SafePtr&& aSrc) noexcept
 {
+    if (this == &aSrc) return *this;  // self-mv= would wipe lastType_ via aSrc.lastType_=void
     pT_ = std::move(aSrc.pT_);
     if constexpr(std::is_void_v<T>) {
         this->lastType_ = aSrc.lastType_;
