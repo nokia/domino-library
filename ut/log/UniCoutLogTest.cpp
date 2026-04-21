@@ -72,6 +72,56 @@ TEST_F(UniCoutLogTest, setLogFileOK_badPath_fail)
     ASSERT_GT(UniCoutLog::logLen(), 0u) << "REQ: can still log after failed setLogFileOK";
 }
 
+// - end-to-end: TRC writes formatted trace to file, TRC-off produces nothing
+TEST_F(UniCoutLogTest, TRC_endToEnd_fileOutput_and_traceOff)
+{
+    const std::string fname = "ut_trc_test.log";
+    std::remove(fname.c_str());
+    ASSERT_TRUE(UniCoutLog::setLogFileOK(fname));
+
+    // TRC-on: trace appears in file
+    TRC("event %s id=%d", "setPrev", 42);
+    std::fflush(UniCoutLog::trcFp_);
+    {
+        std::ifstream fin(fname);
+        std::string content((std::istreambuf_iterator<char>(fin)), std::istreambuf_iterator<char>());
+        EXPECT_NE(content.find("event setPrev id=42"), std::string::npos)
+            << "REQ: TRC-on writes formatted trace to file";
+    }
+
+    // TRC-off: no additional output
+    const auto sizeBefore = std::ifstream(fname, std::ios::ate).tellg();
+    traceOn_ = false;
+    TRC("should not appear %d", 99);
+    std::fflush(UniCoutLog::trcFp_);
+    const auto sizeAfter = std::ifstream(fname, std::ios::ate).tellg();
+    traceOn_ = true;
+    EXPECT_EQ(sizeBefore, sizeAfter) << "REQ: TRC-off produces no output";
+
+    std::remove(fname.c_str());
+}
+
+// - end-to-end: TRC safely truncates long messages (buf[256])
+TEST_F(UniCoutLogTest, TRC_longMessage_truncatedToFile)
+{
+    const std::string fname = "ut_trc_trunc.log";
+    std::remove(fname.c_str());
+    ASSERT_TRUE(UniCoutLog::setLogFileOK(fname));
+
+    // 300-char payload exceeds internal buf[256]
+    const std::string longMsg(300, 'Z');
+    TRC("%s", longMsg.c_str());
+    std::fflush(UniCoutLog::trcFp_);
+
+    std::ifstream fin(fname);
+    std::string line;
+    std::getline(fin, line);
+    EXPECT_LE(line.size(), 255u) << "REQ: TRC truncates to buf size";
+    EXPECT_NE(line.find("ZZZ"), std::string::npos) << "REQ: truncated content still present";
+
+    std::remove(fname.c_str());
+}
+
 #define STRCOUTFSL
 // ***********************************************************************************************
 TEST(StrCoutFSLTest, BugFix_forceSave_thenDestructor_noDupOutput)
