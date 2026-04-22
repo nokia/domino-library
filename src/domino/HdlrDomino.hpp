@@ -222,8 +222,8 @@ template<class aDominoType>
 bool HdlrDomino<aDominoType>::setMsgSelfOK(const S_PTR<MsgSelf>& aMsgSelf) noexcept
 {
     // validate
-    const auto nMsgUnhandled = msgSelf_ ? msgSelf_->nMsg() : 0;  // HdlrDomino ensure msgSelf_ always NOT null
-    if (nMsgUnhandled > 0)
+    if (const auto nMsgUnhandled = msgSelf_ ? msgSelf_->nMsg() : 0;  // HdlrDomino ensure msgSelf_ always NOT null
+        nMsgUnhandled > 0)
     {
         ERR("(MsgSelf) failed!!! since old msgSelf is not empty, nMsgUnhandled=" << nMsgUnhandled);
         return false;

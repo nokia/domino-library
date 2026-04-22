@@ -21,13 +21,12 @@
 namespace rlib
 {
 // ***********************************************************************************************
-// ***********************************************************************************************
 // - deferred by MsgSelf: aBackFN runs in main thread via MsgSelf queue, not directly
-inline void cb_backFN(const TaskBackFN& aBackFN, const S_PTR<MsgSelf>& aMsgSelf,
+inline void cb_backFN(TaskBackFN aBackFN, const S_PTR<MsgSelf>& aMsgSelf,
     EMsgPriority aPri, SafePtr<void> aRet) noexcept
 {
     if (!aMsgSelf->newMsgOK(
-        [aBackFN,
+        [aBackFN = std::move(aBackFN),
         ret = std::move(aRet)]() mutable noexcept { aBackFN(std::move(ret)); }, aPri)
     ) {
         ERR("(viaMsgSelf) Failed to newMsgOK for aPri=" << aPri);
@@ -36,14 +35,14 @@ inline void cb_backFN(const TaskBackFN& aBackFN, const S_PTR<MsgSelf>& aMsgSelf,
 
 // wrap TaskBackFN to MsgSelf
 [[nodiscard]] inline
-TaskBackFN viaMsgSelf(const TaskBackFN& aBackFN, EMsgPriority aPri = EMsgPri_NORM) noexcept
+TaskBackFN viaMsgSelf(TaskBackFN aBackFN, EMsgPriority aPri = EMsgPri_NORM) noexcept
 {
     auto&& msgSelf = MSG_SELF;
     return ! aBackFN || msgSelf.get() == nullptr
         ? TaskBackFN()  // empty fn
-        : [aBackFN, msgSelf, aPri](SafePtr<void> aRet) noexcept
+        : [aBackFN = std::move(aBackFN), msgSelf, aPri](SafePtr<void> aRet) mutable noexcept
         {
-            cb_backFN(aBackFN, msgSelf, aPri, std::move(aRet));  // not exe here
+            cb_backFN(std::move(aBackFN), msgSelf, aPri, std::move(aRet));  // not exe here
         };
 }
 

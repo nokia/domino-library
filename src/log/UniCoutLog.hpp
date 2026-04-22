@@ -46,7 +46,7 @@ public:
 
 private:
     static void resetTrcFp_(std::FILE* aNewFp = stdout) noexcept {
-        auto* old = trcFp_.exchange(aNewFp);
+        auto* old = trcFp_.exchange(aNewFp, std::memory_order_acq_rel);
         if (old != stdout && old != nullptr) std::fclose(old);
     }
 

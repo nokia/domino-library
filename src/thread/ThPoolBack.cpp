@@ -47,7 +47,7 @@ void ThPoolBack::mt_threadMain_() noexcept
         {
             // - lock to prevent new task/notif until my mt_qCv_ sleep/wait-notif (ensure not loss notif)
             // - lock to prevent other thread steal task
-            unique_lock<mutex> lock(mt_mutex_);
+            unique_lock lock(mt_mutex_);
             mt_qCv_.wait(lock,
                 [this]() noexcept { return mt_stopAllTH_ || !mt_taskQ_.empty(); });
 
@@ -101,7 +101,7 @@ bool ThPoolBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLo
         packaged_task<SafePtr<void>()> task(std::move(mt_aEntryFN));  // packaged_task can get_future()="task result"
         fut_backFN_S_.push_back(Fut_BackFN{task.get_future(), std::move(aBackFN)});  // save future & backFN
         {
-            lock_guard<mutex> lock(mt_mutex_);
+            lock_guard lock(mt_mutex_);
             mt_taskQ_.emplace_back(move(task));
         }
         mt_qCv_.notify_one();  // notify thread pool to run a new task

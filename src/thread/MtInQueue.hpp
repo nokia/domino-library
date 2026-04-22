@@ -84,7 +84,7 @@ private:
     // -------------------------------------------------------------------------------------------
 #ifdef IN_GTEST
 public:
-    [[nodiscard]] std::unique_lock<std::mutex> lockBackdoor() { return std::unique_lock<std::mutex>(mt_mutex_); }
+    [[nodiscard]] std::unique_lock<std::mutex> lockBackdoor() { return std::unique_lock(mt_mutex_); }
 #endif
 };
 
@@ -107,9 +107,9 @@ bool MtInQueue::mt_pushOK(S_PTR<aEleType>&& aEle) noexcept
 
     // push
     try {
-        std::lock_guard<std::mutex> guard(mt_mutex_);
+        std::lock_guard guard(mt_mutex_);
         // HID("(MtQ) nRef=" << aEle.use_count() << ", ptr=" << aEle.get());  // HID supports MT
-        mt_queue_.push_back({std::move(aEle), typeid(aEleType)});  // ELE_TID: Element+TypeId
+        mt_queue_.emplace_back(std::move(aEle), typeid(aEleType));  // ELE_TID: Element+TypeId
     } catch(...) {  // ut can't cover this branch; rare but safer
         HID("!!! MtQ except in mt_pushOK");  // HID supports MT (ERR/WRN don't)
         return false;
@@ -156,7 +156,7 @@ bool MtInQueue::setHdlrOK(EleHdlr aHdlr) noexcept
             return false;
         }
     try {
-        tid_hdlr_S_.push_back({std::type_index(typeid(aEleType)), std::move(aHdlr)});
+        tid_hdlr_S_.emplace_back(std::type_index(typeid(aEleType)), std::move(aHdlr));
     } catch(...) {  // ut can't cover this branch; rare but safer
         ERR("(MtQ) except=" << mt_exceptInfo() << " in setHdlrOK");
         return false;

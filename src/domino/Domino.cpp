@@ -24,8 +24,8 @@ void Domino::deduceStateFrom_(Event aValidEv) noexcept
         HID("(Domino) en=" << evName_(curEV));
 
         // recalc state from predecessors
-        auto newState = deduceStateSelf_(curEV, true) && deduceStateSelf_(curEV, false);
-        if (pureSetStateOK_(curEV, newState))  // state changed
+        if (auto newState = deduceStateSelf_(curEV, true) && deduceStateSelf_(curEV, false);
+            pureSetStateOK_(curEV, newState))  // state changed
         {
             // propagate to successors
             for (bool branch : {true, false}) {  // search next_[true] & next_[false]
@@ -144,16 +144,16 @@ void Domino::pureSetPrev_(Event aValidEv, const SimuEvents& aSimuPrevEvents) noe
 {
     HID("(Domino) before: nPrev[true]=" << prev_[true].size() << ", nNext[true]=" << next_[true].size()
         << ", nPrev[false]=" << prev_[false].size() << ", nNext[false]=" << next_[false].size());
-    for (auto&& prevEn_state : aSimuPrevEvents)
+    for (auto&& [prevEn, state] : aSimuPrevEvents)
     {
-        auto&& prevEv = newEvent(prevEn_state.first);
-        auto&& prevPeers = prev_[prevEn_state.second][aValidEv];
+        auto&& prevEv = newEvent(prevEn);
+        auto&& prevPeers = prev_[state][aValidEv];
         if (find(prevPeers.begin(), prevPeers.end(), prevEv) == prevPeers.end()) {
             prevPeers.push_back(prevEv);
-            TRC("(Domino) %s %s %s", prevEn_state.first.c_str(),
-                prevEn_state.second ? "-T->" : "-F->", evName_(aValidEv).c_str());
+            TRC("(Domino) %s %s %s", prevEn.c_str(),
+                state ? "-T->" : "-F->", evName_(aValidEv).c_str());
         }
-        auto&& nextPeers = next_[prevEn_state.second][prevEv];
+        auto&& nextPeers = next_[state][prevEv];
         if (find(nextPeers.begin(), nextPeers.end(), aValidEv) == nextPeers.end())
             nextPeers.push_back(aValidEv);
     }
@@ -230,18 +230,18 @@ Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrev
         }
     }
     // validate loop & conflict
-    for (auto&& prevEn_state : aSimuPrevEvents)
+    for (auto&& [prevEn, state] : aSimuPrevEvents)
     {
-        auto&& prevEv = newEvent(prevEn_state.first);
+        auto&& prevEv = newEvent(prevEn);
         if (nextable[prevEv])  // + aSimuPrevEvents.size() so impossible out-bounds
         {
-            ERR("(Domino) !!!Failed since invalid EN=" << aEvName << ", or loop to=" << prevEn_state.first);
+            ERR("(Domino) !!!Failed since invalid EN=" << aEvName << ", or loop to=" << prevEn);
             return D_EVENT_FAILED_RET;
         }
-        auto&& conflictPeers = findPeerEVs(fromEv, prev_[!prevEn_state.second]);
+        auto&& conflictPeers = findPeerEVs(fromEv, prev_[!state]);
         if (find(conflictPeers.begin(), conflictPeers.end(), prevEv) != conflictPeers.end())
         {
-            ERR("(Domino) !!!Failed since T/F conflict on prev=" << prevEn_state.first << " for " << aEvName);
+            ERR("(Domino) !!!Failed since T/F conflict on prev=" << prevEn << " for " << aEvName);
             return D_EVENT_FAILED_RET;
         }
     }
@@ -261,24 +261,24 @@ Domino::Event Domino::setPrev(const EvName& aEvName, const SimuEvents& aSimuPrev
 size_t Domino::setState(const SimuEvents& aSimuEvents)
 {
     // validate
-    for (auto&& en_state : aSimuEvents)
+    for (auto&& [en, state] : aSimuEvents)
     {
-        const auto ev = getEventBy(en_state.first);  // not create new ev if validation fail
+        const auto ev = getEventBy(en);  // not create new ev if validation fail
         if (ev == D_EVENT_FAILED_RET)
             continue;  // new ev, need to create in next step
         if ((ev < prev_[true].size() && !prev_[true][ev].empty()) || (ev < prev_[false].size() && !prev_[false][ev].empty()))
         {
-            ERR("(Domino) refuse since en=" << en_state.first << " has prev (avoid break its prev logic)");
+            ERR("(Domino) refuse since en=" << en << " has prev (avoid break its prev logic)");
             return 0;
         }
     }
 
     // set ALL state(s) before deduce
     EVs simuEVs;
-    for (auto&& en_state : aSimuEvents)
+    simuEVs.reserve(aSimuEvents.size());
+    for (auto&& [en, state] : aSimuEvents)
     {
-        const auto ev = newEvent(en_state.first);
-        if (pureSetStateOK_(ev, en_state.second)) {  // real changed
+        if (const auto ev = newEvent(en); pureSetStateOK_(ev, state)) {  // real changed
             simuEVs.push_back(ev);  // no dup: map keys unique + pureSetStateOK_
         }
     }

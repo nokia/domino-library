@@ -53,8 +53,7 @@ public:
 template<typename aDominoType>
 S_PTR<void> WbasicDatDom<aDominoType>::getData(const Domino::EvName& aEvName) const noexcept
 {
-    const auto ev = this->getEventBy(aEvName);
-    if (not isWrCtrl_(ev))
+    if (const auto ev = this->getEventBy(aEvName); not isWrCtrl_(ev))
         return aDominoType::getData_(ev);
 
     WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is write-protect so unavailable via this func!!!");
@@ -72,8 +71,7 @@ bool WbasicDatDom<aDominoType>::isWrCtrl(const Domino::EvName& aEvName) const no
 template<typename aDominoType>
 bool WbasicDatDom<aDominoType>::replaceDataOK(const Domino::EvName& aEvName, S_PTR<void> aData) noexcept
 {
-    const auto ev = this->getEventBy(aEvName);
-    if (isWrCtrl_(ev)) {
+    if (const auto ev = this->getEventBy(aEvName); isWrCtrl_(ev)) {
         WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is write-protect so unavailable via this func!!!")
         return false;
     }
@@ -94,8 +92,7 @@ void WbasicDatDom<aDominoType>::rmEv_(Domino::Event aValidEv) noexcept
 template<typename aDominoType>
 S_PTR<void> WbasicDatDom<aDominoType>::wbasic_getData(const Domino::EvName& aEvName) const noexcept
 {
-    const auto ev = this->getEventBy(aEvName);
-    if (isWrCtrl_(ev))
+    if (const auto ev = this->getEventBy(aEvName); isWrCtrl_(ev))
         return aDominoType::getData_(ev);
 
     WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!");
@@ -106,8 +103,7 @@ S_PTR<void> WbasicDatDom<aDominoType>::wbasic_getData(const Domino::EvName& aEvN
 template<typename aDominoType>
 bool WbasicDatDom<aDominoType>::wbasic_replaceDataOK(const Domino::EvName& aEvName, S_PTR<void> aData) noexcept
 {
-    const auto ev = this->getEventBy(aEvName);
-    if (isWrCtrl_(ev))
+    if (const auto ev = this->getEventBy(aEvName); isWrCtrl_(ev))
         return aDominoType::replaceDataOK(aEvName, std::move(aData));
     else {
         WRN("(WbasicDatDom) Failed!!! EvName=" << aEvName << " is not write-protect so unavailable via this func!!!")
