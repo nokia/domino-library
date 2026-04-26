@@ -36,7 +36,7 @@ elseif(ci  STREQUAL  "tsan")  # asan/lsan/msan cover by valgrind(memcheck)
 else()
     message("!!! UT only - no cov, no SANITIZE check etc")
     add_compile_options(-O1)  # fastest build+ut (1-cpp-change=5s, vs 45s of -g)
-    add_compile_definitions(DOMLIB_BENCHMARK)  # enable env-sensitive benchmark tests
+    add_compile_definitions(DOMLIB_UT)  # benchmark etc
 endif()
 
 #add_compile_options(-fno-exceptions)  # inc branch coverage

@@ -868,6 +868,10 @@ struct BigObj {
 };
 TEST(SafePtrTest, GOLD_newSafe_vs_makeSafe_memBehavior)
 {
+    #ifndef DOMLIB_UT
+    GTEST_SKIP() << "valgrind interposes operator new, so this allocation probe is not observable";
+    #endif
+
     // Core difference while SafeWeak is still alive:
     // make_safe keeps the BigObj-sized co-allocation; new_safe frees BigObj immediately.
     resetBigAllocProbe(sizeof(BigObj));
