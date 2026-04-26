@@ -60,7 +60,9 @@ public:
     constexpr
         SafePtr(std::nullptr_t = nullptr) noexcept {}
     template<typename U, typename... ConstructArgs> friend
-        SafePtr<U> make_safe(ConstructArgs&&...) noexcept;
+        SafePtr<U> make_safe(ConstructArgs&&...) noexcept;  // for most T
+    template<typename U, typename... ConstructArgs> friend
+        SafePtr<U> new_safe(ConstructArgs&&...) noexcept;  // for big T, avoid SafeWeak block free T's mem
     // clarity: forbid unsafe create from raw ptr / shared_ptr
     template<typename U>
         SafePtr(U*) = delete;
@@ -213,6 +215,18 @@ template<typename U, typename... ConstructArgs>
     }
     return safeU;
 }
+template<typename U, typename... ConstructArgs>
+[[nodiscard]] SafePtr<U> new_safe(ConstructArgs&&... aArgs) noexcept
+{
+    SafePtr<U> safeU;
+    try {  // bad_alloc, or except from U's constructor
+        // shared_ptr(Y*) ctor: if ctrl-blk alloc throws, Y* is deleted (std guarantee, no leak)
+        safeU.pT_ = std::shared_ptr<U>(new U(std::forward<ConstructArgs>(aArgs)...));
+    } catch(...) {
+        HID("(new_safe) except=" << mt_exceptInfo());  // only HID is MT safe
+    }
+    return safeU;
+}
 
 // ***********************************************************************************************
 // - SafePtr can be key of map & unordered_map (like shared_ptr)
@@ -307,6 +321,7 @@ struct std::hash<rlib::SafePtr<T>>
 // 2025-02-13  CSZ       4)SafeWeak
 // 2025-03-24  CSZ       5)tolerate exception
 // 2026-04-11  CSZ       6)fix D->B->void->B; only lastType_ for SafePtr&WeakPtr<void> via EBO
+// 2026-04-26  CSZ       7)new_safe: separate alloc so big T freed w/o waiting SafeWeak
 // ***********************************************************************************************
 // - Q&A
 //   * noexcept & constexpr (for whole lib)

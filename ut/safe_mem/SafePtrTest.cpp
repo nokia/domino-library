@@ -5,13 +5,66 @@
  */
 // ***********************************************************************************************
 #include <gtest/gtest.h>
+#include <cstdlib>
 #include <map>
+#include <new>
 #include <typeindex>
 #include <unordered_map>
 
 #include "SafePtr.hpp"
 
 using namespace std;
+
+namespace
+{
+// Minimal global hook for the one UT that compares make_shared vs new+shared_ptr allocation lifetime.
+bool g_probeOn = false;
+size_t g_probeMin = 0;
+int g_probeAlloc = 0;
+int g_probeFree = 0;
+void* g_probePtr = nullptr;
+
+void resetBigAllocProbe(size_t aMin) noexcept  // start monitor new/del
+{
+    g_probeOn = true;
+    g_probeMin = aMin;
+    g_probeAlloc = g_probeFree = 0;
+    g_probePtr = nullptr;
+}
+void stopBigAllocProbe() noexcept { g_probeOn = false; }  // stop monitor
+void onBigAlloc(void* aPtr, size_t aSize) noexcept
+{
+    if (g_probeOn && aSize >= g_probeMin) {
+        ++g_probeAlloc;
+        g_probePtr = aPtr;
+    }
+}
+void onBigFree(void* aPtr) noexcept
+{
+    if (g_probeOn && aPtr == g_probePtr) {
+        ++g_probeFree;
+        g_probePtr = nullptr;
+    }
+}
+}  // namespace
+
+void* operator new(size_t aSize)
+{
+    void* p = std::malloc(aSize);
+    if (!p) throw std::bad_alloc();
+    onBigAlloc(p, aSize);
+    return p;
+}
+void operator delete(void* aPtr) noexcept
+{
+    onBigFree(aPtr);
+    std::free(aPtr);
+}
+void operator delete(void* aPtr, size_t) noexcept
+{
+    onBigFree(aPtr);
+    std::free(aPtr);
+}
 
 namespace rlib
 {
@@ -778,7 +831,135 @@ TEST(SafePtrTest, except_safe)
     struct E {
         E() { throw runtime_error("construct except"); }
     };
-    EXPECT_EQ(nullptr, make_safe<E>().get()) << "REQ: except->nullptr";
+    EXPECT_EQ(nullptr, make_safe<E>().get()) << "REQ: make_safe except->nullptr";
+    EXPECT_EQ(nullptr, new_safe<E>().get()) << "REQ: new_safe except->nullptr";
+}
+
+#define NEW_SAFE
+// ***********************************************************************************************
+TEST(SafePtrTest, GOLD_newSafe_basic)
+{
+    // Test with int - same type as make_safe tests
+    auto i = new_safe<int>(42);
+    EXPECT_VALID(i);
+    EXPECT_EQ(1, i.use_count()) << "REQ: compatible shared_ptr";
+
+    auto content = i.get();
+    EXPECT_EQ(42, *content) << "REQ: valid get";
+    EXPECT_EQ(2, i.use_count()) << "REQ: compatible shared_ptr";
+
+    *content = 43;
+    EXPECT_EQ(43, *i.get()) << "REQ: valid update";
+
+    content = nullptr;
+    EXPECT_EQ(43, *i.get()) << "REQ: outside reset not impact SafePtr";
+    EXPECT_EQ(1, i.use_count()) << "REQ: compatible shared_ptr";
+    EXPECT_VALID(i);
+
+    // default construction
+    auto ptr = new_safe<int>();
+    EXPECT_EQ(0, *ptr.get()) << "REQ: empty new_safe like make_shared";
+    EXPECT_EQ(1, ptr.use_count()) << "REQ: compatible shared_ptr";
+    EXPECT_VALID(ptr);
+}
+
+struct BigObj {
+    char data[4096];  // simulate big object
+};
+TEST(SafePtrTest, GOLD_newSafe_vs_makeSafe_memBehavior)
+{
+    // Core difference while SafeWeak is still alive:
+    // make_safe keeps the BigObj-sized co-allocation; new_safe frees BigObj immediately.
+    resetBigAllocProbe(sizeof(BigObj));
+    {
+        SafePtr<BigObj> p_make = make_safe<BigObj>();
+        EXPECT_VALID(p_make);
+        EXPECT_EQ(1, g_probeAlloc);
+
+        [[maybe_unused]] SafeWeak<BigObj> w_make = p_make;
+        p_make = nullptr;  // last SafePtr dies
+        EXPECT_EQ(0, g_probeFree) << "make_safe: SafeWeak still pins BigObj-sized allocation";
+    }
+    EXPECT_EQ(1, g_probeFree) << "make_safe: allocation freed only after SafeWeak dies";
+
+    resetBigAllocProbe(sizeof(BigObj));
+    {
+        SafePtr<BigObj> p_new = new_safe<BigObj>();
+        EXPECT_VALID(p_new);
+        EXPECT_EQ(1, g_probeAlloc);
+
+        [[maybe_unused]] SafeWeak<BigObj> w_new = p_new;
+        p_new = nullptr;  // last SafePtr dies
+        EXPECT_EQ(1, g_probeFree) << "REQ new_safe: BigObj freed while SafeWeak still exists";
+    }
+    stopBigAllocProbe();
+}
+
+TEST(SafePtrTest, newSafe_cast_and_weak_compatible)
+{
+    // new_safe should work with all cast operations like make_safe
+    auto d = new_safe<Derive>();
+    EXPECT_VALID(d);
+
+    // cast to base
+    SafePtr<Base> b = d;
+    EXPECT_VALID(b);
+    EXPECT_EQ(1, b->value()) << "REQ: new_safe supports Derive->Base";
+
+    // cast to void and back
+    SafePtr<void> v = b;
+    EXPECT_VALID(v);
+    auto backB = safe_cast<Base>(v);
+    EXPECT_VALID(backB);
+    EXPECT_EQ(1, backB->value()) << "REQ: new_safe supports void round-trip";
+
+    // downcast
+    auto backD = safe_cast<Derive>(b);
+    EXPECT_VALID(backD);
+    EXPECT_EQ(1, backD->value()) << "REQ: new_safe supports downcast";
+
+    // SafeWeak compatibility
+    auto d2 = new_safe<Derive>();
+    SafeWeak<Derive> w = d2;
+    EXPECT_EQ(1, d2.use_count()) << "REQ: SafeWeak not inc use_count";
+    EXPECT_FALSE(w.expired()) << "REQ: weak valid";
+
+    auto dd = w.lock();
+    EXPECT_VALID(dd);
+    EXPECT_EQ(d2, dd) << "REQ: same object";
+    EXPECT_EQ(2, d2.use_count()) << "REQ: lock increments use_count";
+
+    d2 = nullptr;
+    dd = nullptr;
+    EXPECT_TRUE(w.expired()) << "REQ: weak expired after all SafePtr gone";
+}
+TEST(SafePtrTest, newSafe_destruct_byVoid)
+{
+    // new_safe must correctly destruct through void pointer
+    // Reuse TestBase to minimize new template instantiations
+    bool isBaseOver = false;
+
+    SafePtr<void> v = new_safe<TestBase>(isBaseOver);
+    EXPECT_VALID(v);
+    EXPECT_FALSE(isBaseOver) << "REQ: constructed ok";
+
+    v = nullptr;
+    EXPECT_VALID(v);
+    EXPECT_TRUE(isBaseOver) << "REQ: new_safe correctly destructs through void";
+}
+TEST(SafePtrTest, newSafe_destruct_byBase)
+{
+    // new_safe must correctly destruct derived through base pointer
+    bool isBaseOver = false;
+    bool isDeriveOver = false;
+
+    SafePtr<TestBase> p = new_safe<TestDerive>(isBaseOver, isDeriveOver);
+    EXPECT_VALID(p);
+    EXPECT_FALSE(isDeriveOver) << "REQ: constructed ok";
+
+    p = nullptr;
+    EXPECT_VALID(p);
+    EXPECT_TRUE(isDeriveOver) << "REQ: new_safe correctly destructs derived through base";
 }
 
 #define SECURITY
