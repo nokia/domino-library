@@ -54,6 +54,8 @@ template<typename T = void>
 class SafePtr : private void_type_index<std::is_void_v<T>>
 {
 public:
+    using element_type = T;  // smart-pointer metadata, like std::shared_ptr
+
     // - safe-only creation, eg can't construct by raw ptr/shared_ptr that maybe unsafe
     // - can't create by SafePtr(ConstructArgs...) that confuse cp constructor, make_safe() instead
     // - T(ConstructArgs) SHALL mem-safe
@@ -267,6 +269,8 @@ template<typename T = void>
 class SafeWeak : private void_type_index<std::is_void_v<T>>
 {
 public:
+    using element_type = T;  // smart-pointer metadata, like std::weak_ptr
+
     SafeWeak(const SafePtr<T>& aSafeFrom) noexcept;
     [[nodiscard]] SafePtr<T> lock() const noexcept;
     [[nodiscard]] bool expired() const noexcept { return pT_.expired(); }

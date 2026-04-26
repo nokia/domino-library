@@ -636,6 +636,14 @@ TEST(SafePtrTest, get_isMemSafe_afterDelOrigin)
     get = safe.get();
     EXPECT_EQ(nullptr, get) << "REQ: get nullptr OK";
 }
+TEST(SafePtrTest, GOLD_stlPointerTraits)
+{
+    static_assert(is_same<pointer_traits<SafePtr<int>>::element_type, int>::value,
+        "REQ: std::pointer_traits can query SafePtr element_type");
+    static_assert(is_same<pointer_traits<SafeWeak<int>>::element_type, int>::value,
+        "REQ: std::pointer_traits can query SafeWeak element_type");
+    SUCCEED() << "REQ: smart-pointer metadata is compile-time visible to STL traits";
+}
 
 #define SUPPORT_MAP
 // ***********************************************************************************************
