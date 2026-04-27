@@ -6,7 +6,7 @@
 // ***********************************************************************************************
 // ISSUE: C++ memory bugs (US Gov suggests Rust; MS/Google: ~70% safety defects are mem-related)
 //
-// REQ/value: 100% safe smart pointer (like shared_ptr but prevents all unsafe operations)
+// REQ/value: 100% safe smart pointer (subset shared_ptr)
 // - Create:
 //   . Only allow safe creation via eg make_safe<T>() or nullptr
 //   . Forbid unsafe eg via raw pointer/shared_ptr construction
@@ -38,6 +38,7 @@
 #include <memory>
 #include <type_traits>
 #include <typeindex>
+#include <utility>
 
 #include "UniLog.hpp"
 
@@ -100,6 +101,9 @@ public:
     std::shared_ptr<T> operator->() const noexcept { assert(pT_); return pT_; }  // convenient; unsafe to ret ref
     explicit operator bool() const noexcept { return pT_ != nullptr; }
     [[nodiscard]] auto use_count() const noexcept { return pT_.use_count(); }
+    void swap(SafePtr& aOther) noexcept;
+    template<typename U> [[nodiscard]]
+        bool owner_before(const SafePtr<U>& aOther) const noexcept { return pT_.owner_before(aOther.pT_); }
 
     // most for debug
     [[nodiscard]] auto lastType() const noexcept;
@@ -202,6 +206,15 @@ auto SafePtr<T>::lastType() const noexcept
     else return std::type_index(typeid(T));
 }
 
+// ***********************************************************************************************
+template<typename T>
+void SafePtr<T>::swap(SafePtr& aOther) noexcept
+{
+    pT_.swap(aOther.pT_);
+    if constexpr(std::is_void_v<T>)
+        std::swap(this->lastType_, aOther.lastType_);
+}
+
 
 
 // ***********************************************************************************************
@@ -249,6 +262,11 @@ template<typename T, typename U>
 bool operator<(const SafePtr<T>& lhs, const SafePtr<U>& rhs) noexcept
 {
     return std::less<>()(lhs.get(), rhs.get());  // less() is safer to cmp any ptr than <()
+}
+template<typename T>
+void swap(SafePtr<T>& lhs, SafePtr<T>& rhs) noexcept
+{
+    lhs.swap(rhs);
 }
 
 // ***********************************************************************************************
@@ -312,6 +330,16 @@ struct std::hash<rlib::SafePtr<T>>
         return std::hash<std::shared_ptr<T>>{}(aSafePtr.get());
     }
 };
+// std::owner_less<> (transparent) auto-works via SafePtr::owner_before.
+// std::owner_less<SafePtr<T>> needs explicit specialization since primary is undefined.
+template<typename T>
+struct std::owner_less<rlib::SafePtr<T>>
+{
+    bool operator()(const rlib::SafePtr<T>& lhs, const rlib::SafePtr<T>& rhs) const noexcept
+    {
+        return lhs.owner_before(rhs);
+    }
+};
 
 // ***********************************************************************************************
 // YYYY-MM-DD  Who       v)Modification Description
@@ -325,7 +353,8 @@ struct std::hash<rlib::SafePtr<T>>
 // 2025-02-13  CSZ       4)SafeWeak
 // 2025-03-24  CSZ       5)tolerate exception
 // 2026-04-11  CSZ       6)fix D->B->void->B; only lastType_ for SafePtr&WeakPtr<void> via EBO
-// 2026-04-26  CSZ       7)new_safe: separate alloc so big T freed w/o waiting SafeWeak
+// 2026-04-26  CSZ       - new_safe: separate alloc so big T freed w/o waiting SafeWeak
+// 2026-04-27  CSZ       - swap and owner-based ordering support
 // ***********************************************************************************************
 // - Q&A
 //   * noexcept & constexpr (for whole lib)

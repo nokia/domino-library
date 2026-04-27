@@ -159,6 +159,15 @@ TEST(SafePtrTest, safeCreate_null)
 struct Base                 { virtual int value() const  { return 0; } };
 struct Derive : public Base { int value() const override { return 1; } };
 
+// shared helpers — reuse across tests to keep SafePtr<T> instantiations bounded
+// (gcovr 8.x counts each instantiation's branches separately)
+struct BB { int i = 0; };  // non-virtual base for slicing tests
+struct DD : BB { DD() { i = 1; } };
+
+struct MiB1 { virtual ~MiB1() = default; int b1 = 0; };  // MI tests: 2 virtual bases
+struct MiB2 { virtual ~MiB2() = default; int b2 = 0; };
+struct MiD : MiB1, MiB2 { MiD() { b1 = 11; b2 = 22; } };
+
 TEST(SafePtrTest, GOLD_safeCast)
 {
     auto d = make_safe<Derive>();
@@ -224,12 +233,10 @@ TEST(SafePtrTest, GOLD_unsafeCast)
     //EXPECT_EQ(nullptr, safe_cast<Base>(make_safe<D_private>()).get());  // unsafe, compile err
     //EXPECT_EQ(nullptr, safe_cast<Base>(make_safe<D_protect>()).get());  // unsafe, compile err
 
-    struct B { int i=0; };  // no virtual
-    struct D : public B { D(){ i=1; } };
-    auto d = safe_cast<B>(make_safe<D>());
+    auto d = safe_cast<BB>(make_safe<DD>());
     EXPECT_VALID(d);
     EXPECT_EQ(1, d.get()->i) << "D sliced to B but still safe";
-    //EXPECT_EQ(nullptr, safe_cast<D>(d).get());  // unsafe, compile err
+    //EXPECT_EQ(nullptr, safe_cast<DD>(d).get());  // unsafe, compile err
 
     auto msgInQ  = SafePtr<void>(SafePtr<Base>(make_safe<Derive>()));
     auto msgOutQ = safe_cast<char>(msgInQ);  // failed cast
@@ -374,10 +381,8 @@ TEST(SafePtrTest, GOLD_safeCp_toPolyBase)
 }
 TEST(SafePtrTest, safeCp_toStaticBase)
 {
-    struct B { int i=0; };
-    struct D : B { D(){ i=1; } };
-    auto d = make_safe<D>();
-    SafePtr<B> b(d);
+    auto d = make_safe<DD>();
+    SafePtr<BB> b(d);
     EXPECT_VALID(b);
     EXPECT_EQ(1, b->i) << "REQ: cp to non-virtual base";
     EXPECT_EQ(2, d.use_count()) << "REQ: shared";
@@ -513,10 +518,8 @@ TEST(SafePtrTest, GOLD_safeMv_toPolyBase)
 }
 TEST(SafePtrTest, safeMv_toStaticBase)
 {
-    struct B { int i=0; };
-    struct D : B { D(){ i=1; } };
-    auto d = make_safe<D>();
-    SafePtr<B> b(move(d));
+    auto d = make_safe<DD>();
+    SafePtr<BB> b(move(d));
     EXPECT_VALID(d);
     EXPECT_VALID(b);
     EXPECT_EQ(1, b->i) << "REQ: mv to non-virtual base";
@@ -581,6 +584,34 @@ TEST(SafePtrTest, GOLD_safeReset_byAssign)
     EXPECT_EQ(nullptr                 , msgInQ.get      ()) << "REQ: reset ok";
     EXPECT_EQ(type_index(typeid(void)), msgInQ.lastType ()) << "REQ: reset ok";
     EXPECT_VALID(msgInQ);
+}
+TEST(SafePtrTest, GOLD_safeSwap)
+{
+    auto one = make_safe<int>(1);
+    auto two = make_safe<int>(2);
+
+    one.swap(two);
+    EXPECT_VALID(one);
+    EXPECT_VALID(two);
+    EXPECT_EQ(2, *one.get()) << "REQ: member swap exchanges ownership";
+    EXPECT_EQ(1, *two.get()) << "REQ: member swap exchanges ownership";
+
+    swap(one, two);
+    EXPECT_VALID(one);
+    EXPECT_VALID(two);
+    EXPECT_EQ(1, *one.get()) << "REQ: free swap exchanges ownership";
+    EXPECT_EQ(2, *two.get()) << "REQ: free swap exchanges ownership";
+}
+TEST(SafePtrTest, GOLD_safeSwap_void)
+{
+    // void swap must exchange both ctrl-block AND lastType_ (else safe_cast back fails)
+    SafePtr<void> vi = make_safe<int>(42);
+    SafePtr<void> vf = make_safe<float>(3.14f);
+
+    vi.swap(vf);
+    EXPECT_EQ(type_index(typeid(float)), vi.lastType()) << "REQ: void swap exchanges lastType";
+    EXPECT_EQ(type_index(typeid(int  )), vf.lastType()) << "REQ: void swap exchanges lastType";
+    EXPECT_EQ(42, *safe_cast<int>(vf).get()) << "REQ: lastType moved with ctrl-block, cast still safe";
 }
 
 #define DESTRUCT
@@ -682,36 +713,35 @@ TEST(SafePtrTest, GOLD_asKeyOf_map)
 TEST(SafePtrTest, GOLD_voidEqual_identity_not_castPath)
 {
     // == answers "same object?" (identity), not "same cast path?" (view)
-    // MI first-base: D* == A* (same addr) → same identity → ==
+    // MI first-base: MiD* == MiB1* (same addr) → same identity → ==
     // user checks lastType() explicitly when cast-path distinction is needed
-    struct A { virtual ~A() = default; int a = 1; };
-    struct B { virtual ~B() = default; int b = 2; };
-    struct D : A, B { D() { a = 11; b = 22; } };
-
-    auto d = make_safe<D>();
-    SafePtr<void> vD = d;              // lastType=D, raw=D*
-    SafePtr<void> vA = SafePtr<A>(d);  // lastType=A, raw=A*=D* (first base)
+    auto d = make_safe<MiD>();
+    SafePtr<void> vD  = d;                // lastType=MiD, raw=MiD*
+    SafePtr<void> vB1 = SafePtr<MiB1>(d); // lastType=MiB1, raw=MiB1*=MiD* (first base)
     EXPECT_VALID(vD);
-    EXPECT_VALID(vA);
+    EXPECT_VALID(vB1);
 
-    EXPECT_EQ(vD.get().get(), vA.get().get()) << "REQ: first-base addr == D addr";
-    EXPECT_EQ(vD, vA) << "REQ: same ptr → same object → == (identity)";
-    EXPECT_NE(vD.lastType(), vA.lastType()) << "REQ: lastType differs — user checks explicitly";
+    EXPECT_EQ(vD.get().get(), vB1.get().get()) << "REQ: first-base addr == MiD addr";
+    EXPECT_EQ(vD, vB1) << "REQ: same ptr → same object → == (identity)";
+    EXPECT_NE(vD.lastType(), vB1.lastType()) << "REQ: lastType differs — user checks explicitly";
 }
 TEST(SafePtrTest, GOLD_voidEqual_diffObj)
 {
-    // MI second-base: B* ≠ D* → different raw addrs → !=
-    struct B1 { virtual ~B1() = default; int b1 = 10; };
-    struct B2 { virtual ~B2() = default; int b2 = 20; };
-    struct D : B1, B2 { D() { b1 = 11; b2 = 22; } };
-
-    auto d = make_safe<D>();
-    SafePtr<void> v1 = SafePtr<B1>(d);
-    SafePtr<void> v2 = SafePtr<B2>(d);
+    // MI second-base: MiB2* ≠ MiD* → different raw addrs → !=
+    // BUT same ctrl-block → std::owner_less treats them as one key (the classic owner_less use case)
+    auto d = make_safe<MiD>();
+    SafePtr<void> v1 = SafePtr<MiB1>(d);
+    SafePtr<void> v2 = SafePtr<MiB2>(d);
     EXPECT_VALID(v1);
     EXPECT_VALID(v2);
     EXPECT_NE(v1.get().get(), v2.get().get()) << "REQ: MI second-base has diff addr";
     EXPECT_NE(v1, v2) << "REQ: diff addr → !=";
+
+    map<SafePtr<void>, string, std::owner_less<SafePtr<void>>> ownerMap;
+    ownerMap[v1] = "B1";
+    ownerMap[v2] = "B2";
+    EXPECT_EQ(1, ownerMap.size()) << "REQ: owner-based map collapses same ctrl-block";
+    EXPECT_EQ("B2", ownerMap[v1]) << "REQ: same-owner lookup wins";
 }
 TEST(SafePtrTest, voidEqual_samePath)
 {
@@ -736,30 +766,26 @@ TEST(SafePtrTest, voidEqual_null)
 TEST(SafePtrTest, GOLD_voidMap_sameObj_oneKey)
 {
     // same object via different cast paths → same key in map (identity, not view)
-    struct A { virtual ~A() = default; };
-    struct B { virtual ~B() = default; };
-    struct D : A, B {};
-
-    auto d = make_safe<D>();
-    SafePtr<void> vD = d;
-    SafePtr<void> vA = SafePtr<A>(d);
+    auto d = make_safe<MiD>();
+    SafePtr<void> vD  = d;
+    SafePtr<void> vB1 = SafePtr<MiB1>(d);
     EXPECT_VALID(vD);
-    EXPECT_VALID(vA);
-    EXPECT_EQ(vD, vA) << "precondition: same identity";
+    EXPECT_VALID(vB1);
+    EXPECT_EQ(vD, vB1) << "precondition: same identity (first-base shares addr with D)";
 
     // ordered map: second insert overwrites first (same key)
     map<SafePtr<void>, string> m;
-    m[vD] = "D";
-    m[vA] = "A";
+    m[vD]  = "D";
+    m[vB1] = "B1";
     EXPECT_EQ(1, m.size()) << "REQ: same object → one key";
-    EXPECT_EQ("A", m[vD]) << "REQ: last write wins";
+    EXPECT_EQ("B1", m[vD]) << "REQ: last write wins";
 
     // unordered map: same
     unordered_map<SafePtr<void>, string> um;
-    um[vD] = "D";
-    um[vA] = "A";
+    um[vD]  = "D";
+    um[vB1] = "B1";
     EXPECT_EQ(1, um.size()) << "REQ: same object → one key";
-    EXPECT_EQ("A", um[vD]) << "REQ: last write wins";
+    EXPECT_EQ("B1", um[vD]) << "REQ: last write wins";
 }
 
 #define WEAK
@@ -1049,42 +1075,38 @@ TEST(SafePtrTest, safeCastFromMovedFrom_safe)
 
 TEST(SafePtrTest, GOLD_MI_D_B1_void_B2_typeConfusion)
 {
-    // C1: verify D->B1->void->B2 is BLOCKED (type confusion via MI)
-    struct B1 { virtual ~B1() = default; int b1 = 10; };
-    struct B2 { virtual ~B2() = default; int b2 = 20; };
-    struct D : B1, B2 { D() { b1 = 11; b2 = 22; } };
-
-    auto d = make_safe<D>();
+    // C1: verify MiD->MiB1->void->MiB2 is BLOCKED (type confusion via MI)
+    auto d = make_safe<MiD>();
     EXPECT_VALID(d);
 
-    // D→B1→void (lastType_=B1, void* stores B1 sub-object addr)
-    SafePtr<void> v = SafePtr<B1>(d);
+    // MiD→MiB1→void (lastType_=MiB1, void* stores MiB1 sub-object addr)
+    SafePtr<void> v = SafePtr<MiB1>(d);
     EXPECT_VALID(v);
-    EXPECT_EQ(type_index(typeid(B1)), v.lastType()) << "REQ: lastType=B1";
+    EXPECT_EQ(type_index(typeid(MiB1)), v.lastType()) << "REQ: lastType=MiB1";
 
-    // void→B2 MUST fail: lastType=B1 ≠ B2, addr offset would be wrong
-    auto wrongB2 = safe_cast<B2>(v);
+    // void→MiB2 MUST fail: lastType=MiB1 ≠ MiB2, addr offset would be wrong
+    auto wrongB2 = safe_cast<MiB2>(v);
     EXPECT_VALID(wrongB2);
-    EXPECT_EQ(nullptr, wrongB2.get()) << "REQ: D→B1→void→B2 blocked (type confusion)";
+    EXPECT_EQ(nullptr, wrongB2.get()) << "REQ: MiD→MiB1→void→MiB2 blocked (type confusion)";
 
-    // void→B1 must succeed
-    auto backB1 = safe_cast<B1>(v);
+    // void→MiB1 must succeed
+    auto backB1 = safe_cast<MiB1>(v);
     EXPECT_VALID(backB1);
-    ASSERT_NE(nullptr, backB1.get()) << "REQ: D→B1→void→B1 ok";
-    EXPECT_EQ(11, backB1->b1) << "REQ: correct B1 value";
+    ASSERT_NE(nullptr, backB1.get()) << "REQ: MiD→MiB1→void→MiB1 ok";
+    EXPECT_EQ(11, backB1->b1) << "REQ: correct MiB1 value";
 
-    // void→D must fail (lastType=B1, not D)
-    auto wrongD = safe_cast<D>(v);
+    // void→MiD must fail (lastType=MiB1, not MiD)
+    auto wrongD = safe_cast<MiD>(v);
     EXPECT_VALID(wrongD);
-    EXPECT_EQ(nullptr, wrongD.get()) << "REQ: D→B1→void→D blocked (lastType≠D)";
+    EXPECT_EQ(nullptr, wrongD.get()) << "REQ: MiD→MiB1→void→MiD blocked (lastType≠MiD)";
 
-    // correct path: D→B1→D→B2
-    auto backD = safe_cast<D>(SafePtr<B1>(d));
+    // correct path: MiD→MiB1→MiD→MiB2
+    auto backD = safe_cast<MiD>(SafePtr<MiB1>(d));
     EXPECT_VALID(backD);
     if (backD) {
-        SafePtr<B2> correctB2(backD);
+        SafePtr<MiB2> correctB2(backD);
         EXPECT_VALID(correctB2);
-        EXPECT_EQ(22, correctB2->b2) << "REQ: correct path D→B1→D→B2 ok";
+        EXPECT_EQ(22, correctB2->b2) << "REQ: correct path MiD→MiB1→MiD→MiB2 ok";
     }
 }
 
