@@ -283,15 +283,22 @@ template<typename To, typename From>
 
 
 // ***********************************************************************************************
+// REQ: 100% safe; min subset of weak_ptr
+// - owner_before + std::owner_less: usable as map/set key (the canonical use case for weak_ptr)
 template<typename T = void>
 class SafeWeak : private void_type_index<std::is_void_v<T>>
 {
 public:
     using element_type = T;  // smart-pointer metadata, like std::weak_ptr
 
+    SafeWeak() noexcept = default;  // empty weak; eg as class member to be assigned later
     SafeWeak(const SafePtr<T>& aSafeFrom) noexcept;
     [[nodiscard]] SafePtr<T> lock() const noexcept;
     [[nodiscard]] bool expired() const noexcept { return pT_.expired(); }
+    template<typename U> [[nodiscard]]
+        bool owner_before(const SafeWeak<U>& aOther) const noexcept { return pT_.owner_before(aOther.pT_); }
+
+    template<typename From> friend class SafeWeak;  // so cross-T owner_before sees private pT_
 
 private:
     // -------------------------------------------------------------------------------------------
@@ -330,12 +337,20 @@ struct std::hash<rlib::SafePtr<T>>
         return std::hash<std::shared_ptr<T>>{}(aSafePtr.get());
     }
 };
-// std::owner_less<> (transparent) auto-works via SafePtr::owner_before.
+// std::owner_less<> (transparent) auto-works via SafePtr/SafeWeak::owner_before.
 // std::owner_less<SafePtr<T>> needs explicit specialization since primary is undefined.
 template<typename T>
 struct std::owner_less<rlib::SafePtr<T>>
 {
     bool operator()(const rlib::SafePtr<T>& lhs, const rlib::SafePtr<T>& rhs) const noexcept
+    {
+        return lhs.owner_before(rhs);
+    }
+};
+template<typename T>
+struct std::owner_less<rlib::SafeWeak<T>>
+{
+    bool operator()(const rlib::SafeWeak<T>& lhs, const rlib::SafeWeak<T>& rhs) const noexcept
     {
         return lhs.owner_before(rhs);
     }
@@ -355,6 +370,7 @@ struct std::owner_less<rlib::SafePtr<T>>
 // 2026-04-11  CSZ       6)fix D->B->void->B; only lastType_ for SafePtr&WeakPtr<void> via EBO
 // 2026-04-26  CSZ       - new_safe: separate alloc so big T freed w/o waiting SafeWeak
 // 2026-04-27  CSZ       - swap and owner-based ordering support
+// 2026-04-27  CSZ       - SafeWeak: default ctor + owner_before/owner_less (usable as map key)
 // ***********************************************************************************************
 // - Q&A
 //   * noexcept & constexpr (for whole lib)

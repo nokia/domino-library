@@ -857,6 +857,51 @@ TEST(SafePtrTest, safeWeak_nullptr)
     EXPECT_TRUE(wv.expired()) << "REQ: void weak from nullptr is expired";
     EXPECT_EQ(nullptr, wv.lock().get()) << "REQ: lock nullptr void weak → null";
 }
+TEST(SafePtrTest, safeWeak_default_classMember)
+{
+    // default ctor: empty weak (eg as class member to be assigned later)
+    SafeWeak<Derive> w;
+    EXPECT_TRUE(w.expired()) << "REQ: default-constructed weak is expired";
+    EXPECT_EQ(nullptr, w.lock().get()) << "REQ: default lock → null";
+
+    SafeWeak<void> wv;
+    EXPECT_TRUE(wv.expired()) << "REQ: default void weak is expired";
+
+    // typical use: declare uninit member, assign later
+    struct Subject { SafeWeak<Derive> obs_; };
+    Subject s;
+    EXPECT_TRUE(s.obs_.expired()) << "REQ: default-init class member is expired";
+
+    auto p = make_safe<Derive>();
+    s.obs_ = p;  // implicit SafePtr→SafeWeak conversion + compiler-gen move-assign
+    EXPECT_FALSE(s.obs_.expired()) << "REQ: member tracks ptr after assign";
+    EXPECT_EQ(1, p.use_count())    << "REQ: weak does not bump strong count";
+}
+TEST(SafePtrTest, GOLD_safeWeak_ownerMap_observerTable)
+{
+    // canonical observer registry: subject keeps weak refs in a map keyed by owner identity
+    // - owner_less collapses alias weaks (same ctrl-block) into one key
+    // - works even after the watched object dies (raw addr would be UB; ctrl-block stays)
+    auto obs1      = make_safe<Derive>();
+    auto obs2      = make_safe<Derive>();
+    SafeWeak<Derive> w1     = obs1;
+    SafeWeak<Derive> w1Alias = obs1;  // same ctrl-block → same owner key
+    SafeWeak<Derive> w2     = obs2;
+
+    map<SafeWeak<Derive>, string, std::owner_less<SafeWeak<Derive>>> registry;
+    registry[w1     ] = "obs1";
+    registry[w1Alias] = "obs1-alias";  // overwrites w1's entry: same owner
+    registry[w2     ] = "obs2";
+    EXPECT_EQ(2, registry.size()) << "REQ: owner-based dedup (alias weaks → 1 key)";
+    EXPECT_EQ("obs1-alias", registry[w1]) << "REQ: alias overwrote, same key";
+
+    // observer dies → all alias weaks expire together; map key still valid for cleanup pass
+    obs1 = nullptr;
+    EXPECT_TRUE(w1.expired())      << "REQ: weak expired after observer death";
+    EXPECT_TRUE(w1Alias.expired()) << "REQ: all alias weaks expire together";
+    EXPECT_FALSE(w2.expired())     << "REQ: unrelated weak unaffected";
+    EXPECT_EQ(1, registry.count(w1)) << "REQ: dead-key still indexable via owner identity";
+}
 
 #define EXCEPT
 // ***********************************************************************************************
