@@ -72,8 +72,8 @@ public:
     template<typename U>
         SafePtr(const std::shared_ptr<U>&) = delete;
 
-    template<typename From> friend
-        class SafePtr;  // let cp/mv access private
+    template<typename From> friend class SafePtr;  // let cp/mv access private
+    friend class SafeWeak<T>;  // so SafeWeak ctor reads pT_ & SafeWeak.lock() builds SafePtr
     // safe-only cp/mv diff-type (vs shared_ptr, eg static_pointer_cast<any> is not safe)
     // - SFINAE: 1)testable 2)more clear compile-err 3)overload resulution: trim & predicatable
     // - by-value: lvalue→cp param then mv pT_; rvalue→mv param then mv pT_ (extra mv negligible)
@@ -105,7 +105,7 @@ public:
     template<typename U> [[nodiscard]]
         bool owner_before(const SafePtr<U>& aOther) const noexcept { return pT_.owner_before(aOther.pT_); }
 
-    // most for debug
+    // needed by safe_cast (preserves orig type across void↔T round-trip); also for debug
     [[nodiscard]] auto lastType() const noexcept;
 
 private:
@@ -114,11 +114,6 @@ private:
     // -------------------------------------------------------------------------------------------
     std::shared_ptr<T> pT_;  // core
     // (void_type_index::lastType_) only exists for T=void, via EBO (0B for T≠void)
-
-    // -------------------------------------------------------------------------------------------
-public:
-    friend class SafeWeak<T>;  // so SafeWeak.lock() can construct SafePtr
-    operator SafeWeak<T>() const noexcept { return SafeWeak<T>(*this); }
 };
 
 // ***********************************************************************************************
@@ -371,6 +366,7 @@ struct std::owner_less<rlib::SafeWeak<T>>
 // 2026-04-26  CSZ       - new_safe: separate alloc so big T freed w/o waiting SafeWeak
 // 2026-04-27  CSZ       - swap and owner-based ordering support
 // 2026-04-27  CSZ       - SafeWeak: default ctor + owner_before/owner_less (usable as map key)
+// 2026-04-28  CSZ       - drop redundant SafePtr→SafeWeak conversion op (SafeWeak ctor covers all)
 // ***********************************************************************************************
 // - Q&A
 //   * noexcept & constexpr (for whole lib)
