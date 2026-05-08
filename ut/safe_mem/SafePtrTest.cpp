@@ -298,6 +298,48 @@ TEST(SafePtrTest, GOLD_safe_D_B_void_B)
     EXPECT_EQ(22, backD->b()) << "REQ: correct D sub-object";
     EXPECT_EQ(sizeof(backD), sizeof(shared_ptr<D>)) << "REQ: EBO for SafePtr<D>";
 }
+TEST(SafePtrTest, GOLD_safe_virtualDiamond)
+{
+    // virtual diamond: D inherits L,R virtually from B; only ONE B sub-object exists in D.
+    // - non-virtual MI would give 2 B sub-objects → D*→B* ambiguous (compile-err)
+    // - virtual inheritance resolves ambiguity but adds vbase offset (runtime adjust)
+    // REQ: SafePtr's safe-conversion & safe_cast must work over virtual-base offsets,
+    //      and round-trip via void must restore the SAME single B sub-object.
+    struct VB { virtual ~VB() = default; int v = 0; virtual int who() { return 0; } };
+    struct VL : virtual VB { VL() { v = 7; }       int who() override { return 1; } };
+    struct VR : virtual VB {                       int who() override { return 2; } };
+    struct VD : VL, VR     { VD() { v = 9; }       int who() override { return 3; } };
+
+    auto d = make_safe<VD>();
+    EXPECT_VALID(d);
+    EXPECT_EQ(9, d->v);
+
+    // D→L, D→R: implicit safe cp; both must reach the SAME single B sub-object
+    SafePtr<VL> l = d;
+    SafePtr<VR> r = d;
+    EXPECT_VALID(l);
+    EXPECT_VALID(r);
+    EXPECT_EQ(9, l->v) << "REQ: virtual-base shared via L";
+    EXPECT_EQ(9, r->v) << "REQ: virtual-base shared via R";
+
+    // D→B (unambiguous because virtual): same single B sub-object
+    SafePtr<VB> bFromL = l;
+    SafePtr<VB> bFromR = r;
+    EXPECT_VALID(bFromL);
+    EXPECT_VALID(bFromR);
+    EXPECT_EQ(bFromL.get().get(), bFromR.get().get()) << "REQ: virtual diamond -> one shared B sub-object";
+    EXPECT_EQ(3, bFromL->who()) << "REQ: virtual dispatch reaches D::who()";
+
+    // round-trip via void: B→void→B preserves the same B address (vbase offset already applied)
+    SafePtr<void> v = bFromL;
+    auto backB = safe_cast<VB>(v);
+    EXPECT_VALID(backB);
+    EXPECT_EQ(bFromL.get().get(), backB.get().get()) << "REQ: void round-trip keeps same B sub-object";
+    EXPECT_EQ(3, backB->who());
+
+    // shared ownership across all views: d + l + r + bFromL + bFromR + v + backB = 7
+    EXPECT_EQ(7u, d.use_count()) << "REQ: all views share ownership";
+}
 
 #define COPY
 // ***********************************************************************************************
