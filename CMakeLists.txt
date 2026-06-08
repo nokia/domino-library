@@ -33,6 +33,23 @@ elseif(ci  STREQUAL  "tsan")  # asan/lsan/msan cover by valgrind(memcheck)
     add_link_options(-fsanitize=thread)
     add_link_options(-fstack-protector-strong)     # ensure stack protector runtime is linked
 
+elseif(ci  STREQUAL  "release")
+    # release-perf build: cold/hot path separation comes from compiler flags, not source macros
+    # - O3                              : enables block reordering, inlining, vectorization
+    # - freorder-blocks-and-partition   : split hot vs cold blocks into .text vs .text.unlikely
+    # - freorder-functions              : place mutually-called funcs adjacent (better i-cache)
+    # - ffunction-sections/fdata-s.     : 1 section per func, lets linker drop dead code & re-pack hot
+    # - Wl,--gc-sections                : actually drop unused sections at link time
+    # - DNDEBUG                         : disable assert in hot path
+    # NOTE: -flto is intentionally OFF here; with our toolchain it merges all blocks back into a
+    #       single .text and defeats the section partitioning we want to verify.
+    message("!!! release: max perf, hot/cold sections separated by compiler")
+    add_compile_definitions(DOMLIB_UT)  # keep GOLD_perf_mem benchmark active
+    add_compile_options(-O3 -DNDEBUG)
+    add_compile_options(-freorder-blocks-and-partition -freorder-functions)
+    add_compile_options(-ffunction-sections -fdata-sections)
+    add_link_options(-Wl,--gc-sections)
+
 else()
     message("!!! UT only - no cov, no SANITIZE check etc")
     add_compile_options(-O1)  # fastest build+ut (1-cpp-change=5s, vs 45s of -g)

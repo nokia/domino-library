@@ -74,6 +74,10 @@ public:
 
     template<typename From> friend class SafePtr;  // let cp/mv access private
     friend class SafeWeak<T>;  // so SafeWeak ctor reads pT_ & SafeWeak.lock() builds SafePtr
+    // cmp
+    template<typename T1, typename U1> friend bool operator==(const SafePtr<T1>&, const SafePtr<U1>&) noexcept;
+    template<typename T1, typename U1> friend bool operator< (const SafePtr<T1>&, const SafePtr<U1>&) noexcept;
+    friend struct std::hash<SafePtr>;
     // safe-only cp/mv diff-type (vs shared_ptr, eg static_pointer_cast<any> is not safe)
     // - SFINAE: 1)testable 2)more clear compile-err 3)overload resulution: trim & predicatable
     // - by-value: lvalue→cp param then mv pT_; rvalue→mv param then mv pT_ (extra mv negligible)
@@ -246,17 +250,17 @@ template<typename U, typename... ConstructArgs>
 template<typename T, typename U>
 bool operator==(const SafePtr<T>& lhs, const SafePtr<U>& rhs) noexcept
 {
-    return lhs.get() == rhs.get();
+    return lhs.pT_.get() == rhs.pT_.get();  // faster than lhs.get()..; same safe
 }
 template<typename T, typename U>
 bool operator!=(const SafePtr<T>& lhs, const SafePtr<U>& rhs) noexcept
 {
-    return lhs.get() != rhs.get();
+    return !(lhs == rhs);
 }
 template<typename T, typename U>
 bool operator<(const SafePtr<T>& lhs, const SafePtr<U>& rhs) noexcept
 {
-    return std::less<>()(lhs.get(), rhs.get());  // less() is safer to cmp any ptr than <()
+    return std::less<>()(lhs.pT_.get(), rhs.pT_.get());
 }
 template<typename T>
 void swap(SafePtr<T>& lhs, SafePtr<T>& rhs) noexcept
@@ -329,7 +333,7 @@ struct std::hash<rlib::SafePtr<T>>
 {
     size_t operator()(const rlib::SafePtr<T>& aSafePtr) const noexcept
     {
-        return std::hash<std::shared_ptr<T>>{}(aSafePtr.get());
+        return std::hash<T*>{}(aSafePtr.pT_.get());  // raw-ptr identity: matches operator==, no refcount churn
     }
 };
 // std::owner_less<> (transparent) auto-works via SafePtr/SafeWeak::owner_before.
@@ -367,6 +371,7 @@ struct std::owner_less<rlib::SafeWeak<T>>
 // 2026-04-27  CSZ       - swap and owner-based ordering support
 // 2026-04-27  CSZ       - SafeWeak: default ctor + owner_before/owner_less (usable as map key)
 // 2026-04-28  CSZ       - drop redundant SafePtr→SafeWeak conversion op (SafeWeak ctor covers all)
+// 2026-06-08  CSZ       - perf: ==/!=/< & hash compare raw-ptr identity (no refcount churn on map keys)
 // ***********************************************************************************************
 // - Q&A
 //   * noexcept & constexpr (for whole lib)

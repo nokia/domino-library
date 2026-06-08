@@ -805,6 +805,40 @@ TEST(SafePtrTest, voidEqual_null)
     EXPECT_FALSE(n1 != n2) << "REQ: != consistent";
     EXPECT_FALSE(n1 < n2) << "REQ: < consistent";
 }
+TEST(SafePtrTest, GOLD_crossType_compare)
+{
+    // ==/!=/< are template<T,U>: must compare ptr-identity across DIFFERENT SafePtr<T>
+    auto d  = make_safe<Derive>();
+    SafePtr<Base> b = d;              // same object, Derive-view vs Base-view (single inherit: same addr)
+    SafePtr<void> v = b;
+
+    // cross-type ==/!= : Derive vs Base vs void all alias the same object
+    EXPECT_EQ(d, b)  << "REQ: SafePtr<Derive>==SafePtr<Base> same object";
+    EXPECT_EQ(b, v)  << "REQ: SafePtr<Base>  ==SafePtr<void> same object";
+    EXPECT_EQ(d, v)  << "REQ: SafePtr<Derive>==SafePtr<void> same object";
+    EXPECT_FALSE(d != b) << "REQ: cross-type != consistent with ==";
+    EXPECT_FALSE(d < v)  << "REQ: cross-type < consistent with == (same addr)";
+    EXPECT_FALSE(v < d)  << "REQ: cross-type < consistent with == (same addr)";
+
+    // cross-type vs a different object: never equal, strict-weak-order total
+    auto d2 = make_safe<Derive>();
+    SafePtr<Base> b2 = d2;
+    EXPECT_NE(d, b2) << "REQ: cross-type != for different objects";
+    EXPECT_TRUE((d < b2) ^ (b2 < d)) << "REQ: cross-type < gives strict order between diff objects";
+
+    // cross-type vs nullptr
+    SafePtr<Base> nb;
+    SafePtr<void> nv;
+    EXPECT_NE(d, nb) << "REQ: non-null != null (cross-type)";
+    EXPECT_EQ(nb, nv) << "REQ: null==null (cross-type Base vs void)";
+
+    // MI second-base: different sub-object addr → cross-type != (compared via void, the key type)
+    auto m = make_safe<MiD>();
+    SafePtr<void> vb1 = SafePtr<MiB1>(m);  // first base: same addr as MiD
+    SafePtr<void> vb2 = SafePtr<MiB2>(m);  // second base: shifted addr
+    EXPECT_EQ(SafePtr<void>(m), vb1) << "REQ: first-base shares addr → ==";
+    EXPECT_NE(vb1, vb2) << "REQ: MI second-base diff addr → != (via void)";
+}
 TEST(SafePtrTest, GOLD_voidMap_sameObj_oneKey)
 {
     // same object via different cast paths → same key in map (identity, not view)
