@@ -78,6 +78,17 @@ TEST_F(UniCoutLogTest, setLogFileOK_switchToCout_releasesFileHandle)
 
     std::remove(fname.c_str());
 }
+// - idempotent switch to cout while no file is open (default state) must be a safe no-op
+TEST_F(UniCoutLogTest, setLogFileOK_switchToCout_whenAlreadyCout_noop)
+{
+    ASSERT_FALSE(UniCoutLog::file_.is_open()) << "precond: default state = cout, no file open";
+
+    ASSERT_TRUE(UniCoutLog::setLogFileOK("")) << "REQ: switch to cout is OK even when already cout";
+    EXPECT_FALSE(UniCoutLog::file_.is_open()) << "REQ: stays closed, no spurious open";
+
+    INF("still cout");
+    ASSERT_GT(UniCoutLog::logLen(), 0u) << "REQ: can still log after idempotent switch to cout";
+}
 
 TEST_F(UniCoutLogTest, setLogFileOK_badPath_fail)
 {

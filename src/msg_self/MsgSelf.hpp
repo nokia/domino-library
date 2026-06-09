@@ -40,6 +40,7 @@
 // ***********************************************************************************************
 #pragma once
 
+#include <array>
 #include <deque>
 #include <functional>
 
@@ -93,7 +94,7 @@ private:
     bool handleOneMsg_() noexcept;
 
     // -------------------------------------------------------------------------------------------
-    std::deque<MsgCB> msgQueues_[EMsgPri_MAX];
+    std::array<std::deque<MsgCB>, EMsgPri_MAX> msgQueues_;
     size_t nMsg_ = 0;
 };
 }  // namespace

@@ -127,6 +127,40 @@ TEST_F(MsgSelfTest, newHighPri_first)
     msgSelf_->handleAllMsg();
     EXPECT_EQ(queue<int>({5, 4, 2, 1, 3}), hdlrIDs_);
 }
+TEST_F(MsgSelfTest, newLowPri_inNormHandler_handledSameRound)
+{
+    // the low-pri yield triggers only AFTER a LOW msg runs; so a LOW created while handling a
+    // NORM msg (no LOW run yet this round) shall still run in the SAME handleAllMsg() round
+    MsgCB normAddsLow = [&]()
+    {
+        hdlrIDs_.push(30);
+        EXPECT_TRUE(msgSelf_->newMsgOK(d1MsgHdlr_, EMsgPri_LOW)) << "REQ: new msg OK";
+    };
+    EXPECT_TRUE(msgSelf_->newMsgOK(normAddsLow)) << "REQ: new msg OK";
+
+    msgSelf_->handleAllMsg();
+    EXPECT_EQ(queue<int>({30, 1}), hdlrIDs_)   << "REQ: low after norm runs same round (no prior low yield)";
+    EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_LOW)) << "REQ: nothing deferred";
+}
+TEST_F(MsgSelfTest, newLowPri_inLowHandler_deferred_toNextHandleAll)
+{
+    // low priority shall yield after 1 msg/handleAllMsg, so a LOW msg created inside a LOW
+    // handler shall NOT run in the same handleAllMsg() round
+    MsgCB lowAddsLow = [&]()
+    {
+        hdlrIDs_.push(20);
+        EXPECT_TRUE(msgSelf_->newMsgOK(d1MsgHdlr_, EMsgPri_LOW)) << "REQ: new msg OK";
+    };
+    EXPECT_TRUE(msgSelf_->newMsgOK(lowAddsLow, EMsgPri_LOW)) << "REQ: new msg OK";
+
+    msgSelf_->handleAllMsg();
+    EXPECT_EQ(queue<int>({20}), hdlrIDs_)        << "REQ: low-pri yields after 1, new low deferred";
+    EXPECT_EQ(1u, msgSelf_->nMsg(EMsgPri_LOW))   << "REQ: new low still pending";
+
+    msgSelf_->handleAllMsg();
+    EXPECT_EQ(queue<int>({20, 1}), hdlrIDs_)     << "REQ: deferred low handled next round";
+    EXPECT_EQ(0u, msgSelf_->nMsg(EMsgPri_LOW));
+}
 
 #define DESTRUCT_MSGSELF
 // ***********************************************************************************************

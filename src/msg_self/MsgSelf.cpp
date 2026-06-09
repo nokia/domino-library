@@ -12,7 +12,7 @@ namespace rlib
 // ***********************************************************************************************
 bool MsgSelf::handleOneMsg_() noexcept
 {
-    for (auto msgPri = EMsgPri_MAX-1; msgPri >= EMsgPri_MIN ; msgPri--)
+    for (int msgPri = EMsgPri_MAX - 1; msgPri >= EMsgPri_MIN; --msgPri)
     {
         auto&& oneQueue = msgQueues_[msgPri];
         if (oneQueue.empty())
