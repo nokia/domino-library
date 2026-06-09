@@ -62,6 +62,23 @@ TEST_F(UniCoutLogTest, setLogFileOK_emptyName_switchToCout)
     std::remove(fname.c_str());
 }
 
+// - switch back to cout must release(flush+close) the previous log file handle,
+//   else buffered INF data lingers unflushed & the OS fd leaks until next file switch
+TEST_F(UniCoutLogTest, setLogFileOK_switchToCout_releasesFileHandle)
+{
+    const std::string fname = "ut_log_release_test.log";
+    std::remove(fname.c_str());
+
+    ASSERT_TRUE(UniCoutLog::setLogFileOK(fname));
+    ASSERT_TRUE(UniCoutLog::file_.is_open()) << "REQ: file open after switch to file";
+
+    ASSERT_TRUE(UniCoutLog::setLogFileOK("")) << "REQ: empty name = switch to cout";
+    EXPECT_FALSE(UniCoutLog::file_.is_open())
+        << "REQ: switch to cout flushes & closes the file (no dangling open handle)";
+
+    std::remove(fname.c_str());
+}
+
 TEST_F(UniCoutLogTest, setLogFileOK_badPath_fail)
 {
     ASSERT_FALSE(UniCoutLog::setLogFileOK("/nonexistent_dir_12345/impossible.log"))

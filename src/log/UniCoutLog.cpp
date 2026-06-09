@@ -31,6 +31,7 @@ bool UniCoutLog::setLogFileOK(const string& aFileName) noexcept
             cout << "INF(UniCoutLog): switch to cout" << endl;
             out_ = &std::cout;
             resetTrcFp_();
+            if (file_.is_open()) file_.close();  // safe: dump buf; no fd leak
             return true;
         }
 
