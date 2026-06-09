@@ -19,6 +19,7 @@ AsyncBack::AsyncBack(size_t aMaxAsync)
             aMaxAsync = MAX_ASYNC;
         }
         fut_backFN_S_.reserve(aMaxAsync);  // not construct any async; better perf for most cases
+        maxParallel_ = aMaxAsync;  // construct-time limit for limitNewTaskOK
     } catch(...) {  // ut can't cover this branch; rare but safer
         ERR("(AsyncBack) Except=" << mt_exceptInfo() << " when reserving aMaxAsync=" << aMaxAsync);
         throw;
@@ -45,17 +46,6 @@ bool AsyncBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog
         return false;
     }
 }  // newTaskOK
-
-// ***********************************************************************************************
-bool AsyncBack::limitNewTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog& oneLog) noexcept
-{
-    if (nFut() >= fut_backFN_S_.capacity())
-    {
-        WRN("(AsyncBack) max threads reached (max=" << fut_backFN_S_.capacity() << "), reject new task");
-        return false;
-    }
-    return newTaskOK(std::move(mt_aEntryFN), std::move(aBackFN), oneLog);
-}
 
 // ***********************************************************************************************
 SafePtr<void> AsyncBack::mt_thMain_(MT_TaskEntryFN mt_aEntryFN, std::atomic<size_t>& mt_nDoneFut) noexcept

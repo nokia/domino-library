@@ -29,6 +29,7 @@ ThPoolBack::ThPoolBack(size_t aMaxThread, size_t aMaxTaskQ)
         // create threads
         thPool_.reserve(aMaxThread);  // not construct any thread
         fut_backFN_S_.reserve(aMaxTaskQ);  // safe for limitNewTaskOK; better perf for most cases
+        maxParallel_ = aMaxTaskQ;  // construct-time limit for limitNewTaskOK
         for (size_t i = 0; i < aMaxThread; ++i)
             thPool_.emplace_back(&ThPoolBack::mt_threadMain_, this);
     } catch(...) {  // ut can't cover this branch; rare but safer
@@ -111,17 +112,6 @@ bool ThPoolBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLo
         ERR("(ThPoolBack) except=" << mt_exceptInfo() << " in newTaskOK");
         return false;
     }
-}
-
-// ***********************************************************************************************
-bool ThPoolBack::limitNewTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog& oneLog) noexcept
-{
-    if (nFut() >= fut_backFN_S_.capacity())
-    {
-        WRN("(ThPoolBack) task queue full (max=" << fut_backFN_S_.capacity() << "), reject new task");
-        return false;
-    }
-    return newTaskOK(std::move(mt_aEntryFN), std::move(aBackFN), oneLog);
 }
 
 }  // namespace

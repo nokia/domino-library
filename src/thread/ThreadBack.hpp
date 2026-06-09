@@ -72,6 +72,9 @@ public:
     // @param UniLog        : The logger to use for this operation.
     [[nodiscard]] virtual bool newTaskOK(MT_TaskEntryFN, TaskBackFN, UniLog& = UniLog::defaultUniLog_) noexcept = 0;
 
+    // @brief: like newTaskOK but reject if nFut() >= maxParallel_ (for users who want to limit max#)
+    [[nodiscard]] bool limitNewTaskOK(MT_TaskEntryFN, TaskBackFN, UniLog& = UniLog::defaultUniLog_) noexcept;
+
     // @brief: Processes completed threads and invokes their callbacks.
     // @param UniLog: The logger to use for this operation.
     // @return: The number of completed tasks processed.
@@ -91,6 +94,7 @@ protected:
     // (async thread may call mt_nDoneFut_.fetch_add() while future destructor blocks)
     std::atomic<size_t>  mt_nDoneFut_ = 0;  // improve main thread to search done thread(s)
     Fut_BackFN_S fut_backFN_S_;  // must save future till thread end
+    size_t  maxParallel_ = 0;  // can't rely on fut_backFN_S_.capacity() newTaskOK() can exceed it
 
     // -------------------------------------------------------------------------------------------
 #ifdef IN_GTEST

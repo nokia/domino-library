@@ -52,6 +52,17 @@ size_t ThreadBack::hdlDoneFut(UniLog& oneLog) noexcept
 }
 
 // ***********************************************************************************************
+bool ThreadBack::limitNewTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog& oneLog) noexcept
+{
+    if (nFut() >= maxParallel_)
+    {
+        WRN("(ThreadBack) max reached (max=" << maxParallel_ << "), reject new task");
+        return false;
+    }
+    return newTaskOK(std::move(mt_aEntryFN), std::move(aBackFN), oneLog);
+}
+
+// ***********************************************************************************************
 bool ThreadBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog& oneLog) noexcept
 {
     assert(mt_inMyMainTH() && "(ThreadBack) newTaskOK() must be called from the main thread");

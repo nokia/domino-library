@@ -45,8 +45,6 @@ public:
     ThPoolBack& operator=(ThPoolBack&&) = delete;
 
     [[nodiscard]] bool newTaskOK(MT_TaskEntryFN, TaskBackFN, UniLog& = UniLog::defaultUniLog_) noexcept override;
-    // @brief: like newTaskOK but reject if nFut() >= capacity (for users who want to limit max task#)
-    [[nodiscard]] bool limitNewTaskOK(MT_TaskEntryFN, TaskBackFN, UniLog& = UniLog::defaultUniLog_) noexcept;
 
 private:
     void mt_threadMain_() noexcept;  // runs in each pool thread

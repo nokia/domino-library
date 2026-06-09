@@ -7,6 +7,8 @@
 #include <atomic>
 #include <chrono>
 #include <gtest/gtest.h>
+#include <memory>
+#include <type_traits>
 
 #define IN_GTEST
 #include "ThreadBack.hpp"
@@ -23,6 +25,18 @@ using namespace testing;
 
 namespace rlib
 {
+// ***********************************************************************************************
+// - construct a ThreadBack with maxParallel=2 (must be a template so if-constexpr discards the
+//   wrong-type branch; macro-expanded fixtures are non-template, where both branches must compile)
+template<class T>
+std::unique_ptr<T> mkBack_maxParallel2()
+{
+    if constexpr (std::is_same_v<T, ThPoolBack>)
+        return std::make_unique<T>(1, 2);  // 1 thread, maxTaskQ=2
+    else
+        return std::make_unique<T>(2);     // max=2
+}
+
 // ***********************************************************************************************
 struct THREAD_BACK_TEST : public Test, public UniLog
 {
@@ -363,6 +377,32 @@ TEST_F(THREAD_BACK_TEST, maxThread_exceed_default)
     ));
     while (inst.hdlDoneFut() == 0)
         timedwait();
+}
+TEST_F(THREAD_BACK_TEST, limitMax_stays_at_constructMax_evenAfter_nonLimit_grow)
+{
+    // construct with maxParallel=2 (AsyncBack: max async#; ThPoolBack: maxTaskQ)
+    auto back = mkBack_maxParallel2<THREAD_BACK_TYPE>();
+
+    // grow fut_backFN_S_ beyond reserve(2) via non-limit newTaskOK -> vector reallocates
+    for (int i = 0; i < 3; ++i)
+        EXPECT_TRUE(back->newTaskOK(
+            [] { return make_safe<bool>(true); },
+            [](SafePtr<void>) {}
+        )) << "REQ: non-limit newTaskOK allows exceeding max";
+    EXPECT_EQ(3u, back->nFut()) << "REQ: 3 saved, capacity reallocated past reserve(2)";
+
+    // REQ: limit must still honor construct max=2, NOT the grown vector capacity
+    EXPECT_FALSE(back->limitNewTaskOK(
+        [] { return make_safe<bool>(true); },
+        [](SafePtr<void>) {}
+    )) << "REQ: reject since nFut(3) >= constructMax(2)";
+
+    // clean
+    while (back->nFut() > 0)
+    {
+        (void)back->hdlDoneFut();
+        timedwait();
+    }
 }
 
 }  // namespace
