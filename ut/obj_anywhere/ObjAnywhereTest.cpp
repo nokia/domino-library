@@ -75,6 +75,19 @@ TEST_F(ObjAnywhereTest, emptyName_getNull)
     EXPECT_EQ(42, *(ObjAnywhere::getObj<int>("validName").get())) << "REQ: valid name still works";
     ObjAnywhere::deinit();
 }
+TEST_F(ObjAnywhereTest, GOLD_defaultName_distinctTypes)
+{
+    ObjAnywhere::init(*this);
+    EXPECT_TRUE(ObjAnywhere::emplaceObjOK(MAKE_PTR<int >(11), *this)) << "REQ: store int  by default(typeid) name";
+    EXPECT_TRUE(ObjAnywhere::emplaceObjOK(MAKE_PTR<char>('z'), *this)) << "REQ: store char by default(typeid) name";
+    EXPECT_EQ(2u, ObjAnywhere::nObj()) << "REQ: distinct types -> distinct default keys";
+
+    EXPECT_EQ(11 , *(ObjAnywhere::getObj<int >().get())) << "REQ: get int  by default name";
+    EXPECT_EQ('z', *(ObjAnywhere::getObj<char>().get())) << "REQ: get char by default name";
+    EXPECT_EQ(ObjAnywhere::getObj<int>().get(), ObjAnywhere::getObj<int>().get())
+        << "REQ: default name stable across calls (same obj)";
+    ObjAnywhere::deinit();
+}
 
 #define CORRECT_DESTRUCT
 // ***********************************************************************************************

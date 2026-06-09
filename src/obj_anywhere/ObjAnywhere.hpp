@@ -50,8 +50,7 @@ public:
     template<typename aObjType> [[nodiscard]] static bool emplaceObjOK(S_PTR<aObjType> aObj,
         UniLog& oneLog = UniLog::defaultUniLog_) noexcept
     {
-        static const ObjName name(typeid(aObjType).name());
-        return emplaceObjOK<aObjType>(std::move(aObj), oneLog, name);
+        return emplaceObjOK<aObjType>(std::move(aObj), oneLog, defaultObjName<aObjType>());
     }
 
     // @brief: get an obj
@@ -62,12 +61,18 @@ public:
     template<typename aObjType> [[nodiscard]] static
     S_PTR<aObjType> getObj() noexcept
     {
-        static const ObjName name(typeid(aObjType).name());
-        return getObj<aObjType>(name);
+        return getObj<aObjType>(defaultObjName<aObjType>());
     }
 
 private:
     // -------------------------------------------------------------------------------------------
+    // @brief: default key of aObjType (cached per-type); single source of truth for both get & emplace
+    template<typename aObjType> [[nodiscard]] static const ObjName& defaultObjName() noexcept
+    {
+        static const ObjName name(typeid(aObjType).name());
+        return name;
+    }
+
     static std::unique_ptr<DataStore<ObjName>> name_obj_S_;  // store aObj w/o include aObj.hpp; unique_ptr is safe here
 };
 
@@ -125,4 +130,5 @@ bool ObjAnywhere::emplaceObjOK(S_PTR<aObjType> aObj, UniLog& oneLog, const ObjNa
 // 2024-06-07  CSZ       8)use DataStore instead of map
 // 2025-02-13  CSZ       - support both SafePtr & shared_ptr
 // 2025-03-28  CSZ       9)tolerate exception
+// 2026-06-09  CSZ       - DRY: defaultObjName() shared by get & emplace
 // ***********************************************************************************************

@@ -24,11 +24,15 @@ void ObjAnywhere::deinit() noexcept
 void ObjAnywhere::init(UniLog& oneLog) noexcept
 {
     if (isInit())
-        WRN("(ObjAnywhere) !!! Refuse dup init.")
-    else
     {
+        WRN("(ObjAnywhere) !!! Refuse dup init.")
+        return;
+    }
+    try {  // noexcept-correct: make_unique may throw bad_alloc; tolerate it (lib v9 goal)
         name_obj_S_ = make_unique<DataStore<ObjName>>();
         HID("(ObjAnywhere) Succeed.");
+    } catch(...) {
+        ERR("(ObjAnywhere) !!! init failed, except=" << mt_exceptInfo());
     }
 }
 }  // namespace

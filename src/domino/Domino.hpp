@@ -93,7 +93,7 @@ public:
     size_t setState(const SimuEvents&);  // ret real changed ev#
 
     Event  setPrev(const EvName&, const SimuEvents&) noexcept;  // be careful not create eg ttue-false loop
-    [[nodiscard]] EvName whyFalse(Event) const noexcept;
+    [[nodiscard]] EvName whyFalse(Event) const noexcept;  // debug only; read-only API - no hurt if fake Event
 
 protected:
     const EvName& evName_(Event aValidEv) const noexcept { return ev_en_[aValidEv]; }

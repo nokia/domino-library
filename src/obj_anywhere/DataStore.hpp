@@ -78,7 +78,7 @@ template<typename aDataT>
 S_PTR<aDataT> DataStore<aDataKey>::get(const aDataKey& aKey) const noexcept
 {
     try {
-        auto&& key_data = key_data_S_.find(aKey);
+        const auto key_data = key_data_S_.find(aKey);
         if (key_data == key_data_S_.end())
         {
             HID("(DataStore) can't find key=" << typeid(aDataKey).name());

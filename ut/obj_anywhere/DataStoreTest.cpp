@@ -174,5 +174,30 @@ TEST_F(DataStoreTest, except)
     EXPECT_EQ(0, *(ds.get<int>(k).get())) << "REQ: no change";
     EXPECT_EQ(1u, ds.nData()) << "REQ: no change";
 }
+TEST_F(DataStoreTest, replaceOK_rm_except)
+{
+    DataStore<Key> ds;
+    Key k;
+    k.except_ = 0;
+    EXPECT_TRUE(ds.emplaceOK(k, MAKE_PTR<int>(7))) << "REQ: emplace OK";
+    EXPECT_EQ(1u, ds.nData());
+
+    EXPECT_FALSE(ds.replaceOK(Key(), nullptr)) << "REQ: replaceOK(null) erase except->fail (cover erase-except branch)";
+    EXPECT_EQ(1u, ds.nData()) << "REQ: except->not erased";
+    EXPECT_EQ(7, *(ds.get<int>(k).get())) << "REQ: data intact";
+}
+
+#define EDGE
+// ***********************************************************************************************
+TEST_F(DataStoreTest, emptyKey_OK)
+{
+    EXPECT_TRUE(dataStore_.emplaceOK("", MAKE_PTR<int>(5))) << "REQ: DataStore accepts empty key (key-policy belongs to caller)";
+    EXPECT_EQ(1u, dataStore_.nData());
+    EXPECT_EQ(5, *(dataStore_.get<int>("").get())) << "REQ: empty key round-trip";
+
+    EXPECT_TRUE(dataStore_.emplaceOK("k", MAKE_PTR<int>(6)));
+    EXPECT_EQ(2u, dataStore_.nData()) << "REQ: empty key & non-empty key are distinct";
+    EXPECT_EQ(5, *(dataStore_.get<int>("").get())) << "REQ: empty key not clobbered";
+}
 
 }  // namespace
