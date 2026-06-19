@@ -6,6 +6,8 @@
 // ***********************************************************************************************
 #include <gtest/gtest.h>
 
+#include <utility>
+
 #include "UniLog.hpp"
 #include "ObjAnywhere.hpp"
 
@@ -87,6 +89,29 @@ TEST_F(ObjAnywhereTest, GOLD_defaultName_distinctTypes)
     EXPECT_EQ(ObjAnywhere::getObj<int>().get(), ObjAnywhere::getObj<int>().get())
         << "REQ: default name stable across calls (same obj)";
     ObjAnywhere::deinit();
+}
+TEST_F(ObjAnywhereTest, GOLD_newObjOK_constructInPlace)
+{
+    ObjAnywhere::init(*this);
+    EXPECT_TRUE(ObjAnywhere::newObjOK<int>(1234))        << "REQ: construct obj in-place by ctor arg (no pre-made ptr)";
+    EXPECT_EQ(1234, *(ObjAnywhere::getObj<int>().get())) << "REQ: get constructed obj by default name";
+    EXPECT_FALSE(ObjAnywhere::newObjOK<int>(5678))       << "REQ: default name already used -> refuse replace";
+    ObjAnywhere::deinit();
+}
+TEST_F(ObjAnywhereTest, newObjOK_forwardMultiArg)
+{
+    ObjAnywhere::init(*this);
+    EXPECT_TRUE((ObjAnywhere::newObjOK<std::pair<int, int>>(3, 7))) << "REQ: perfect-forward multi ctor args";
+    auto p = ObjAnywhere::getObj<std::pair<int, int>>();
+    ASSERT_NE(nullptr, p.get());
+    EXPECT_EQ(3, p.get()->first);
+    EXPECT_EQ(7, p.get()->second) << "REQ: args forwarded in order";
+    ObjAnywhere::deinit();
+}
+TEST_F(ObjAnywhereTest, newObjOK_noInit_fail)
+{
+    EXPECT_FALSE(ObjAnywhere::newObjOK<int>(1)) << "REQ: no init -> fail (not crash)";
+    EXPECT_EQ(nullptr, ObjAnywhere::getObj<int>().get()) << "REQ: get null";
 }
 
 #define CORRECT_DESTRUCT

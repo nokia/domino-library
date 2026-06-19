@@ -23,6 +23,7 @@
 #pragma once
 
 #include <string>
+#include <utility>  // std::forward
 
 #include "DataStore.hpp"
 #include "UniLog.hpp"
@@ -51,6 +52,14 @@ public:
         UniLog& oneLog = UniLog::defaultUniLog_) noexcept
     {
         return emplaceObjOK<aObjType>(std::move(aObj), oneLog, defaultObjName<aObjType>());
+    }
+    // @brief: construct aObjType in-place (perfect-forward ctor args) then store by default name
+    // @param Args: forwarded to aObjType's constructor (like std::map::emplace / make_shared)
+    // @ret: ok or fail (eg !isInit() or default-name already used)
+    // - separate name (vs emplaceObjOK) to avoid overload ambiguity with the S_PTR overloads
+    template<typename aObjType, typename... Args> [[nodiscard]] static bool newObjOK(Args&&... aArgs) noexcept
+    {
+        return emplaceObjOK<aObjType>(MAKE_PTR<aObjType>(std::forward<Args>(aArgs)...));
     }
 
     // @brief: get an obj
@@ -131,4 +140,5 @@ bool ObjAnywhere::emplaceObjOK(S_PTR<aObjType> aObj, UniLog& oneLog, const ObjNa
 // 2025-02-13  CSZ       - support both SafePtr & shared_ptr
 // 2025-03-28  CSZ       9)tolerate exception
 // 2026-06-09  CSZ       - DRY: defaultObjName() shared by get & emplace
+// 2026-06-19  CSZ       - newObjOK(): perfect-forward ctor args to construct obj in-place
 // ***********************************************************************************************

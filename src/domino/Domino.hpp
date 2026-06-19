@@ -83,6 +83,9 @@ public:
     // -------------------------------------------------------------------------------------------
     explicit Domino(const LogName& aUniLogName = ULN_DEFAULT) noexcept : UniLog(aUniLogName) {}
     virtual ~Domino() noexcept = default;
+    // - avoid slicing
+    Domino(const Domino&)            = delete;
+    Domino& operator=(const Domino&) = delete;
 
     Event newEvent(const EvName&) noexcept;  // empty EvName is valid - much simple to ensure succ
     [[nodiscard]] Event getEventBy(const EvName&) const noexcept;
