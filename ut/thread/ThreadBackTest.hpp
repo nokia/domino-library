@@ -154,7 +154,7 @@ TEST_F(THREAD_BACK_TEST, canHandle_someThreadDone_whileOtherRunning)
     canEnd = true;  // 1st thread keep running while 2nd is done
     while (threadBack_.hdlDoneFut() == 0)  // no timedwait() so keep occupy cpu
     {
-        INF("2nd thread done, wait 1st done...")
+        INF("2nd thread done, wait 1st done...");
         timedwait();
     }
 }

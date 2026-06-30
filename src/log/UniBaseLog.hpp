@@ -35,9 +35,10 @@ using LogName = std::string;
 // - WRN: flush (to avoid loss)
 // - INF: NO flush (rely on stream buffer + atexit-flush; ~50% perf gain w/o flush)
 // - TRC: NO flush (most perf)
-#define INF(content) { oneLog() << "INF/" << std::this_thread::get_id() << "] " << BUF(content); }
-#define WRN(content) { oneLog() << "WRN/" << std::this_thread::get_id() << "] " << BUF(content) << std::flush; }
-#define ERR(content) { oneLog() << "ERR/" << std::this_thread::get_id() << "] " << BUF(content) << std::flush; }
+// - do-while: avoid dangling-else; allow tmp var, break/etc; same performance as {} block
+#define INF(content) do{ oneLog() << "INF/" << std::this_thread::get_id() << "] " << BUF(content);               }while(0)
+#define WRN(content) do{ oneLog() << "WRN/" << std::this_thread::get_id() << "] " << BUF(content) << std::flush; }while(0)
+#define ERR(content) do{ oneLog() << "ERR/" << std::this_thread::get_id() << "] " << BUF(content) << std::flush; }while(0)
 
 // ***********************************************************************************************
 // - TRC/trace: hot-path event log for eg visualization (log -> Excel Gantt)

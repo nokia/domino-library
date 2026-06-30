@@ -25,7 +25,7 @@ void ObjAnywhere::init(UniLog& oneLog) noexcept
 {
     if (isInit())
     {
-        WRN("(ObjAnywhere) !!! Refuse dup init.")
+        WRN("(ObjAnywhere) !!! Refuse dup init.");
         return;
     }
     try {  // noexcept-correct: make_unique may throw bad_alloc; tolerate it (lib v9 goal)
