@@ -29,7 +29,7 @@ struct MtInQueueTest : public Test, public UniLog
 {
     MtInQueueTest()
         : UniLog(UnitTest::GetInstance()->current_test_info()->name())
-    {}
+    { mt_getMainTH(); }  // designate this (gtest) thread as the logical main (timedwait asserts it)
     ~MtInQueueTest()
     {
         mt_getQ().mt_clearAll();  // not impact other testcase

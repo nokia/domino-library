@@ -10,6 +10,13 @@
 namespace rlib
 {
 // ***********************************************************************************************
+void MsgSelf::handleAllMsg() noexcept
+{
+    mt_reqMainTH(__func__);
+    while (handleOneMsg_());  // handleOneMsg_() may create new high priority msg(s)
+}
+
+// ***********************************************************************************************
 bool MsgSelf::handleOneMsg_() noexcept
 {
     for (int msgPri = EMsgPri_MAX - 1; msgPri >= EMsgPri_MIN; --msgPri)

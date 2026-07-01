@@ -3,8 +3,6 @@
  * Licensed under the BSD 3 Clause license
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#include <cassert>
-
 #include "ThreadBack.hpp"
 
 using namespace std;
@@ -14,7 +12,7 @@ namespace rlib
 // ***********************************************************************************************
 size_t ThreadBack::hdlDoneFut(UniLog& oneLog) noexcept
 {
-    assert(mt_inMyMainTH() && "(ThreadBack) hdlDoneFut() must be called from the main thread");
+    mt_reqMainTH(__func__);
     size_t nHandledFut = 0;
     const auto nDoneFut = mt_nDoneFut_.load(memory_order_acquire);  // ensure visibility of producer's writes
     if (nDoneFut == 0) return 0;
@@ -65,7 +63,7 @@ bool ThreadBack::limitNewTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, 
 // ***********************************************************************************************
 bool ThreadBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog& oneLog) noexcept
 {
-    assert(mt_inMyMainTH() && "(ThreadBack) newTaskOK() must be called from the main thread");
+    mt_reqMainTH(__func__);
     if (! aBackFN)
     {
         ERR("(ThreadBack) aBackFN=null doesn't make sense!!! Why not async() directly?");

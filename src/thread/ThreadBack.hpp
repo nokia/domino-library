@@ -82,12 +82,6 @@ public:
 
     [[nodiscard]] auto nFut() const noexcept { return fut_backFN_S_.size(); }
 
-    [[nodiscard]] static bool mt_inMyMainTH() noexcept
-    {
-        static const auto s_myMainTH = std::this_thread::get_id();
-        return s_myMainTH == std::this_thread::get_id();
-    }
-
 protected:
     // -------------------------------------------------------------------------------------------
     // mt_nDoneFut_ must be declared BEFORE fut_backFN_S_ so it is destroyed AFTER futures

@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <algorithm>
-#include <cassert>
 #include <cerrno>
 #include <thread>
 #include <time.h>
 
 #include "MT_Notifier.hpp"
+#include "MT_PingMainTH.hpp"
 
 using namespace std;
 
@@ -26,8 +26,7 @@ void MT_Notifier::mt_notify() noexcept
 // ***********************************************************************************************
 void MT_Notifier::timedwait(const size_t aSec, const size_t aRestNsec) noexcept
 {
-    static const auto s_mainTH = std::this_thread::get_id();
-    assert(s_mainTH == std::this_thread::get_id() && "(Notifier) timedwait() must be called from main thread");
+    mt_reqMainTH(__func__);
 
     timespec ts{0, 0};
     clock_gettime(CLOCK_MONOTONIC, &ts);  // clock-immune

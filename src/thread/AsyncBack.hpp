@@ -44,7 +44,7 @@
 // - MT safe:
 //   . MT_/mt_ prefix: yes
 //   . others: NO (only in main thread - most dom lib code shall be in main thread - simple)
-//     . mt_inMyMainTH() for user debug - any main-thread func shall ret true if call mt_inMyMainTH()
+//     . mt_getMainTH() for user debug - any main-thread func: mt_getMainTH() == std::this_thread::get_id()
 // ***********************************************************************************************
 #pragma once
 

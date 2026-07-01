@@ -22,7 +22,7 @@ namespace rlib
 // ***********************************************************************************************
 struct MsgSelfTest : public Test, public UniLog
 {
-    MsgSelfTest() : UniLog(UnitTest::GetInstance()->current_test_info()->name()) {}
+    MsgSelfTest() : UniLog(UnitTest::GetInstance()->current_test_info()->name()) { mt_getMainTH(); }
     ~MsgSelfTest() { GTEST_LOG_FAIL }
 
     // -------------------------------------------------------------------------------------------

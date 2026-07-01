@@ -15,6 +15,7 @@
 
 #define IN_GTEST
 #include "MT_Notifier.hpp"
+#include "MT_PingMainTH.hpp"
 #undef IN_GTEST
 
 using namespace std;
@@ -27,7 +28,7 @@ struct MT_NotifierTest : public Test, public UniLog
 {
     MT_NotifierTest()
         : UniLog(UnitTest::GetInstance()->current_test_info()->name())
-    {}
+    { mt_getMainTH(); }  // designate this (gtest) thread as the logical main (timedwait asserts it)
     ~MT_NotifierTest()
     {
         GTEST_LOG_FAIL

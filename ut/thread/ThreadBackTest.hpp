@@ -8,6 +8,7 @@
 #include <chrono>
 #include <gtest/gtest.h>
 #include <memory>
+#include <thread>
 #include <type_traits>
 
 #define IN_GTEST
@@ -42,6 +43,7 @@ struct THREAD_BACK_TEST : public Test, public UniLog
 {
     THREAD_BACK_TEST() : UniLog(UnitTest::GetInstance()->current_test_info()->name())
     {
+        mt_getMainTH();  // designate this (gtest) thread as the ONE logical main
         EXPECT_EQ(0, threadBack_.nFut()) << "REQ: clear env";
     }
 
@@ -73,18 +75,19 @@ struct THREAD_BACK_TEST : public Test, public UniLog
 //                                       |
 TEST_F(THREAD_BACK_TEST, GOLD_entryFn_inNewThread_thenBackFn_inMainThread_withTimedWait)
 {
-    EXPECT_TRUE(ThreadBack::mt_inMyMainTH()) << "REQ: OK in main thread";
+    const auto mainTH = mt_getMainTH();
+    EXPECT_EQ(mainTH, std::this_thread::get_id()) << "REQ: OK in main thread";
     EXPECT_TRUE(threadBack_.newTaskOK(
         // MT_TaskEntryFN
-        [this]()
+        [mainTH]()
         {
-            EXPECT_FALSE(ThreadBack::mt_inMyMainTH()) << "REQ: in new thread";
+            EXPECT_NE(mainTH, std::this_thread::get_id()) << "REQ: in new thread";
             return make_safe<bool>(true);
         },
         // TaskBackFN
-        [this](SafePtr<void>)
+        [mainTH](SafePtr<void>)
         {
-            EXPECT_TRUE(ThreadBack::mt_inMyMainTH()) << "REQ: in main thread";
+            EXPECT_EQ(mainTH, std::this_thread::get_id()) << "REQ: in main thread";
         }
     ));
 
@@ -250,6 +253,37 @@ TEST_F(THREAD_BACK_TEST, bugFix_nDoneFut_before_futureReady)
     canEnd = true;
     while (threadBack_.hdlDoneFut() == 0)
         timedwait();
+}
+
+// - REQ: mt_getMainTH() returns the process's ONE logical main = the 1st caller; a later call from
+//        ANY other thread still returns that SAME main id (the worker does NOT become main).
+TEST_F(THREAD_BACK_TEST, getMainTH_1stCallerWins_otherThread_stillGetsSameMainId)
+{
+    const auto mainTH = mt_getMainTH();  // 1st caller (gtest thread) is fixed as main
+    EXPECT_EQ(mainTH, std::this_thread::get_id()) << "REQ: 1st caller is the logical main";
+
+    std::atomic<bool> otherBecameMain(true);
+    std::thread other([mainTH, &otherBecameMain]
+    {
+        const auto ret = mt_getMainTH();  // from another thread -> same main id (worker NOT main)
+        EXPECT_EQ(mainTH, ret) << "REQ: still the 1st main, NOT this worker";
+        otherBecameMain = (ret == std::this_thread::get_id());
+    });
+    other.join();
+
+    EXPECT_FALSE(otherBecameMain.load()) << "REQ: other thread did NOT become main";
+    EXPECT_EQ(mainTH, mt_getMainTH())    << "REQ: main stays the 1st designated thread";
+}
+// - REQ: mt_reqMainTH() is the main-thread guard: true in main, false (with alarm) in any other thread.
+TEST_F(THREAD_BACK_TEST, reqMainTH_trueInMain_falseInOtherThread)
+{
+    mt_getMainTH();  // fix gtest thread as the logical main
+    EXPECT_TRUE(mt_reqMainTH(__func__)) << "REQ: pass in main thread";
+
+    std::atomic<bool> retInOther(true);
+    std::thread other([&retInOther]{ retInOther = mt_reqMainTH("otherThread"); });
+    other.join();
+    EXPECT_FALSE(retInOther.load()) << "REQ: fail (alarm) in non-main thread";
 }
 
 #define NOTIFIER_TEST
