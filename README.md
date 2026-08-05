@@ -20,31 +20,17 @@ Talk is cheap. Use $\color{red}{\textsf{AI}}$ to show you the lib:
   - Each condition is a domino tile, and their dependencies form a DAG.
   - A condition satisfied = a tile falls → auto-broadcasts to downstream (domino).
   - A task can stick to 1 tile - when the tile falls, auto-execute the task.
-  - **Result:** improved eNB base station upgrade $\color{blue}{\textsf{from 9min to 1min}}$.
+  - **Result:** improved eNB-base-station-upgrade $\color{blue}{\textsf{from ~9min to ~1min}}$.
 
-- **MsgSelf** is a priority FIFO queue that defers callbacks until the current
-  call stack has returned to the main loop.
-  ([source](src/msg_self/MsgSelf.hpp) · [tests](ut/msg_self/MsgSelfTest.cpp) · [中文手册](https://mp.weixin.qq.com/s/aPjhY7nRmlD4xHhUL_ykxg))
+- **ObjAnywhere**
 
-- **ThreadBack** runs time-consuming work in background threads and lets the
-  main thread collect results and invoke completion callbacks.
-  ([source](src/thread/ThreadBack.hpp) · [tests](ut/thread) · [中文手册](https://mp.weixin.qq.com/s/bb1slMqhuoBLZZCd3NmbYA))
+- **MsgSelf** is a priority FIFO queue...
 
-- **SmartLog** retains diagnostic context but emits it only when needed—for
-  example, to print detailed logs only for failed test cases.
-  ([source](src/log/UniSmartLog.hpp) · [tests](ut/log/UniSmartLogTest.cpp) · [中文手册](https://mp.weixin.qq.com/s/KNKBC-uHOylRXxpspZbVnA) · [English manual](https://mp.weixin.qq.com/s/X3XZOGOQGDQtwQDEPNA32A) · [sample output](image/ut_smartlog.jpg))
+- **SafePtr** is safer than std::shared_ptr
 
-- **ObjAnywhere** is a process-local object registry for cases where explicitly
-  passing the same shared service through many call layers is impractical.
-  ([source](src/obj_anywhere/ObjAnywhere.hpp) · [tests](ut/obj_anywhere/ObjAnywhereTest.cpp) · [中文手册](https://mp.weixin.qq.com/s/SYE3xkz-Zqp-l46ZpjnKWg))
+- **SmartLog**
 
-- **SafePtr** restricts pointer creation and cross-type conversion around
-  `std::shared_ptr`, rejecting or nulling unsafe conversions.
-  ([source](src/safe_mem/SafePtr.hpp) · [tests](ut/safe_mem/SafePtrTest.cpp))
-
-The components are small and composable. See
-[UtInitObjAnywhere.hpp](ut/obj_anywhere/UtInitObjAnywhere.hpp) for an integration
-example.
+- **ThreadBack:** time-cost event running in a separate thread → callback main thread
 
 ## Engineering Evidence
 
