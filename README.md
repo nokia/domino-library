@@ -36,10 +36,8 @@ Talk is cheap. Use $\color{red}{\textsf{AI}}$ to show you the lib:
 
 - [GitHub Actions](https://github.com/nokia/domino-library/actions/workflows/ci.yml)
   runs GoogleTest under Valgrind on pushes, pull requests, and a weekly schedule.
-- [Coverage gates](ut/gcovr/gcovr.cfg) require at least **97.8% line coverage**
-  and **89.8% branch coverage**.
-- The tests under [`ut/`](ut) are executable examples covering normal behavior,
-  edge cases, and failure paths.
+- [Full line & branch coverage](ut/gcovr/gcovr.cfg).
+- [`ut/`](ut) each UT case is a end-to-end scenario.
 - The currently verified CI environment is **Ubuntu + GCC**.
 
 ## Build and Run
