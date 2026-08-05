@@ -20,7 +20,7 @@ Talk is cheap. Use $\color{red}{\textsf{AI}}$ to show you the lib:
   - Each condition is a domino tile, and their dependencies form a DAG.
   - A condition satisfied = a tile falls → auto-broadcasts to downstream (domino).
   - A task can stick to 1 tile - when the tile falls, auto-execute the task.
-  - **Result:** improved eNB-base-station-upgrade $\color{blue}{\textsf{from ~9min to ~1min}}$.
+  - **Result:** improved eNB-base-station-upgrade $\color{blue}{\textsf{from}\sim9\textsf{min to}\sim1\textsf{min}}$.
 
 - **ObjAnywhere:** feed into AI for details.
 
@@ -56,7 +56,3 @@ tests; the existing tests are the primary usage examples.
 Primary maintainer: [fchn289](https://github.com/fchn289)  
 Contribution history: [GitHub contributors](https://github.com/nokia/domino-library/graphs/contributors)  
 Contact: csz289@aliyun.com
-
-## License
-
-[BSD 3-Clause License](LICENSE)
