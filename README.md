@@ -2,7 +2,7 @@
 
 A small C++17 library.
 
-"Talk is cheap. Show me the $\color{red}{\textsf{code}}$." $\color{red}{\textsf{AI}}$ can summarize the lib:
+Talk is cheap. Use $\color{red}{\textsf{AI}}$ to show you the lib:
 - What
 - How
 - Quality: Opus4.5 scores this lib=92% (vs it's self-gen=68%).
@@ -16,15 +16,11 @@ A small C++17 library.
 ## Components
 
 - **Domino**
-  - **Problem:** Coordinate workflows such as software upgrades, where many
-    conditions and tasks depend on one another.
-  - **Model:** Each condition is an event (a domino tile), each task is a
-    handler, and their dependencies form a DAG.
-  - **Execution:** When an event occurs, downstream states are deduced and newly
-    satisfied handlers run, propagating through the graph like falling dominoes.
-  - **Trigger rule:** A handler reacts only when its event changes from false to
-    true.
-  - [source](src/domino/Domino.hpp) · [tests](ut/domino/DominoTest.cpp) · [中文手册](https://mp.weixin.qq.com/s/ckF2LXH4hDcIYbZNqSIb0g)
+  - **Problem:** such as OS-upgrade, involves many interdependent conditions & tasks.
+  - Each condition is a domino tile, and their dependencies form a DAG.
+  - A condition satisfied = a tile falls → auto-broadcasts to downstream (domino).
+  - A task can stick to 1 tile - when the tile falls, auto-execute the task.
+  - **Result:** improved eNB base station upgrade $\color{blue}{\textsf{from 9min to 1min}}$.
 
 - **MsgSelf** is a priority FIFO queue that defers callbacks until the current
   call stack has returned to the main loop.
