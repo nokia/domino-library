@@ -5,7 +5,7 @@ A small C++17 library.
 Talk is cheap. Use $\color{red}{\textsf{AI}}$ to show you the lib:
 - What
 - How
-- Quality: Opus4.5 scores this lib=92% (vs it's self-gen=68%).
+- Quality: Opus4.5 rated this lib=92% (vs it's independent self-gen=68%).
 
 [![Build Status](https://github.com/nokia/domino-library/actions/workflows/ci.yml/badge.svg)](https://github.com/nokia/domino-library/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/nokia/domino-library/branch/main/graph/badge.svg?token=LGK8GD9GJD)](https://codecov.io/gh/nokia/domino-library)
@@ -37,7 +37,7 @@ Talk is cheap. Use $\color{red}{\textsf{AI}}$ to show you the lib:
 - [GitHub Actions](https://github.com/nokia/domino-library/actions/workflows/ci.yml)
   runs GoogleTest under Valgrind on pushes, pull requests, and a weekly schedule.
 - [Full line & branch coverage](ut/gcovr/gcovr.cfg).
-- [`ut/`](ut) each UT case is a end-to-end scenario.
+- [`ut/`](ut) each UT case is an end-to-end scenario.
 - The currently verified CI environment is **Ubuntu + GCC**.
 
 ## Build and Run
