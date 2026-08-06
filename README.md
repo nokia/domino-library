@@ -2,10 +2,10 @@
 
 A small C++17 library.
 
-Talk is cheap. Use $\color{red}{\textsf{AI}}$ to show you the lib:
+Talk is cheap. Use $\color{red}{\textsf{AI}}$ to show you the lib details:
 - What
 - How
-- Quality: Opus4.5 rated this lib=92% (vs it's independent self-gen=68%).
+- Quality/proficiency: Opus4.5 rated this lib=92% (vs it's independent self-gen=68%).
 
 [![Build Status](https://github.com/nokia/domino-library/actions/workflows/ci.yml/badge.svg)](https://github.com/nokia/domino-library/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/nokia/domino-library/branch/main/graph/badge.svg?token=LGK8GD9GJD)](https://codecov.io/gh/nokia/domino-library)
