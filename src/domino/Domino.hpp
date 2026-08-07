@@ -100,7 +100,7 @@ public:
 
 protected:
     const EvName& evName_(Event aValidEv) const noexcept { return ev_en_[aValidEv]; }
-    virtual void  effect_(Event aEv) noexcept {}  // can't const since FreeDom will rm hdlr
+    virtual void  effect_(Event) noexcept {}  // can't const since FreeDom will rm hdlr
 
     // - rm self dom's resource (RISK: aEv's leaf(s) may become orphan!!!)
     // - virtual for each dom: MUST call aDominoType::rmEv_() to chain base cleanup

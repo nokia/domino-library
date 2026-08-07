@@ -83,7 +83,7 @@ public:
 
 // ***********************************************************************************************
 // static than inline, avoid ut conflict when coexist both UniLog
-static SmartLog& oneLog() noexcept { return UniSmartLog::defaultUniLog_.oneLog(); }  // ret ref is not mem-safe
+[[maybe_unused]] static SmartLog& oneLog() noexcept { return UniSmartLog::defaultUniLog_.oneLog(); }  // ret ref is not mem-safe
 
 using UniLog = UniSmartLog;
 

@@ -94,7 +94,7 @@ struct UtInitObjAnywhere : public UniLog, public Test
 
 // ***********************************************************************************************
 // measure actual mem/event via RSS (Linux /proc/self/statm)
-static size_t rssBytes()
+[[maybe_unused]] static size_t rssBytes()
 {
     size_t rss = 0;
     FILE* f = fopen("/proc/self/statm", "r");

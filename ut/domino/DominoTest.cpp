@@ -385,7 +385,7 @@ TYPED_TEST_P(DominoTest, invalidEvent_retEmpty)
 TYPED_TEST_P(DominoTest, incCov_whyFalse_whyTrue)
 {
     // e12
-    // (T)\
+    // (T)\_
     //     <- e11 <- (F) <- e10
     // (F)/
     // e13

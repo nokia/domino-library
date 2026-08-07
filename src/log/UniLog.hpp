@@ -22,9 +22,9 @@
 //
 // - File include:
 //                          UniBaseLog.hpp
-//                         /              \
+//                         /              \_
 //          UniSmartLog.hpp                UniCoutLog.hpp
-//         /               \              /              \
+//         /               \              /              \_
 //   UniSmartLog.cpp        \            /          UniCoutLog.cpp
 //                           \          /
 //                            UniLog.hpp
@@ -34,9 +34,9 @@
 //
 // - UT include:
 //                          UniBaseLog.hpp
-//                         /              \
+//                         /              \_
 //          UniSmartLog.hpp                UniCoutLog.hpp
-//         /           :                      :          \
+//         /           :                      :          \_
 //   UniSmartLog.cpp   :                      :     UniCoutLog.cpp
 //                     :                      :
 //                     :    UniLogTest.hpp    :

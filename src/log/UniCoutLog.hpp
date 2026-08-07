@@ -75,7 +75,7 @@ public:
 
 // ***********************************************************************************************
 // static than inline, avoid ut conflict when coexist both UniLog
-static std::ostream& oneLog() { return UniCoutLog::oneLog(); }
+[[maybe_unused]] static std::ostream& oneLog() { return UniCoutLog::oneLog(); }
 
 using UniLog = UniCoutLog;
 

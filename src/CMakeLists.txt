@@ -5,6 +5,10 @@ file(GLOB_RECURSE  list_src  CONFIGURE_DEPENDS
 )
 add_library(lib_domino  ${list_src})
 
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(lib_domino  PRIVATE  -Wall -Wextra -Wswitch-enum -Werror)
+endif()
+
 target_include_directories(lib_domino  PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/domino
     ${CMAKE_CURRENT_SOURCE_DIR}/log

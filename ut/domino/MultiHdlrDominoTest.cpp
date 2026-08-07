@@ -290,7 +290,7 @@ TYPED_TEST_P(NofreeMultiHdlrDominoTest, rmHdlrOnRoad)
 // ***********************************************************************************************
 TYPED_TEST_P(MultiHdlrDominoTest, rmHdlr_invalid)
 {
-    const auto ev = PARA_DOM->newEvent("event");
+    PARA_DOM->newEvent("event");
     EXPECT_FALSE(PARA_DOM->rmOneHdlrOK("event", "invalid hdlr")) << "REQ: invalid hdlr name";
 
     //EXPECT_FALSE(PARA_DOM->rmOneHdlrOK(Domino::D_EVENT_FAILED_RET, nullptr)) << "REQ: invalid ev";
