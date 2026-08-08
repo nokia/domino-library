@@ -6,6 +6,7 @@
 // ***********************************************************************************************
 #include <atomic>
 #include <chrono>
+#include <future>
 #include <gtest/gtest.h>
 #include <memory>
 #include <thread>
@@ -210,6 +211,46 @@ TEST_F(THREAD_BACK_TEST, emptyThreadList_ok)
 {
     size_t nHandled = threadBack_.hdlDoneFut();
     EXPECT_EQ(0u, nHandled);
+}
+TEST_F(THREAD_BACK_TEST, submit_wrongThread_rejected)
+{
+    bool wrongThreadNewOK = true;
+    bool wrongThreadLimitOK = true;
+    std::async(std::launch::async, [&]()
+    {
+        wrongThreadNewOK = threadBack_.newTaskOK(
+            [] { return make_safe<bool>(true); },
+            [](SafePtr<void>) {});
+        wrongThreadLimitOK = threadBack_.limitNewTaskOK(
+            [] { return make_safe<bool>(true); },
+            [](SafePtr<void>) {});
+    }).get();
+
+    EXPECT_FALSE(wrongThreadNewOK) << "REQ: reject wrong-thread newTaskOK()";
+    EXPECT_FALSE(wrongThreadLimitOK) << "REQ: reject wrong-thread limitNewTaskOK()";
+    EXPECT_EQ(0u, threadBack_.nFut()) << "REQ: no wrong-thread task saved";
+}
+TEST_F(THREAD_BACK_TEST, hdlDoneFut_wrongThread_rejected)
+{
+    std::atomic<int> nBack{0};
+    ASSERT_TRUE(threadBack_.newTaskOK(
+        [] { return make_safe<bool>(true); },
+        [&nBack](SafePtr<void>) { ++nBack; }));
+    threadBack_.waitAllFut_forUt();
+    while (threadBack_.mt_nDoneFut().load(std::memory_order_acquire) == 0)
+        std::this_thread::yield();
+
+    const auto wrongThreadHandled = std::async(std::launch::async, [&]()
+    {
+        return threadBack_.hdlDoneFut();
+    }).get();
+
+    EXPECT_EQ(0u, wrongThreadHandled) << "REQ: reject wrong-thread hdlDoneFut()";
+    EXPECT_EQ(0, nBack.load()) << "REQ: callback remains on main thread";
+    EXPECT_EQ(1u, threadBack_.nFut()) << "REQ: wrong-thread call keeps completed task";
+
+    EXPECT_EQ(1u, threadBack_.hdlDoneFut()) << "REQ: main thread handles completed task";
+    EXPECT_EQ(1, nBack.load());
 }
 TEST_F(THREAD_BACK_TEST, invalid_msgSelf_entryFN_backFN)
 {

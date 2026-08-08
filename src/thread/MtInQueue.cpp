@@ -70,7 +70,9 @@ size_t MtInQueue::handleCacheEle_() noexcept
 // ***********************************************************************************************
 size_t MtInQueue::handleAllEle() noexcept
 {
-    mt_reqMainTH(__func__);
+    if (! mt_reqMainTH(__func__))
+        return 0;
+
     const auto nEle = handleCacheEle_();
 
     {

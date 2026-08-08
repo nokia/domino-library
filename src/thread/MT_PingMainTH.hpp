@@ -35,10 +35,10 @@ std::thread::id mt_getMainTH() noexcept;
 //   . near-zero cost
 //     . shall be in cold path, NEVER in hot path
 //     . min check points to cover major code (than cover nothing)
-//     . on violation: report ONCE via ERR (never spam, never abort a release process)
-//   . ret: true if in main-thread; false so caller may early-return in release
-// - usage: mt_reqMainTH(__func__);   or   if (!mt_reqMainTH(__func__)) return;
-bool mt_reqMainTH(const char* aFn) noexcept;
+//     . on violation: report ONCE via a MT-safe path (never spam, never abort a release process)
+//   . ret: true if in main-thread; false so caller MUST early-return in release
+// - usage: if (!mt_reqMainTH(__func__)) return;
+[[nodiscard]] bool mt_reqMainTH(const char* aFn) noexcept;
 
 // ***********************************************************************************************
 // - can't use ObjAnywhere that is not MT safe

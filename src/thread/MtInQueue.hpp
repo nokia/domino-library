@@ -142,7 +142,9 @@ S_PTR<aEleType> MtInQueue::pop() noexcept
 template<class aEleType>
 bool MtInQueue::setHdlrOK(EleHdlr aHdlr) noexcept
 {
-    mt_reqMainTH(__func__);
+    if (! mt_reqMainTH(__func__))
+        return false;
+
     if (! aHdlr)
     {
         WRN("(MtQ) why set null hdlr?");

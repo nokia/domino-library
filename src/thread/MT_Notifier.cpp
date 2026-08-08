@@ -26,7 +26,8 @@ void MT_Notifier::mt_notify() noexcept
 // ***********************************************************************************************
 void MT_Notifier::timedwait(const size_t aSec, const size_t aRestNsec) noexcept
 {
-    mt_reqMainTH(__func__);
+    if (! mt_reqMainTH(__func__))
+        return;
 
     timespec ts{0, 0};
     clock_gettime(CLOCK_MONOTONIC, &ts);  // clock-immune

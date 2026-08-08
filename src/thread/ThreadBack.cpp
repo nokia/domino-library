@@ -12,7 +12,9 @@ namespace rlib
 // ***********************************************************************************************
 size_t ThreadBack::hdlDoneFut(UniLog& oneLog) noexcept
 {
-    mt_reqMainTH(__func__);
+    if (! mt_reqMainTH(__func__))
+        return 0;
+
     size_t nHandledFut = 0;
     const auto nDoneFut = mt_nDoneFut_.load(memory_order_acquire);  // ensure visibility of producer's writes
     if (nDoneFut == 0) return 0;
@@ -52,6 +54,9 @@ size_t ThreadBack::hdlDoneFut(UniLog& oneLog) noexcept
 // ***********************************************************************************************
 bool ThreadBack::limitNewTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog& oneLog) noexcept
 {
+    if (! mt_reqMainTH(__func__))
+        return false;
+
     if (nFut() >= maxParallel_)
     {
         WRN("(ThreadBack) max reached (max=" << maxParallel_ << "), reject new task");
@@ -63,7 +68,9 @@ bool ThreadBack::limitNewTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, 
 // ***********************************************************************************************
 bool ThreadBack::newTaskOK(MT_TaskEntryFN mt_aEntryFN, TaskBackFN aBackFN, UniLog& oneLog) noexcept
 {
-    mt_reqMainTH(__func__);
+    if (! mt_reqMainTH(__func__))
+        return false;
+
     if (! aBackFN)
     {
         ERR("(ThreadBack) aBackFN=null doesn't make sense!!! Why not async() directly?");

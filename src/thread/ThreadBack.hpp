@@ -94,6 +94,11 @@ protected:
 #ifdef IN_GTEST
 public:
     auto& mt_nDoneFut() { return mt_nDoneFut_; }
+    void waitAllFut_forUt()
+    {
+        for (auto& fut_backFN : fut_backFN_S_)
+            fut_backFN.future.wait();
+    }
 #endif
 };
 

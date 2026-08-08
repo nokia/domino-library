@@ -7,6 +7,7 @@
 // - basic notify/wait/timeout/dedup already covered via ThreadBackTest, MtInQueueTest, MsgSelfTest
 // ***********************************************************************************************
 #include <chrono>
+#include <future>
 #include <gtest/gtest.h>
 #include <thread>
 #include <time.h>
@@ -28,7 +29,7 @@ struct MT_NotifierTest : public Test, public UniLog
 {
     MT_NotifierTest()
         : UniLog(UnitTest::GetInstance()->current_test_info()->name())
-    { mt_getMainTH(); }  // designate this (gtest) thread as the logical main (timedwait asserts it)
+    { mt_getMainTH(); }  // designate this (gtest) thread as the logical main
     ~MT_NotifierTest()
     {
         GTEST_LOG_FAIL
@@ -54,7 +55,21 @@ TEST_F(MT_NotifierTest, max_nsec_no_crash)
 TEST_F(MT_NotifierTest, timedwait_on_main_thread_ok)
 {
     notif_.mt_notify();
-    notif_.timedwait(0, 10'000'000);  // REQ: main thread -> assert passes; abort if not
+    notif_.timedwait(0, 10'000'000);
+}
+
+TEST_F(MT_NotifierTest, timedwait_wrongThread_rejected)
+{
+    const auto elapsed = std::async(std::launch::async, [&]()
+    {
+        const auto start = chrono::steady_clock::now();
+        notif_.timedwait(1, 0);
+        return chrono::duration_cast<chrono::milliseconds>(
+            chrono::steady_clock::now() - start);
+    }).get();
+
+    EXPECT_LT(elapsed.count(), 100)
+        << "REQ: reject wrong-thread timedwait() instead of waiting";
 }
 
 // ***********************************************************************************************

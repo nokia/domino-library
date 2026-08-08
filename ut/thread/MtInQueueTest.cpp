@@ -195,7 +195,7 @@ TEST_F(MtInQueueTest, sizeQ_block_nonBlock)
         ASSERT_EQ(1u, mt_getQ().size(false)) << "REQ: sizeQ can be unblocked (get cache_ only)";
     }
 }
-TEST_F(MtInQueueTest, size_clearAll_wrongThread_rejected)
+TEST_F(MtInQueueTest, mainThread_boundaries_wrongThread_rejected)
 {
     EXPECT_TRUE(mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(1)));
     EXPECT_TRUE(mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(2)));
@@ -203,16 +203,22 @@ TEST_F(MtInQueueTest, size_clearAll_wrongThread_rejected)
     EXPECT_TRUE(mt_getQ().mt_pushOK<int>(MAKE_PTR<int>(3)));  // 1 in mt_queue_
     EXPECT_TRUE(mt_getQ().setHdlrOK<int>([](UniPtr){}));
 
-    const auto wrongThreadSize = async(launch::async, []()
+    size_t wrongThreadSize = size_t(-1);
+    size_t wrongThreadHandled = size_t(-1);
+    bool wrongThreadSetHdlr = true;
+    async(launch::async, [&]()
     {
-        const auto nEle = mt_getQ().size(true);
+        wrongThreadSize = mt_getQ().size(true);
+        wrongThreadSetHdlr = mt_getQ().setHdlrOK<bool>([](UniPtr){});
+        wrongThreadHandled = mt_getQ().handleAllEle();
         mt_getQ().clearAll();
-        return nEle;
     }).get();
 
     EXPECT_EQ(0u, wrongThreadSize) << "REQ: reject wrong-thread size() before touching cache_";
+    EXPECT_FALSE(wrongThreadSetHdlr) << "REQ: reject wrong-thread setHdlrOK()";
+    EXPECT_EQ(0u, wrongThreadHandled) << "REQ: reject wrong-thread handleAllEle()";
     EXPECT_EQ(2u, mt_getQ().size(true)) << "REQ: wrong-thread clearAll() changes nothing";
-    EXPECT_EQ(1u, mt_getQ().nHdlr()) << "REQ: wrong-thread clearAll() keeps handlers";
+    EXPECT_EQ(1u, mt_getQ().nHdlr()) << "REQ: wrong-thread calls keep handlers";
 }
 
 #define DESTRUCT

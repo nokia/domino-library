@@ -5,14 +5,12 @@
  */
 // ***********************************************************************************************
 #include "MsgSelf.hpp"
-#include "MT_PingMainTH.hpp"
 
 namespace rlib
 {
 // ***********************************************************************************************
 void MsgSelf::handleAllMsg() noexcept
 {
-    mt_reqMainTH(__func__);
     while (handleOneMsg_());  // handleOneMsg_() may create new high priority msg(s)
 }
 

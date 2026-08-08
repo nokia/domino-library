@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include "ObjAnywhere.hpp"
-#include "MT_PingMainTH.hpp"
 
 using namespace std;
 
@@ -15,7 +14,6 @@ unique_ptr<DataStore<ObjName>> ObjAnywhere::name_obj_S_;
 // ***********************************************************************************************
 void ObjAnywhere::deinit() noexcept
 {
-    mt_reqMainTH(__func__);
     // diagnostic log before destroying all objects
     if (name_obj_S_ && name_obj_S_->nData() > 0)
         HID("(ObjAnywhere) deinit with nObj=" << name_obj_S_->nData());
@@ -25,7 +23,6 @@ void ObjAnywhere::deinit() noexcept
 // ***********************************************************************************************
 void ObjAnywhere::init(UniLog& oneLog) noexcept
 {
-    mt_reqMainTH(__func__);
     if (isInit())
     {
         WRN("(ObjAnywhere) !!! Refuse dup init.");
