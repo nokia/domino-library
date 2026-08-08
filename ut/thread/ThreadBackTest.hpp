@@ -357,22 +357,22 @@ TEST_F(THREAD_BACK_TEST, GOLD_integrate_MsgSelf_ThreadBack_MtInQueue)  // simula
     for (;;)
     {
         // handle all done Thread
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << threadBack_.nFut());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().size(true) << ", nTh=" << threadBack_.nFut());
         auto handled = threadBack_.hdlDoneFut();
         (void)handled;
 
         // handle all existing in mt_getQ()
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << threadBack_.nFut());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().size(true) << ", nTh=" << threadBack_.nFut());
         mt_getQ().handleAllEle();
 
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << threadBack_.nFut());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().size(true) << ", nTh=" << threadBack_.nFut());
         msgSelf_->handleAllMsg();
 
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << threadBack_.nFut());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().size(true) << ", nTh=" << threadBack_.nFut());
         if (expect == cb_info)
             return;
 
-        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().mt_size(true) << ", nTh=" << threadBack_.nFut());
+        INF("nMsg=" << msgSelf_->nMsg() << ", nQ=" << mt_getQ().size(true) << ", nTh=" << threadBack_.nFut());
         timedwait();
     }
 }

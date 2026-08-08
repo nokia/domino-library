@@ -14,7 +14,7 @@ namespace rlib
 // ***********************************************************************************************
 MtInQueue::~MtInQueue() noexcept
 {
-    if (const auto nEle = mt_size(true))
+    if (const auto nEle = size(true))
         WRN("(MtQ) discard nEle=" << nEle);  // main thread can WRN()
 }
 
@@ -87,22 +87,31 @@ size_t MtInQueue::handleAllEle() noexcept
 }
 
 // ***********************************************************************************************
-void MtInQueue::mt_clearAll() noexcept
+void MtInQueue::clearAll() noexcept
 {
-    lock_guard guard(mt_mutex_);  // ensure consistency of whole fn
+    if (! mt_reqMainTH(__func__))
+        return;
 
-    mt_queue_.clear();
-    cache_.clear();
+    // Don't destruct user objects while holding mt_mutex_: their destructor may re-enter mt_pushOK().
+    deque<ELE_TID> discarded;
+    {
+        lock_guard guard(mt_mutex_);
+        discarded.swap(mt_queue_);
+    }
+    cache_.clear();  // can't access outside main thread!!!
     decltype(tid_hdlr_S_)().swap(tid_hdlr_S_);
 }
 
 // ***********************************************************************************************
-size_t MtInQueue::mt_size(bool canBlock) const noexcept
+size_t MtInQueue::size(bool canBlock) const noexcept
 {
+    if (! mt_reqMainTH(__func__))
+        return 0;
+
     if (canBlock)
     {
         lock_guard guard(mt_mutex_);
-        return mt_queue_.size() + cache_.size();
+        return mt_queue_.size() + cache_.size();  // can't access outside main thread!!!
     }
 
     // non block
@@ -110,7 +119,7 @@ size_t MtInQueue::mt_size(bool canBlock) const noexcept
     //HID(__LINE__ << " owns=" << tryGuard.owns_lock());
     return tryGuard.owns_lock()
         ? mt_queue_.size() + cache_.size()
-        : cache_.size();
+        : cache_.size();  // can't access outside main thread!!!
 }
 
 // ***********************************************************************************************

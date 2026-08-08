@@ -179,8 +179,17 @@ std::shared_ptr<To> SafePtr<T>::cast() const noexcept
     }
     else if constexpr(std::is_base_of_v<T, To>)  // else if for constexpr
     {
-        // HID("(SafePtr) downcast: ok or nullptr; non-polymorphic: compile-err");
-        return std::dynamic_pointer_cast<To>(pT_);
+        if constexpr(std::is_polymorphic_v<T>)
+        {
+            // HID("(SafePtr) downcast: ok or nullptr");
+            return std::dynamic_pointer_cast<To>(pT_);
+        }
+        else
+        {
+            static_assert(std::is_polymorphic_v<T>,
+                "(SafePtr) downcast requires a polymorphic source type (at least one virtual function).");
+            return nullptr;  // unreachable; keeps the rejected instantiation well-formed otherwise
+        }
     }
     else if constexpr(!std::is_void_v<T>)
     {
