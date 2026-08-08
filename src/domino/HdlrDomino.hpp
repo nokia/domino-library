@@ -141,12 +141,12 @@ Domino::Event HdlrDomino<aDominoType>::setLinkedHdlr(const Domino::EvName& aNewE
 
     // Link first so a setPrev() failure cannot leave a handler behind.
     const auto newEv = this->setPrev(aNewEN, {{aTriggerEN, true}});
-    if (newEv == Domino::D_EVENT_FAILED_RET)
-        return Domino::D_EVENT_FAILED_RET;
+    // A fresh non-self event with one predecessor can't fail logical validation; keep defensive.
+    if (newEv == Domino::D_EVENT_FAILED_RET)  // GCOVR_EXCL_BR_LINE
+        return Domino::D_EVENT_FAILED_RET;  // GCOVR_EXCL_LINE
 
     // Preconditions above guarantee setHdlr() can install on this fresh event.
-    const auto hdlrEv = this->setHdlr(aNewEN, std::move(aHdlr));
-    return hdlrEv == newEv ? newEv : Domino::D_EVENT_FAILED_RET;
+    return this->setHdlr(aNewEN, std::move(aHdlr));
 }
 
 // ***********************************************************************************************
@@ -232,8 +232,9 @@ template<class aDominoType>
 bool HdlrDomino<aDominoType>::setMsgSelfOK(const S_PTR<MsgSelf>& aMsgSelf) noexcept
 {
     // validate
-    if (const auto nMsgUnhandled = msgSelf_ ? msgSelf_->nMsg() : 0;  // HdlrDomino ensure msgSelf_ always NOT null
-        nMsgUnhandled > 0)
+    // The constructor and this setter guarantee msgSelf_ is never null.
+    const auto nMsgUnhandled = msgSelf_->nMsg();
+    if (nMsgUnhandled > 0)
     {
         ERR("(MsgSelf) failed!!! since old msgSelf is not empty, nMsgUnhandled=" << nMsgUnhandled);
         return false;
@@ -262,7 +263,6 @@ void HdlrDomino<aDominoType>::triggerHdlr_(const SharedMsgCB& aValidHdlr, Domino
     ))
     {
         ERR("(HdlrDom) Failed to newMsgOK for en=" << this->evName_(aValidEv));
-        return;
     }
 }
 
