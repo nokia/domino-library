@@ -213,6 +213,19 @@ TYPED_TEST_P(HdlrDominoTest, multiHdlr_onOneAliasEvent_nok)
     PARA_DOM->setState({{"event", true}});
     this->pongMsgSelf_();
 }
+TYPED_TEST_P(HdlrDominoTest, setLinkedHdlr_selfLoop_failure_is_atomic)
+{
+    EXPECT_CALL(*this, hdlr0()).Times(0);
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET,
+        PARA_DOM->setLinkedHdlr("same", this->hdlr0_, "same"));
+
+    EXPECT_EQ(Domino::D_EVENT_FAILED_RET, PARA_DOM->getEventBy("same"))
+        << "REQ: failed setLinkedHdlr() leaves no event";
+    EXPECT_EQ(0u, PARA_DOM->nHdlr("same"))
+        << "REQ: failed setLinkedHdlr() leaves no handler";
+    EXPECT_EQ(0u, MSG_SELF->nMsg())
+        << "REQ: failed setLinkedHdlr() leaves no callback";
+}
 TYPED_TEST_P(HdlrDominoTest, BugFix_invalidHdlr_noCrash)
 {
     PARA_DOM->setHdlr("e1", nullptr);
@@ -459,6 +472,7 @@ REGISTER_TYPED_TEST_SUITE_P(HdlrDominoTest
     , multiHdlr_onOneEvent_nok
     , GOLD_multiHdlr_onDiffEvent_ok
     , multiHdlr_onOneAliasEvent_nok
+    , setLinkedHdlr_selfLoop_failure_is_atomic
     , BugFix_invalidHdlr_noCrash
 
     , rmHdlr_thenNoCallback

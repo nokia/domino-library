@@ -125,18 +125,28 @@ Domino::Event HdlrDomino<aDominoType>::setLinkedHdlr(const Domino::EvName& aNewE
 {
     if (this->getEventBy(aNewEN) != Domino::D_EVENT_FAILED_RET)
     {
-        ERR("(HdlrDom) fail since already exist en=" << aNewEN << " to avoid complex scenario"
-            " eg setHdlr() ok but setPrev() failed, or setHdlr() cb but setPrev() unsatisfied");
+        ERR("(HdlrDom) fail since linked handler requires a new event, but en=" << aNewEN << " already exists");
+        return Domino::D_EVENT_FAILED_RET;
+    }
+    if (! aHdlr)
+    {
+        WRN("(HdlrDom) Failed!!! not accept aHdlr=nullptr.");
+        return Domino::D_EVENT_FAILED_RET;
+    }
+    if (aNewEN == aTriggerEN)
+    {
+        ERR("(HdlrDom) fail since linked handler can't trigger itself, en=" << aNewEN);
         return Domino::D_EVENT_FAILED_RET;
     }
 
-    // set hdlr
-    auto&& newEv = this->setHdlr(aNewEN, std::move(aHdlr));
-    if (newEv == Domino::D_EVENT_FAILED_RET)  // setHdlr failed
+    // Link first so a setPrev() failure cannot leave a handler behind.
+    const auto newEv = this->setPrev(aNewEN, {{aTriggerEN, true}});
+    if (newEv == Domino::D_EVENT_FAILED_RET)
         return Domino::D_EVENT_FAILED_RET;
 
-    // auto set prev
-    return this->setPrev(aNewEN, {{aTriggerEN, true}});
+    // Preconditions above guarantee setHdlr() can install on this fresh event.
+    const auto hdlrEv = this->setHdlr(aNewEN, std::move(aHdlr));
+    return hdlrEv == newEv ? newEv : Domino::D_EVENT_FAILED_RET;
 }
 
 // ***********************************************************************************************
