@@ -6,7 +6,7 @@ Talk is cheap. Use $\color{red}{\textsf{AI}}$ to show you the lib details:
 - What
 - How
 - Quality/proficiency
-  - **[SafePtr](src/safe_mem/SafePtr.hpp) AI benchmark:** Given only its [UTs](ut/safe_mem/SafePtrTest.cpp), Claude Opus 4.5 rebuilt SafePtr and passed all tests. Under the same rubric: **SafePtr 92/100; AI baseline 68/100**.
+  - **[SafePtr](src/safe_mem) AI benchmark:** Given only its [UTs](ut/safe_mem), Claude Opus 4.5 rebuilt SafePtr and passed all tests. Under the same rubric: **SafePtr 92/100; AI baseline 68/100**.
 
 [![Build Status](https://github.com/nokia/domino-library/actions/workflows/ci.yml/badge.svg)](https://github.com/nokia/domino-library/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/nokia/domino-library/branch/main/graph/badge.svg?token=LGK8GD9GJD)](https://codecov.io/gh/nokia/domino-library)
