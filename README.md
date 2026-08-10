@@ -2,7 +2,7 @@
 
 A small C++17 library.
 
-Talk is cheap. Use $\color{red}{\textsf{AI}}$ to show you the lib details:
+Talk is cheap. Use $\color{red}{\textsf{AI}}$ to show you the library details:
 - What
 - How
 - Quality/proficiency
