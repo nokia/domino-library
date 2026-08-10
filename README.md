@@ -4,6 +4,8 @@ A small C++17 library.
 
 Talk is cheap. Use $\color{red}{\textsf{AI}}$ to show you the library details:
 - What
+  - Code comments explain the design intent.
+  - Each UT is an executable real-world requirement.
 - How
 - Quality/proficiency
   - **[SafePtr](src/safe_mem) AI benchmark:** Given only its [UTs](ut/safe_mem), Claude Opus 4.5 rebuilt SafePtr and passed all tests. Under the same rubric: **SafePtr 92/100; AI baseline 68/100**.
