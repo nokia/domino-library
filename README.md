@@ -3,10 +3,10 @@
 A small C++17 library.
 
 Talk is cheap. Let $\color{red}{\textsf{AI}}$ show you the library details:
-- What
-- How
+- What it does
+- How it works
 - Quality/proficiency, e.g.:
-  - **AI benchmark:** Given [UTs](ut/safe_mem), Claude Opus 4.5 tried best to rebuild [SafePtr](src/safe_mem). Under the same rubric: **SafePtr 92/100; AI baseline 68/100**.
+  - **AI benchmark:** Give Claude Opus 4.5 only [SafePtr's UTs](ut/safe_mem) and ask it to produce its best implementation that passes every test. Then compare the generated implementation with the [existing code](src/safe_mem) under the same rubric. **Result in my run: existing SafePtr 92/100; Opus baseline 68/100.**
 
 [![Build Status](https://github.com/nokia/domino-library/actions/workflows/ci.yml/badge.svg)](https://github.com/nokia/domino-library/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/nokia/domino-library/branch/main/graph/badge.svg?token=LGK8GD9GJD)](https://codecov.io/gh/nokia/domino-library)
@@ -35,10 +35,10 @@ Talk is cheap. Let $\color{red}{\textsf{AI}}$ show you the library details:
 
 ## Engineering
 
+- **[`ut/`](ut) each UT case is an end-to-end scenario.**
 - [GitHub Actions](https://github.com/nokia/domino-library/actions/workflows/ci.yml)
   runs GoogleTest under Valgrind on pushes, pull requests, and a weekly schedule.
-- [Full line & branch coverage](ut/gcovr/gcovr.cfg).
-- [`ut/`](ut) each UT case is an end-to-end scenario.
+- [High line & branch coverage](ut/gcovr/gcovr.cfg).
 - The currently verified CI environment is **Ubuntu + GCC**.
 
 ## Build and Run
