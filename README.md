@@ -2,13 +2,11 @@
 
 A small C++17 library.
 
-Talk is cheap. Use $\color{red}{\textsf{AI}}$ to show you the library details:
+Talk is cheap. Let $\color{red}{\textsf{AI}}$ show you the library details:
 - What
-  - Code comments explain the design intent.
-  - Each UT is an executable real-world requirement.
 - How
-- Quality/proficiency
-  - **[SafePtr](src/safe_mem) AI benchmark:** Given only its [UTs](ut/safe_mem), Claude Opus 4.5 rebuilt SafePtr and passed all tests. Under the same rubric: **SafePtr 92/100; AI baseline 68/100**.
+- Quality/proficiency, e.g.:
+  - **AI benchmark:** Given [UTs](ut/safe_mem), Claude Opus 4.5 tried best to rebuild [SafePtr](src/safe_mem). Under the same rubric: **SafePtr 92/100; AI baseline 68/100**.
 
 [![Build Status](https://github.com/nokia/domino-library/actions/workflows/ci.yml/badge.svg)](https://github.com/nokia/domino-library/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/nokia/domino-library/branch/main/graph/badge.svg?token=LGK8GD9GJD)](https://codecov.io/gh/nokia/domino-library)
@@ -25,17 +23,17 @@ Talk is cheap. Use $\color{red}{\textsf{AI}}$ to show you the library details:
   - A task can stick to 1 tile - when the tile falls, auto-execute the task.
   - **Result:** improved eNB-base-station-upgrade $\color{blue}{\textsf{from}\sim9\textsf{min to}\sim1\textsf{min}}$.
 
-- **ObjAnywhere:** feed into AI for details.
+- **ObjAnywhere:**
 
-- **MsgSelf** is a priority FIFO queue...
+- **MsgSelf** is a priority FIFO queue.
 
-- **SafePtr** is safer than std::shared_ptr
+- **SafePtr** is safer than std::shared_ptr.
 
 - **SmartLog**
 
-- **ThreadBack:** time-cost event running in a separate thread → callback main thread
+- **ThreadBack:** time-cost event running in a separate thread → callback main thread.
 
-## Engineering Evidence
+## Engineering
 
 - [GitHub Actions](https://github.com/nokia/domino-library/actions/workflows/ci.yml)
   runs GoogleTest under Valgrind on pushes, pull requests, and a weekly schedule.
