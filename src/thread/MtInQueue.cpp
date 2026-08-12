@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 // ***********************************************************************************************
+#include <algorithm>
+
 #include "MtInQueue.hpp"
 #include "MT_PingMainTH.hpp"
 
